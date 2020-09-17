@@ -1,30 +1,24 @@
 package gameserver
 
 import (
-	"errors"
 	"fmt"
 	"l2gogameserver/gameserver/clientpackets"
+	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/serverpackets"
 	"log"
 	"net"
 )
 
 type GameServer struct {
 	clientsListener net.Listener
-	clients         []*Client
+	clients         []*models.Client
 	Socket          net.Conn
 }
-type Client struct {
-	Socket          net.Conn
-	ScrambleModulus []byte
-}
 
-func NewClient() *Client {
-
-	return &Client{}
-}
 func New() *GameServer {
 	return &GameServer{}
 }
+
 func (g *GameServer) Init() {
 	var err error
 	g.clientsListener, err = net.Listen("tcp", ":7777")
@@ -43,8 +37,8 @@ func (g *GameServer) Start() {
 	go func() {
 		for {
 			var err error
-			client := NewClient()
-			g.Socket, err = g.clientsListener.Accept()
+			client := models.NewClient()
+			client.Socket, err = g.clientsListener.Accept()
 			g.clients = append(g.clients, client)
 			if err != nil {
 				fmt.Println("Couldn't accept the incoming connection.")
@@ -60,9 +54,9 @@ func (g *GameServer) Start() {
 	}
 }
 
-func (g *GameServer) handleClientPackets(client *Client) {
+func (g *GameServer) handleClientPackets(client *models.Client) {
 	for {
-		opcode, data, err := g.Receive()
+		opcode, data, err := client.Receive()
 
 		if err != nil {
 			fmt.Println(err)
@@ -72,46 +66,19 @@ func (g *GameServer) handleClientPackets(client *Client) {
 
 		switch opcode {
 		case 14:
-			packet := clientpackets.NewprotocolVersion(data)
-			_ = packet
+			_ = clientpackets.NewprotocolVersion(data)
+			pkg := serverpackets.NewKeyPacket()
+			err := client.Send(pkg)
+			if err != nil {
+				log.Println(err)
+			}
 		case 00:
 			fmt.Println("A game server sent a request to register")
+		case 43:
+			fmt.Println("43!")
 		default:
 			fmt.Println("Can't recognize the packet sent by the gameserver")
 		}
+
 	}
-}
-
-func (g *GameServer) Receive() (opcode byte, data []byte, e error) {
-	// Read the first two bytes to define the packet size
-	header := make([]byte, 2)
-	n, err := g.Socket.Read(header)
-
-	if n != 2 || err != nil {
-		return 0x00, nil, errors.New("12An error occured while reading the packet header.")
-	}
-
-	// Calculate the packet size
-	size := 0
-	size += int(header[0])
-	size += int(header[1]) * 256
-
-	// Allocate the appropriate size for our data (size - 2 bytes used for the length
-	data = make([]byte, size-2)
-
-	// Read the encrypted part of the packet
-	n, err = g.Socket.Read(data)
-
-	if n != size-2 || err != nil {
-		return 0x00, nil, errors.New("An error occured while reading the packet data.")
-	}
-
-	// Print the raw packet
-	fmt.Printf("header packet : %X\n  Raw: %X\n", header, data)
-
-	// Extract the op code
-	opcode = data[0]
-	data = data[1:]
-	e = nil
-	return
 }

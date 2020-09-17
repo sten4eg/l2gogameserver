@@ -1,7 +1,14 @@
 package clientpackets
 
-func NewprotocolVersion(data []byte) []byte {
+import (
+	"l2gogameserver/packets"
+)
 
-	x := []byte{1}
-	return x
+func NewprotocolVersion(data []byte) bool {
+
+	var packet = packets.NewReader(data)
+	protocolVersion := packet.ReadUInt16()
+
+	_ = protocolVersion
+	return true // todo
 }
