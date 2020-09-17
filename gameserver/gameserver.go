@@ -3,19 +3,21 @@ package gameserver
 import (
 	"errors"
 	"fmt"
+	"l2gogameserver/gameserver/clientpackets"
 	"log"
 	"net"
 )
 
 type GameServer struct {
-	clientsListener     net.Listener
-	clients             []*Client
-	Socket net.Conn
+	clientsListener net.Listener
+	clients         []*Client
+	Socket          net.Conn
 }
 type Client struct {
 	Socket          net.Conn
 	ScrambleModulus []byte
 }
+
 func NewClient() *Client {
 
 	return &Client{}
@@ -23,7 +25,7 @@ func NewClient() *Client {
 func New() *GameServer {
 	return &GameServer{}
 }
-func (g *GameServer) Init()  {
+func (g *GameServer) Init() {
 	var err error
 	g.clientsListener, err = net.Listen("tcp", ":7777")
 	if err != nil {
@@ -33,7 +35,7 @@ func (g *GameServer) Init()  {
 	}
 }
 
-func (g *GameServer) Start()  {
+func (g *GameServer) Start() {
 	defer g.clientsListener.Close()
 
 	done := make(chan bool)
@@ -58,9 +60,9 @@ func (g *GameServer) Start()  {
 	}
 }
 
-func (g *GameServer) handleClientPackets(client *Client)  {
+func (g *GameServer) handleClientPackets(client *Client) {
 	for {
-		opcode, _, err := g.Receive()
+		opcode, data, err := g.Receive()
 
 		if err != nil {
 			fmt.Println(err)
@@ -69,6 +71,9 @@ func (g *GameServer) handleClientPackets(client *Client)  {
 		}
 
 		switch opcode {
+		case 14:
+			packet := clientpackets.NewprotocolVersion(data)
+			_ = packet
 		case 00:
 			fmt.Println("A game server sent a request to register")
 		default:
@@ -88,8 +93,8 @@ func (g *GameServer) Receive() (opcode byte, data []byte, e error) {
 
 	// Calculate the packet size
 	size := 0
-	size = size + int(header[0])
-	size = size + int(header[1])*256
+	size += int(header[0])
+	size += int(header[1]) * 256
 
 	// Allocate the appropriate size for our data (size - 2 bytes used for the length
 	data = make([]byte, size-2)
