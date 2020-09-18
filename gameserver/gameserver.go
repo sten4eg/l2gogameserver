@@ -66,16 +66,23 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 
 		switch opcode {
 		case 14:
+
 			_ = clientpackets.NewprotocolVersion(data)
 			pkg := serverpackets.NewKeyPacket()
-			err := client.Send(pkg)
+			err := client.Send(pkg, false)
 			if err != nil {
 				log.Println(err)
 			}
 		case 00:
 			fmt.Println("A game server sent a request to register")
 		case 43:
-			fmt.Println("43!")
+			clientpackets.NewAuthLogin(data)
+			pkg := serverpackets.NewCharSelectionInfo()
+			err := client.Send(pkg, true)
+			if err != nil {
+				log.Println(err)
+			}
+
 		default:
 			fmt.Println("Can't recognize the packet sent by the gameserver")
 		}

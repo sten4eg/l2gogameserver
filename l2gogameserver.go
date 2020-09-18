@@ -1,9 +1,11 @@
 package main
 
-import "l2gogameserver/gameserver"
+import (
+	"l2gogameserver/gameserver"
+)
 
-func main()  {
- x := gameserver.New()
- x.Init()
- x.Start()
+func main() {
+	x := gameserver.New()
+	x.Init()
+	x.Start()
 }

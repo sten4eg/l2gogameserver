@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"l2gogameserver/gameserver/crypt"
 	"l2gogameserver/packets"
 	"net"
 )
@@ -17,8 +18,10 @@ func NewClient() *Client {
 	return &Client{}
 }
 
-func (c *Client) Send(data []byte) error {
-	//	data = crypt.EncodeData(data)
+func (c *Client) Send(data []byte, need bool) error {
+	if need {
+		data = crypt.Encrypt(data)
+	}
 	// Calculate the packet length
 	length := uint16(len(data) + 2)
 	// Put everything together
@@ -61,7 +64,7 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 
 	// Print the raw packet
 	fmt.Printf("header packet : %X\n  Raw: %X\n", header, data)
-
+	data = crypt.Decrypt(data)
 	// Extract the op code
 	opcode = data[0]
 	data = data[1:]
