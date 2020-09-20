@@ -63,10 +63,9 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			fmt.Println("Closing the connection...")
 			break
 		}
-
+		log.Println(opcode)
 		switch opcode {
 		case 14:
-
 			_ = clientpackets.NewprotocolVersion(data)
 			pkg := serverpackets.NewKeyPacket()
 			err := client.Send(pkg, false)
@@ -82,7 +81,12 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			if err != nil {
 				log.Println(err)
 			}
-
+		case 19:
+			pkg := serverpackets.NewCharacterSuccess()
+			err := client.Send(pkg, true)
+			if err != nil {
+				log.Println(err)
+			}
 		default:
 			fmt.Println("Can't recognize the packet sent by the gameserver")
 		}

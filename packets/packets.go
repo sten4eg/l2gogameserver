@@ -14,6 +14,12 @@ func NewBuffer() *Buffer {
 	return &Buffer{}
 }
 
+func (b *Buffer) WriteF(value float64) {
+	err := binary.Write(b, binary.LittleEndian, value)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 func (b *Buffer) WriteH(value uint16) {
 	err := binary.Write(b, binary.LittleEndian, value)
 	if err != nil {
@@ -21,6 +27,12 @@ func (b *Buffer) WriteH(value uint16) {
 	}
 }
 
+func (b *Buffer) WriteQ(value int64) {
+	err := binary.Write(b, binary.LittleEndian, value)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 func (b *Buffer) WriteD(value uint32) {
 	err := binary.Write(b, binary.LittleEndian, value)
 	if err != nil {
@@ -40,6 +52,19 @@ func (b *Buffer) WriteSingleByte(value byte) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (b *Buffer) WriteS(value string) {
+	x := len(value)
+	val := make([]byte, len(value)*2)
+	for i := 0; i < x; i++ {
+		val[i*2] = value[i]
+	}
+	err := binary.Write(b, binary.LittleEndian, val)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 type Reader struct {
