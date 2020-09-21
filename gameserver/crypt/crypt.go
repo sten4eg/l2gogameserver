@@ -10,14 +10,14 @@ var inKey = []byte{
 	0xce,
 	0x90,
 	0xb1,
-	0xcc,
-	0x2b,
-	0x6c,
-	0x55,
-	0x6c,
-	0x6c,
-	0x6c,
-	0x6c,
+	200,
+	39,
+	147,
+	1,
+	161,
+	108,
+	49,
+	151,
 }
 
 var outKey = []byte{
@@ -29,14 +29,14 @@ var outKey = []byte{
 	0xce,
 	0x90,
 	0xb1,
-	0xcc,
-	0x2b,
-	0x6c,
-	0x55,
-	0x6c,
-	0x6c,
-	0x6c,
-	0x6c,
+	200,
+	39,
+	147,
+	1,
+	161,
+	108,
+	49,
+	151,
 }
 
 func Decrypt(raw []byte) []byte {
@@ -44,7 +44,7 @@ func Decrypt(raw []byte) []byte {
 		IsEnable = true
 		return raw
 	}
-	data := make([]byte, 200)
+	data := make([]byte, 600)
 	copy(data, raw)
 
 	size := len(raw)
@@ -68,7 +68,7 @@ func Decrypt(raw []byte) []byte {
 	inKey[10] = uint8(old >> 0x10)
 	inKey[11] = uint8(old >> 0x18)
 
-	return data
+	return data[:size]
 }
 
 func Encrypt(data []byte) []byte {

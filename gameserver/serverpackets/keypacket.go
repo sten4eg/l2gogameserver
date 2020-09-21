@@ -13,14 +13,14 @@ var StaticBlowfish = []byte{
 	0xce,
 	0x90,
 	0xb1,
-	0xcc,
-	0x2b,
-	0x6c,
-	0x55,
-	0x6c,
-	0x6c,
-	0x6c,
-	0x6c,
+	200,
+	39,
+	147,
+	1,
+	161,
+	108,
+	49,
+	151,
 }
 
 func NewKeyPacket() []byte {

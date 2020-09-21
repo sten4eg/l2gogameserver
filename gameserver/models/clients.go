@@ -42,7 +42,7 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	// Read the first two bytes to define the packet size
 	header := make([]byte, 2)
 	n, err := c.Socket.Read(header)
-
+	fmt.Println(n)
 	if n != 2 || err != nil {
 		return 0x00, nil, errors.New("12An error occured while reading the packet header.")
 	}
@@ -63,7 +63,7 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	}
 
 	// Print the raw packet
-	fmt.Printf("header packet : %X\n  Raw: %X\n", header, data)
+	//fmt.Printf("header packet : %X\n  Raw: %X\n", header, data)
 	data = crypt.Decrypt(data)
 	// Extract the op code
 	opcode = data[0]

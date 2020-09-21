@@ -56,7 +56,7 @@ func (b *Buffer) WriteSingleByte(value byte) {
 
 func (b *Buffer) WriteS(value string) {
 	x := len(value)
-	val := make([]byte, len(value)*2)
+	val := make([]byte, (len(value)*2)+2)
 	for i := 0; i < x; i++ {
 		val[i*2] = value[i]
 	}
@@ -64,7 +64,6 @@ func (b *Buffer) WriteS(value string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 type Reader struct {
