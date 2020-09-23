@@ -37,7 +37,25 @@ func (c *Client) Send(data []byte, need bool) error {
 
 	return nil
 }
+func (c *Client) Ssend(data []byte, need bool) error {
+	if need {
+		data = crypt.Encrypt(data)
+	}
+	// Calculate the packet length
+	length := uint16(5)
+	// Put everything together
+	buffer := packets.NewBuffer()
+	buffer.WriteH(length)
+	buffer.Write(data)
 
+	_, err := c.Socket.Write(buffer.Bytes())
+
+	if err != nil {
+		return errors.New("The packet couldn't be sent.")
+	}
+
+	return nil
+}
 func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	// Read the first two bytes to define the packet size
 	header := make([]byte, 2)

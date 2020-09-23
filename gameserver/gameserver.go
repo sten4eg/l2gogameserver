@@ -55,6 +55,7 @@ func (g *GameServer) Start() {
 }
 
 func (g *GameServer) handleClientPackets(client *models.Client) {
+	var i = 0
 	for {
 		opcode, data, err := client.Receive()
 
@@ -88,18 +89,34 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 				log.Println(err)
 			}
 		case 18:
-			pkg := serverpackets.NewSSQInfo()
-			err := client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			//pkg := serverpackets.NewSSQInfo()
+			//err := client.Send(pkg, true)
+			//if err != nil {
+			//	log.Println(err)
+			//}
 			log.Println("sendSSQ")
-			pkg = serverpackets.NewCharSelected()
-			err = client.Send(pkg, true)
+			pkg := serverpackets.NewCharSelected()
+			err = client.Ssend(pkg, true)
 			if err != nil {
 				log.Println(err)
 			}
 			log.Println("CharSelected")
+		case 208:
+			if i == 0 {
+				pkg := serverpackets.NewExSendManorList()
+				err := client.Send(pkg, true)
+				if err != nil {
+					log.Println(err)
+				}
+			}
+			i++
+		case 17:
+			pkg := serverpackets.NewUserInfo()
+			err := client.Send(pkg, true)
+			if err != nil {
+				log.Println(err)
+			}
+			log.Println("NewUserInfo")
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}
