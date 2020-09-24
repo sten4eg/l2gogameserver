@@ -30,9 +30,9 @@ func NewCharSelectionInfo() []byte {
 
 	buffer.WriteD(0) // active ??
 
-	buffer.WriteD(82744)  //x
-	buffer.WriteD(148536) //y
-	buffer.WriteD(3400)   //z
+	buffer.WriteD(-71549) //x 53
+	buffer.WriteD(258198) //y 57
+	buffer.WriteD(-3108)  //z 61
 
 	buffer.WriteF(444.0)  //currentHP
 	buffer.WriteF(1000.0) //currentMP

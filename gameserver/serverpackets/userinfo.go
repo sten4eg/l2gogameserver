@@ -7,42 +7,42 @@ func NewUserInfo() []byte {
 
 	buffer.WriteSingleByte(0x32)
 
-	buffer.WriteD(82744)  //x
-	buffer.WriteD(148536) //y
-	buffer.WriteD(3400)   //z
+	buffer.WriteD(83306)  //x 53
+	buffer.WriteD(148115) //y 57
+	buffer.WriteD(-3405)  //z 61
 
 	buffer.WriteD(0) // Vehicle
 
 	buffer.WriteD(1) //objId
 
-	buffer.WriteS("test") //name
+	buffer.WriteS("q") //name //TODO
 
-	buffer.WriteD(0) //race
+	buffer.WriteD(0) //race ordinal //TODO
 	buffer.WriteD(1) //sex
 	buffer.WriteD(0) //baseClass
 
-	buffer.WriteD(3)      //level
-	buffer.WriteQ(500)    //exp
-	buffer.WriteF(0.1234) //percent
+	buffer.WriteD(3)          //level //TODO
+	buffer.WriteQ(500)        //exp
+	buffer.WriteF(0.17018634) //percent
 
-	buffer.WriteD(5) //str
-	buffer.WriteD(5) //dex
-	buffer.WriteD(5) //con
-	buffer.WriteD(5) //int
-	buffer.WriteD(5) //wit
-	buffer.WriteD(5) //men
+	buffer.WriteD(40) //str
+	buffer.WriteD(30) //dex
+	buffer.WriteD(43) //con //TODO
+	buffer.WriteD(21) //int
+	buffer.WriteD(11) //wit
+	buffer.WriteD(25) //men
 
-	buffer.WriteD(444) //Max hp
+	buffer.WriteD(163) //Max hp //TODO
 
-	buffer.WriteD(444) //hp
+	buffer.WriteD(163) //hp currnebt
 
-	buffer.WriteD(1000) //max mp
-	buffer.WriteD(1000) //mp
+	buffer.WriteD(52) //max mp
+	buffer.WriteD(52) //mp
 
-	buffer.WriteD(100) //sp
-	buffer.WriteD(1)   //currentLoad
+	buffer.WriteD(50) //sp //TODO
+	buffer.WriteD(0)  //currentLoad
 
-	buffer.WriteD(100) //maxLoad
+	buffer.WriteD(109020) //maxLoad
 
 	buffer.WriteD(20) //no weapon
 
@@ -55,41 +55,45 @@ func NewUserInfo() []byte {
 	buffer.WriteD(0) //talisman slot
 	buffer.WriteD(0) //Cloack
 
-	buffer.WriteD(20) //patack
-	buffer.WriteD(20) //atackSpeed
-	buffer.WriteD(0)  //pdef
-	buffer.WriteD(0)  //evasionRate
-	buffer.WriteD(0)  //accuracy
-	buffer.WriteD(0)  //critHit
-	buffer.WriteD(0)  //Matack
-	buffer.WriteD(0)  //M atackSpped
+	buffer.WriteD(4)   //patack //TODO
+	buffer.WriteD(330) //atackSpeed
+	buffer.WriteD(73)  //pdef
+	buffer.WriteD(35)  //evasionRate
+	buffer.WriteD(36)  //accuracy //TODO
+	buffer.WriteD(44)  //critHit
+	buffer.WriteD(3)   //Matack
+	buffer.WriteD(213) //M atackSpped
 
-	buffer.WriteD(0) //patackSpeed again?
+	buffer.WriteD(330) //patackSpeed again?
 
-	buffer.WriteD(0) //mdef
+	buffer.WriteD(48) //mdef
 
 	buffer.WriteD(0) //pvp
 	buffer.WriteD(0) //karma
 
-	buffer.WriteD(0) //runSpeed
-	buffer.WriteD(0) //walkspeed
-	buffer.WriteD(0) //swimRunSpeed
-	buffer.WriteD(0) //swimWalkSpeed
-	buffer.WriteD(0) //flyRunSpeed
-	buffer.WriteD(0) //flyWalkSpeed
-	buffer.WriteF(0) //moveMultipler
-	buffer.WriteF(0) //atackSpeedMultiplier
+	buffer.WriteD(115) //runSpeed
+	buffer.WriteD(80)  //walkspeed
+	buffer.WriteD(50)  //swimRunSpeed
+	buffer.WriteD(50)  //swimWalkSpeed
+	buffer.WriteD(0)   //flyRunSpeed
+	buffer.WriteD(0)   //flyWalkSpeed
+	buffer.WriteD(0)   //flyRunSpeed again
+	buffer.WriteD(0)   //flyWalkSpeed again
+	buffer.WriteF(1.1) //moveMultipler
+	xx := []byte{0, 0, 0, 0, 41, 92, 243, 63}
+	buffer.WriteSlice(xx)
+	//	 buffer.WriteF(1.21) //atackSpeedMultiplier
 
-	buffer.WriteF(0) //collisionRadius
-	buffer.WriteF(0) //collisionHeight
+	buffer.WriteF(8.0)  //collisionRadius
+	buffer.WriteF(23.5) //collisionHeight
 
 	buffer.WriteD(0) //hairStyle
 	buffer.WriteD(1) //hairColor
 	buffer.WriteD(0) //face
 
-	buffer.WriteD(1) //IsGM?
+	buffer.WriteD(0) //IsGM?
 
-	buffer.WriteS("Hi") //title
+	buffer.WriteS("q") //title
 
 	buffer.WriteD(0) //clanId
 	buffer.WriteD(0) //clancrestId
@@ -97,14 +101,14 @@ func NewUserInfo() []byte {
 	buffer.WriteD(0) //allyCrestId
 	buffer.WriteD(0) //RELATION CALCULATE ?
 
-	buffer.WriteD(0) //mountType
-	buffer.WriteD(0) //privateStoreType
-	buffer.WriteD(0) //hasDwarfCraft
-	buffer.WriteD(0) //pk
-	buffer.WriteD(0) //pvp
+	buffer.WriteSingleByte(0) //mountType
+	buffer.WriteSingleByte(0) //privateStoreType
+	buffer.WriteSingleByte(0) //hasDwarfCraft
+	buffer.WriteD(1)          //pk //TODO
+	buffer.WriteD(1)          //pvp //TODO
 
-	buffer.WriteH(0) //cubics
-	//FOR
+	buffer.WriteH(0) //cubic size
+	//FOR cubicks
 
 	buffer.WriteSingleByte(0) //PartyRoom
 
@@ -115,58 +119,60 @@ func NewUserInfo() []byte {
 	buffer.WriteD(0) //clanBitmask
 
 	buffer.WriteH(0) // c2 recommendations remaining
-	buffer.WriteH(0) // c2 recommendations received
+	buffer.WriteH(0) // c2 recommendations received //TODO
 
 	buffer.WriteD(0) //npcMountId
 
-	buffer.WriteH(10) //inventoryLimit
+	buffer.WriteH(80) //inventoryLimit
 
-	buffer.WriteD(1) //	classId
+	buffer.WriteD(0) //	classId
 	buffer.WriteD(0)
 
-	buffer.WriteD(300) //MaxCP
-	buffer.WriteD(300) //CurrentCp
+	buffer.WriteD(65) //MaxCP
+	buffer.WriteD(65) //CurrentCp
 
-	buffer.WriteSingleByte(0) //team
+	buffer.WriteSingleByte(0) //mounted air
+	buffer.WriteSingleByte(0) //team Id
 
-	buffer.WriteD(0) //clanCrest
+	buffer.WriteD(0) //ClanCrestLargeId
 
 	buffer.WriteSingleByte(0) //isNoble
-	buffer.WriteSingleByte(1) //isHero
+	buffer.WriteSingleByte(0) //isHero
 
 	buffer.WriteSingleByte(0) //Fishing??
 	buffer.WriteD(0)
 	buffer.WriteD(0)
 	buffer.WriteD(0)
-	buffer.WriteD(0)
 
-	buffer.WriteSingleByte(0) //// changes the Speed display on Status Window
+	buffer.WriteD(16777215)
+
+	buffer.WriteSingleByte(1) //// changes the Speed display on Status Window
 
 	buffer.WriteD(0) // changes the text above CP on Status Window
-	buffer.WriteD(0)
+	buffer.WriteD(0) // plegue type
 
-	buffer.WriteD(0) //titleColor
+	buffer.WriteD(15530402) //titleColor
 
 	buffer.WriteD(0) // CursedWEAPON
 
 	buffer.WriteD(0) //TransormDisplayId
 
 	//attribute
-	buffer.WriteH(0)
-	buffer.WriteH(0)
-	buffer.WriteH(0)
-	buffer.WriteH(0)
-	buffer.WriteH(0)
-	buffer.WriteH(0)
-	buffer.WriteH(0)
-	buffer.WriteH(0)
+	buffer.WriteH(-2) //attack element //TODO
+	buffer.WriteH(0)  //attack elementValue
+	buffer.WriteH(0)  //fire
+	buffer.WriteH(0)  //water //TODO
+	buffer.WriteH(0)  //wind //TODO
+	buffer.WriteH(0)  //earth
+	buffer.WriteH(0)  //holy
+	buffer.WriteH(0)  //dark
 
 	buffer.WriteD(0) //agationId
 
-	buffer.WriteD(0)    //FAME
-	buffer.WriteD(1)    //minimap or hellbound
-	buffer.WriteD(2000) //vitaliti Point
-	buffer.WriteD(0)    //abnormalEffects
+	buffer.WriteD(0)     //FAME //TODO
+	buffer.WriteD(0)     //minimap or hellbound
+	buffer.WriteD(20000) //vitaliti Point
+	buffer.WriteD(0)     //abnormalEffects
 
 	return buffer.Bytes()
 }

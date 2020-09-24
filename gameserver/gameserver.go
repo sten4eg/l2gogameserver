@@ -114,8 +114,15 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 				if err != nil {
 					log.Println(err)
 				}
+				log.Println("ExSendManorList")
 			}
 			i++
+		case 193:
+			pkg := serverpackets.NewObservationReturn()
+			err := client.Send(pkg, true)
+			if err != nil {
+				log.Println(err)
+			}
 		case 17:
 			pkg := serverpackets.NewUserInfo()
 			err := client.Send(pkg, true)
@@ -123,42 +130,48 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 				log.Println(err)
 			}
 
-			p := serverpackets.NewItemList()
-			client.Send(p, true)
-			p = serverpackets.NewExGetBookMarkInfoPacket()
-			client.Send(p, true)
-			p = serverpackets.NewShortCutInit()
-			client.Send(p, true)
-			p = serverpackets.NewExBasicActionList()
-			client.Send(p, true)
-			p = serverpackets.NewSkillList()
-			client.Send(p, true)
-			p = serverpackets.NewHennaInfo()
-			client.Send(p, true)
-			p = serverpackets.NewQuestList()
-			client.Send(p, true)
-			p = serverpackets.NewEtcStatusUpdate()
-			client.Send(p, true)
-			p = serverpackets.NewExStorageMaxCount()
-			client.Send(p, true)
-			p = serverpackets.NewFriendList()
-			client.Send(p, true)
-			//WELCOM_TO_LINEAGE
-
-			p = serverpackets.NewSkillCoolTime()
-			client.Send(p, true)
-			p = serverpackets.NewExVoteSystemInfo()
-			client.Send(p, true)
-			p = serverpackets.NewExNevitAdventPointInfoPacket()
-			client.Send(p, true)
-			p = serverpackets.NewExNevitAdventTimeChange()
-			client.Send(p, true)
-			p = serverpackets.NewExShowContactList()
-			client.Send(p, true)
-
-			p = serverpackets.NewActionFailed()
-			client.Send(p, true)
+			//	p := serverpackets.NewItemList()
+			//	client.Send(p, true)
+			//	p = serverpackets.NewExGetBookMarkInfoPacket()
+			//	client.Send(p, true)
+			//	p = serverpackets.NewShortCutInit()
+			//	client.Send(p, true)
+			//	p = serverpackets.NewExBasicActionList()
+			//	client.Send(p, true)
+			//	p = serverpackets.NewSkillList()
+			//	client.Send(p, true)
+			////	p = serverpackets.NewHennaInfo()
+			////	client.Send(p, true)
+			//	p = serverpackets.NewQuestList()
+			//	client.Send(p, true)
+			//	p = serverpackets.NewEtcStatusUpdate()
+			//	client.Send(p, true)
+			//	p = serverpackets.NewExStorageMaxCount()
+			//	client.Send(p, true)
+			//	p = serverpackets.NewFriendList()
+			//	client.Send(p, true)
+			//	//WELCOM_TO_LINEAGE
+			//
+			//	p = serverpackets.NewSkillCoolTime()
+			//	client.Send(p, true)
+			//	p = serverpackets.NewExVoteSystemInfo()
+			//	client.Send(p, true)
+			//	p = serverpackets.NewExNevitAdventPointInfoPacket()
+			//	client.Send(p, true)
+			//	p = serverpackets.NewExNevitAdventTimeChange()
+			//	client.Send(p, true)
+			//	p = serverpackets.NewExShowContactList()
+			//	client.Send(p, true)
+			//
+			//	p = serverpackets.NewActionFailed()
+			//	client.Send(p, true)
 			log.Println("NewUserInfo")
+		case 166:
+			pkg := serverpackets.NewSkillCoolTime()
+			err := client.Send(pkg, true)
+			if err != nil {
+				log.Println(err)
+			}
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}

@@ -44,7 +44,7 @@ func Decrypt(raw []byte) []byte {
 		IsEnable = true
 		return raw
 	}
-	data := make([]byte, 600)
+	data := make([]byte, 10000)
 	copy(data, raw)
 
 	size := len(raw)

@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
 	"l2gogameserver/gameserver/crypt"
 	"l2gogameserver/packets"
 	"log"
@@ -60,7 +59,7 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	// Read the first two bytes to define the packet size
 	header := make([]byte, 2)
 	n, err := c.Socket.Read(header)
-	fmt.Println(n)
+	//fmt.Println(n)
 	if n != 2 || err != nil {
 		return 0x00, nil, errors.New("12An error occured while reading the packet header.")
 	}
@@ -75,7 +74,6 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 
 	// Read the encrypted part of the packet
 	n, err = c.Socket.Read(data)
-
 	if n != size-2 || err != nil {
 		return 0x00, nil, errors.New("An error occured while reading the packet data.")
 	}
