@@ -19,9 +19,9 @@ func NewCharSelected() []byte {
 	buffer.WriteD(0)             //classId 45
 	buffer.WriteD(1)             // ? 49
 
-	buffer.WriteD(82744)  //x 53
-	buffer.WriteD(148536) //y 57
-	buffer.WriteD(3400)   //z 61
+	buffer.WriteD(-71549) //x 53
+	buffer.WriteD(258198) //y 57
+	buffer.WriteD(-3108)  //z 61
 
 	buffer.WriteF(126.0) //currentHP 69
 	buffer.WriteF(38.0)  //currentMP 77
@@ -52,7 +52,7 @@ func NewCharSelected() []byte {
 	m := make([]byte, 64)
 	buffer.WriteSlice(m) //217
 
-	buffer.WriteD(20000) // 221
+	buffer.WriteD(0) // 221
 
 	return buffer.Bytes()
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"l2gogameserver/gameserver/crypt"
 	"l2gogameserver/packets"
+	"log"
 	"net"
 )
 
@@ -23,38 +24,37 @@ func (c *Client) Send(data []byte, need bool) error {
 		data = crypt.Encrypt(data)
 	}
 	// Calculate the packet length
-	length := uint16(len(data) + 2)
+	length := int16(len(data) + 2)
 	// Put everything together
 	buffer := packets.NewBuffer()
 	buffer.WriteH(length)
-	buffer.Write(data)
+	_, err := buffer.Write(data)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	_, err := c.Socket.Write(buffer.Bytes())
-
+	_, err = c.Socket.Write(buffer.Bytes())
 	if err != nil {
 		return errors.New("The packet couldn't be sent.")
 	}
 
 	return nil
 }
-func (c *Client) Ssend(data []byte, need bool) error {
-	if need {
-		data = crypt.Encrypt(data)
-	}
-	// Calculate the packet length
-	length := uint16(5)
-	// Put everything together
+func (c *Client) Ssend(data []byte) []byte {
+
+	cr := crypt.Encrypt(data)
+	length := int16(len(cr) + 2)
 	buffer := packets.NewBuffer()
 	buffer.WriteH(length)
-	buffer.Write(data)
+	buffer.Write(cr)
 
-	_, err := c.Socket.Write(buffer.Bytes())
-
+	return buffer.Bytes()
+}
+func (c *Client) SSS(data []byte) {
+	_, err := c.Socket.Write(data)
 	if err != nil {
-		return errors.New("The packet couldn't be sent.")
+		log.Fatal(123321)
 	}
-
-	return nil
 }
 func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	// Read the first two bytes to define the packet size

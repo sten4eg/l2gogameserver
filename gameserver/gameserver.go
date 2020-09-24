@@ -89,14 +89,20 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 				log.Println(err)
 			}
 		case 18:
-			//pkg := serverpackets.NewSSQInfo()
-			//err := client.Send(pkg, true)
-			//if err != nil {
-			//	log.Println(err)
-			//}
+			clientpackets.NewCharSelected(data)
+			pkg := serverpackets.NewSSQInfo()
+			//		d := client.Ssend(pkg)
+			err := client.Send(pkg, true)
+			if err != nil {
+				log.Println(err)
+			}
+
 			log.Println("sendSSQ")
-			pkg := serverpackets.NewCharSelected()
-			err = client.Ssend(pkg, true)
+			pkg = serverpackets.NewCharSelected()
+			//			dd := client.Ssend(pkg)
+			//			q := append(d,dd...)
+			//			client.SSS(q)
+			err = client.Send(pkg, true)
 			if err != nil {
 				log.Println(err)
 			}
@@ -116,6 +122,42 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			if err != nil {
 				log.Println(err)
 			}
+
+			p := serverpackets.NewItemList()
+			client.Send(p, true)
+			p = serverpackets.NewExGetBookMarkInfoPacket()
+			client.Send(p, true)
+			p = serverpackets.NewShortCutInit()
+			client.Send(p, true)
+			p = serverpackets.NewExBasicActionList()
+			client.Send(p, true)
+			p = serverpackets.NewSkillList()
+			client.Send(p, true)
+			p = serverpackets.NewHennaInfo()
+			client.Send(p, true)
+			p = serverpackets.NewQuestList()
+			client.Send(p, true)
+			p = serverpackets.NewEtcStatusUpdate()
+			client.Send(p, true)
+			p = serverpackets.NewExStorageMaxCount()
+			client.Send(p, true)
+			p = serverpackets.NewFriendList()
+			client.Send(p, true)
+			//WELCOM_TO_LINEAGE
+
+			p = serverpackets.NewSkillCoolTime()
+			client.Send(p, true)
+			p = serverpackets.NewExVoteSystemInfo()
+			client.Send(p, true)
+			p = serverpackets.NewExNevitAdventPointInfoPacket()
+			client.Send(p, true)
+			p = serverpackets.NewExNevitAdventTimeChange()
+			client.Send(p, true)
+			p = serverpackets.NewExShowContactList()
+			client.Send(p, true)
+
+			p = serverpackets.NewActionFailed()
+			client.Send(p, true)
 			log.Println("NewUserInfo")
 		default:
 			log.Println("Not Found case with opcode: ", opcode)

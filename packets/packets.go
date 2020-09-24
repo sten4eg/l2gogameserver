@@ -20,7 +20,8 @@ func (b *Buffer) WriteF(value float64) {
 		log.Fatal(err)
 	}
 }
-func (b *Buffer) WriteH(value uint16) {
+
+func (b *Buffer) WriteH(value int16) {
 	err := binary.Write(b, binary.LittleEndian, value)
 	if err != nil {
 		log.Fatal(err)
@@ -33,7 +34,7 @@ func (b *Buffer) WriteQ(value int64) {
 		log.Fatal(err)
 	}
 }
-func (b *Buffer) WriteD(value uint32) {
+func (b *Buffer) WriteD(value int32) {
 	err := binary.Write(b, binary.LittleEndian, value)
 	if err != nil {
 		log.Fatal(err)
