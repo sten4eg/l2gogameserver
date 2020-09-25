@@ -19,19 +19,22 @@ func NewCharSelected() []byte {
 	buffer.WriteD(0)      //race 41
 	buffer.WriteD(0)      //classId 45
 	buffer.WriteD(1)      // ? 49
+	buffer.WriteD(-75122) //x 53
+	buffer.WriteD(258213) //y 57
+	buffer.WriteD(-3108)  //z 61
 
-	buffer.WriteD(83306)  //x 53
-	buffer.WriteD(148115) //y 57
-	buffer.WriteD(-3405)  //z 61
+	//buffer.WriteD(83306)  //x 53
+	//buffer.WriteD(148115) //y 57
+	//buffer.WriteD(-3405)  //z 61
 
 	buffer.WriteF(163.0) //currentHP 69
 	buffer.WriteF(52.0)  //currentMP 77
 
-	buffer.WriteD(0)   // SP 81
-	buffer.WriteQ(500) // EXP 89
-	buffer.WriteD(3)   // level 93
-	buffer.WriteD(0)   // karma 97
-	buffer.WriteD(0)   // pk 101
+	buffer.WriteD(0) // SP 81
+	buffer.WriteQ(0) // EXP 89
+	buffer.WriteD(1) // level 93
+	buffer.WriteD(0) // karma 97
+	buffer.WriteD(0) // pk 101
 
 	buffer.WriteD(21) //int 105
 	buffer.WriteD(40) //str 109
@@ -43,7 +46,7 @@ func NewCharSelected() []byte {
 	buffer.WriteD(154) //inGameTime 129
 	buffer.WriteD(0)   // ?? 133
 
-	buffer.WriteD(0) // 137
+	buffer.WriteD(0) // 137 classId
 
 	buffer.WriteD(0) // 141
 	buffer.WriteD(0) // 145

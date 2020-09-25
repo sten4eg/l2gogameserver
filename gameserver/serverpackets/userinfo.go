@@ -6,10 +6,12 @@ func NewUserInfo() []byte {
 	buffer := new(packets.Buffer)
 
 	buffer.WriteSingleByte(0x32)
-
-	buffer.WriteD(83306)  //x 53
-	buffer.WriteD(148115) //y 57
-	buffer.WriteD(-3405)  //z 61
+	//q.WriteD(-75122)
+	//q.WriteD(258213)
+	//q.WriteD(-3108)
+	buffer.WriteD(-75122) //x 53
+	buffer.WriteD(258213) //y 57
+	buffer.WriteD(-3108)  //z 61
 
 	buffer.WriteD(0) // Vehicle
 
@@ -21,9 +23,9 @@ func NewUserInfo() []byte {
 	buffer.WriteD(1) //sex
 	buffer.WriteD(0) //baseClass
 
-	buffer.WriteD(3)          //level //TODO
-	buffer.WriteQ(500)        //exp
-	buffer.WriteF(0.17018634) //percent
+	buffer.WriteD(1) //level //TODO
+	buffer.WriteQ(0) //exp
+	buffer.WriteF(0) //percent
 
 	buffer.WriteD(40) //str
 	buffer.WriteD(30) //dex
@@ -39,8 +41,8 @@ func NewUserInfo() []byte {
 	buffer.WriteD(52) //max mp
 	buffer.WriteD(52) //mp
 
-	buffer.WriteD(50) //sp //TODO
-	buffer.WriteD(0)  //currentLoad
+	buffer.WriteD(0) //sp //TODO
+	buffer.WriteD(0) //currentLoad
 
 	buffer.WriteD(109020) //maxLoad
 
@@ -80,9 +82,9 @@ func NewUserInfo() []byte {
 	buffer.WriteD(0)   //flyRunSpeed again
 	buffer.WriteD(0)   //flyWalkSpeed again
 	buffer.WriteF(1.1) //moveMultipler
-	xx := []byte{0, 0, 0, 0, 41, 92, 243, 63}
-	buffer.WriteSlice(xx)
-	//	 buffer.WriteF(1.21) //atackSpeedMultiplier
+	//xx := []byte{0, 0, 0, 0, 41, 92, 243, 63}
+	//buffer.WriteSlice(xx)
+	buffer.WriteF(1.21) //atackSpeedMultiplier
 
 	buffer.WriteF(8.0)  //collisionRadius
 	buffer.WriteF(23.5) //collisionHeight
