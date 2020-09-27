@@ -2,30 +2,30 @@ package serverpackets
 
 import "l2gogameserver/packets"
 
-func NewUserInfo() []byte {
+func NewUserInfo(user *User) []byte {
 	buffer := new(packets.Buffer)
 
 	buffer.WriteSingleByte(0x32)
 	//q.WriteD(-75122)
 	//q.WriteD(258213)
 	//q.WriteD(-3108)
-	buffer.WriteD(-75122) //x 53
-	buffer.WriteD(258213) //y 57
-	buffer.WriteD(-3108)  //z 61
+	buffer.WriteD(user.X) //x 53
+	buffer.WriteD(user.Y) //y 57
+	buffer.WriteD(user.Z) //z 61
 
 	buffer.WriteD(0) // Vehicle
 
-	buffer.WriteD(1) //objId
+	buffer.WriteD(user.CharId) //objId
 
-	buffer.WriteS("q") //name //TODO
+	buffer.WriteS(user.CharName) //name //TODO
 
-	buffer.WriteD(0) //race ordinal //TODO
-	buffer.WriteD(1) //sex
-	buffer.WriteD(0) //baseClass
+	buffer.WriteD(user.Race)      //race ordinal //TODO
+	buffer.WriteD(user.Sex)       //sex
+	buffer.WriteD(user.BaseClass) //baseClass
 
-	buffer.WriteD(1) //level //TODO
-	buffer.WriteQ(0) //exp
-	buffer.WriteF(0) //percent
+	buffer.WriteD(user.Level)      //level //TODO
+	buffer.WriteQ(int64(user.Exp)) //exp
+	buffer.WriteF(0)               //percent
 
 	buffer.WriteD(40) //str
 	buffer.WriteD(30) //dex
@@ -34,19 +34,19 @@ func NewUserInfo() []byte {
 	buffer.WriteD(11) //wit
 	buffer.WriteD(25) //men
 
-	buffer.WriteD(163) //Max hp //TODO
+	buffer.WriteD(user.MaxHp) //Max hp //TODO
 
-	buffer.WriteD(163) //hp currnebt
+	buffer.WriteD(user.CurHp) //hp currnebt
 
-	buffer.WriteD(52) //max mp
-	buffer.WriteD(52) //mp
+	buffer.WriteD(user.MaxMp) //max mp
+	buffer.WriteD(user.CurMp) //mp
 
-	buffer.WriteD(0) //sp //TODO
-	buffer.WriteD(0) //currentLoad
+	buffer.WriteD(user.Sp) //sp //TODO
+	buffer.WriteD(0)       //currentLoad
 
 	buffer.WriteD(109020) //maxLoad
 
-	buffer.WriteD(20) //no weapon
+	buffer.WriteD(40) //no weapon
 
 	//FOR
 	x := make([]byte, 312)
@@ -59,19 +59,19 @@ func NewUserInfo() []byte {
 
 	buffer.WriteD(4)   //patack //TODO
 	buffer.WriteD(330) //atackSpeed
-	buffer.WriteD(73)  //pdef
-	buffer.WriteD(35)  //evasionRate
-	buffer.WriteD(36)  //accuracy //TODO
+	buffer.WriteD(72)  //pdef
+	buffer.WriteD(33)  //evasionRate
+	buffer.WriteD(34)  //accuracy //TODO
 	buffer.WriteD(44)  //critHit
 	buffer.WriteD(3)   //Matack
 	buffer.WriteD(213) //M atackSpped
 
 	buffer.WriteD(330) //patackSpeed again?
 
-	buffer.WriteD(48) //mdef
+	buffer.WriteD(47) //mdef
 
-	buffer.WriteD(0) //pvp
-	buffer.WriteD(0) //karma
+	buffer.WriteD(user.PvpKills) //pvp
+	buffer.WriteD(user.Karma)    //karma
 
 	buffer.WriteD(115) //runSpeed
 	buffer.WriteD(80)  //walkspeed
@@ -82,26 +82,25 @@ func NewUserInfo() []byte {
 	buffer.WriteD(0)   //flyRunSpeed again
 	buffer.WriteD(0)   //flyWalkSpeed again
 	buffer.WriteF(1.1) //moveMultipler
-	//xx := []byte{0, 0, 0, 0, 41, 92, 243, 63}
-	//buffer.WriteSlice(xx)
+
 	buffer.WriteF(1.21) //atackSpeedMultiplier
 
 	buffer.WriteF(8.0)  //collisionRadius
 	buffer.WriteF(23.5) //collisionHeight
 
-	buffer.WriteD(0) //hairStyle
-	buffer.WriteD(1) //hairColor
-	buffer.WriteD(0) //face
+	buffer.WriteD(user.HairStyle) //hairStyle
+	buffer.WriteD(user.HairColor) //hairColor
+	buffer.WriteD(user.Face)      //face
 
 	buffer.WriteD(0) //IsGM?
 
-	buffer.WriteS("q") //title
+	buffer.WriteS(user.Title.String) //title
 
-	buffer.WriteD(0) //clanId
-	buffer.WriteD(0) //clancrestId
-	buffer.WriteD(0) //allyId
-	buffer.WriteD(0) //allyCrestId
-	buffer.WriteD(0) //RELATION CALCULATE ?
+	buffer.WriteD(user.ClanId) //clanId
+	buffer.WriteD(0)           //clancrestId
+	buffer.WriteD(0)           //allyId
+	buffer.WriteD(0)           //allyCrestId
+	buffer.WriteD(0)           //RELATION CALCULATE ?
 
 	buffer.WriteSingleByte(0) //mountType
 	buffer.WriteSingleByte(0) //privateStoreType
@@ -127,11 +126,11 @@ func NewUserInfo() []byte {
 
 	buffer.WriteH(80) //inventoryLimit
 
-	buffer.WriteD(0) //	classId
-	buffer.WriteD(0)
+	buffer.WriteD(user.ClassId) //	classId
+	buffer.WriteD(0)            // special effects? circles around player...
 
-	buffer.WriteD(65) //MaxCP
-	buffer.WriteD(65) //CurrentCp
+	buffer.WriteD(50) //MaxCP
+	buffer.WriteD(50) //CurrentCp
 
 	buffer.WriteSingleByte(0) //mounted air
 	buffer.WriteSingleByte(0) //team Id
@@ -171,10 +170,10 @@ func NewUserInfo() []byte {
 
 	buffer.WriteD(0) //agationId
 
-	buffer.WriteD(0)     //FAME //TODO
-	buffer.WriteD(0)     //minimap or hellbound
-	buffer.WriteD(20000) //vitaliti Point
-	buffer.WriteD(0)     //abnormalEffects
+	buffer.WriteD(0)             //FAME //TODO
+	buffer.WriteD(0)             //minimap or hellbound
+	buffer.WriteD(user.Vitality) //vitaliti Point
+	buffer.WriteD(0)             //abnormalEffects
 
 	return buffer.Bytes()
 }

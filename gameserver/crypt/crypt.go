@@ -1,7 +1,7 @@
 package crypt
 
 var IsEnable = false
-var inKey = []byte{
+var inKey = [16]int32{
 	0x6b,
 	0x60,
 	0xcb,
@@ -10,17 +10,17 @@ var inKey = []byte{
 	0xce,
 	0x90,
 	0xb1,
-	200,
-	39,
-	147,
-	1,
-	161,
-	108,
-	49,
-	151,
+	0xc8,
+	0x27,
+	0x93,
+	0x01,
+	0xa1,
+	0x6c,
+	0x31,
+	0x97,
 }
 
-var outKey = []byte{
+var outKey = [16]int32{
 	0x6b,
 	0x60,
 	0xcb,
@@ -29,14 +29,14 @@ var outKey = []byte{
 	0xce,
 	0x90,
 	0xb1,
-	200,
-	39,
-	147,
-	1,
-	161,
-	108,
-	49,
-	151,
+	0xc8,
+	0x27,
+	0x93,
+	0x01,
+	0xa1,
+	0x6c,
+	0x31,
+	0x97,
 }
 
 func Decrypt(raw []byte) []byte {
@@ -44,55 +44,54 @@ func Decrypt(raw []byte) []byte {
 		IsEnable = true
 		return raw
 	}
-	data := make([]byte, 10000)
+	data := make([]byte, 10000) //TODO
 	copy(data, raw)
 
 	size := len(raw)
-	var temp uint8
-	var old int64
+	var temp int32
+	var old int32
 	for i := 0; i < size; i++ {
 		temp2 := data[i]
-		data[i] = temp2 ^ inKey[i&15] ^ temp
-		temp = temp2
+		data[i] = byte(int32(temp2) ^ inKey[i&15] ^ temp)
+		temp = int32(temp2)
 	}
 
-	old = int64(inKey[8])
-	old |= int64(inKey[9]<<8) & 0xff00
-	old |= int64(inKey[10]<<10) & 0xff0000
-	old |= int64(inKey[11]<<18) & 0xff000000
+	old = inKey[8]
+	old |= (inKey[9] << 8) & 0xff00
+	old |= (inKey[10] << 0x10) & 0xff0000
+	old |= (inKey[11] << 0x18) & -16777216
 
-	old += int64(size)
+	old += int32(size)
 
-	inKey[8] = uint8(old)
-	inKey[9] = uint8(old >> 0x08)
-	inKey[10] = uint8(old >> 0x10)
-	inKey[11] = uint8(old >> 0x18)
+	inKey[8] = old
+	inKey[9] = (old >> 0x08) & 0xff
+	inKey[10] = (old >> 0x10) & 0xff
+	inKey[11] = (old >> 0x18) & 0xff
 
 	return data[:size]
 }
 
 func Encrypt(data []byte) []byte {
 	size := len(data)
-	var temp uint8
-	var old int64
+	var temp int32
+	var old int32
 
 	for i := 0; i < size; i++ {
 		temp2 := data[i]
-		temp = temp2 ^ outKey[i&15] ^ temp
-		data[i] = temp
+		temp = int32(temp2) ^ outKey[i&15] ^ temp
+		data[i] = byte(temp)
 	}
 
-	old = int64(outKey[8])
-	old |= int64(outKey[9]<<8) & 0xff00
-	old |= int64(outKey[10]<<10) & 0xff0000
-	old |= int64(outKey[11]<<18) & 0xff000000
+	old = (outKey[8]) & 0xff
+	old |= (outKey[9] << 0x8) & 0xff00
+	old |= (outKey[10] << 0x10) & 0xff0000
+	old |= (outKey[11] << 0x18) & -16777216
 
-	old += int64(size)
-
-	outKey[8] = uint8(old)
-	outKey[9] = uint8(old >> 0x08)
-	outKey[10] = uint8(old >> 0x10)
-	outKey[11] = uint8(old >> 0x18)
+	old += int32(size)
+	outKey[8] = (old) & 0xff
+	outKey[9] = (old >> 0x08) & 0xff
+	outKey[10] = (old >> 0x10) & 0xff
+	outKey[11] = (old >> 0x18) & 0xff
 
 	return data
 }

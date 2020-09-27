@@ -2,39 +2,39 @@ package serverpackets
 
 import "l2gogameserver/packets"
 
-func NewCharSelected() []byte {
+func NewCharSelected(user *User) []byte {
 
 	buffer := new(packets.Buffer)
 	//cSdSddddddddddFFdQddddddddddddddddBd
 
 	buffer.WriteSingleByte(0x0b) // 1
 
-	buffer.WriteS("test") // 11
-	buffer.WriteD(1)      // objId 15
-	buffer.WriteS("q")    //title // 21 2 нуля
-	buffer.WriteD(1)      //sessionId //25
-	buffer.WriteD(0)      //clanId // 29
-	buffer.WriteD(0)      // ? //33
-	buffer.WriteD(1)      //sex// 37
-	buffer.WriteD(0)      //race 41
-	buffer.WriteD(0)      //classId 45
-	buffer.WriteD(1)      // ? 49
-	buffer.WriteD(-75122) //x 53
-	buffer.WriteD(258213) //y 57
-	buffer.WriteD(-3108)  //z 61
+	buffer.WriteS(user.CharName)     // 11
+	buffer.WriteD(user.CharId)       // objId 15
+	buffer.WriteS(user.Title.String) //title // 21 2 нуля
+	buffer.WriteD(0)                 //TODO sessionId //25
+	buffer.WriteD(user.ClanId)       //clanId // 29
+	buffer.WriteD(0)                 // ? //33
+	buffer.WriteD(user.Sex)          //sex// 37
+	buffer.WriteD(user.Race)         //race 41
+	buffer.WriteD(user.ClassId)      //classId 45
+	buffer.WriteD(0x1)               // ? 49
+	buffer.WriteD(user.X)            //x 53
+	buffer.WriteD(user.Y)            //y 57
+	buffer.WriteD(user.Z)            //z 61
 
 	//buffer.WriteD(83306)  //x 53
 	//buffer.WriteD(148115) //y 57
 	//buffer.WriteD(-3405)  //z 61
 
-	buffer.WriteF(163.0) //currentHP 69
-	buffer.WriteF(52.0)  //currentMP 77
+	buffer.WriteF(float64(user.CurHp)) //currentHP 69
+	buffer.WriteF(float64(user.CurMp)) //currentMP 77
 
-	buffer.WriteD(0) // SP 81
-	buffer.WriteQ(0) // EXP 89
-	buffer.WriteD(1) // level 93
-	buffer.WriteD(0) // karma 97
-	buffer.WriteD(0) // pk 101
+	buffer.WriteD(user.Sp)         // SP 81
+	buffer.WriteQ(int64(user.Exp)) // EXP 89
+	buffer.WriteD(user.Level)      // level 93
+	buffer.WriteD(user.Karma)      // karma 97
+	buffer.WriteD(user.PkKills)    // pk 101
 
 	buffer.WriteD(21) //int 105
 	buffer.WriteD(40) //str 109
@@ -43,10 +43,10 @@ func NewCharSelected() []byte {
 	buffer.WriteD(30) //dex 121
 	buffer.WriteD(11) //wit 125
 
-	buffer.WriteD(154) //inGameTime 129
-	buffer.WriteD(0)   // ?? 133
+	buffer.WriteD(user.OnlineTime) //inGameTime 129
+	buffer.WriteD(0)               // ?? 133
 
-	buffer.WriteD(0) // 137 classId
+	buffer.WriteD(user.ClassId) // 137 classId
 
 	buffer.WriteD(0) // 141
 	buffer.WriteD(0) // 145

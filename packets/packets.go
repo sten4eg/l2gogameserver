@@ -40,7 +40,12 @@ func (b *Buffer) WriteD(value int32) {
 		log.Fatal(err)
 	}
 }
-
+func (b *Buffer) WriteDU(value uint32) {
+	err := binary.Write(b, binary.LittleEndian, value)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 func (b *Buffer) WriteSlice(val []byte) {
 	err := binary.Write(b, binary.LittleEndian, val)
 	if err != nil {
@@ -106,8 +111,8 @@ func (r *Reader) ReadUInt64() uint64 {
 	return result
 }
 
-func (r *Reader) ReadUInt32() uint32 {
-	var result uint32
+func (r *Reader) ReadInt32() int32 {
+	var result int32
 
 	buffer := make([]byte, 4)
 	n, err := r.Read(buffer)

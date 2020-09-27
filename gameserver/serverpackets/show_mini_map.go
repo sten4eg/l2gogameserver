@@ -2,14 +2,12 @@ package serverpackets
 
 import "l2gogameserver/packets"
 
-func NewItemList() []byte {
+func NewShowMiniMap() []byte {
 
 	buffer := new(packets.Buffer)
 
-	buffer.WriteSingleByte(0x11)
-	buffer.WriteH(0)
-	buffer.WriteH(0)
-	buffer.WriteH(0)
-
+	buffer.WriteSingleByte(0xa3)
+	buffer.WriteD(1665)
+	buffer.WriteSingleByte(2)
 	return buffer.Bytes()
 }
