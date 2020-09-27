@@ -247,6 +247,13 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			if err != nil {
 				log.Println(err)
 			}
+		case 73:
+			say := clientpackets.NewSay(data)
+			pkg := serverpackets.NewCreatureSay(say)
+			err := client.Send(pkg, true)
+			if err != nil {
+				log.Println(err)
+			}
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}
