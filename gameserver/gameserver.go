@@ -9,6 +9,8 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 	"log"
 	"net"
+	"os"
+	"runtime/pprof"
 )
 
 type GameServer struct {
@@ -75,8 +77,19 @@ func (g *GameServer) Start() {
 		<-done
 	}
 }
-
+func kickClient() {
+	f, err := os.Create("f.pprof")
+	if err != nil {
+		log.Fatal("could not create memory profile: ", err)
+	}
+	defer f.Close()
+	//runtime.GC() // get up-to-date statistics
+	if err := pprof.WriteHeapProfile(f); err != nil {
+		log.Fatal("could not write memory profile: ", err)
+	}
+}
 func (g *GameServer) handleClientPackets(client *models.Client) {
+	defer kickClient()
 	var i = 0
 	for {
 		opcode, data, err := client.Receive()
@@ -241,12 +254,14 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 				log.Println(err)
 			}
 		case 15:
-			location := clientpackets.NewMoveBackwardToLocation(data)
-			pkg := serverpackets.NewMoveToLocation(location)
-			err := client.Send(pkg, true)
+			location := clientpackets.NewMoveBackwardToLocation(client, data)
+			serverpackets.NewMoveToLocation(location, client)
+			err := client.SimpleSend(client.Buffer.Bytes())
 			if err != nil {
 				log.Println(err)
 			}
+			client.Buffer.Reset()
+			log.Println("Send NewMoveToLocation")
 		case 73:
 			say := clientpackets.NewSay(data)
 			pkg := serverpackets.NewCreatureSay(say)

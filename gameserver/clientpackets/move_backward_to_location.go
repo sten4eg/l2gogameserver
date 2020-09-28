@@ -1,7 +1,7 @@
 package clientpackets
 
 import (
-	"l2gogameserver/packets"
+	"l2gogameserver/gameserver/models"
 )
 
 type Location struct {
@@ -13,15 +13,23 @@ type Location struct {
 	OriginZ int32
 }
 
-func NewMoveBackwardToLocation(data []byte) *Location {
-	var packet = packets.NewReader(data)
+func NewMoveBackwardToLocation(client *models.Client, data []byte) *Location {
+
 	var location Location
-	location.TargetX = packet.ReadInt32()
-	location.TargetY = packet.ReadInt32()
-	location.TargetZ = packet.ReadInt32()
-	location.OriginX = packet.ReadInt32()
-	location.OriginY = packet.ReadInt32()
-	location.OriginZ = packet.ReadInt32()
+
+	location.TargetX = client.Reader.RreadInt32()
+	location.TargetY = client.Reader.RreadInt32()
+	location.TargetZ = client.Reader.RreadInt32()
+	location.OriginX = client.Reader.RreadInt32()
+	location.OriginY = client.Reader.RreadInt32()
+	location.OriginZ = client.Reader.RreadInt32()
+
+	//location.TargetX = packet.ReadInt32()
+	//location.TargetY = packet.ReadInt32()
+	//location.TargetZ = packet.ReadInt32()
+	//location.OriginX = packet.ReadInt32()
+	//location.OriginY = packet.ReadInt32()
+	//location.OriginZ = packet.ReadInt32()
 
 	return &location
 }

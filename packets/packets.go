@@ -73,16 +73,36 @@ func (b *Buffer) WriteS(value string) {
 }
 
 type Reader struct {
-	*bytes.Reader
+	r *bytes.Reader
+	b *bytes.Buffer
+}
+
+type Rreader struct {
+	r *bytes.Reader
+	B *bytes.Buffer
+}
+
+func NewRReader() *Rreader {
+	return &Rreader{
+		r: &bytes.Reader{},
+		B: &bytes.Buffer{},
+	}
+}
+
+func (r *Rreader) AddB(data []byte) {
+	r.B.Write(data)
 }
 
 func NewReader(buffer []byte) *Reader {
-	return &Reader{bytes.NewReader(buffer)}
+	return &Reader{
+		r: bytes.NewReader(buffer),
+		b: &bytes.Buffer{},
+	}
 }
 
 func (r *Reader) ReadBytes(number int) []byte {
 	buffer := make([]byte, number)
-	n, _ := r.Read(buffer)
+	n, _ := r.r.Read(buffer)
 	if n < number {
 		return []byte{}
 	}
@@ -94,7 +114,7 @@ func (r *Reader) ReadUInt64() uint64 {
 	var result uint64
 
 	buffer := make([]byte, 8)
-	n, err := r.Read(buffer)
+	n, err := r.r.Read(buffer)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -115,7 +135,7 @@ func (r *Reader) ReadInt32() int32 {
 	var result int32
 
 	buffer := make([]byte, 4)
-	n, err := r.Read(buffer)
+	n, err := r.r.Read(buffer)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -133,11 +153,34 @@ func (r *Reader) ReadInt32() int32 {
 	return result
 }
 
+func (r *Rreader) RreadInt32() int32 {
+	var result int32
+
+	buffer := make([]byte, 4)
+
+	n, err := r.r.Read(buffer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if n < 4 {
+		return 0
+	}
+	r.B.Write(buffer)
+	//	buf := bytes.NewBuffer(buffer)
+
+	err = binary.Read(r.B, binary.LittleEndian, &result)
+	if err != nil {
+		log.Fatal(err)
+	}
+	r.B.Reset()
+	return result
+}
+
 func (r *Reader) ReadUInt16() uint16 {
 	var result uint16
 
 	buffer := make([]byte, 2)
-	n, err := r.Read(buffer)
+	n, err := r.r.Read(buffer)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -160,7 +203,7 @@ func (r *Reader) ReadUInt8() uint8 {
 	var result uint8
 
 	buffer := make([]byte, 1)
-	n, err := r.Read(buffer)
+	n, err := r.r.Read(buffer)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -179,11 +222,11 @@ func (r *Reader) ReadString() string {
 	var result []byte
 	var secondByte byte
 	for {
-		firstByte, err := r.ReadByte()
+		firstByte, err := r.r.ReadByte()
 		if err != nil {
 			log.Fatal(err)
 		}
-		secondByte, err = r.ReadByte()
+		secondByte, err = r.r.ReadByte()
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -39,15 +39,13 @@ var outKey = [16]int32{
 	0x97,
 }
 
-func Decrypt(raw []byte) []byte {
+func Decrypt(data []byte) []byte {
 	if !IsEnable {
 		IsEnable = true
-		return raw
+		return data
 	}
-	data := make([]byte, 10000) //TODO
-	copy(data, raw)
 
-	size := len(raw)
+	size := len(data)
 	var temp int32
 	var old int32
 	for i := 0; i < size; i++ {
@@ -68,7 +66,7 @@ func Decrypt(raw []byte) []byte {
 	inKey[10] = (old >> 0x10) & 0xff
 	inKey[11] = (old >> 0x18) & 0xff
 
-	return data[:size]
+	return data
 }
 
 func Encrypt(data []byte) []byte {
@@ -80,6 +78,31 @@ func Encrypt(data []byte) []byte {
 		temp2 := data[i]
 		temp = int32(temp2) ^ outKey[i&15] ^ temp
 		data[i] = byte(temp)
+	}
+
+	old = (outKey[8]) & 0xff
+	old |= (outKey[9] << 0x8) & 0xff00
+	old |= (outKey[10] << 0x10) & 0xff0000
+	old |= (outKey[11] << 0x18) & -16777216
+
+	old += int32(size)
+	outKey[8] = (old) & 0xff
+	outKey[9] = (old >> 0x08) & 0xff
+	outKey[10] = (old >> 0x10) & 0xff
+	outKey[11] = (old >> 0x18) & 0xff
+
+	return data
+}
+
+func SimpleEncrypt(data []byte) []byte {
+	size := len(data) - 2
+	var temp int32
+	var old int32
+
+	for i := 0; i < size; i++ {
+		temp2 := data[i+2]
+		temp = int32(temp2) ^ outKey[i&15] ^ temp
+		data[i+2] = byte(temp)
 	}
 
 	old = (outKey[8]) & 0xff

@@ -11,11 +11,14 @@ import (
 type Client struct {
 	Socket          net.Conn
 	ScrambleModulus []byte
+	Buffer          *packets.Buffer
+	Reader          *packets.Rreader
 }
 
 func NewClient() *Client {
-
-	return &Client{}
+	buff := new(packets.Buffer)
+	read := packets.NewRReader()
+	return &Client{Buffer: buff, Reader: read}
 }
 
 func (c *Client) Send(data []byte, need bool) error {
@@ -36,25 +39,24 @@ func (c *Client) Send(data []byte, need bool) error {
 	if err != nil {
 		return errors.New("The packet couldn't be sent.")
 	}
-
+	c.Reader.B.Reset()
 	return nil
 }
-func (c *Client) Ssend(data []byte) []byte {
 
-	cr := crypt.Encrypt(data)
-	length := int16(len(cr) + 2)
-	buffer := packets.NewBuffer()
-	buffer.WriteH(length)
-	buffer.Write(cr)
+func (c *Client) SimpleSend(data []byte) error {
+	length := int16(len(data))
+	data[0], data[1] = uint8(length&0xff), uint8(length>>8)
 
-	return buffer.Bytes()
-}
-func (c *Client) SSS(data []byte) {
+	data = crypt.SimpleEncrypt(data)
+
 	_, err := c.Socket.Write(data)
 	if err != nil {
-		log.Fatal(123321)
+		return errors.New("The packet couldn't be sent.")
 	}
+	c.Reader.B.Reset()
+	return nil
 }
+
 func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	// Read the first two bytes to define the packet size
 	header := make([]byte, 2)
@@ -83,6 +85,7 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	data = crypt.Decrypt(data)
 	// Extract the op code
 	opcode = data[0]
+	c.Reader.AddB(data[1:])
 	data = data[1:]
 	e = nil
 	return
