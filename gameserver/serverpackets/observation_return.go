@@ -1,14 +1,15 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+)
 
-func NewObservationReturn(user *User) []byte {
-	buffer := new(packets.Buffer)
+func NewObservationReturn(user *Character, client *models.Client) {
 
-	buffer.WriteSingleByte(0xEC)
-	buffer.WriteD(user.X) //x 53
-	buffer.WriteD(user.Y) //y 57
-	buffer.WriteD(user.Z) //z 61
+	client.Buffer.WriteH(0)
+	client.Buffer.WriteSingleByte(0xEC)
+	client.Buffer.WriteD(user.X) //x 53
+	client.Buffer.WriteD(user.Y) //y 57
+	client.Buffer.WriteD(user.Z) //z 61
 
-	return buffer.Bytes()
 }

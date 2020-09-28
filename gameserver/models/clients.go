@@ -12,13 +12,11 @@ type Client struct {
 	Socket          net.Conn
 	ScrambleModulus []byte
 	Buffer          *packets.Buffer
-	Reader          *packets.Rreader
 }
 
 func NewClient() *Client {
 	buff := new(packets.Buffer)
-	read := packets.NewRReader()
-	return &Client{Buffer: buff, Reader: read}
+	return &Client{Buffer: buff}
 }
 
 func (c *Client) Send(data []byte, need bool) error {
@@ -39,21 +37,22 @@ func (c *Client) Send(data []byte, need bool) error {
 	if err != nil {
 		return errors.New("The packet couldn't be sent.")
 	}
-	c.Reader.B.Reset()
 	return nil
 }
 
-func (c *Client) SimpleSend(data []byte) error {
+func (c *Client) SimpleSend(data []byte, needCrypt bool) error {
 	length := int16(len(data))
 	data[0], data[1] = uint8(length&0xff), uint8(length>>8)
 
-	data = crypt.SimpleEncrypt(data)
+	if needCrypt {
+		data = crypt.SimpleEncrypt(data)
+	}
 
 	_, err := c.Socket.Write(data)
+	c.Buffer.Reset()
 	if err != nil {
 		return errors.New("The packet couldn't be sent.")
 	}
-	c.Reader.B.Reset()
 	return nil
 }
 
@@ -85,7 +84,6 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	data = crypt.Decrypt(data)
 	// Extract the op code
 	opcode = data[0]
-	c.Reader.AddB(data[1:])
 	data = data[1:]
 	e = nil
 	return

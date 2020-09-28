@@ -1,7 +1,7 @@
 package serverpackets
 
 import (
-	"l2gogameserver/packets"
+	"l2gogameserver/gameserver/models"
 )
 
 var StaticBlowfish = []byte{
@@ -23,19 +23,18 @@ var StaticBlowfish = []byte{
 	151,
 }
 
-func NewKeyPacket() []byte {
-	buffer := new(packets.Buffer)
+func NewKeyPacket(client *models.Client) {
 
-	buffer.WriteSingleByte(0x2e)
-	buffer.WriteSingleByte(1) // protocolOk
+	client.Buffer.WriteH(0) //reserve
+	client.Buffer.WriteSingleByte(0x2e)
+	client.Buffer.WriteSingleByte(1) // protocolOk
 	sk := StaticBlowfish
 
 	for i := 0; i < 8; i++ {
-		buffer.WriteSingleByte(sk[i])
+		client.Buffer.WriteSingleByte(sk[i])
 	}
-	buffer.WriteD(0x01)
-	buffer.WriteD(0x01) // server id
-	buffer.WriteSingleByte(0x01)
-	buffer.WriteD(0x00)
-	return buffer.Bytes()
+	client.Buffer.WriteD(0x01)
+	client.Buffer.WriteD(0x01) // server id
+	client.Buffer.WriteSingleByte(0x01)
+	client.Buffer.WriteD(0x00)
 }

@@ -18,7 +18,7 @@ type GameServer struct {
 	clients         []*models.Client
 	Socket          net.Conn
 	database        *pgx.Conn
-	u               *serverpackets.User
+	u               *serverpackets.Character
 }
 
 func New() *GameServer {
@@ -103,8 +103,8 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 		switch opcode {
 		case 14:
 			_ = clientpackets.NewprotocolVersion(data)
-			pkg := serverpackets.NewKeyPacket()
-			err := client.Send(pkg, false)
+			serverpackets.NewKeyPacket(client)
+			err := client.SimpleSend(client.Buffer.Bytes(), false)
 			if err != nil {
 				log.Println(err)
 			}
@@ -113,22 +113,24 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 		case 00:
 			fmt.Println("A game server sent a request to register")
 		case 43:
-			var pkg []byte
+			//var pkg []byte
 			clientpackets.NewAuthLogin(data)
-			pkg, g.u = serverpackets.NewCharSelectionInfo(g.database)
-			err := client.Send(pkg, true)
+			g.u = serverpackets.NewCharSelectionInfo(g.database, client)
+			err := client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
 			}
 			log.Println("Send NewCharSelectionInfo")
 		case 19:
 
-			pkg := serverpackets.NewCharacterSuccess()
-			err := client.Send(pkg, true)
+			serverpackets.NewCharacterSuccess(client)
+			err := client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
 			}
 			log.Println("Send NewCharacterSuccess")
+		case 12:
+			clientpackets.NewCharacterCreate(data, client)
 		case 18:
 			clientpackets.NewCharSelected(data)
 			pkg := serverpackets.NewSSQInfo()
@@ -137,21 +139,19 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			if err != nil {
 				log.Println(err)
 			}
-
 			log.Println("sendSSQ")
-			pkg = serverpackets.NewCharSelected(g.u)
-			//			dd := client.Ssend(pkg)
-			//			q := append(d,dd...)
-			//			client.SSS(q)
-			err = client.Send(pkg, true)
+
+			serverpackets.NewCharSelected(g.u, client)
+
+			err = client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
 			}
 			log.Println("Send CharSelected")
 		case 208:
 			if i == 0 {
-				pkg := serverpackets.NewExSendManorList()
-				err := client.Send(pkg, true)
+				serverpackets.NewExSendManorList(client)
+				err := client.SimpleSend(client.Buffer.Bytes(), true)
 				if err != nil {
 					log.Println(err)
 				}
@@ -159,14 +159,14 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			}
 			i++
 		case 193:
-			pkg := serverpackets.NewObservationReturn(g.u)
-			err := client.Send(pkg, true)
+			serverpackets.NewObservationReturn(g.u, client)
+			err := client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
 			}
 		case 108:
-			pkg := serverpackets.NewShowMiniMap()
-			err := client.Send(pkg, true)
+			serverpackets.NewShowMiniMap(client)
+			err := client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
 			}
@@ -254,9 +254,9 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 				log.Println(err)
 			}
 		case 15:
-			location := clientpackets.NewMoveBackwardToLocation(client, data)
+			location := clientpackets.NewMoveBackwardToLocation(data)
 			serverpackets.NewMoveToLocation(location, client)
-			err := client.SimpleSend(client.Buffer.Bytes())
+			err := client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
 			}

@@ -1,30 +1,32 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+)
 
-func NewCharacterSuccess() []byte {
-	buffer := new(packets.Buffer)
-	buffer.WriteSingleByte(0x0D)
-	buffer.WriteD(1)
-	buffer.WriteD(1)
-	buffer.WriteD(1)
-	buffer.WriteD(0x46)
-	buffer.WriteD(1)
-	buffer.WriteD(0x0A)
-	buffer.WriteD(0x46)
-	buffer.WriteD(1)
-	buffer.WriteD(0x0A)
-	buffer.WriteD(0x46)
-	buffer.WriteD(1)
-	buffer.WriteD(0x0A)
-	buffer.WriteD(0x46)
-	buffer.WriteD(1)
-	buffer.WriteD(0x0A)
-	buffer.WriteD(0x46)
-	buffer.WriteD(1)
-	buffer.WriteD(0x0A)
-	buffer.WriteD(0x46)
-	buffer.WriteD(1)
-	buffer.WriteD(0x0A)
-	return buffer.Bytes()
+func NewCharacterSuccess(client *models.Client) {
+
+	client.Buffer.WriteH(0)
+	client.Buffer.WriteSingleByte(0x0D)
+	client.Buffer.WriteD(1)
+	client.Buffer.WriteD(1)
+	client.Buffer.WriteD(1)
+	client.Buffer.WriteD(0x46)
+	client.Buffer.WriteD(1)
+	client.Buffer.WriteD(0x0A)
+	client.Buffer.WriteD(0x46)
+	client.Buffer.WriteD(1)
+	client.Buffer.WriteD(0x0A)
+	client.Buffer.WriteD(0x46)
+	client.Buffer.WriteD(1)
+	client.Buffer.WriteD(0x0A)
+	client.Buffer.WriteD(0x46)
+	client.Buffer.WriteD(1)
+	client.Buffer.WriteD(0x0A)
+	client.Buffer.WriteD(0x46)
+	client.Buffer.WriteD(1)
+	client.Buffer.WriteD(0x0A)
+	client.Buffer.WriteD(0x46)
+	client.Buffer.WriteD(1)
+	client.Buffer.WriteD(0x0A)
 }

@@ -74,29 +74,13 @@ func (b *Buffer) WriteS(value string) {
 
 type Reader struct {
 	r *bytes.Reader
-	b *bytes.Buffer
-}
-
-type Rreader struct {
-	r *bytes.Reader
-	B *bytes.Buffer
-}
-
-func NewRReader() *Rreader {
-	return &Rreader{
-		r: &bytes.Reader{},
-		B: &bytes.Buffer{},
-	}
-}
-
-func (r *Rreader) AddB(data []byte) {
-	r.B.Write(data)
+	b *Buffer
 }
 
 func NewReader(buffer []byte) *Reader {
 	return &Reader{
 		r: bytes.NewReader(buffer),
-		b: &bytes.Buffer{},
+		b: NewBuffer(),
 	}
 }
 
@@ -143,36 +127,14 @@ func (r *Reader) ReadInt32() int32 {
 		return 0
 	}
 
-	buf := bytes.NewBuffer(buffer)
+	//buf := bytes.NewBuffer(buffer)
+	n, _ = r.b.Write(buffer)
 
-	err = binary.Read(buf, binary.LittleEndian, &result)
+	err = binary.Read(r.b, binary.LittleEndian, &result)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	return result
-}
-
-func (r *Rreader) RreadInt32() int32 {
-	var result int32
-
-	buffer := make([]byte, 4)
-
-	n, err := r.r.Read(buffer)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if n < 4 {
-		return 0
-	}
-	r.B.Write(buffer)
-	//	buf := bytes.NewBuffer(buffer)
-
-	err = binary.Read(r.B, binary.LittleEndian, &result)
-	if err != nil {
-		log.Fatal(err)
-	}
-	r.B.Reset()
+	r.b.Reset()
 	return result
 }
 

@@ -2,7 +2,8 @@ package serverpackets
 
 import "l2gogameserver/packets"
 
-func NewUserInfo(user *User) []byte {
+func NewUserInfo(user *Character) []byte {
+
 	buffer := new(packets.Buffer)
 
 	buffer.WriteSingleByte(0x32)
@@ -152,7 +153,8 @@ func NewUserInfo(user *User) []byte {
 	buffer.WriteD(0) // changes the text above CP on Status Window
 	buffer.WriteD(0) // plegue type
 
-	buffer.WriteD(15530402) //titleColor
+	title := (255 & 0xFF) + ((168 & 0xFF) << 8) + ((00 & 0xFF) << 16)
+	buffer.WriteD(int32(title)) //titleColor
 
 	buffer.WriteD(0) // CursedWEAPON
 

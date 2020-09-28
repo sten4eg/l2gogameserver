@@ -1,6 +1,8 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/packets"
+)
 
 func NewSkillCoolTime() []byte {
 

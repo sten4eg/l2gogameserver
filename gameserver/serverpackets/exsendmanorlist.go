@@ -1,12 +1,13 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+)
 
-func NewExSendManorList() []byte {
+func NewExSendManorList(client *models.Client) {
 
-	buffer := new(packets.Buffer)
-	buffer.WriteSingleByte(0xFE)
-	buffer.WriteH(0x22)
-	buffer.WriteD(0)
-	return buffer.Bytes()
+	client.Buffer.WriteH(0)
+	client.Buffer.WriteSingleByte(0xFE)
+	client.Buffer.WriteH(0x22)
+	client.Buffer.WriteD(0)
 }

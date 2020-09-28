@@ -3,11 +3,11 @@ package serverpackets
 import (
 	"database/sql"
 	"github.com/jackc/pgx"
-	"l2gogameserver/packets"
+	"l2gogameserver/gameserver/models"
 	"log"
 )
 
-type User struct {
+type Character struct {
 	Login      string
 	CharId     int32
 	Level      int32
@@ -38,119 +38,133 @@ type User struct {
 	CharName   string
 }
 
-func NewCharSelectionInfo(db *pgx.Conn) ([]byte, *User) {
-	var user User
-	row := db.QueryRow("SELECT * FROM characters WHERE Login = $1", "12")
-	err := row.Scan(
-		&user.Login,
-		&user.CharId,
-		&user.Level,
-		&user.MaxHp,
-		&user.CurHp,
-		&user.MaxMp,
-		&user.CurMp,
-		&user.Face,
-		&user.HairStyle,
-		&user.HairColor,
-		&user.Sex,
-		&user.X,
-		&user.Y,
-		&user.Z,
-		&user.Exp,
-		&user.Sp,
-		&user.Karma,
-		&user.PvpKills,
-		&user.PkKills,
-		&user.ClanId,
-		&user.Race,
-		&user.ClassId,
-		&user.BaseClass,
-		&user.Title,
-		&user.OnlineTime,
-		&user.Nobless,
-		&user.Vitality,
-		&user.CharName,
-	)
+func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) *Character {
+	var character Character
+	rows, err := db.Query("SELECT * FROM characters WHERE Login = $1", "12")
 	if err != nil {
-		log.Fatal(11)
+		log.Fatal(err)
+	}
+	Characters := make([]Character, 0)
+
+	for rows.Next() {
+		err = rows.Scan(
+			&character.Login,
+			&character.CharId,
+			&character.Level,
+			&character.MaxHp,
+			&character.CurHp,
+			&character.MaxMp,
+			&character.CurMp,
+			&character.Face,
+			&character.HairStyle,
+			&character.HairColor,
+			&character.Sex,
+			&character.X,
+			&character.Y,
+			&character.Z,
+			&character.Exp,
+			&character.Sp,
+			&character.Karma,
+			&character.PvpKills,
+			&character.PkKills,
+			&character.ClanId,
+			&character.Race,
+			&character.ClassId,
+			&character.BaseClass,
+			&character.Title,
+			&character.OnlineTime,
+			&character.Nobless,
+			&character.Vitality,
+			&character.CharName,
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		Characters = append(Characters, character)
 	}
 
-	buffer := new(packets.Buffer)
-	buffer.WriteSingleByte(0x09)
-	buffer.WriteD(1) //size char in account
+	//client.Buffer := new(packets.client.Buffer)
+	client.Buffer.WriteH(0)
+	client.Buffer.WriteSingleByte(0x09)
+	client.Buffer.WriteD(int32(len(Characters))) //size char in account
 
 	// Can prevent players from creating new characters (if 0); (if 1, the client will ask if chars may be created (0x13) Response: (0x0D) )
-	buffer.WriteD(7)          //char max number
-	buffer.WriteSingleByte(0) // delim
+	client.Buffer.WriteD(7)          //char max number
+	client.Buffer.WriteSingleByte(0) // delim
 
 	//todo блок который должен повторяться
 
-	buffer.WriteS(user.CharName) // Pers name
+	for _, char := range Characters {
 
-	buffer.WriteD(user.CharId) // objId
-	buffer.WriteS(user.Login)  // loginName
+		client.Buffer.WriteS(char.CharName) // Pers name
 
-	buffer.WriteD(0)           //TODO sessionId
-	buffer.WriteD(user.ClanId) //clanId
-	buffer.WriteD(0)           // Builder Level
+		client.Buffer.WriteD(char.CharId) // objId
+		client.Buffer.WriteS(char.Login)  // loginName
 
-	buffer.WriteD(user.Sex)       //sex
-	buffer.WriteD(user.Race)      // race
-	buffer.WriteD(user.BaseClass) // baseclass
+		client.Buffer.WriteD(0)           //TODO sessionId
+		client.Buffer.WriteD(char.ClanId) //clanId
+		client.Buffer.WriteD(0)           // Builder Level
 
-	buffer.WriteD(0) // active ??
+		client.Buffer.WriteD(char.Sex)       //sex
+		client.Buffer.WriteD(char.Race)      // race
+		client.Buffer.WriteD(char.BaseClass) // baseclass
 
-	buffer.WriteD(user.X) //x 53
-	buffer.WriteD(user.Y) //y 57
-	buffer.WriteD(user.Z) //z 61
+		client.Buffer.WriteD(0) // active ??
 
-	buffer.WriteF(float64(user.CurHp)) //currentHP
-	buffer.WriteF(float64(user.CurMp)) //currentMP
+		client.Buffer.WriteD(char.X) //x 53
+		client.Buffer.WriteD(char.Y) //y 57
+		client.Buffer.WriteD(char.Z) //z 61
 
-	buffer.WriteD(user.Sp)         // SP
-	buffer.WriteQ(int64(user.Exp)) // EXP
-	buffer.WriteF(0)               // percent ?
-	buffer.WriteD(user.Level)      // level
+		client.Buffer.WriteF(float64(char.CurHp)) //currentHP
+		client.Buffer.WriteF(float64(char.CurMp)) //currentMP
 
-	buffer.WriteD(user.Karma)    // karma
-	buffer.WriteD(user.PkKills)  // pk
-	buffer.WriteD(user.PvpKills) //pvp
+		client.Buffer.WriteD(char.Sp)         // SP
+		client.Buffer.WriteQ(int64(char.Exp)) // EXP
+		client.Buffer.WriteF(0)               // percent ?
+		client.Buffer.WriteD(char.Level)      // level
 
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	//
-	//
-	m := make([]byte, 104)
-	buffer.WriteSlice(m)
+		client.Buffer.WriteD(char.Karma)    // karma
+		client.Buffer.WriteD(char.PkKills)  // pk
+		client.Buffer.WriteD(char.PvpKills) //pvp
 
-	buffer.WriteD(user.HairStyle) //hairStyle
-	buffer.WriteD(user.HairColor) //hairColor
-	buffer.WriteD(user.Face)      // face
+		client.Buffer.WriteD(0)
+		client.Buffer.WriteD(0)
+		client.Buffer.WriteD(0)
+		client.Buffer.WriteD(0)
+		client.Buffer.WriteD(0)
+		client.Buffer.WriteD(0)
+		client.Buffer.WriteD(0)
+		//
+		//
+		m := make([]byte, 104)
+		client.Buffer.WriteSlice(m)
 
-	buffer.WriteF(float64(user.MaxHp)) //max hp
-	buffer.WriteF(float64(user.MaxMp)) // max mp
+		client.Buffer.WriteD(char.HairStyle) //hairStyle
+		client.Buffer.WriteD(char.HairColor) //hairColor
+		client.Buffer.WriteD(char.Face)      // face
 
-	buffer.WriteD(0)            // days left before
-	buffer.WriteD(user.ClassId) //classId
+		client.Buffer.WriteF(float64(char.MaxHp)) //max hp
+		client.Buffer.WriteF(float64(char.MaxMp)) // max mp
 
-	buffer.WriteD(1)          //auto-selected
-	buffer.WriteSingleByte(0) // enchanted
-	buffer.WriteD(0)          //augumented
+		client.Buffer.WriteD(0)            // days left before
+		client.Buffer.WriteD(char.ClassId) //classId
 
-	buffer.WriteD(0) // Currently on retail when you are on character select you don't see your transformation.
+		client.Buffer.WriteD(1)          //auto-selected
+		client.Buffer.WriteSingleByte(0) // enchanted
+		client.Buffer.WriteD(0)          //augumented
 
-	// Implementing it will be waster of resources.
-	buffer.WriteD(0)             // Pet ID
-	buffer.WriteD(0)             // Pet Level
-	buffer.WriteD(0)             // Pet Max Food
-	buffer.WriteD(0)             // Pet Current Food
-	buffer.WriteF(0)             // Pet Max HP
-	buffer.WriteF(0)             // Pet Max MP
-	buffer.WriteD(user.Vitality) // H5 Vitality
-	return buffer.Bytes(), &user
+		client.Buffer.WriteD(0) // Currently on retail when you are on character select you don't see your transformation.
+
+		// Implementing it will be waster of resources.
+		client.Buffer.WriteD(0)             // Pet ID
+		client.Buffer.WriteD(0)             // Pet Level
+		client.Buffer.WriteD(0)             // Pet Max Food
+		client.Buffer.WriteD(0)             // Pet Current Food
+		client.Buffer.WriteF(0)             // Pet Max HP
+		client.Buffer.WriteF(0)             // Pet Max MP
+		client.Buffer.WriteD(char.Vitality) // H5 Vitality
+
+	}
+
+	return &character
 }
