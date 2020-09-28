@@ -1,7 +1,6 @@
 package clientpackets
 
 import (
-	"bytes"
 	"l2gogameserver/packets"
 )
 
@@ -13,8 +12,9 @@ type Say struct {
 func NewSay(data []byte) *Say {
 	var packet = packets.NewReader(data)
 	var say Say
-	trimText := bytes.Trim([]byte(packet.ReadString()), string(rune(0)))
-	say.Text = string(trimText)
+	text := packet.ReadString()
+
+	say.Text = text
 	say.Type = packet.ReadInt32()
 	return &say
 }

@@ -25,10 +25,11 @@ type CharCreate struct {
 
 func NewCharacterCreate(data []byte, db *pgx.Conn) (int32, error) {
 	var packet = packets.NewReader(data)
-
+	var err error
 	var charCreate CharCreate
 
 	charCreate.Name = packet.ReadString()
+
 	charCreate.Race = packet.ReadInt32()
 	charCreate.Sex = packet.ReadInt32()
 	charCreate.ClassId = packet.ReadInt32()
@@ -54,7 +55,7 @@ var (
 	REASON_TOO_MANY_CHARACTERS       = 0x01
 	ReasonNameAlreadyExists    int32 = 0x02
 	Reason16EngChars           int32 = 0x03
-	REASON_INCORRECT_NAME            = 0x04
+	ReasonIncorrectName        int32 = 0x04
 	REASON_CREATE_NOT_ALLOWED        = 0x05
 	REASON_CHOOSE_ANOTHER_SVR        = 0x06
 )
@@ -77,6 +78,8 @@ func (cc *CharCreate) validate(db *pgx.Conn) (int32, error) {
 		return ReasonCreationFailed, errors.New("wrong hairColor and hairStyle")
 	}
 
+	x := []byte(cc.Name)
+	_ = x
 	row := db.QueryRow("(SELECT exists(SELECT char_name from characters WHERE char_name = $1))", cc.Name)
 	var exist bool
 	err := row.Scan(&exist)
