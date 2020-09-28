@@ -198,6 +198,7 @@ func (r *Reader) ReadString() string {
 			result = append(result, firstByte, secondByte)
 		}
 	}
+	res := bytes.Trim(result, string(rune(0)))
 
-	return string(result)
+	return string(res)
 }

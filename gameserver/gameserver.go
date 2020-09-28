@@ -88,6 +88,7 @@ func kickClient() {
 		log.Fatal("could not write memory profile: ", err)
 	}
 }
+
 func (g *GameServer) handleClientPackets(client *models.Client) {
 	defer kickClient()
 	var i = 0
@@ -130,11 +131,15 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			}
 			log.Println("Send NewCharacterSuccess")
 		case 12:
-			clientpackets.NewCharacterCreate(data, client)
+			reason, err := clientpackets.NewCharacterCreate(data, g.database)
+			if err != nil {
+				serverpackets.NewCharCreateFail(client, reason)
+			} else {
+				log.Println("sozdal")
+			}
 		case 18:
 			clientpackets.NewCharSelected(data)
 			pkg := serverpackets.NewSSQInfo()
-			//		d := client.Ssend(pkg)
 			err := client.Send(pkg, true)
 			if err != nil {
 				log.Println(err)
