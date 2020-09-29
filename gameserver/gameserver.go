@@ -18,7 +18,7 @@ type GameServer struct {
 	clients         []*models.Client
 	Socket          net.Conn
 	database        *pgx.Conn
-	u               *serverpackets.Character
+	account         *serverpackets.Account
 }
 
 func New() *GameServer {
@@ -116,7 +116,7 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 		case 43:
 			//var pkg []byte
 			clientpackets.NewAuthLogin(data)
-			g.u = serverpackets.NewCharSelectionInfo(g.database, client)
+			g.account = serverpackets.NewCharSelectionInfo(g.database, client)
 			err := client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
@@ -138,7 +138,7 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 				log.Println("sozdal")
 			}
 		case 18:
-			clientpackets.NewCharSelected(data)
+			g.account.SelectedObjId = clientpackets.NewCharSelected(data)
 			pkg := serverpackets.NewSSQInfo()
 			err := client.Send(pkg, true)
 			if err != nil {
@@ -146,7 +146,7 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			}
 			log.Println("sendSSQ")
 
-			serverpackets.NewCharSelected(g.u, client)
+			serverpackets.NewCharSelected(g.account.Char[g.account.SelectedObjId], client)
 
 			err = client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
@@ -164,7 +164,7 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			}
 			i++
 		case 193:
-			serverpackets.NewObservationReturn(g.u, client)
+			serverpackets.NewObservationReturn(g.account.Char[g.account.SelectedObjId], client)
 			err := client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
@@ -176,7 +176,7 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 				log.Println(err)
 			}
 		case 17:
-			pkg := serverpackets.NewUserInfo(g.u)
+			pkg := serverpackets.NewUserInfo(g.account.Char[g.account.SelectedObjId])
 			err := client.Send(pkg, true)
 			if err != nil {
 				log.Println(err)
@@ -260,7 +260,7 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			}
 		case 15:
 			location := clientpackets.NewMoveBackwardToLocation(data)
-			serverpackets.NewMoveToLocation(location, client)
+			serverpackets.NewMoveToLocation(location, client, g.account.Char[g.account.SelectedObjId])
 			err := client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)

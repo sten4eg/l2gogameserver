@@ -38,17 +38,23 @@ type Character struct {
 	Vitality   int32
 	CharName   pgtype.Bytea
 }
+type Account struct {
+	Char          []*Character
+	SelectedObjId int32
+}
 
-func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) *Character {
-	var character Character
+func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) *Account {
+
 	ll := []byte{49, 0, 50, 0}
 	rows, err := db.Query("SELECT * FROM characters WHERE Login = $1", ll)
 	if err != nil {
 		log.Fatal(err)
 	}
-	Characters := make([]Character, 0)
+
+	var account Account
 
 	for rows.Next() {
+		var character Character
 		err = rows.Scan(
 			&character.Login,
 			&character.CharId,
@@ -82,13 +88,13 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) *Character {
 		if err != nil {
 			log.Fatal(err)
 		}
-		Characters = append(Characters, character)
+		account.Char = append(account.Char, &character)
 	}
 
 	//client.Buffer := new(packets.client.Buffer)
 	client.Buffer.WriteH(0)
 	client.Buffer.WriteSingleByte(0x09)
-	client.Buffer.WriteD(int32(len(Characters))) //size char in account
+	client.Buffer.WriteD(int32(len(account.Char))) //size char in account
 
 	// Can prevent players from creating new characters (if 0); (if 1, the client will ask if chars may be created (0x13) Response: (0x0D) )
 	client.Buffer.WriteD(7)          //char max number
@@ -96,7 +102,7 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) *Character {
 
 	//todo блок который должен повторяться
 
-	for _, char := range Characters {
+	for _, char := range account.Char {
 
 		client.Buffer.WriteS(string(char.CharName.Bytes)) // Pers name
 
@@ -168,5 +174,5 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) *Character {
 
 	}
 
-	return &character
+	return &account
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgtype"
+	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 	"log"
 )
@@ -102,9 +103,7 @@ func (cc *CharCreate) validate(db *pgx.Conn) (int32, error) {
 		return ReasonNameAlreadyExists, errors.New("exist name")
 	}
 	ll := []byte{49, 0, 50, 0}
-	cc.X = -84000
-	cc.Y = 242714
-	cc.Z = -3729
+	spawn := models.GetCreationSpawn(cc.ClassId)
 	_, err = db.Exec("INSERT INTO characters (char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,0)",
 		cc.Name.Bytes,
 		cc.Race,
@@ -113,9 +112,9 @@ func (cc *CharCreate) validate(db *pgx.Conn) (int32, error) {
 		cc.HairStyle,
 		cc.HairColor,
 		cc.Face,
-		cc.X,
-		cc.Y,
-		cc.Z,
+		spawn.X,
+		spawn.Y,
+		spawn.Z,
 		ll)
 	if err != nil {
 		log.Fatal(err)

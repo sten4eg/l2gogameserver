@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 	"os"
 )
 
@@ -17,7 +18,7 @@ type Location struct {
 	Spawn   []Spawn
 }
 
-func Read() *[]Location {
+func GetCreationSpawn(classId int32) *Spawn {
 
 	var config []Location
 	file, err := os.Open("./data/stats/char/pcCreationPoint.json")
@@ -30,5 +31,12 @@ func Read() *[]Location {
 	if err != nil {
 		log.Fatal("Failed to decode config file")
 	}
-	return &config
+
+	var spawn Spawn
+	for _, v := range config {
+		if v.ClassId == classId {
+			spawn = v.Spawn[rand.Intn(len(v.Spawn))]
+		}
+	}
+	return &spawn
 }
