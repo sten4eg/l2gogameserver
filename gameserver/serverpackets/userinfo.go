@@ -18,7 +18,7 @@ func NewUserInfo(user *Character) []byte {
 
 	buffer.WriteD(user.CharId) //objId
 
-	buffer.WriteS(user.CharName) //name //TODO
+	buffer.WriteS(string(user.CharName.Bytes)) //name //TODO
 
 	buffer.WriteD(user.Race)      //race ordinal //TODO
 	buffer.WriteD(user.Sex)       //sex

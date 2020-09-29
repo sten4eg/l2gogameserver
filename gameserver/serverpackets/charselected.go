@@ -10,19 +10,19 @@ func NewCharSelected(user *Character, client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0x0b) // 1
 
-	client.Buffer.WriteS(user.CharName)     // 11
-	client.Buffer.WriteD(user.CharId)       // objId 15
-	client.Buffer.WriteS(user.Title.String) //title // 21 2 нуля
-	client.Buffer.WriteD(0)                 //TODO sessionId //25
-	client.Buffer.WriteD(user.ClanId)       //clanId // 29
-	client.Buffer.WriteD(0)                 // ? //33
-	client.Buffer.WriteD(user.Sex)          //sex// 37
-	client.Buffer.WriteD(user.Race)         //race 41
-	client.Buffer.WriteD(user.ClassId)      //classId 45
-	client.Buffer.WriteD(0x1)               // ? 49
-	client.Buffer.WriteD(user.X)            //x 53
-	client.Buffer.WriteD(user.Y)            //y 57
-	client.Buffer.WriteD(user.Z)            //z 61
+	client.Buffer.WriteS(string(user.CharName.Bytes)) // 11
+	client.Buffer.WriteD(user.CharId)                 // objId 15
+	client.Buffer.WriteS(user.Title.String)           //title // 21 2 нуля
+	client.Buffer.WriteD(0)                           //TODO sessionId //25
+	client.Buffer.WriteD(user.ClanId)                 //clanId // 29
+	client.Buffer.WriteD(0)                           // ? //33
+	client.Buffer.WriteD(user.Sex)                    //sex// 37
+	client.Buffer.WriteD(user.Race)                   //race 41
+	client.Buffer.WriteD(user.ClassId)                //classId 45
+	client.Buffer.WriteD(0x1)                         // ? 49
+	client.Buffer.WriteD(user.X)                      //x 53
+	client.Buffer.WriteD(user.Y)                      //y 57
+	client.Buffer.WriteD(user.Z)                      //z 61
 
 	//buffer.WriteD(83306)  //x 53
 	//buffer.WriteD(148115) //y 57

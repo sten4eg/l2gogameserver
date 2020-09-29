@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"log"
-	"unicode/utf8"
 )
 
 type Buffer struct {
@@ -62,23 +61,9 @@ func (b *Buffer) WriteSingleByte(value byte) {
 }
 
 func (b *Buffer) WriteS(value string) {
-	x := len(value)
 
-	bt := []byte(value)
-	var val string
-	if bt[1] != 0x00 {
-		vaq := make([]byte, (len(value)*2)+2)
-		for i := 0; i < x; i++ {
-			vaq[i*2] = value[i]
-		}
-		val = string(vaq)
-	} else {
-		val = value
-	}
-
-	res := []byte(val)
-	_ = res
-	err := binary.Write(b, binary.LittleEndian, res)
+	val := append([]byte(value), 0, 0)
+	err := binary.Write(b, binary.LittleEndian, val)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -211,8 +196,6 @@ func (r *Reader) ReadString() string {
 			result = append(result, firstByte, secondByte)
 		}
 	}
-	rr, ii := utf8.DecodeRune(result)
 
-	log.Println(rr, ii)
 	return string(result)
 }

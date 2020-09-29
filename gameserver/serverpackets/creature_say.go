@@ -9,10 +9,11 @@ func NewCreatureSay(say *clientpackets.Say) []byte {
 
 	buffer := new(packets.Buffer)
 	buffer.WriteSingleByte(0x4a)
-	buffer.WriteD(1)
+	buffer.WriteD(5)
 	buffer.WriteD(say.Type)
 
-	buffer.WriteS("test")
+	name := []byte{116, 0, 101, 0, 115, 0, 116, 0}
+	buffer.WriteS(string(name))
 
 	buffer.WriteD(-1) // High Five NPCString ID
 	buffer.WriteS(say.Text)

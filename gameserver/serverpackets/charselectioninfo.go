@@ -3,12 +3,13 @@ package serverpackets
 import (
 	"database/sql"
 	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/pgtype"
 	"l2gogameserver/gameserver/models"
 	"log"
 )
 
 type Character struct {
-	Login      string
+	Login      pgtype.Bytea
 	CharId     int32
 	Level      int32
 	MaxHp      int32
@@ -35,12 +36,13 @@ type Character struct {
 	OnlineTime int32
 	Nobless    int32
 	Vitality   int32
-	CharName   string
+	CharName   pgtype.Bytea
 }
 
 func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) *Character {
 	var character Character
-	rows, err := db.Query("SELECT * FROM characters WHERE Login = $1", "12")
+	ll := []byte{49, 0, 50, 0}
+	rows, err := db.Query("SELECT * FROM characters WHERE Login = $1", ll)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,10 +98,10 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) *Character {
 
 	for _, char := range Characters {
 
-		client.Buffer.WriteS(char.CharName) // Pers name
+		client.Buffer.WriteS(string(char.CharName.Bytes)) // Pers name
 
-		client.Buffer.WriteD(char.CharId) // objId
-		client.Buffer.WriteS(char.Login)  // loginName
+		client.Buffer.WriteD(char.CharId)              // objId
+		client.Buffer.WriteS(string(char.Login.Bytes)) // loginName
 
 		client.Buffer.WriteD(0)           //TODO sessionId
 		client.Buffer.WriteD(char.ClanId) //clanId

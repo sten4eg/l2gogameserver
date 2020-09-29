@@ -3,14 +3,15 @@ package clientpackets
 import (
 	"errors"
 	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/pgtype"
 	"l2gogameserver/packets"
 	"log"
 )
 
 type CharCreate struct {
-	Name      string
+	Name      pgtype.Bytea
 	Race      int32
-	Sex       int32
+	Sex       uint8
 	ClassId   int32
 	Int       int32
 	Str       int32
@@ -18,9 +19,16 @@ type CharCreate struct {
 	Men       int32
 	Dex       int32
 	Wit       int32
-	HairStyle int32
-	HairColor int32
-	Face      int32
+	HairStyle uint8
+	HairColor uint8
+	Face      uint8
+	X         int32
+	Y         int32
+	Z         int32
+	MaxHp     int32
+	CutHp     int32
+	MaxMp     int32
+	CurMp     int32
 }
 
 func NewCharacterCreate(data []byte, db *pgx.Conn) (int32, error) {
@@ -28,10 +36,10 @@ func NewCharacterCreate(data []byte, db *pgx.Conn) (int32, error) {
 	var err error
 	var charCreate CharCreate
 
-	charCreate.Name = packet.ReadString()
+	charCreate.Name.Bytes = []byte(packet.ReadString())
 
 	charCreate.Race = packet.ReadInt32()
-	charCreate.Sex = packet.ReadInt32()
+	charCreate.Sex = byte(packet.ReadInt32())
 	charCreate.ClassId = packet.ReadInt32()
 	charCreate.Int = packet.ReadInt32()
 	charCreate.Str = packet.ReadInt32()
@@ -39,9 +47,9 @@ func NewCharacterCreate(data []byte, db *pgx.Conn) (int32, error) {
 	charCreate.Men = packet.ReadInt32()
 	charCreate.Dex = packet.ReadInt32()
 	charCreate.Wit = packet.ReadInt32()
-	charCreate.HairStyle = packet.ReadInt32()
-	charCreate.HairColor = packet.ReadInt32()
-	charCreate.Face = packet.ReadInt32()
+	charCreate.HairStyle = byte(packet.ReadInt32())
+	charCreate.HairColor = byte(packet.ReadInt32())
+	charCreate.Face = byte(packet.ReadInt32())
 	reason, err := charCreate.validate(db)
 	if err != nil {
 		return reason, errors.New("fail")
@@ -60,8 +68,14 @@ var (
 	REASON_CHOOSE_ANOTHER_SVR        = 0x06
 )
 
+//type Location struct {
+//	X int32
+//	Y int32
+//	Z int32
+//}
+
 func (cc *CharCreate) validate(db *pgx.Conn) (int32, error) {
-	lenName := len(cc.Name)
+	lenName := len(cc.Name.Bytes)
 	if (lenName < 1) || (lenName > 16) {
 		return Reason16EngChars, errors.New("long name")
 	}
@@ -78,9 +92,7 @@ func (cc *CharCreate) validate(db *pgx.Conn) (int32, error) {
 		return ReasonCreationFailed, errors.New("wrong hairColor and hairStyle")
 	}
 
-	x := []byte(cc.Name)
-	_ = x
-	row := db.QueryRow("(SELECT exists(SELECT char_name from characters WHERE char_name = $1))", cc.Name)
+	row := db.QueryRow("(SELECT exists(SELECT char_name from characters WHERE char_name = $1))", cc.Name.Bytes)
 	var exist bool
 	err := row.Scan(&exist)
 	if err != nil {
@@ -88,6 +100,25 @@ func (cc *CharCreate) validate(db *pgx.Conn) (int32, error) {
 	}
 	if exist {
 		return ReasonNameAlreadyExists, errors.New("exist name")
+	}
+	ll := []byte{49, 0, 50, 0}
+	cc.X = -84000
+	cc.Y = 242714
+	cc.Z = -3729
+	_, err = db.Exec("INSERT INTO characters (char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,0)",
+		cc.Name.Bytes,
+		cc.Race,
+		cc.Sex,
+		cc.ClassId,
+		cc.HairStyle,
+		cc.HairColor,
+		cc.Face,
+		cc.X,
+		cc.Y,
+		cc.Z,
+		ll)
+	if err != nil {
+		log.Fatal(err)
 	}
 	return 0, nil
 }
