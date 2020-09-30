@@ -32,7 +32,7 @@ type CharCreate struct {
 	CurMp     int32
 }
 
-func NewCharacterCreate(data []byte, db *pgx.Conn) (int32, error) {
+func NewCharacterCreate(data []byte, db *pgx.Conn, login string) (int32, error) {
 	var packet = packets.NewReader(data)
 	var err error
 	var charCreate CharCreate
@@ -51,7 +51,7 @@ func NewCharacterCreate(data []byte, db *pgx.Conn) (int32, error) {
 	charCreate.HairStyle = byte(packet.ReadInt32())
 	charCreate.HairColor = byte(packet.ReadInt32())
 	charCreate.Face = byte(packet.ReadInt32())
-	reason, err := charCreate.validate(db)
+	reason, err := charCreate.validate(db, login)
 	if err != nil {
 		return reason, errors.New("fail")
 	}
@@ -75,7 +75,7 @@ var (
 //	Z int32
 //}
 
-func (cc *CharCreate) validate(db *pgx.Conn) (int32, error) {
+func (cc *CharCreate) validate(db *pgx.Conn, login string) (int32, error) {
 	lenName := len(cc.Name.Bytes)
 	if (lenName < 1) || (lenName > 16) {
 		return Reason16EngChars, errors.New("long name")
@@ -102,7 +102,7 @@ func (cc *CharCreate) validate(db *pgx.Conn) (int32, error) {
 	if exist {
 		return ReasonNameAlreadyExists, errors.New("exist name")
 	}
-	ll := []byte{49, 0, 50, 0}
+
 	spawn := models.GetCreationSpawn(cc.ClassId)
 	_, err = db.Exec("INSERT INTO characters (char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,0)",
 		cc.Name.Bytes,
@@ -115,7 +115,7 @@ func (cc *CharCreate) validate(db *pgx.Conn) (int32, error) {
 		spawn.X,
 		spawn.Y,
 		spawn.Z,
-		ll)
+		[]byte(login))
 	if err != nil {
 		log.Fatal(err)
 	}

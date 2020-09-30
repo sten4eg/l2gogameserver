@@ -19,13 +19,14 @@ type GameServer struct {
 	Socket          net.Conn
 	database        *pgx.Conn
 	account         *serverpackets.Account
+	mp              map[int32]serverpackets.Character
 }
 
 func New() *GameServer {
 	return &GameServer{}
 }
-
 func (g *GameServer) Init() {
+	gm := make(map[int32]serverpackets.Character)
 	var err error
 	globalConfig := config.Read()
 	dbConfig := pgx.ConnConfig{
@@ -37,7 +38,7 @@ func (g *GameServer) Init() {
 		TLSConfig:         nil,
 		FallbackTLSConfig: nil,
 	}
-
+	g.mp = gm
 	g.database, err = pgx.Connect(dbConfig)
 	if err != nil {
 
@@ -51,30 +52,22 @@ func (g *GameServer) Init() {
 	} else {
 		fmt.Println("Login server is listening on port 7777")
 	}
+
 }
 
 func (g *GameServer) Start() {
 	defer g.clientsListener.Close()
-
-	done := make(chan bool)
-
-	go func() {
-		for {
-			var err error
-			client := models.NewClient()
-			client.Socket, err = g.clientsListener.Accept()
-			g.clients = append(g.clients, client)
-			if err != nil {
-				fmt.Println("Couldn't accept the incoming connection.")
-				continue
-			} else {
-				go g.handleClientPackets(client)
-			}
+	for {
+		var err error
+		client := models.NewClient()
+		client.Socket, err = g.clientsListener.Accept()
+		g.clients = append(g.clients, client)
+		if err != nil {
+			fmt.Println("Couldn't accept the incoming connection.")
+			continue
+		} else {
+			go g.handleClientPackets(client)
 		}
-		done <- true
-	}()
-	for i := 0; i < 1; i++ {
-		<-done
 	}
 }
 func kickClient() {
@@ -92,6 +85,7 @@ func kickClient() {
 func (g *GameServer) handleClientPackets(client *models.Client) {
 	defer kickClient()
 	var i = 0
+
 	for {
 		opcode, data, err := client.Receive()
 
@@ -115,15 +109,14 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			fmt.Println("A game server sent a request to register")
 		case 43:
 			//var pkg []byte
-			clientpackets.NewAuthLogin(data)
-			g.account = serverpackets.NewCharSelectionInfo(g.database, client)
+			login := clientpackets.NewAuthLogin(data)
+			g.account = serverpackets.NewCharSelectionInfo(g.database, client, login) //TODO пересмотреть
 			err := client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
 			}
 			log.Println("Send NewCharSelectionInfo")
 		case 19:
-
 			serverpackets.NewCharacterSuccess(client)
 			err := client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
@@ -131,14 +124,14 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			}
 			log.Println("Send NewCharacterSuccess")
 		case 12:
-			reason, err := clientpackets.NewCharacterCreate(data, g.database)
+			reason, err := clientpackets.NewCharacterCreate(data, g.database, client.CurrentChar.Login)
 			if err != nil {
 				serverpackets.NewCharCreateFail(client, reason)
 			} else {
 				log.Println("sozdal")
 			}
 		case 18:
-			g.account.SelectedObjId = clientpackets.NewCharSelected(data)
+			g.account.CharSlot = clientpackets.NewCharSelected(data)
 			pkg := serverpackets.NewSSQInfo()
 			err := client.Send(pkg, true)
 			if err != nil {
@@ -146,8 +139,8 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			}
 			log.Println("sendSSQ")
 
-			serverpackets.NewCharSelected(g.account.Char[g.account.SelectedObjId], client)
-
+			client.CurrentChar.CharId = serverpackets.NewCharSelected(g.account.Char[g.account.CharSlot], client)
+			g.mp[g.account.CharSlot] = *g.account.Char[g.account.CharSlot]
 			err = client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
@@ -164,7 +157,7 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			}
 			i++
 		case 193:
-			serverpackets.NewObservationReturn(g.account.Char[g.account.SelectedObjId], client)
+			serverpackets.NewObservationReturn(g.account.Char[g.account.CharSlot], client)
 			err := client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
@@ -176,7 +169,7 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 				log.Println(err)
 			}
 		case 17:
-			pkg := serverpackets.NewUserInfo(g.account.Char[g.account.SelectedObjId])
+			pkg := serverpackets.NewUserInfo(g.account.Char[g.account.CharSlot])
 			err := client.Send(pkg, true)
 			if err != nil {
 				log.Println(err)
@@ -260,12 +253,16 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			}
 		case 15:
 			location := clientpackets.NewMoveBackwardToLocation(data)
-			serverpackets.NewMoveToLocation(location, client, g.account.Char[g.account.SelectedObjId])
+			serverpackets.NewMoveToLocation(location, client, client.CurrentChar.CharId)
 			err := client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
 			}
+			client.CurrentChar.Spawn.Z = location.TargetZ
+			client.CurrentChar.Spawn.X = location.TargetX
+			client.CurrentChar.Spawn.Y = location.TargetY
 			client.Buffer.Reset()
+			Broad(g)
 			log.Println("Send NewMoveToLocation")
 		case 73:
 			say := clientpackets.NewSay(data)
@@ -277,6 +274,17 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}
-
 	}
+}
+
+func Broad(g *GameServer) {
+
+	for _, p := range g.clients {
+		CI := serverpackets.NewCharInfo(p.CurrentChar)
+		err := p.Send(CI, true)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 }

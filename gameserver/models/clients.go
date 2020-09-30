@@ -12,16 +12,65 @@ type Client struct {
 	Socket          net.Conn
 	ScrambleModulus []byte
 	Buffer          *packets.Buffer
+	NeedCrypt       bool
+	OutKey          [16]int32
+	InKey           [16]int32
+	CurrentChar     *CurrentChar
+}
+type CurrentChar struct {
+	Login  string
+	CharId int32
+	Spawn  Spawn
 }
 
 func NewClient() *Client {
 	buff := new(packets.Buffer)
-	return &Client{Buffer: buff}
+	return &Client{
+		Buffer:    buff,
+		NeedCrypt: false,
+		OutKey: [16]int32{
+			0x6b,
+			0x60,
+			0xcb,
+			0x5b,
+			0x82,
+			0xce,
+			0x90,
+			0xb1,
+			0xc8,
+			0x27,
+			0x93,
+			0x01,
+			0xa1,
+			0x6c,
+			0x31,
+			0x97,
+		},
+		InKey: [16]int32{
+			0x6b,
+			0x60,
+			0xcb,
+			0x5b,
+			0x82,
+			0xce,
+			0x90,
+			0xb1,
+			0xc8,
+			0x27,
+			0x93,
+			0x01,
+			0xa1,
+			0x6c,
+			0x31,
+			0x97,
+		},
+		CurrentChar: new(CurrentChar),
+	}
 }
 
 func (c *Client) Send(data []byte, need bool) error {
 	if need {
-		data = crypt.Encrypt(data)
+		data = crypt.Encrypt(data, &c.OutKey)
 	}
 	// Calculate the packet length
 	length := int16(len(data) + 2)
@@ -41,12 +90,12 @@ func (c *Client) Send(data []byte, need bool) error {
 }
 
 func (c *Client) SimpleSend(data []byte, needCrypt bool) error {
+	if needCrypt {
+		data = crypt.SimpleEncrypt(data, &c.OutKey)
+	}
+
 	length := int16(len(data))
 	data[0], data[1] = uint8(length&0xff), uint8(length>>8)
-
-	if needCrypt {
-		data = crypt.SimpleEncrypt(data)
-	}
 
 	_, err := c.Socket.Write(data)
 	c.Buffer.Reset()
@@ -81,7 +130,7 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 
 	// Print the raw packet
 	//fmt.Printf("header packet : %X\n  Raw: %X\n", header, data)
-	data = crypt.Decrypt(data)
+	data = crypt.Decrypt(data, &c.NeedCrypt, &c.InKey)
 	// Extract the op code
 	opcode = data[0]
 	data = data[1:]

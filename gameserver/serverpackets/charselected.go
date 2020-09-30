@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewCharSelected(user *Character, client *models.Client) {
+func NewCharSelected(user *Character, client *models.Client) int32 {
 
 	client.Buffer.WriteH(0) //reserve
 
@@ -59,4 +59,5 @@ func NewCharSelected(user *Character, client *models.Client) {
 
 	client.Buffer.WriteD(0) // 221
 
+	return user.CharId
 }

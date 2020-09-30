@@ -39,14 +39,13 @@ type Character struct {
 	CharName   pgtype.Bytea
 }
 type Account struct {
-	Char          []*Character
-	SelectedObjId int32
+	Char     []*Character
+	CharSlot int32
 }
 
-func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) *Account {
+func NewCharSelectionInfo(db *pgx.Conn, client *models.Client, login string) *Account {
 
-	ll := []byte{49, 0, 50, 0}
-	rows, err := db.Query("SELECT * FROM characters WHERE Login = $1", ll)
+	rows, err := db.Query("SELECT * FROM characters WHERE Login = $1", []byte(login))
 	if err != nil {
 		log.Fatal(err)
 	}

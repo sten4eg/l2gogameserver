@@ -4,12 +4,11 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewAuthLogin(data []byte) {
+func NewAuthLogin(data []byte) string {
 
 	var packet = packets.NewReader(data)
 
 	login := packet.ReadString()
 
-	_ = login
-
+	return login
 }

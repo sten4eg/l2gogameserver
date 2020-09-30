@@ -1,47 +1,10 @@
 package crypt
 
-var IsEnable = false
-var inKey = [16]int32{
-	0x6b,
-	0x60,
-	0xcb,
-	0x5b,
-	0x82,
-	0xce,
-	0x90,
-	0xb1,
-	0xc8,
-	0x27,
-	0x93,
-	0x01,
-	0xa1,
-	0x6c,
-	0x31,
-	0x97,
-}
+var isEnable = false
 
-var outKey = [16]int32{
-	0x6b,
-	0x60,
-	0xcb,
-	0x5b,
-	0x82,
-	0xce,
-	0x90,
-	0xb1,
-	0xc8,
-	0x27,
-	0x93,
-	0x01,
-	0xa1,
-	0x6c,
-	0x31,
-	0x97,
-}
-
-func Decrypt(data []byte) []byte {
-	if !IsEnable {
-		IsEnable = true
+func Decrypt(data []byte, client *bool, inKey *[16]int32) []byte {
+	if !*client {
+		*client = true
 		return data
 	}
 
@@ -69,7 +32,7 @@ func Decrypt(data []byte) []byte {
 	return data
 }
 
-func Encrypt(data []byte) []byte {
+func Encrypt(data []byte, outKey *[16]int32) []byte {
 	size := len(data)
 	var temp int32
 	var old int32
@@ -94,7 +57,7 @@ func Encrypt(data []byte) []byte {
 	return data
 }
 
-func SimpleEncrypt(data []byte) []byte {
+func SimpleEncrypt(data []byte, outKey *[16]int32) []byte {
 	size := len(data) - 2
 	var temp int32
 	var old int32
