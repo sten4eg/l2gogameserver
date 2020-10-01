@@ -84,7 +84,6 @@ func kickClient() {
 
 func (g *GameServer) handleClientPackets(client *models.Client) {
 	defer kickClient()
-	var i = 0
 
 	for {
 		opcode, data, err := client.Receive()
@@ -108,7 +107,6 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 		case 00:
 			fmt.Println("A game server sent a request to register")
 		case 43:
-			//var pkg []byte
 			client.CurrentChar.Login = clientpackets.NewAuthLogin(data)
 			g.account = serverpackets.NewCharSelectionInfo(g.database, client, client.CurrentChar.Login) //TODO пересмотреть
 			err := client.SimpleSend(client.Buffer.Bytes(), true)
@@ -127,8 +125,17 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			reason, err := clientpackets.NewCharacterCreate(data, g.database, client.CurrentChar.Login)
 			if err != nil {
 				serverpackets.NewCharCreateFail(client, reason)
+				err := client.SimpleSend(client.Buffer.Bytes(), true)
+				if err != nil {
+					log.Println(err)
+				}
 			} else {
-				log.Println("sozdal")
+				serverpackets.NewCharCreateOk(client)
+				err = client.SimpleSend(client.Buffer.Bytes(), true)
+				if err != nil {
+					log.Println(err)
+				}
+				log.Println("send NewCharCreateOk")
 			}
 		case 18:
 			g.account.CharSlot = clientpackets.NewCharSelected(data)
@@ -148,15 +155,26 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			}
 			log.Println("Send CharSelected")
 		case 208:
-			if i == 0 {
-				serverpackets.NewExSendManorList(client)
-				err := client.SimpleSend(client.Buffer.Bytes(), true)
-				if err != nil {
-					log.Println(err)
+			if len(data) >= 2 {
+				switch data[0] {
+				case 1:
+					serverpackets.NewExSendManorList(client)
+					err := client.SimpleSend(client.Buffer.Bytes(), true)
+					if err != nil {
+						log.Println(err)
+					}
+					log.Println("Send ExSendManorList")
+				case 54:
+					g.account = serverpackets.NewCharSelectionInfo(g.database, client, client.CurrentChar.Login) //TODO пересмотреть
+					err := client.SimpleSend(client.Buffer.Bytes(), true)
+					if err != nil {
+						log.Println(err)
+					}
+					log.Println("Send NewCharSelectionInfo")
 				}
-				log.Println("Send ExSendManorList")
+
 			}
-			i++
+
 		case 193:
 			serverpackets.NewObservationReturn(g.account.Char[g.account.CharSlot], client)
 			err := client.SimpleSend(client.Buffer.Bytes(), true)
@@ -260,29 +278,39 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 				log.Println(err)
 			}
 			client.Buffer.Reset()
-			Broad(g, client.CC)
+			CI := serverpackets.NewCharInfo(client.CC)
+			Broad(g, client.CC, CI)
 
 			log.Println("Send NewMoveToLocation")
 		case 73:
 			say := clientpackets.NewSay(data)
-			pkg := serverpackets.NewCreatureSay(say)
-			err := client.Send(pkg, true)
+			var info Info
+			info.b = serverpackets.NewCreatureSay(say, client.CC)
+			err := client.Send(info.GetB(), true)
 			if err != nil {
 				log.Println(err)
 			}
+			Broad(g, client.CC, info.GetB())
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}
 	}
 }
 
-func Broad(g *GameServer, c *models.Character) {
+type Info struct {
+	b []byte
+}
+
+func (i *Info) GetB() []byte {
+	cl := make([]byte, len(i.b))
+	_ = copy(cl, i.b)
+	return cl
+}
+func Broad(g *GameServer, c *models.Character, pkg []byte) {
 
 	for _, p := range g.clients {
 		if p.CC.CharId != c.CharId {
-			CI := serverpackets.NewCharInfo(c)
-			log.Println("send charInfo")
-			err := p.Send(CI, true)
+			err := p.Send(pkg, true)
 			if err != nil {
 				log.Fatal(err)
 			}

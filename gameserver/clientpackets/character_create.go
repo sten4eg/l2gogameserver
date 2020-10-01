@@ -60,13 +60,13 @@ func NewCharacterCreate(data []byte, db *pgx.Conn, login string) (int32, error) 
 }
 
 var (
-	ReasonCreationFailed       int32 = 0x00
-	REASON_TOO_MANY_CHARACTERS       = 0x01
-	ReasonNameAlreadyExists    int32 = 0x02
-	Reason16EngChars           int32 = 0x03
-	ReasonIncorrectName        int32 = 0x04
-	REASON_CREATE_NOT_ALLOWED        = 0x05
-	REASON_CHOOSE_ANOTHER_SVR        = 0x06
+	ReasonCreationFailed      int32 = 0x00
+	ReasonTooManyCharacters   int32 = 0x01
+	ReasonNameAlreadyExists   int32 = 0x02
+	Reason16EngChars          int32 = 0x03
+	ReasonIncorrectName       int32 = 0x04
+	REASON_CREATE_NOT_ALLOWED       = 0x05
+	REASON_CHOOSE_ANOTHER_SVR       = 0x06
 )
 
 //type Location struct {
@@ -103,6 +103,15 @@ func (cc *CharCreate) validate(db *pgx.Conn, login string) (int32, error) {
 		return ReasonNameAlreadyExists, errors.New("exist name")
 	}
 
+	row = db.QueryRow("SELECT count(*) FROM characters where login = $1", []byte(login))
+	var i int
+	err = row.Scan(&i)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if i > 6 {
+		return ReasonTooManyCharacters, errors.New("too manyChar")
+	}
 	spawn := models.GetCreationSpawn(cc.ClassId)
 	_, err = db.Exec("INSERT INTO characters (char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,0)",
 		cc.Name.Bytes,
