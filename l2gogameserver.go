@@ -5,7 +5,6 @@ import (
 )
 
 func main() {
-
 	x := gameserver.New()
 	x.Init()
 	x.Start()

@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewObservationReturn(user *Character, client *models.Client) {
+func NewObservationReturn(user *models.Character, client *models.Client) {
 
 	client.Buffer.WriteH(0)
 	client.Buffer.WriteSingleByte(0xEC)

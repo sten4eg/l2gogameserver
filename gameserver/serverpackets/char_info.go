@@ -5,41 +5,35 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewCharInfo(user *models.CurrentChar) []byte {
+func NewCharInfo(user *models.Character) []byte {
 
 	buffer := new(packets.Buffer)
 	buffer.WriteSingleByte(0x31)
 	//q.WriteD(-75122)
 	//q.WriteD(258213)
 	//q.WriteD(-3108)
-	buffer.WriteD(user.Spawn.X) //x 53
-	buffer.WriteD(user.Spawn.Y) //y 57
-	buffer.WriteD(user.Spawn.Z) //z 61
+	buffer.WriteD(user.X) //x 53
+	buffer.WriteD(user.Y) //y 57
+	buffer.WriteD(user.Z) //z 61
 
 	buffer.WriteD(0) // Vehicle
 
-	i := 3
-	if user.CharId == 3 {
-		i = 4
-	} else {
-		i = 3
-	}
-	buffer.WriteD(int32(i)) //objId
+	buffer.WriteD(user.CharId) //objId
 
-	buffer.WriteS("st") //name //TODO
+	buffer.WriteS(string(user.CharName.Bytes)) //name //TODO
 
-	buffer.WriteD(4) //race ordinal //TODO
-	buffer.WriteD(1) //sex
-	buffer.WriteD(0) //baseClass
+	buffer.WriteD(user.Race)      //race ordinal //TODO
+	buffer.WriteD(user.Sex)       //sex
+	buffer.WriteD(user.BaseClass) //baseClass
 
 	////////FOR FOR
-	m := make([]byte, 208)
+	m := make([]byte, 168)
 	buffer.WriteSlice(m)
 	buffer.WriteD(0) //talisman
 	buffer.WriteD(0) //cloack
 
-	buffer.WriteD(0) // pvpFlag
-	buffer.WriteD(0) //karma
+	buffer.WriteD(user.PvpKills) // pvpFlag
+	buffer.WriteD(user.Karma)    //karma
 
 	buffer.WriteD(0) //MatackSpeed
 	buffer.WriteD(0) //_pAtkSpd
@@ -61,11 +55,11 @@ func NewCharInfo(user *models.CurrentChar) []byte {
 	buffer.WriteF(8.0)  //collisionRadius
 	buffer.WriteF(23.5) //collisionHeight
 
-	buffer.WriteD(0) //hairStyle
-	buffer.WriteD(0) //hairColor
-	buffer.WriteD(0) //face
+	buffer.WriteD(user.HairStyle) //hairStyle
+	buffer.WriteD(user.HairColor) //hairColor
+	buffer.WriteD(user.Face)      //face
 
-	buffer.WriteS("") //title
+	buffer.WriteS(user.Title.String) //title
 
 	buffer.WriteD(0) //cursedW
 	buffer.WriteD(0) //cursedW
@@ -91,11 +85,11 @@ func NewCharInfo(user *models.CurrentChar) []byte {
 
 	buffer.WriteSingleByte(0) // _activeChar.isInsideZone(ZoneId.WATER) ? 1 : _activeChar.isFlyingMounted() ? 2 : 0
 
-	buffer.WriteH(255)     // Blue value for name (0 = white, 255 = pure blue)
+	buffer.WriteH(0)       // Blue value for name (0 = white, 255 = pure blue)
 	buffer.WriteD(1000000) // ?
 
-	buffer.WriteD(0) // getClassId().getId()
-	buffer.WriteD(0) // ??
+	buffer.WriteD(user.ClassId) // getClassId().getId()
+	buffer.WriteD(0)            // ??
 
 	buffer.WriteSingleByte(0) //_activeChar.isMounted() ? 0 : _activeChar.getEnchantEffect()
 	buffer.WriteSingleByte(0) //_activeChar.getTeam().getId()

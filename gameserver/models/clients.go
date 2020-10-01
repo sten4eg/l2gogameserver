@@ -16,11 +16,14 @@ type Client struct {
 	OutKey          [16]int32
 	InKey           [16]int32
 	CurrentChar     *CurrentChar
+	CC              *Character
 }
+
 type CurrentChar struct {
 	Login  string
 	CharId int32
 	Spawn  Spawn
+	CC     *Character
 }
 
 func NewClient() *Client {

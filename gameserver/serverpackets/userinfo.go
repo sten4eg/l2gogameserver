@@ -1,15 +1,15 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+	"l2gogameserver/packets"
+)
 
-func NewUserInfo(user *Character) []byte {
+func NewUserInfo(user *models.Character) []byte {
 
 	buffer := new(packets.Buffer)
 
 	buffer.WriteSingleByte(0x32)
-	//q.WriteD(-75122)
-	//q.WriteD(258213)
-	//q.WriteD(-3108)
 	buffer.WriteD(user.X) //x 53
 	buffer.WriteD(user.Y) //y 57
 	buffer.WriteD(user.Z) //z 61
