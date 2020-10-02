@@ -15,15 +15,8 @@ type Client struct {
 	NeedCrypt       bool
 	OutKey          [16]int32
 	InKey           [16]int32
-	CurrentChar     *CurrentChar
 	CC              *Character
-}
-
-type CurrentChar struct {
-	Login  string
-	CharId int32
-	Spawn  Spawn
-	CC     *Character
+	Account         *Account
 }
 
 func NewClient() *Client {
@@ -67,7 +60,8 @@ func NewClient() *Client {
 			0x31,
 			0x97,
 		},
-		CurrentChar: new(CurrentChar),
+		Account: new(Account),
+		CC:      new(Character),
 	}
 }
 

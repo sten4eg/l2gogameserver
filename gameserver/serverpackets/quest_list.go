@@ -8,7 +8,7 @@ func NewQuestList() []byte {
 
 	buffer.WriteSingleByte(0x86)
 	buffer.WriteH(0)
-	x := make([]byte, 128, 128)
+	x := make([]byte, 128)
 	buffer.WriteSlice(x)
 
 	return buffer.Bytes()

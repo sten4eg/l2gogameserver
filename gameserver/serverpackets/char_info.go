@@ -12,9 +12,9 @@ func NewCharInfo(user *models.Character) []byte {
 	//q.WriteD(-75122)
 	//q.WriteD(258213)
 	//q.WriteD(-3108)
-	buffer.WriteD(user.X) //x 53
-	buffer.WriteD(user.Y) //y 57
-	buffer.WriteD(user.Z) //z 61
+	buffer.WriteD(user.Coordinates.X) //x 53
+	buffer.WriteD(user.Coordinates.Y) //y 57
+	buffer.WriteD(user.Coordinates.Z) //z 61
 
 	buffer.WriteD(0) // Vehicle
 

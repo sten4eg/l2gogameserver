@@ -19,8 +19,8 @@ func NewMoveToLocation(location *clientpackets.Location, client *models.Client, 
 	client.Buffer.WriteD(location.OriginX)
 	client.Buffer.WriteD(location.OriginY)
 	client.Buffer.WriteD(location.OriginZ)
-	client.CC.X = location.TargetX
-	client.CC.Y = location.TargetY
-	client.CC.Z = location.TargetZ
+	client.CC.Coordinates.X = location.TargetX
+	client.CC.Coordinates.Y = location.TargetY
+	client.CC.Coordinates.Z = location.TargetZ
 
 }

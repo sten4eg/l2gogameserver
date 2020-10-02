@@ -124,8 +124,7 @@ func (r *Reader) ReadInt32() int32 {
 		return 0
 	}
 
-	//buf := bytes.NewBuffer(buffer)
-	n, _ = r.b.Write(buffer)
+	_, _ = r.b.Write(buffer)
 
 	err = binary.Read(r.b, binary.LittleEndian, &result)
 	if err != nil {
@@ -173,7 +172,9 @@ func (r *Reader) ReadUInt8() uint8 {
 	buf := bytes.NewBuffer(buffer)
 
 	err = binary.Read(buf, binary.LittleEndian, &result)
-
+	if err != nil {
+		log.Fatal(err)
+	}
 	return result
 }
 

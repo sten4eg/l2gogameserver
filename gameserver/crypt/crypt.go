@@ -1,7 +1,5 @@
 package crypt
 
-var isEnable = false
-
 func Decrypt(data []byte, client *bool, inKey *[16]int32) []byte {
 	if !*client {
 		*client = true

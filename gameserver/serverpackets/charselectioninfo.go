@@ -6,17 +6,17 @@ import (
 	"log"
 )
 
-func NewCharSelectionInfo(db *pgx.Conn, client *models.Client, login string) *models.Account {
+func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) *models.Account {
 
-	rows, err := db.Query("SELECT * FROM characters WHERE Login = $1", []byte(login))
+	rows, err := db.Query("SELECT * FROM characters WHERE Login = $1", []byte(client.Account.Login))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var account models.Account
-
 	for rows.Next() {
 		var character models.Character
+		var coord models.Coordinates
 		err = rows.Scan(
 			&character.Login,
 			&character.CharId,
@@ -29,9 +29,9 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client, login string) *mo
 			&character.HairStyle,
 			&character.HairColor,
 			&character.Sex,
-			&character.X,
-			&character.Y,
-			&character.Z,
+			&coord.X,
+			&coord.Y,
+			&coord.Z,
 			&character.Exp,
 			&character.Sp,
 			&character.Karma,
@@ -50,11 +50,11 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client, login string) *mo
 		if err != nil {
 			log.Fatal(err)
 		}
+		character.Coordinates = &coord
 		account.Char = append(account.Char, &character)
 	}
 
-	//client.Buffer := new(packets.client.Buffer)
-	client.Buffer.WriteH(0)
+	client.Buffer.WriteH(0) //reserve
 	client.Buffer.WriteSingleByte(0x09)
 	client.Buffer.WriteD(int32(len(account.Char))) //size char in account
 
@@ -81,17 +81,17 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client, login string) *mo
 
 		client.Buffer.WriteD(0) // active ??
 
-		client.Buffer.WriteD(char.X) //x 53
-		client.Buffer.WriteD(char.Y) //y 57
-		client.Buffer.WriteD(char.Z) //z 61
+		client.Buffer.WriteD(char.Coordinates.X) //x 53
+		client.Buffer.WriteD(char.Coordinates.Y) //y 57
+		client.Buffer.WriteD(char.Coordinates.Z) //z 61
 
 		client.Buffer.WriteF(float64(char.CurHp)) //currentHP
 		client.Buffer.WriteF(float64(char.CurMp)) //currentMP
 
-		client.Buffer.WriteD(char.Sp)         // SP
-		client.Buffer.WriteQ(int64(char.Exp)) // EXP
-		client.Buffer.WriteF(0)               // percent ?
-		client.Buffer.WriteD(char.Level)      // level
+		client.Buffer.WriteD(char.Sp)                                               // SP
+		client.Buffer.WriteQ(int64(char.Exp))                                       // EXP
+		client.Buffer.WriteF(char.GetPercentFromCurrentLevel(char.Exp, char.Level)) // percent
+		client.Buffer.WriteD(char.Level)                                            // level
 
 		client.Buffer.WriteD(char.Karma)    // karma
 		client.Buffer.WriteD(char.PkKills)  // pk

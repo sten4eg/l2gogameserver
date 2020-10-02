@@ -20,9 +20,9 @@ func NewCharSelected(user *models.Character, client *models.Client) int32 {
 	client.Buffer.WriteD(user.Race)                   //race 41
 	client.Buffer.WriteD(user.ClassId)                //classId 45
 	client.Buffer.WriteD(0x1)                         // ? 49
-	client.Buffer.WriteD(user.X)                      //x 53
-	client.Buffer.WriteD(user.Y)                      //y 57
-	client.Buffer.WriteD(user.Z)                      //z 61
+	client.Buffer.WriteD(user.Coordinates.X)          //x 53
+	client.Buffer.WriteD(user.Coordinates.Y)          //y 57
+	client.Buffer.WriteD(user.Coordinates.Z)          //z 61
 
 	//buffer.WriteD(83306)  //x 53
 	//buffer.WriteD(148115) //y 57

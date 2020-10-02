@@ -1,0 +1,97 @@
+package data
+
+var expData [88]int64
+
+func Load() {
+	expData[1] = 0
+	expData[2] = 68
+	expData[3] = 363
+	expData[4] = 1168
+	expData[5] = 2884
+	expData[6] = 6038
+	expData[7] = 11287
+	expData[8] = 19423
+	expData[9] = 31378
+	expData[10] = 48229
+	expData[11] = 71202
+	expData[12] = 101677
+	expData[13] = 141193
+	expData[14] = 191454
+	expData[15] = 254330
+	expData[16] = 331867
+	expData[17] = 426288
+	expData[18] = 540000
+	expData[19] = 675596
+	expData[20] = 835862
+	expData[21] = 1023784
+	expData[22] = 1242546
+	expData[23] = 1495543
+	expData[24] = 1786379
+	expData[25] = 2118876
+	expData[26] = 2497077
+	expData[27] = 2925250
+	expData[28] = 3407897
+	expData[29] = 3949754
+	expData[30] = 4555796
+	expData[31] = 5231246
+	expData[32] = 5981576
+	expData[33] = 6812513
+	expData[34] = 7730044
+	expData[35] = 8740422
+	expData[36] = 9850166
+	expData[37] = 11066072
+	expData[38] = 12395215
+	expData[39] = 13844951
+	expData[40] = 15422929
+	expData[41] = 17137087
+	expData[42] = 18995665
+	expData[43] = 21007203
+	expData[44] = 23180550
+	expData[45] = 25524868
+	expData[46] = 28049635
+	expData[47] = 30764654
+	expData[48] = 33680052
+	expData[49] = 36806289
+	expData[50] = 40154162
+	expData[51] = 45525133
+	expData[52] = 51262490
+	expData[53] = 57383988
+	expData[54] = 63907911
+	expData[55] = 70853089
+	expData[56] = 80700831
+	expData[57] = 91162654
+	expData[58] = 102265881
+	expData[59] = 114038596
+	expData[60] = 126509653
+	expData[61] = 146308200
+	expData[62] = 167244337
+	expData[63] = 189364894
+	expData[64] = 212717908
+	expData[65] = 237352644
+	expData[66] = 271975263
+	expData[67] = 308443198
+	expData[68] = 346827154
+	expData[69] = 387199547
+	expData[70] = 429634523
+	expData[71] = 474207979
+	expData[72] = 532694979
+	expData[73] = 606322775
+	expData[74] = 696381369
+	expData[75] = 804225364
+	expData[76] = 931275828
+	expData[77] = 1151275834
+	expData[78] = 1511275834
+	expData[79] = 2044287599
+	expData[80] = 3075966164
+	expData[81] = 4295351949
+	expData[82] = 5766985062
+	expData[83] = 7793077345
+	expData[84] = 10235368963
+	expData[85] = 13180481103
+	expData[86] = 16890558728
+	expData[87] = 21138534249
+}
+
+func GetExpData(level int32) (int64, int64) {
+	return expData[level], expData[level+1]
+}

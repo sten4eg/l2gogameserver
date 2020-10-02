@@ -10,9 +10,9 @@ func NewUserInfo(user *models.Character) []byte {
 	buffer := new(packets.Buffer)
 
 	buffer.WriteSingleByte(0x32)
-	buffer.WriteD(user.X) //x 53
-	buffer.WriteD(user.Y) //y 57
-	buffer.WriteD(user.Z) //z 61
+	buffer.WriteD(user.Coordinates.X) //x 53
+	buffer.WriteD(user.Coordinates.Y) //y 57
+	buffer.WriteD(user.Coordinates.Z) //z 61
 
 	buffer.WriteD(0) // Vehicle
 
@@ -24,9 +24,9 @@ func NewUserInfo(user *models.Character) []byte {
 	buffer.WriteD(user.Sex)       //sex
 	buffer.WriteD(user.BaseClass) //baseClass
 
-	buffer.WriteD(user.Level)      //level //TODO
-	buffer.WriteQ(int64(user.Exp)) //exp
-	buffer.WriteF(0)               //percent
+	buffer.WriteD(user.Level)                                            //level //TODO
+	buffer.WriteQ(int64(user.Exp))                                       //exp
+	buffer.WriteF(user.GetPercentFromCurrentLevel(user.Exp, user.Level)) //percent
 
 	buffer.WriteD(40) //str
 	buffer.WriteD(30) //dex
