@@ -11,6 +11,9 @@ import (
 	"net"
 	"os"
 	"runtime/pprof"
+	"runtime/trace"
+	"sync"
+	"time"
 )
 
 type GameServer struct {
@@ -18,14 +21,14 @@ type GameServer struct {
 	clients          []*models.Client
 	Socket           net.Conn
 	database         *pgx.Conn
-	onlineCharacters map[int32]models.Character
+	onlineCharacters sync.Map
 }
 
 func New() *GameServer {
 	return &GameServer{}
 }
 func (g *GameServer) Init() {
-	gm := make(map[int32]models.Character)
+
 	var err error
 	globalConfig := config.Read()
 	dbConfig := pgx.ConnConfig{
@@ -37,7 +40,7 @@ func (g *GameServer) Init() {
 		TLSConfig:         nil,
 		FallbackTLSConfig: nil,
 	}
-	g.onlineCharacters = gm
+
 	g.database, err = pgx.Connect(dbConfig)
 	if err != nil {
 
@@ -55,6 +58,7 @@ func (g *GameServer) Init() {
 }
 
 func (g *GameServer) Start() {
+	go g.tick()
 	defer g.clientsListener.Close()
 	for {
 		var err error
@@ -79,6 +83,17 @@ func kickClient() {
 	if err := pprof.WriteHeapProfile(f); err != nil {
 		log.Fatal("could not write memory profile: ", err)
 	}
+	ff, err := os.Create("trace.out")
+	if err != nil {
+		panic(err)
+	}
+	defer ff.Close()
+
+	err = trace.Start(ff)
+	if err != nil {
+		panic(err)
+	}
+	defer trace.Stop()
 }
 
 func (g *GameServer) handleClientPackets(client *models.Client) {
@@ -149,7 +164,11 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 
 			_ = serverpackets.NewCharSelected(client.Account.Char[client.Account.CharSlot], client) // return charId
 			client.CC = client.Account.Char[client.Account.CharSlot]
-			g.onlineCharacters[client.CC.CharId] = *client.CC
+
+			rg := models.GetRegion(client.CC.Coordinates.X, client.CC.Coordinates.Y)
+			rg.AddVisibleObject(client.CC)
+			client.CC.CurrentRegion = rg
+			g.onlineCharacters.Store(client.CC.CharId, client.CC)
 			err = client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
@@ -264,6 +283,7 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			if err != nil {
 				log.Println(err)
 			}
+
 			log.Println("Send NewUserInfo")
 		case 166:
 			pkg := serverpackets.NewSkillCoolTime()
@@ -273,26 +293,29 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			}
 		case 15:
 			location := clientpackets.NewMoveBackwardToLocation(data)
-			serverpackets.NewMoveToLocation(location, client, client.CC.CharId)
-			err := client.SimpleSend(client.Buffer.Bytes(), true)
+			pkg := serverpackets.NewMoveToLocation(location, client)
+			var info PacketByte
+			info.SetB(pkg)
+			err := client.Send(pkg, true)
 			if err != nil {
 				log.Println(err)
 			}
-			client.Buffer.Reset()
-			var info PacketByte
-			info.b = serverpackets.NewCharInfo(client.CC)
+
 			Broad(g, client.CC, info)
 
 			log.Println("Send NewMoveToLocation")
 		case 73:
-			say := clientpackets.NewSay(data)
+			//	say := clientpackets.NewSay(data)
 			var info PacketByte
-			info.b = serverpackets.NewCreatureSay(say, client.CC)
-			err := client.Send(info.GetB(), true)
-			if err != nil {
-				log.Println(err)
-			}
+			//info.b = serverpackets.NewCreatureSay(say, client.CC)
+			//err := client.Send(info.GetB(), true)
+			//if err != nil {
+			//	log.Println(err)
+			//}
+			info.b = serverpackets.NewCharInfo(client.CC)
 			Broad(g, client.CC, info)
+		case 89:
+			clientpackets.NewValidationPosition(data, client.CC)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}
@@ -308,15 +331,55 @@ func (i *PacketByte) GetB() []byte {
 	_ = copy(cl, i.b)
 	return cl
 }
+func (i *PacketByte) SetB(v []byte) {
+	cl := make([]byte, len(v))
+	i.b = cl
+	copy(i.b, v)
+}
 
-func Broad(g *GameServer, c *models.Character, pkg PacketByte) {
+func Broad(g *GameServer, my *models.Character, pkg PacketByte) {
+
+	reg := models.GetRegion(my.Coordinates.X, my.Coordinates.Y)
+	var charIds []int32
+	for _, iii := range reg.Sur {
+		iii.CharsInRegion.Range(func(key, value interface{}) bool {
+			val := value.(*models.Character)
+			charIds = append(charIds, val.CharId)
+			return true
+		})
+	}
+
+	if len(charIds) == 1 { //todo я всегда буду в этом регионе поэтому 1
+		return
+	}
 
 	for _, p := range g.clients {
-		if p.CC.CharId != c.CharId {
-			err := p.Send(pkg.GetB(), true)
-			if err != nil {
-				log.Fatal(err)
+		for _, w := range charIds {
+			if p.CC.CharId == w && p.CC.CharId != my.CharId {
+				p.Send(pkg.GetB(), true)
 			}
 		}
+
 	}
+}
+
+func (g *GameServer) tick() {
+	f := func(key, value interface{}) bool {
+		value1 := value.(*models.Character)
+		x, y, _ := value1.GetXYZ()
+		reg := models.GetRegion(x, y)
+		if reg != value1.CurrentRegion && value1.CurrentRegion != nil {
+			value1.CurrentRegion.CharsInRegion.Delete(value1.CharId)
+			reg.CharsInRegion.Store(value1.CharId, value1)
+
+			value1.CurrentRegion = reg
+		}
+		return true
+	}
+
+	for {
+		g.onlineCharacters.Range(f)
+		time.Sleep(1 * time.Second)
+	}
+
 }

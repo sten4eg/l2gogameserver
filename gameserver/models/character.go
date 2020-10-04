@@ -8,35 +8,37 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"sync"
 )
 
 type Character struct {
-	Login       pgtype.Bytea
-	CharId      int32
-	Level       int32
-	MaxHp       int32
-	CurHp       int32
-	MaxMp       int32
-	CurMp       int32
-	Face        int32
-	HairStyle   int32
-	HairColor   int32
-	Sex         int32
-	Coordinates *Coordinates
-	Exp         int32
-	Sp          int32
-	Karma       int32
-	PvpKills    int32
-	PkKills     int32
-	ClanId      int32
-	Race        int32
-	ClassId     int32
-	BaseClass   int32
-	Title       sql.NullString
-	OnlineTime  int32
-	Nobless     int32
-	Vitality    int32
-	CharName    pgtype.Bytea
+	Login         pgtype.Bytea
+	CharId        int32
+	Level         int32
+	MaxHp         int32
+	CurHp         int32
+	MaxMp         int32
+	CurMp         int32
+	Face          int32
+	HairStyle     int32
+	HairColor     int32
+	Sex           int32
+	Coordinates   *Coordinates
+	Exp           int32
+	Sp            int32
+	Karma         int32
+	PvpKills      int32
+	PkKills       int32
+	ClanId        int32
+	Race          int32
+	ClassId       int32
+	BaseClass     int32
+	Title         sql.NullString
+	OnlineTime    int32
+	Nobless       int32
+	Vitality      int32
+	CharName      pgtype.Bytea
+	CurrentRegion *WorldRegion
 }
 
 type Account struct {
@@ -46,9 +48,10 @@ type Account struct {
 }
 
 type Coordinates struct {
-	X int32
-	Y int32
-	Z int32
+	mu sync.Mutex
+	X  int32
+	Y  int32
+	Z  int32
 }
 
 type StartLocation struct {
@@ -59,6 +62,19 @@ type StartLocation struct {
 func (c *Character) GetPercentFromCurrentLevel(exp, level int32) float64 {
 	expPerLevel, expPerLevel2 := data.GetExpData(level)
 	return float64(int64(exp)-expPerLevel) / float64(expPerLevel2-expPerLevel)
+}
+func (c *Character) SetXYZ(x, y, z int32) {
+	c.Coordinates.mu.Lock()
+	c.Coordinates.X = x
+	c.Coordinates.Y = y
+	c.Coordinates.Z = z
+	c.Coordinates.mu.Unlock()
+}
+
+func (c *Character) GetXYZ() (x, y, z int32) {
+	c.Coordinates.mu.Lock()
+	defer c.Coordinates.mu.Unlock()
+	return c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z
 }
 func GetCreationCoordinates(classId int32) *Coordinates {
 
