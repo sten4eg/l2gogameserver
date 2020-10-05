@@ -21,7 +21,11 @@ type GameServer struct {
 	clients          []*models.Client
 	Socket           net.Conn
 	database         *pgx.Conn
-	onlineCharacters sync.Map
+	onlineCharacters *OnlineCharacters
+}
+type OnlineCharacters struct {
+	char map[int32]*models.Character
+	mu   sync.Mutex
 }
 
 func New() *GameServer {
@@ -54,11 +58,14 @@ func (g *GameServer) Init() {
 	} else {
 		fmt.Println("Login server is listening on port 7777")
 	}
-
+	var onlineChars OnlineCharacters
+	x := make(map[int32]*models.Character)
+	onlineChars.char = x
+	g.onlineCharacters = &onlineChars
 }
 
 func (g *GameServer) Start() {
-	go g.tick()
+	go g.Tick()
 	defer g.clientsListener.Close()
 	for {
 		var err error
@@ -168,7 +175,7 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			rg := models.GetRegion(client.CC.Coordinates.X, client.CC.Coordinates.Y)
 			rg.AddVisibleObject(client.CC)
 			client.CC.CurrentRegion = rg
-			g.onlineCharacters.Store(client.CC.CharId, client.CC)
+			g.addOnlineChar(client.CC)
 			err = client.SimpleSend(client.Buffer.Bytes(), true)
 			if err != nil {
 				log.Println(err)
@@ -300,7 +307,6 @@ func (g *GameServer) handleClientPackets(client *models.Client) {
 			if err != nil {
 				log.Println(err)
 			}
-
 			Broad(g, client.CC, info)
 
 			log.Println("Send NewMoveToLocation")
@@ -362,24 +368,60 @@ func Broad(g *GameServer, my *models.Character, pkg PacketByte) {
 
 	}
 }
-
-func (g *GameServer) tick() {
-	f := func(key, value interface{}) bool {
-		value1 := value.(*models.Character)
-		x, y, _ := value1.GetXYZ()
-		reg := models.GetRegion(x, y)
-		if reg != value1.CurrentRegion && value1.CurrentRegion != nil {
-			value1.CurrentRegion.CharsInRegion.Delete(value1.CharId)
-			reg.CharsInRegion.Store(value1.CharId, value1)
-
-			value1.CurrentRegion = reg
-		}
-		return true
-	}
+func (g *GameServer) addOnlineChar(character *models.Character) {
+	g.onlineCharacters.mu.Lock()
+	g.onlineCharacters.char[character.CharId] = character
+	g.onlineCharacters.mu.Unlock()
+}
+func (g *GameServer) Tick() {
 
 	for {
-		g.onlineCharacters.Range(f)
+		for _, v := range g.onlineCharacters.char {
+			x, y, _ := v.GetXYZ()
+			reg := models.GetRegion(x, y)
+			if reg != v.CurrentRegion && v.CurrentRegion != nil {
+				v.CurrentRegion.CharsInRegion.Delete(v.CharId)
+				reg.CharsInRegion.Store(v.CharId, v)
+				v.CurrentRegion = reg
+
+				var info PacketByte
+				info.b = serverpackets.NewCharInfo(v)
+				Broad(g, v, info)
+				BroadCastToMe(g, v)
+				log.Println(v.CharId, " change Region ")
+
+			}
+		}
 		time.Sleep(1 * time.Second)
+	}
+}
+
+func BroadCastToMe(g *GameServer, my *models.Character) {
+	reg := models.GetRegion(my.Coordinates.X, my.Coordinates.Y)
+	var charIds []int32
+
+	for _, iii := range reg.Sur {
+		iii.CharsInRegion.Range(func(key, value interface{}) bool {
+			val := value.(*models.Character)
+			if val.CharId != my.CharId {
+				charIds = append(charIds, val.CharId)
+			}
+			return true
+		})
+	}
+
+	var me *models.Client
+	for _, p := range g.clients {
+		if p.CC.CharId == my.CharId {
+			me = p
+			break
+		}
+	}
+
+	for _, v := range charIds {
+		var info PacketByte
+		info.b = serverpackets.NewCharInfo(g.onlineCharacters.char[v])
+		me.Send(info.GetB(), true)
 	}
 
 }
