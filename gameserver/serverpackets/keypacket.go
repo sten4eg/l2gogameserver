@@ -37,4 +37,7 @@ func NewKeyPacket(client *models.Client) {
 	client.Buffer.WriteD(0x01) // server id
 	client.Buffer.WriteSingleByte(0x01)
 	client.Buffer.WriteD(0x00)
+
+	client.SimpleSend(client.Buffer.Bytes(), true)
+
 }

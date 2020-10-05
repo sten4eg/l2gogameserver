@@ -1,17 +1,13 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-type Say struct {
-	Text string
-	Type int32
-}
-
-func NewSay(data []byte) *Say {
+func NewSay(data []byte) *models.Say {
 	var packet = packets.NewReader(data)
-	var say Say
+	var say models.Say
 	text := packet.ReadString()
 
 	say.Text = text

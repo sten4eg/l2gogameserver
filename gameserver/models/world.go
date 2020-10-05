@@ -2,6 +2,15 @@ package models
 
 import "math"
 
+type BackwardToLocation struct {
+	TargetX int32
+	TargetY int32
+	TargetZ int32
+	OriginX int32
+	OriginY int32
+	OriginZ int32
+}
+
 var World [][]WorldRegion
 
 /** Gracia border Flying objects not allowed to the east of it. */

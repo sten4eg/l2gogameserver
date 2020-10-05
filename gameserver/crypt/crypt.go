@@ -1,6 +1,6 @@
 package crypt
 
-func Decrypt(data []byte, client *bool, inKey *[16]int32) []byte {
+func Decrypt(data []byte, client *bool, inKey []int32) []byte {
 	if !*client {
 		*client = true
 		return data
@@ -30,7 +30,7 @@ func Decrypt(data []byte, client *bool, inKey *[16]int32) []byte {
 	return data
 }
 
-func Encrypt(data []byte, outKey *[16]int32) []byte {
+func Encrypt(data []byte, outKey []int32) []byte {
 	size := len(data)
 	var temp int32
 	var old int32
@@ -55,7 +55,7 @@ func Encrypt(data []byte, outKey *[16]int32) []byte {
 	return data
 }
 
-func SimpleEncrypt(data []byte, outKey *[16]int32) []byte {
+func SimpleEncrypt(data []byte, outKey []int32) []byte {
 	size := len(data) - 2
 	var temp int32
 	var old int32

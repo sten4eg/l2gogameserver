@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	//defer profile.Start(profile.MemProfileHeap()).Stop()
 
 	models.NewWorld()
 	data.Load()

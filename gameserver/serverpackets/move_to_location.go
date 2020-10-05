@@ -1,17 +1,16 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/clientpackets"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func NewMoveToLocation(location *clientpackets.Location, client *models.Client) []byte {
+func NewMoveToLocation(location *models.BackwardToLocation, client *models.Client) []byte {
 
 	buffer := new(packets.Buffer)
 	buffer.WriteSingleByte(0x2f)
 
-	buffer.WriteD(client.CC.CharId)
+	buffer.WriteD(client.CurrentChar.CharId)
 
 	buffer.WriteD(location.TargetX)
 	buffer.WriteD(location.TargetY)
@@ -21,6 +20,6 @@ func NewMoveToLocation(location *clientpackets.Location, client *models.Client) 
 	buffer.WriteD(location.OriginY)
 	buffer.WriteD(location.OriginZ)
 
-	client.CC.SetXYZ(location.TargetX, location.TargetY, location.TargetZ)
+	client.CurrentChar.SetXYZ(location.TargetX, location.TargetY, location.TargetZ)
 	return buffer.Bytes()
 }

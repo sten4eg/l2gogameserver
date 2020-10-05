@@ -4,14 +4,10 @@ import (
 	"fmt"
 	"github.com/jackc/pgx"
 	"l2gogameserver/config"
-	"l2gogameserver/gameserver/clientpackets"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"log"
 	"net"
-	"os"
-	"runtime/pprof"
-	"runtime/trace"
 	"sync"
 	"time"
 )
@@ -76,256 +72,16 @@ func (g *GameServer) Start() {
 			fmt.Println("Couldn't accept the incoming connection.")
 			continue
 		} else {
-			go g.handleClientPackets(client)
+			go g.handler(client)
 		}
 	}
 }
-func kickClient() {
-	f, err := os.Create("f.pprof")
+func kickClient(client *models.Client) {
+	err := client.Socket.Close()
 	if err != nil {
-		log.Fatal("could not create memory profile: ", err)
+		log.Fatal(err)
 	}
-	defer f.Close()
-	//runtime.GC() // get up-to-date statistics
-	if err := pprof.WriteHeapProfile(f); err != nil {
-		log.Fatal("could not write memory profile: ", err)
-	}
-	ff, err := os.Create("trace.out")
-	if err != nil {
-		panic(err)
-	}
-	defer ff.Close()
-
-	err = trace.Start(ff)
-	if err != nil {
-		panic(err)
-	}
-	defer trace.Stop()
-}
-
-func (g *GameServer) handleClientPackets(client *models.Client) {
-	defer kickClient()
-
-	for {
-		opcode, data, err := client.Receive()
-
-		if err != nil {
-			fmt.Println(err)
-			fmt.Println("Closing the connection...")
-			break
-		}
-		log.Println("income ", opcode)
-		switch opcode {
-		case 14:
-			_ = clientpackets.NewprotocolVersion(data)
-			serverpackets.NewKeyPacket(client)
-			err := client.SimpleSend(client.Buffer.Bytes(), false)
-			if err != nil {
-				log.Println(err)
-			}
-			log.Println("Send NewKeyPacket")
-
-		case 00:
-			fmt.Println("A game server sent a request to register")
-		case 43:
-			login := clientpackets.NewAuthLogin(data)
-			client.Account.Login = login
-			client.Account = serverpackets.NewCharSelectionInfo(g.database, client)
-			client.Account.Login = login
-			err := client.SimpleSend(client.Buffer.Bytes(), true)
-			if err != nil {
-				log.Println(err)
-			}
-			log.Println("Send NewCharSelectionInfo")
-		case 19:
-			serverpackets.NewCharacterSuccess(client)
-			err := client.SimpleSend(client.Buffer.Bytes(), true)
-			if err != nil {
-				log.Println(err)
-			}
-			log.Println("Send NewCharacterSuccess")
-		case 12:
-			reason := clientpackets.NewCharacterCreate(data, g.database, client.Account.Login)
-			if reason != clientpackets.ReasonOk {
-				serverpackets.NewCharCreateFail(client, reason)
-				err := client.SimpleSend(client.Buffer.Bytes(), true)
-				if err != nil {
-					log.Println(err)
-				}
-			} else {
-				serverpackets.NewCharCreateOk(client)
-				err = client.SimpleSend(client.Buffer.Bytes(), true)
-				if err != nil {
-					log.Println(err)
-				}
-				log.Println("send NewCharCreateOk")
-			}
-		case 18:
-			client.Account.CharSlot = clientpackets.NewCharSelected(data)
-			pkg := serverpackets.NewSSQInfo()
-			err := client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-			log.Println("sendSSQ")
-
-			_ = serverpackets.NewCharSelected(client.Account.Char[client.Account.CharSlot], client) // return charId
-			client.CC = client.Account.Char[client.Account.CharSlot]
-
-			rg := models.GetRegion(client.CC.Coordinates.X, client.CC.Coordinates.Y)
-			rg.AddVisibleObject(client.CC)
-			client.CC.CurrentRegion = rg
-			g.addOnlineChar(client.CC)
-			err = client.SimpleSend(client.Buffer.Bytes(), true)
-			if err != nil {
-				log.Println(err)
-			}
-			log.Println("Send CharSelected")
-		case 208:
-			if len(data) >= 2 {
-				switch data[0] {
-				case 1:
-					serverpackets.NewExSendManorList(client)
-					err := client.SimpleSend(client.Buffer.Bytes(), true)
-					if err != nil {
-						log.Println(err)
-					}
-					log.Println("Send ExSendManorList")
-				case 54:
-					client.Account = serverpackets.NewCharSelectionInfo(g.database, client)
-					err := client.SimpleSend(client.Buffer.Bytes(), true)
-					if err != nil {
-						log.Println(err)
-					}
-					log.Println("Send NewCharSelectionInfo")
-				}
-
-			}
-
-		case 193:
-			serverpackets.NewObservationReturn(client.CC, client)
-			err := client.SimpleSend(client.Buffer.Bytes(), true)
-			if err != nil {
-				log.Println(err)
-			}
-		case 108:
-			serverpackets.NewShowMiniMap(client)
-			err := client.SimpleSend(client.Buffer.Bytes(), true)
-			if err != nil {
-				log.Println(err)
-			}
-		case 17:
-			pkg := serverpackets.NewUserInfo(client.CC)
-			err := client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-			pkg = serverpackets.NewExBrExtraUserInfo()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-			pkg = serverpackets.NewSendMacroList()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-
-			pkg = serverpackets.NewItemList()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-
-			pkg = serverpackets.NewExQuestItemList()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-
-			pkg = serverpackets.NewGameGuardQuery()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-
-			pkg = serverpackets.NewExGetBookMarkInfoPacket()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-
-			pkg = serverpackets.NewShortCutInit()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-
-			pkg = serverpackets.NewExBasicActionList()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-
-			pkg = serverpackets.NewSkillList()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-
-			pkg = serverpackets.NewHennaInfo()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-
-			pkg = serverpackets.NewQuestList()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-
-			pkg = serverpackets.NewStaticObject()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-
-			log.Println("Send NewUserInfo")
-		case 166:
-			pkg := serverpackets.NewSkillCoolTime()
-			err := client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-		case 15:
-			location := clientpackets.NewMoveBackwardToLocation(data)
-			pkg := serverpackets.NewMoveToLocation(location, client)
-			var info PacketByte
-			info.SetB(pkg)
-			err := client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-			Broad(g, client.CC, info)
-
-			log.Println("Send NewMoveToLocation")
-		case 73:
-			//	say := clientpackets.NewSay(data)
-			var info PacketByte
-			//info.b = serverpackets.NewCreatureSay(say, client.CC)
-			//err := client.Send(info.GetB(), true)
-			//if err != nil {
-			//	log.Println(err)
-			//}
-			info.b = serverpackets.NewCharInfo(client.CC)
-			Broad(g, client.CC, info)
-		case 89:
-			clientpackets.NewValidationPosition(data, client.CC)
-		default:
-			log.Println("Not Found case with opcode: ", opcode)
-		}
-	}
+	log.Println("Socket Close For: ", client.CurrentChar.CharName)
 }
 
 type PacketByte struct {
@@ -361,7 +117,7 @@ func Broad(g *GameServer, my *models.Character, pkg PacketByte) {
 
 	for _, p := range g.clients {
 		for _, w := range charIds {
-			if p.CC.CharId == w && p.CC.CharId != my.CharId {
+			if p.CurrentChar.CharId == w && p.CurrentChar.CharId != my.CharId {
 				p.Send(pkg.GetB(), true)
 			}
 		}
@@ -412,7 +168,7 @@ func BroadCastToMe(g *GameServer, my *models.Character) {
 
 	var me *models.Client
 	for _, p := range g.clients {
-		if p.CC.CharId == my.CharId {
+		if p.CurrentChar.CharId == my.CharId {
 			me = p
 			break
 		}

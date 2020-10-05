@@ -13,9 +13,9 @@ type Client struct {
 	ScrambleModulus []byte
 	Buffer          *packets.Buffer
 	NeedCrypt       bool
-	OutKey          [16]int32
-	InKey           [16]int32
-	CC              *Character
+	OutKey          []int32
+	InKey           []int32
+	CurrentChar     *Character
 	Account         *Account
 }
 
@@ -24,7 +24,7 @@ func NewClient() *Client {
 	return &Client{
 		Buffer:    buff,
 		NeedCrypt: false,
-		OutKey: [16]int32{
+		OutKey: []int32{
 			0x6b,
 			0x60,
 			0xcb,
@@ -42,7 +42,7 @@ func NewClient() *Client {
 			0x31,
 			0x97,
 		},
-		InKey: [16]int32{
+		InKey: []int32{
 			0x6b,
 			0x60,
 			0xcb,
@@ -60,14 +60,14 @@ func NewClient() *Client {
 			0x31,
 			0x97,
 		},
-		Account: new(Account),
-		CC:      new(Character),
+		Account:     new(Account),
+		CurrentChar: new(Character),
 	}
 }
 
 func (c *Client) Send(data []byte, need bool) error {
 	if need {
-		data = crypt.Encrypt(data, &c.OutKey)
+		data = crypt.Encrypt(data, c.OutKey)
 	}
 	// Calculate the packet length
 	length := int16(len(data) + 2)
@@ -86,9 +86,9 @@ func (c *Client) Send(data []byte, need bool) error {
 	return nil
 }
 
-func (c *Client) SimpleSend(data []byte, needCrypt bool) error {
+func (c *Client) SimpleSend(data []byte, needCrypt bool) {
 	if needCrypt {
-		data = crypt.SimpleEncrypt(data, &c.OutKey)
+		data = crypt.SimpleEncrypt(data, c.OutKey)
 	}
 
 	length := int16(len(data))
@@ -97,9 +97,8 @@ func (c *Client) SimpleSend(data []byte, needCrypt bool) error {
 	_, err := c.Socket.Write(data)
 	c.Buffer.Reset()
 	if err != nil {
-		return errors.New("The packet couldn't be sent.")
+		log.Println("ERROR!!!")
 	}
-	return nil
 }
 
 func (c *Client) Receive() (opcode byte, data []byte, e error) {
@@ -127,7 +126,7 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 
 	// Print the raw packet
 	//fmt.Printf("header packet : %X\n  Raw: %X\n", header, data)
-	data = crypt.Decrypt(data, &c.NeedCrypt, &c.InKey)
+	data = crypt.Decrypt(data, &c.NeedCrypt, c.InKey)
 	// Extract the op code
 	opcode = data[0]
 	data = data[1:]
