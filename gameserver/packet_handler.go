@@ -23,13 +23,10 @@ func (g *GameServer) handler(client *models.Client) {
 		switch opcode {
 		case 14:
 			clientpackets.NewprotocolVersion(data, client)
-			//log.Println("Send NewKeyPacket")
 		case 43:
 			clientpackets.NewAuthLogin(data, client, g.database)
-			//log.Println("Send NewCharSelectionInfo")
 		case 19:
 			serverpackets.NewCharacterSuccess(client)
-		//	log.Println("Send NewCharacterSuccess")
 		case 12:
 			clientpackets.NewCharacterCreate(data, g.database, client)
 		case 18:

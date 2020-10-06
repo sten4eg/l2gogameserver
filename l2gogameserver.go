@@ -1,16 +1,15 @@
 package main
 
 import (
+	"github.com/pkg/profile"
 	"l2gogameserver/data"
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/models"
-	"log"
-	"math"
 )
 
 func main() {
-	log.Fatal(math.MinInt8)
 	//	defer profile.Start().Stop()
+	defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
 	models.NewWorld()
 	data.Load()
 	x := gameserver.New()

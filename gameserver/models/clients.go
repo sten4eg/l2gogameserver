@@ -114,14 +114,14 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	}
 
 	// Calculate the packet size
-	size := int(header[0]) | int(header[1])<<8 //hack bits
+	dataSize := (int(header[0]) | int(header[1])<<8) - 2 //hack bits
 
-	// Allocate the appropriate size for our data (size - 2 bytes used for the length
-	data = make([]byte, size-2)
+	// Allocate the appropriate size for our data
+	data = make([]byte, dataSize)
 
 	// Read the encrypted part of the packet
 	n, err = c.Socket.Read(data)
-	if n != size-2 || err != nil {
+	if n != dataSize || err != nil {
 		return 0x00, nil, errors.New("An error occured while reading the packet data.")
 	}
 

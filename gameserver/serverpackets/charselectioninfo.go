@@ -51,6 +51,7 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 			log.Fatal(err)
 		}
 		character.Coordinates = &coord
+		character.Conn = client
 		account.Char = append(account.Char, &character)
 	}
 

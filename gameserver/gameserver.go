@@ -104,23 +104,27 @@ func Broad(g *GameServer, my *models.Character, pkg PacketByte) {
 	for _, iii := range reg.Sur {
 		iii.CharsInRegion.Range(func(key, value interface{}) bool {
 			val := value.(*models.Character)
+			if val.CharId == my.CharId {
+				return true
+			}
+			val.Conn.Send(pkg.GetB(), true)
 			charIds = append(charIds, val.CharId)
 			return true
 		})
 	}
 
-	if len(charIds) == 1 { //todo я всегда буду в этом регионе поэтому 1
-		return
-	}
+	//if len(charIds) == 1 { //todo я всегда буду в этом регионе поэтому 1
+	//	return
+	//}
 
-	for _, p := range g.clients { // 3_000_000
-		for _, w := range charIds { // 300
-			if p.CurrentChar.CharId == w && p.CurrentChar.CharId != my.CharId {
-				p.Send(pkg.GetB(), true)
-			}
-		}
+	//for _, p := range g.clients { // 3_000_000
+	//	for _, w := range charIds { // 300
+	//		if p.CurrentChar.CharId == w && p.CurrentChar.CharId != my.CharId {
+	//			p.Send(pkg.GetB(), true)
+	//		}
+	//	}
 
-	}
+	//}
 }
 func (g *GameServer) addOnlineChar(character *models.Character) {
 	g.onlineCharacters.mu.Lock()

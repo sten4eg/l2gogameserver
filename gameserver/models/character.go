@@ -39,6 +39,7 @@ type Character struct {
 	Vitality      int32
 	CharName      pgtype.Bytea
 	CurrentRegion *WorldRegion
+	Conn          *Client
 }
 
 type Account struct {
