@@ -10,4 +10,5 @@ func NewShowMiniMap(client *models.Client) {
 	client.Buffer.WriteSingleByte(0xa3)
 	client.Buffer.WriteD(1665)
 	client.Buffer.WriteSingleByte(2)
+	client.SimpleSend(client.Buffer.Bytes(), true)
 }

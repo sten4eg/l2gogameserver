@@ -13,8 +13,7 @@ func NewAuthLogin(data []byte, client *models.Client, db *pgx.Conn) {
 
 	login := packet.ReadString()
 	client.Account.Login = login
-	client.Account = serverpackets.NewCharSelectionInfo(db, client)
+	serverpackets.NewCharSelectionInfo(db, client)
 	client.Account.Login = login
-	client.SimpleSend(client.Buffer.Bytes(), true)
 
 }

@@ -11,5 +11,5 @@ func NewObservationReturn(user *models.Character, client *models.Client) {
 	client.Buffer.WriteD(user.Coordinates.X) //x 53
 	client.Buffer.WriteD(user.Coordinates.Y) //y 57
 	client.Buffer.WriteD(user.Coordinates.Z) //z 61
-
+	client.SimpleSend(client.Buffer.Bytes(), true)
 }

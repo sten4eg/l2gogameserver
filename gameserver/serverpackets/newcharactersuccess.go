@@ -29,4 +29,6 @@ func NewCharacterSuccess(client *models.Client) {
 	client.Buffer.WriteD(0x46)
 	client.Buffer.WriteD(1)
 	client.Buffer.WriteD(0x0A)
+	client.SimpleSend(client.Buffer.Bytes(), true)
+
 }

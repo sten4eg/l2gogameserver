@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) *models.Account {
+func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 
 	rows, err := db.Query("SELECT * FROM characters WHERE Login = $1", []byte(client.Account.Login))
 	if err != nil {
@@ -135,6 +135,6 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) *models.Account {
 		client.Buffer.WriteD(char.Vitality) // H5 Vitality
 
 	}
-
-	return &account
+	client.Account = &account
+	client.SimpleSend(client.Buffer.Bytes(), true)
 }

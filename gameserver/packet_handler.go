@@ -28,79 +28,35 @@ func (g *GameServer) handler(client *models.Client) {
 			clientpackets.NewAuthLogin(data, client, g.database)
 			//log.Println("Send NewCharSelectionInfo")
 		case 19:
-			serverpackets.NewCharacterSuccess(client) //toDo 4eknyt'
-			client.SimpleSend(client.Buffer.Bytes(), true)
+			serverpackets.NewCharacterSuccess(client)
 		//	log.Println("Send NewCharacterSuccess")
 		case 12:
-			reason := clientpackets.NewCharacterCreate(data, g.database, client.Account.Login)
-			if reason != clientpackets.ReasonOk {
-				serverpackets.NewCharCreateFail(client, reason)
-				err := client.SimpleSend(client.Buffer.Bytes(), true)
-				if err != nil {
-					log.Println(err)
-				}
-			} else {
-				serverpackets.NewCharCreateOk(client)
-				err = client.SimpleSend(client.Buffer.Bytes(), true)
-				if err != nil {
-					log.Println(err)
-				}
-				log.Println("send NewCharCreateOk")
-			}
+			clientpackets.NewCharacterCreate(data, g.database, client)
 		case 18:
-			client.Account.CharSlot = clientpackets.NewCharSelected(data)
-			pkg := serverpackets.NewSSQInfo()
-			err := client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-			log.Println("sendSSQ")
+			clientpackets.NewCharSelected(data, client)
 
-			_ = serverpackets.NewCharSelected(client.Account.Char[client.Account.CharSlot], client) // return charId
-			client.CurrentChar = client.Account.Char[client.Account.CharSlot]
+			serverpackets.NewCharSelected(client.Account.Char[client.Account.CharSlot], client) // return charId
 
 			rg := models.GetRegion(client.CurrentChar.Coordinates.X, client.CurrentChar.Coordinates.Y)
 			rg.AddVisibleObject(client.CurrentChar)
 			client.CurrentChar.CurrentRegion = rg
 			g.addOnlineChar(client.CurrentChar)
-			err = client.SimpleSend(client.Buffer.Bytes(), true)
-			if err != nil {
-				log.Println(err)
-			}
-			log.Println("Send CharSelected")
+			client.SimpleSend(client.Buffer.Bytes(), true)
+
 		case 208:
 			if len(data) >= 2 {
 				switch data[0] {
 				case 1:
 					serverpackets.NewExSendManorList(client)
-					err := client.SimpleSend(client.Buffer.Bytes(), true)
-					if err != nil {
-						log.Println(err)
-					}
-					log.Println("Send ExSendManorList")
 				case 54:
-					client.Account = serverpackets.NewCharSelectionInfo(g.database, client)
-					err := client.SimpleSend(client.Buffer.Bytes(), true)
-					if err != nil {
-						log.Println(err)
-					}
-					log.Println("Send NewCharSelectionInfo")
+					serverpackets.NewCharSelectionInfo(g.database, client)
 				}
-
 			}
 
 		case 193:
 			serverpackets.NewObservationReturn(client.CurrentChar, client)
-			err := client.SimpleSend(client.Buffer.Bytes(), true)
-			if err != nil {
-				log.Println(err)
-			}
 		case 108:
 			serverpackets.NewShowMiniMap(client)
-			err := client.SimpleSend(client.Buffer.Bytes(), true)
-			if err != nil {
-				log.Println(err)
-			}
 		case 17:
 			pkg := serverpackets.NewUserInfo(client.CurrentChar)
 			err := client.Send(pkg, true)
@@ -198,14 +154,14 @@ func (g *GameServer) handler(client *models.Client) {
 
 			log.Println("Send NewMoveToLocation")
 		case 73:
-			//	say := clientpackets.NewSay(data)
+			say := clientpackets.NewSay(data)
 			var info PacketByte
-			//info.b = serverpackets.NewCreatureSay(say, client.CurrentChar)
-			//err := client.Send(info.GetB(), true)
-			//if err != nil {
-			//	log.Println(err)
-			//}
-			info.b = serverpackets.NewCharInfo(client.CurrentChar)
+			info.b = serverpackets.NewCreatureSay(say, client.CurrentChar)
+			err := client.Send(info.GetB(), true)
+			if err != nil {
+				log.Println(err)
+			}
+			//info.b = serverpackets.NewCharInfo(client.CurrentChar)
 			Broad(g, client.CurrentChar, info)
 		case 89:
 			clientpackets.NewValidationPosition(data, client.CurrentChar)

@@ -74,16 +74,16 @@ func validRegion(x, y int32) bool {
 	return (x >= 0) && (x <= RegionsX) && (y >= 0) && (y <= RegionsY)
 }
 
-func getVisibleObjects(region WorldRegion, radius int32) {
-	//	sqRadius := radius * radius
+//func getVisibleObjects(region WorldRegion, radius int32) {
+//	sqRadius := radius * radius
 
-	//for regi := range region.Sur {
-	//	//Todo если я то надо континью (не надо для самого себя высчитывать)
-	//	if sqRadius >  {
-	//		calculateDistance()
-	//	}
-	//}
-}
+//for regi := range region.Sur {
+//	//Todo если я то надо континью (не надо для самого себя высчитывать)
+//	if sqRadius >  {
+//		calculateDistance()
+//	}
+//}
+//}
 
 func calculateDistance(ox, oy, oz, mx, my, mz int32, includeZAxis, squared bool) float64 {
 	var distance float64

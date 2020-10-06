@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bytes"
 	"errors"
 	"l2gogameserver/gameserver/crypt"
 	"l2gogameserver/packets"
@@ -17,6 +18,7 @@ type Client struct {
 	InKey           []int32
 	CurrentChar     *Character
 	Account         *Account
+	ReadBuffer      bytes.Buffer
 }
 
 func NewClient() *Client {
@@ -104,6 +106,7 @@ func (c *Client) SimpleSend(data []byte, needCrypt bool) {
 func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	// Read the first two bytes to define the packet size
 	header := make([]byte, 2)
+
 	n, err := c.Socket.Read(header)
 	//fmt.Println(n)
 	if n != 2 || err != nil {
@@ -111,9 +114,7 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	}
 
 	// Calculate the packet size
-	size := 0
-	size += int(header[0])
-	size += int(header[1]) * 256
+	size := int(header[0]) | int(header[1])<<8 //hack bits
 
 	// Allocate the appropriate size for our data (size - 2 bytes used for the length
 	data = make([]byte, size-2)

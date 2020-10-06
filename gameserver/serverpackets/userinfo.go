@@ -74,7 +74,7 @@ func NewUserInfo(user *models.Character) []byte {
 	buffer.WriteD(user.PvpKills) //pvp
 	buffer.WriteD(user.Karma)    //karma
 
-	buffer.WriteD(666) //runSpeed
+	buffer.WriteD(999) //runSpeed
 	buffer.WriteD(80)  //walkspeed
 	buffer.WriteD(50)  //swimRunSpeed
 	buffer.WriteD(50)  //swimWalkSpeed

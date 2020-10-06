@@ -4,11 +4,13 @@ import (
 	"l2gogameserver/data"
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/models"
+	"log"
+	"math"
 )
 
 func main() {
-	//defer profile.Start(profile.MemProfileHeap()).Stop()
-
+	log.Fatal(math.MinInt8)
+	//	defer profile.Start().Stop()
 	models.NewWorld()
 	data.Load()
 	x := gameserver.New()

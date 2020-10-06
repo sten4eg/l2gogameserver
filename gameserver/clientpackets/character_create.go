@@ -4,6 +4,7 @@ import (
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgtype"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
@@ -30,7 +31,7 @@ type CharCreate struct {
 	CurMp     int32
 }
 
-func NewCharacterCreate(data []byte, db *pgx.Conn, login string) int32 {
+func NewCharacterCreate(data []byte, db *pgx.Conn, client *models.Client) {
 	var packet = packets.NewReader(data)
 	var charCreate CharCreate
 
@@ -48,9 +49,8 @@ func NewCharacterCreate(data []byte, db *pgx.Conn, login string) int32 {
 	charCreate.HairStyle = byte(packet.ReadInt32())
 	charCreate.HairColor = byte(packet.ReadInt32())
 	charCreate.Face = byte(packet.ReadInt32())
-	reason := charCreate.validate(db, login)
+	charCreate.validate(db, client)
 
-	return reason
 }
 
 var (
@@ -64,42 +64,50 @@ var (
 	ReasonOk                  int32 = 99
 )
 
-func (cc *CharCreate) validate(db *pgx.Conn, login string) int32 {
+func (cc *CharCreate) validate(db *pgx.Conn, client *models.Client) {
 	lenName := len(cc.Name.Bytes)
 	if (lenName < 1) || (lenName > 16) {
-		return Reason16EngChars
+		serverpackets.NewCharCreateFail(client, Reason16EngChars)
+		return
 	}
 
 	if cc.Face > 2 {
-		return ReasonCreationFailed
+		serverpackets.NewCharCreateFail(client, ReasonCreationFailed)
+		return
 	}
 
 	if ((cc.Sex == 0) && (cc.HairStyle > 4)) || ((cc.Sex) != 0 && (cc.HairStyle > 6)) {
-		return ReasonCreationFailed
+		serverpackets.NewCharCreateFail(client, ReasonCreationFailed)
+		return
 	}
 
 	if cc.HairStyle > 3 {
-		return ReasonCreationFailed
+		serverpackets.NewCharCreateFail(client, ReasonCreationFailed)
+		return
 	}
 
 	row := db.QueryRow("(SELECT exists(SELECT char_name from characters WHERE char_name = $1))", cc.Name.Bytes)
 	var exist bool
 	err := row.Scan(&exist)
 	if err != nil {
-		return ReasonCreateNotAllowed
+		serverpackets.NewCharCreateFail(client, ReasonCreateNotAllowed)
+		return
 	}
 	if exist {
-		return ReasonNameAlreadyExists
+		serverpackets.NewCharCreateFail(client, ReasonNameAlreadyExists)
+		return
 	}
 
-	row = db.QueryRow("SELECT count(*) FROM characters where login = $1", []byte(login))
+	row = db.QueryRow("SELECT count(*) FROM characters where login = $1", []byte(client.Account.Login))
 	var i int
 	err = row.Scan(&i)
 	if err != nil {
-		return ReasonCreateNotAllowed
+		serverpackets.NewCharCreateFail(client, ReasonCreateNotAllowed)
+		return
 	}
 	if i > 6 {
-		return ReasonTooManyCharacters
+		serverpackets.NewCharCreateFail(client, ReasonTooManyCharacters)
+		return
 	}
 	spawn := models.GetCreationCoordinates(cc.ClassId)
 	_, err = db.Exec("INSERT INTO characters (char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
@@ -113,10 +121,14 @@ func (cc *CharCreate) validate(db *pgx.Conn, login string) int32 {
 		spawn.X,
 		spawn.Y,
 		spawn.Z,
-		[]byte(login),
+		[]byte(client.Account.Login),
 		cc.ClassId)
 	if err != nil {
-		return ReasonCreateNotAllowed
+		serverpackets.NewCharCreateFail(client, ReasonCreateNotAllowed)
+		return
 	}
-	return ReasonOk
+
+	//createChar
+	serverpackets.NewCharCreateOk(client)
+	client.SimpleSend(client.Buffer.Bytes(), true)
 }

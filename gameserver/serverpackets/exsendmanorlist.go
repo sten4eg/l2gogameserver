@@ -10,4 +10,5 @@ func NewExSendManorList(client *models.Client) {
 	client.Buffer.WriteSingleByte(0xFE)
 	client.Buffer.WriteH(0x22)
 	client.Buffer.WriteD(0)
+	client.SimpleSend(client.Buffer.Bytes(), true)
 }

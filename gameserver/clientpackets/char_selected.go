@@ -1,10 +1,12 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func NewCharSelected(data []byte) int32 {
+func NewCharSelected(data []byte, client *models.Client) {
 
 	var buffer = packets.NewReader(data)
 	charSlot := buffer.ReadInt32()
@@ -13,5 +15,6 @@ func NewCharSelected(data []byte) int32 {
 	_ = buffer.ReadInt32()
 	_ = buffer.ReadInt32()
 
-	return charSlot
+	client.Account.CharSlot = charSlot
+	serverpackets.NewSSQInfo(client)
 }

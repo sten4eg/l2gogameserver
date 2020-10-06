@@ -43,16 +43,15 @@ func (g *GameServer) Init() {
 
 	g.database, err = pgx.Connect(dbConfig)
 	if err != nil {
-
-		log.Fatal("Failed to connect to database: ", err.Error())
+		panic(err.Error())
 	} else {
-		fmt.Println("Successful database connection")
+		log.Println("Successful database connection")
 	}
 	g.clientsListener, err = net.Listen("tcp", ":7777")
 	if err != nil {
-		log.Fatal("Failed to connect to port 7777:", err.Error())
+		panic(err.Error())
 	} else {
-		fmt.Println("Login server is listening on port 7777")
+		log.Println("Login server is listening on port 7777")
 	}
 	var onlineChars OnlineCharacters
 	x := make(map[int32]*models.Character)
@@ -100,7 +99,6 @@ func (i *PacketByte) SetB(v []byte) {
 }
 
 func Broad(g *GameServer, my *models.Character, pkg PacketByte) {
-
 	reg := models.GetRegion(my.Coordinates.X, my.Coordinates.Y)
 	var charIds []int32
 	for _, iii := range reg.Sur {
@@ -115,8 +113,8 @@ func Broad(g *GameServer, my *models.Character, pkg PacketByte) {
 		return
 	}
 
-	for _, p := range g.clients {
-		for _, w := range charIds {
+	for _, p := range g.clients { // 3_000_000
+		for _, w := range charIds { // 300
 			if p.CurrentChar.CharId == w && p.CurrentChar.CharId != my.CharId {
 				p.Send(pkg.GetB(), true)
 			}

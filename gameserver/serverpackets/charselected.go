@@ -59,5 +59,6 @@ func NewCharSelected(user *models.Character, client *models.Client) int32 {
 
 	client.Buffer.WriteD(0) // 221
 
+	client.CurrentChar = client.Account.Char[client.Account.CharSlot]
 	return user.CharId
 }
