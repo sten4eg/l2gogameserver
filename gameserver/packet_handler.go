@@ -147,7 +147,7 @@ func (g *GameServer) handler(client *models.Client) {
 			if err != nil {
 				log.Println(err)
 			}
-			Broad(g, client.CurrentChar, info)
+			Broad(client, info)
 
 			log.Println("Send NewMoveToLocation")
 		case 73:
@@ -159,7 +159,7 @@ func (g *GameServer) handler(client *models.Client) {
 				log.Println(err)
 			}
 			//info.b = serverpackets.NewCharInfo(client.CurrentChar)
-			Broad(g, client.CurrentChar, info)
+			Broad(client, info)
 		case 89:
 			clientpackets.NewValidationPosition(data, client.CurrentChar)
 		default:

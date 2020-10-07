@@ -98,13 +98,13 @@ func (i *PacketByte) SetB(v []byte) {
 	copy(i.b, v)
 }
 
-func Broad(g *GameServer, my *models.Character, pkg PacketByte) {
-	reg := models.GetRegion(my.Coordinates.X, my.Coordinates.Y)
+func Broad(my *models.Client, pkg PacketByte) {
+	reg := models.GetRegion(my.CurrentChar.Coordinates.X, my.CurrentChar.Coordinates.Y)
 	var charIds []int32
 	for _, iii := range reg.Sur {
 		iii.CharsInRegion.Range(func(key, value interface{}) bool {
 			val := value.(*models.Character)
-			if val.CharId == my.CharId {
+			if val.CharId == my.CurrentChar.CharId {
 				return true
 			}
 			val.Conn.Send(pkg.GetB(), true)
@@ -134,19 +134,22 @@ func (g *GameServer) addOnlineChar(character *models.Character) {
 func (g *GameServer) Tick() {
 
 	for {
-		for _, v := range g.onlineCharacters.char {
-			x, y, _ := v.GetXYZ()
+		for _, v := range g.clients {
+			if v.CurrentChar.Coordinates == nil {
+				continue
+			}
+			x, y, _ := v.CurrentChar.GetXYZ()
 			reg := models.GetRegion(x, y)
-			if reg != v.CurrentRegion && v.CurrentRegion != nil {
-				v.CurrentRegion.CharsInRegion.Delete(v.CharId)
-				reg.CharsInRegion.Store(v.CharId, v)
-				v.CurrentRegion = reg
+			if reg != v.CurrentChar.CurrentRegion && v.CurrentChar.CurrentRegion != nil {
+				v.CurrentChar.CurrentRegion.CharsInRegion.Delete(v.CurrentChar.CharId)
+				reg.CharsInRegion.Store(v.CurrentChar.CharId, v.CurrentChar)
+				v.CurrentChar.CurrentRegion = reg
 
 				var info PacketByte
-				info.b = serverpackets.NewCharInfo(v)
-				Broad(g, v, info)
-				BroadCastToMe(g, v)
-				log.Println(v.CharId, " change Region ")
+				info.b = serverpackets.NewCharInfo(v.CurrentChar)
+				Broad(v, info)
+				BroadCastToMe(g, v.CurrentChar)
+				log.Println(v.CurrentChar.CharId, " change Region ")
 
 			}
 		}
