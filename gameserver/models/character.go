@@ -59,7 +59,20 @@ type StartLocation struct {
 	ClassId int32
 	Spawn   []Coordinates
 }
+type PacketByte struct {
+	B []byte
+}
 
+func (i *PacketByte) GetB() []byte {
+	cl := make([]byte, len(i.B))
+	_ = copy(cl, i.B)
+	return cl
+}
+func (i *PacketByte) SetB(v []byte) {
+	cl := make([]byte, len(v))
+	i.B = cl
+	copy(i.B, v)
+}
 func (c *Character) GetPercentFromCurrentLevel(exp, level int32) float64 {
 	expPerLevel, expPerLevel2 := data.GetExpData(level)
 	return float64(int64(exp)-expPerLevel) / float64(expPerLevel2-expPerLevel)

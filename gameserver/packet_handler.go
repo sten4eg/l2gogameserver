@@ -141,7 +141,7 @@ func (g *GameServer) handler(client *models.Client) {
 		case 15:
 			location := clientpackets.NewMoveBackwardToLocation(data)
 			pkg := serverpackets.NewMoveToLocation(location, client)
-			var info PacketByte
+			var info models.PacketByte
 			info.SetB(pkg)
 			err := client.Send(pkg, true)
 			if err != nil {
@@ -151,15 +151,10 @@ func (g *GameServer) handler(client *models.Client) {
 
 			log.Println("Send NewMoveToLocation")
 		case 73:
-			say := clientpackets.NewSay(data)
-			var info PacketByte
-			info.b = serverpackets.NewCreatureSay(say, client.CurrentChar)
-			err := client.Send(info.GetB(), true)
-			if err != nil {
-				log.Println(err)
-			}
-			//info.b = serverpackets.NewCharInfo(client.CurrentChar)
-			Broad(client, info)
+			clientpackets.NewSay(data, g.OnlineCharacters, client.CurrentChar)
+
+			//info.B = serverpackets.NewCharInfo(client.CurrentChar)
+			//Broad(client, info)
 		case 89:
 			clientpackets.NewValidationPosition(data, client.CurrentChar)
 		default:

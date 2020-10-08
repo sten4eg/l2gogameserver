@@ -1,6 +1,9 @@
 package models
 
-import "math"
+import (
+	"math"
+	"sync"
+)
 
 type BackwardToLocation struct {
 	TargetX int32
@@ -9,6 +12,10 @@ type BackwardToLocation struct {
 	OriginX int32
 	OriginY int32
 	OriginZ int32
+}
+type OnlineCharacters struct {
+	Char map[int32]*Character
+	Mu   sync.Mutex
 }
 
 var World [][]WorldRegion
@@ -76,7 +83,7 @@ func validRegion(x, y int32) bool {
 
 //func getVisibleObjects(region WorldRegion, radius int32) {
 //	sqRadius := radius * radius
-
+//
 //for regi := range region.Sur {
 //	//Todo если я то надо континью (не надо для самого себя высчитывать)
 //	if sqRadius >  {

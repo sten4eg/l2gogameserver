@@ -8,7 +8,6 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 	"log"
 	"net"
-	"sync"
 	"time"
 )
 
@@ -17,11 +16,7 @@ type GameServer struct {
 	clients          []*models.Client
 	Socket           net.Conn
 	database         *pgx.Conn
-	onlineCharacters *OnlineCharacters
-}
-type OnlineCharacters struct {
-	char map[int32]*models.Character
-	mu   sync.Mutex
+	OnlineCharacters *models.OnlineCharacters
 }
 
 func New() *GameServer {
@@ -53,10 +48,10 @@ func (g *GameServer) Init() {
 	} else {
 		log.Println("Login server is listening on port 7777")
 	}
-	var onlineChars OnlineCharacters
+	var onlineChars models.OnlineCharacters
 	x := make(map[int32]*models.Character)
-	onlineChars.char = x
-	g.onlineCharacters = &onlineChars
+	onlineChars.Char = x
+	g.OnlineCharacters = &onlineChars
 }
 
 func (g *GameServer) Start() {
@@ -83,22 +78,7 @@ func kickClient(client *models.Client) {
 	log.Println("Socket Close For: ", client.CurrentChar.CharName)
 }
 
-type PacketByte struct {
-	b []byte
-}
-
-func (i *PacketByte) GetB() []byte {
-	cl := make([]byte, len(i.b))
-	_ = copy(cl, i.b)
-	return cl
-}
-func (i *PacketByte) SetB(v []byte) {
-	cl := make([]byte, len(v))
-	i.b = cl
-	copy(i.b, v)
-}
-
-func Broad(my *models.Client, pkg PacketByte) {
+func Broad(my *models.Client, pkg models.PacketByte) {
 	reg := models.GetRegion(my.CurrentChar.Coordinates.X, my.CurrentChar.Coordinates.Y)
 	var charIds []int32
 	for _, iii := range reg.Sur {
@@ -127,9 +107,9 @@ func Broad(my *models.Client, pkg PacketByte) {
 	//}
 }
 func (g *GameServer) addOnlineChar(character *models.Character) {
-	g.onlineCharacters.mu.Lock()
-	g.onlineCharacters.char[character.CharId] = character
-	g.onlineCharacters.mu.Unlock()
+	g.OnlineCharacters.Mu.Lock()
+	g.OnlineCharacters.Char[character.CharId] = character
+	g.OnlineCharacters.Mu.Unlock()
 }
 func (g *GameServer) Tick() {
 
@@ -145,8 +125,8 @@ func (g *GameServer) Tick() {
 				reg.CharsInRegion.Store(v.CurrentChar.CharId, v.CurrentChar)
 				v.CurrentChar.CurrentRegion = reg
 
-				var info PacketByte
-				info.b = serverpackets.NewCharInfo(v.CurrentChar)
+				var info models.PacketByte
+				info.B = serverpackets.NewCharInfo(v.CurrentChar)
 				Broad(v, info)
 				BroadCastToMe(g, v.CurrentChar)
 				log.Println(v.CurrentChar.CharId, " change Region ")
@@ -180,8 +160,8 @@ func BroadCastToMe(g *GameServer, my *models.Character) {
 	}
 
 	for _, v := range charIds {
-		var info PacketByte
-		info.b = serverpackets.NewCharInfo(g.onlineCharacters.char[v])
+		var info models.PacketByte
+		info.B = serverpackets.NewCharInfo(g.OnlineCharacters.Char[v])
 		me.Send(info.GetB(), true)
 	}
 
