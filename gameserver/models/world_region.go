@@ -8,7 +8,7 @@ type WorldRegion struct {
 	TileX         int32
 	TileY         int32
 	Sur           []*WorldRegion
-	CharsInRegion sync.Map //TODO переделать на мапу с RW мьютексом ци шо
+	CharsInRegion sync.Map //TODO переделать на мапу с RW мьютексом ци шо ци каво
 }
 
 func NewWorldRegion(x, y int32) WorldRegion {
@@ -26,7 +26,7 @@ func (w *WorldRegion) AddVisibleObject(character *Character) {
 	w.CharsInRegion.Store(character.CharId, character)
 }
 
-func GetAroundPlayers(me *Character, radius int32) []int32 {
+func GetAroundPlayersInRadius(me *Character, radius int32) []int32 {
 	sqradius := int64(radius * radius)
 
 	x, y, _ := me.GetXYZ()
@@ -46,6 +46,23 @@ func GetAroundPlayers(me *Character, radius int32) []int32 {
 				if dx+dy < sqradius {
 					charIds = append(charIds, val.CharId)
 				}
+			}
+			return true
+		})
+	}
+	return charIds
+}
+
+func GetAroundPlayers(me *Character) []int32 {
+
+	x, y, _ := me.GetXYZ()
+	reg := GetRegion(x, y)
+	var charIds []int32
+	for _, region := range reg.Sur {
+		region.CharsInRegion.Range(func(key, value interface{}) bool {
+			val := value.(*Character)
+			if val.CharId != me.CharId {
+				charIds = append(charIds, val.CharId)
 			}
 			return true
 		})

@@ -44,7 +44,7 @@ func NewSay(data []byte, g *models.OnlineCharacters, me *models.Character) {
 		log.Println(err)
 	}
 
-	q := models.GetAroundPlayers(me, 200)
+	q := models.GetAroundPlayersInRadius(me, 200)
 
 	for _, v := range q {
 		g.Char[v].Conn.Send(info.GetB(), true)
