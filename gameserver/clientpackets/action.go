@@ -1,8 +1,12 @@
 package clientpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/serverpackets"
+	"l2gogameserver/packets"
+)
 
-func NewAction(data []byte) {
+func NewAction(data []byte, client *models.Client) {
 	var packet = packets.NewReader(data)
 
 	objectId := packet.ReadInt32() //Target
@@ -14,5 +18,7 @@ func NewAction(data []byte) {
 	_, _, _, _, _ = objectId, originX, originY, originZ, actionId
 	var i bool
 	_ = i
-
+	serverpackets.NewSocialAction(client)
+	client.SimpleSend(client.Buffer.Bytes(), true)
+	return
 }

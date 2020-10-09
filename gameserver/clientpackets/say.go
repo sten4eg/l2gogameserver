@@ -48,7 +48,7 @@ func NewSay(data []byte, online *models.OnlineCharacters, me *models.Character) 
 		if err != nil {
 			log.Println(err)
 		}
-		chars := models.GetAroundPlayers(me, AllChatRange)
+		chars := models.GetAroundPlayersInRadius(me, AllChatRange)
 		for _, v := range chars {
 			online.Char[v].Conn.Send(toBroad.GetB(), true) //broad
 		}
@@ -74,7 +74,7 @@ func NewSay(data []byte, online *models.OnlineCharacters, me *models.Character) 
 		if err != nil {
 			log.Println(err)
 		}
-		chars := models.GetAroundPlayers(me, ShoutChatRange)
+		chars := models.GetAroundPlayersInRadius(me, ShoutChatRange)
 		for _, v := range chars {
 			online.Char[v].Conn.Send(toBroad.GetB(), true) //broad
 		}
