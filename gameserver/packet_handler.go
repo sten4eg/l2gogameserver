@@ -147,7 +147,7 @@ func (g *GameServer) handler(client *models.Client) {
 			if err != nil {
 				log.Println(err)
 			}
-			Broad(client, info)
+			g.Broad(client, info)
 
 			log.Println("Send NewMoveToLocation")
 		case 73:

@@ -78,33 +78,13 @@ func kickClient(client *models.Client) {
 	log.Println("Socket Close For: ", client.CurrentChar.CharName)
 }
 
-func Broad(my *models.Client, pkg models.PacketByte) {
-	reg := models.GetRegion(my.CurrentChar.Coordinates.X, my.CurrentChar.Coordinates.Y)
-	var charIds []int32
-	for _, iii := range reg.Sur {
-		iii.CharsInRegion.Range(func(key, value interface{}) bool {
-			val := value.(*models.Character)
-			if val.CharId == my.CurrentChar.CharId {
-				return true
-			}
-			val.Conn.Send(pkg.GetB(), true)
-			charIds = append(charIds, val.CharId)
-			return true
-		})
+func (g *GameServer) Broad(my *models.Client, pkg models.PacketByte) {
+
+	charsIds := models.GetAroundPlayers(my.CurrentChar)
+	for _, v := range charsIds {
+		g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
 	}
 
-	//if len(charIds) == 1 { //todo я всегда буду в этом регионе поэтому 1
-	//	return
-	//}
-
-	//for _, p := range g.clients { // 3_000_000
-	//	for _, w := range charIds { // 300
-	//		if p.CurrentChar.CharId == w && p.CurrentChar.CharId != my.CharId {
-	//			p.Send(pkg.GetB(), true)
-	//		}
-	//	}
-
-	//}
 }
 func (g *GameServer) addOnlineChar(character *models.Character) {
 	g.OnlineCharacters.Mu.Lock()
@@ -127,7 +107,7 @@ func (g *GameServer) Tick() {
 
 				var info models.PacketByte
 				info.B = serverpackets.NewCharInfo(v.CurrentChar)
-				Broad(v, info)
+				g.Broad(v, info)
 				BroadCastToMe(g, v.CurrentChar)
 				log.Println(v.CurrentChar.CharId, " change Region ")
 
