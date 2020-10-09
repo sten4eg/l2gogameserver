@@ -91,6 +91,15 @@ func (r *Reader) ReadBytes(number int) []byte {
 	return buffer
 }
 
+func (r *Reader) ReadSingleByte() byte {
+	buffer := make([]byte, 1)
+	n, _ := r.r.Read(buffer)
+	if n < 1 {
+		return 0
+	}
+
+	return buffer[0]
+}
 func (r *Reader) ReadUInt64() uint64 {
 	var result uint64
 
