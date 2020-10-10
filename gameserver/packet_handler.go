@@ -159,6 +159,8 @@ func (g *GameServer) handler(client *models.Client) {
 			clientpackets.NewValidationPosition(data, client.CurrentChar)
 		case 31:
 			clientpackets.NewAction(data, client)
+		case 72:
+			clientpackets.NewRequestTargetCanceld(data, client)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}

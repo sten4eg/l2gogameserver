@@ -16,9 +16,10 @@ func NewAction(data []byte, client *models.Client) {
 	actionId := packet.ReadSingleByte() // Action identifier : 0-Simple click, 1-Shift click
 
 	_, _, _, _, _ = objectId, originX, originY, originZ, actionId
-	var i bool
-	_ = i
-	serverpackets.NewSocialAction(client)
-	client.SimpleSend(client.Buffer.Bytes(), true)
+
+	//Очень много Логика по action
+	//serverpackets.NewSocialAction(client)
+	//client.SimpleSend(client.Buffer.Bytes(), true)
+	serverpackets.NewTargetSelected(client.CurrentChar.CharId, objectId, originX, originY, originZ, client)
 	return
 }

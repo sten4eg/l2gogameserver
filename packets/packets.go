@@ -166,6 +166,28 @@ func (r *Reader) ReadUInt16() uint16 {
 	return result
 }
 
+func (r *Reader) ReadInt16() int16 {
+	var result int16
+
+	buffer := make([]byte, 2)
+	n, err := r.r.Read(buffer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if n < 2 {
+		return 0
+	}
+
+	buf := bytes.NewBuffer(buffer)
+
+	err = binary.Read(buf, binary.LittleEndian, &result)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return result
+}
 func (r *Reader) ReadUInt8() uint8 {
 	var result uint8
 
