@@ -10,6 +10,7 @@ func main() {
 	//defer profile.Start().Stop()
 	//defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
 	//defer profile.Start(profile.MemProfileHeap()).Stop()
+
 	models.NewWorld()
 	data.Load()
 	x := gameserver.New()

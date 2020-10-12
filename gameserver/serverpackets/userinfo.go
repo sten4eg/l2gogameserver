@@ -1,11 +1,13 @@
 package serverpackets
 
 import (
+	"github.com/jackc/pgx"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/packets"
 )
 
-func NewUserInfo(user *models.Character) []byte {
+func NewUserInfo(user *models.Character, db *pgx.Conn) []byte {
 
 	buffer := new(packets.Buffer)
 
@@ -50,8 +52,15 @@ func NewUserInfo(user *models.Character) []byte {
 	buffer.WriteD(40) //no weapon
 
 	//FOR
-	x := make([]byte, 312)
-	buffer.WriteSlice(x)
+	paperdolls := items.RestoreVisibleInventory(user.CharId, db)
+
+	for i, v := range paperdolls {
+		for ii, _ := range v {
+			buffer.WriteD(paperdolls[i][ii])
+		}
+	}
+	//	x := make([]byte, 312)
+	//	buffer.WriteSlice(x)
 	//FOR
 	//FOR
 

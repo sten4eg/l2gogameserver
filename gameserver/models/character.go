@@ -40,6 +40,7 @@ type Character struct {
 	CharName      pgtype.Bytea
 	CurrentRegion *WorldRegion
 	Conn          *Client
+	AttackEndTime int64
 }
 
 type Account struct {

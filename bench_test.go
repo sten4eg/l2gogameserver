@@ -2,25 +2,15 @@ package main
 
 import (
 	"testing"
+	"time"
 )
 
-var Sizze int
+var Sizze int64
 
 func BenchmarkFirst(b *testing.B) {
-	header := []byte{2, 0}
 
 	for i := 0; i < b.N; i++ {
-		size := 0
-		size += int(header[0])
-		size += int(header[1]) * 256
-		Sizze = size
+		Sizze = time.Now().Round(time.Millisecond).UnixNano() / 1e6
 
-	}
-}
-func BenchmarkSecond(b *testing.B) {
-	header := []byte{2, 0}
-	for i := 0; i < b.N; i++ {
-		dataSize := (int(header[0]) | int(header[1])<<8) - 2
-		Sizze = dataSize
 	}
 }

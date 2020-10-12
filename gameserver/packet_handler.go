@@ -55,7 +55,7 @@ func (g *GameServer) handler(client *models.Client) {
 		case 108:
 			serverpackets.NewShowMiniMap(client)
 		case 17:
-			pkg := serverpackets.NewUserInfo(client.CurrentChar)
+			pkg := serverpackets.NewUserInfo(client.CurrentChar, g.database)
 			err := client.Send(pkg, true)
 			if err != nil {
 				log.Println(err)
@@ -161,6 +161,8 @@ func (g *GameServer) handler(client *models.Client) {
 			clientpackets.NewAction(data, client)
 		case 72:
 			clientpackets.NewRequestTargetCanceld(data, client)
+		case 1:
+			clientpackets.NewAttack(data, client)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}
