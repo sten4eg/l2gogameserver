@@ -7,33 +7,33 @@ import (
 )
 
 const (
-	PAPERDOLL_UNDER     int32 = 0
-	PAPERDOLL_REAR      int32 = 1
-	PAPERDOLL_LEAR      int32 = 2
-	PAPERDOLL_NECK      int32 = 3
-	PAPERDOLL_RFINGER   int32 = 4
-	PAPERDOLL_LFINGER   int32 = 5
-	PAPERDOLL_HEAD            = 6
-	PAPERDOLL_RHAND           = 7
-	PAPERDOLL_LHAND           = 8
-	PAPERDOLL_GLOVES          = 9
-	PAPERDOLL_CHEST           = 10
-	PAPERDOLL_LEGS            = 11
-	PAPERDOLL_FEET            = 12
-	PAPERDOLL_BACK            = 13
-	PAPERDOLL_LRHAND          = 14
-	PAPERDOLL_HAIR            = 15
-	PAPERDOLL_DHAIR           = 16
-	PAPERDOLL_RBRACELET       = 17
-	PAPERDOLL_LBRACELET       = 18
-	PAPERDOLL_DECO1           = 19
-	PAPERDOLL_DECO2           = 20
-	PAPERDOLL_DECO3           = 21
-	PAPERDOLL_DECO4           = 22
-	PAPERDOLL_DECO5           = 23
-	PAPERDOLL_DECO6           = 24
-	PAPERDOLL_BELT            = 25
-	PaperdollMax        int32 = 26
+	PAPERDOLL_UNDER     uint8 = 0
+	PAPERDOLL_REAR      uint8 = 1
+	PAPERDOLL_LEAR      uint8 = 2
+	PAPERDOLL_NECK      uint8 = 3
+	PAPERDOLL_RFINGER   uint8 = 4
+	PAPERDOLL_LFINGER   uint8 = 5
+	PAPERDOLL_HEAD      uint8 = 6
+	PAPERDOLL_RHAND     uint8 = 7
+	PAPERDOLL_LHAND     uint8 = 8
+	PAPERDOLL_GLOVES    uint8 = 9
+	PAPERDOLL_CHEST     uint8 = 10
+	PAPERDOLL_LEGS      uint8 = 11
+	PAPERDOLL_FEET      uint8 = 12
+	PAPERDOLL_BACK      uint8 = 13
+	PAPERDOLL_LRHAND    uint8 = 14
+	PAPERDOLL_HAIR      uint8 = 15
+	PAPERDOLL_DHAIR     uint8 = 16
+	PAPERDOLL_RBRACELET uint8 = 17
+	PAPERDOLL_LBRACELET uint8 = 18
+	PAPERDOLL_DECO1     uint8 = 19
+	PAPERDOLL_DECO2     uint8 = 20
+	PAPERDOLL_DECO3     uint8 = 21
+	PAPERDOLL_DECO4     uint8 = 22
+	PAPERDOLL_DECO5     uint8 = 23
+	PAPERDOLL_DECO6     uint8 = 24
+	PAPERDOLL_BELT      uint8 = 25
+	PaperdollMax        uint8 = 26
 )
 
 type Item struct {

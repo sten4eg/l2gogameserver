@@ -92,7 +92,6 @@ func (g *GameServer) addOnlineChar(character *models.Character) {
 	g.OnlineCharacters.Mu.Unlock()
 }
 func (g *GameServer) Tick() {
-
 	for {
 		for _, v := range g.clients {
 			if v.CurrentChar.Coordinates == nil {
