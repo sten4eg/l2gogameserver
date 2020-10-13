@@ -51,22 +51,17 @@ func NewUserInfo(user *models.Character, db *pgx.Conn) []byte {
 
 	buffer.WriteD(40) //no weapon
 
-	//FOR
 	paperdolls := items.RestoreVisibleInventory(user.CharId, db)
 
-	for i, v := range paperdolls {
-		for ii, _ := range v {
-			buffer.WriteD(paperdolls[i][ii])
-		}
+	for i, _ := range paperdolls {
+		buffer.WriteD(paperdolls[i][0]) //objId
 	}
-
-	for _, w := range PAPERDOLL_ORDER {
-		buffer.WriteD()
+	for i, _ := range paperdolls {
+		buffer.WriteD(paperdolls[i][1]) //itemId
 	}
-	//	x := make([]byte, 312)
-	//	buffer.WriteSlice(x)
-	//FOR
-	//FOR
+	for i, _ := range paperdolls {
+		buffer.WriteD(paperdolls[i][2]) //enchant
+	}
 
 	buffer.WriteD(0) //talisman slot
 	buffer.WriteD(0) //Cloack
@@ -191,13 +186,4 @@ func NewUserInfo(user *models.Character, db *pgx.Conn) []byte {
 	buffer.WriteD(0)             //abnormalEffects
 
 	return buffer.Bytes()
-}
-
-var PAPERDOLL_ORDER = []byte{items.PAPERDOLL_UNDER, items.PAPERDOLL_REAR,
-	items.PAPERDOLL_LEAR, items.PAPERDOLL_NECK, items.PAPERDOLL_RFINGER, items.PAPERDOLL_LFINGER,
-	items.PAPERDOLL_HEAD, items.PAPERDOLL_RHAND, items.PAPERDOLL_LHAND, items.PAPERDOLL_GLOVES,
-	items.PAPERDOLL_CHEST, items.PAPERDOLL_LEGS, items.PAPERDOLL_FEET, items.PAPERDOLL_BACK,
-	items.PAPERDOLL_LRHAND, items.PAPERDOLL_HAIR, items.PAPERDOLL_DHAIR, items.PAPERDOLL_RBRACELET,
-	items.PAPERDOLL_LBRACELET, items.PAPERDOLL_DECO1, items.PAPERDOLL_DECO2, items.PAPERDOLL_DECO3,
-	items.PAPERDOLL_DECO4, items.PAPERDOLL_DECO5, items.PAPERDOLL_DECO6, items.PAPERDOLL_BELT,
 }
