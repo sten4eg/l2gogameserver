@@ -71,7 +71,7 @@ func (g *GameServer) handler(client *models.Client) {
 				log.Println(err)
 			}
 
-			pkg = serverpackets.NewItemList()
+			pkg = serverpackets.NewItemList(client.CurrentChar.CharId, g.database)
 			err = client.Send(pkg, true)
 			if err != nil {
 				log.Println(err)

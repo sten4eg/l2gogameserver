@@ -41,6 +41,7 @@ type Character struct {
 	CurrentRegion *WorldRegion
 	Conn          *Client
 	AttackEndTime int64
+	Inventory     int
 }
 
 type Account struct {

@@ -1,8 +1,12 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"github.com/jackc/pgx"
+	"l2gogameserver/gameserver/models/items"
+	"l2gogameserver/packets"
+)
 
-func NewItemList() []byte {
+func NewItemList(charId int32, conn *pgx.Conn) []byte {
 
 	buffer := new(packets.Buffer)
 
@@ -10,6 +14,8 @@ func NewItemList() []byte {
 	buffer.WriteH(0)
 	buffer.WriteH(1)
 
+	x := items.GetMyItems(charId, conn)
+	_ = x
 	buffer.WriteD(21)    //idItemInDB
 	buffer.WriteD(1147)  //getDisplayId idItemsInLineage
 	buffer.WriteD(0)     //Location

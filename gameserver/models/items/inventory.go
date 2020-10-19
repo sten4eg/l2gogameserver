@@ -2,8 +2,10 @@ package items
 
 import (
 	"database/sql"
+	"encoding/json"
 	"github.com/jackc/pgx"
 	"log"
+	"os"
 )
 
 const (
@@ -43,6 +45,9 @@ type Item struct {
 	LocData      sql.NullInt32
 }
 
+type Inventory struct {
+}
+
 func RestoreVisibleInventory(charId int32, db *pgx.Conn) [PaperdollMax][3]int32 {
 	var kek [PaperdollMax][3]int32
 
@@ -65,4 +70,86 @@ func RestoreVisibleInventory(charId int32, db *pgx.Conn) [PaperdollMax][3]int32 
 		kek[int32(LocData)][2] = int32(EnchantLevel)
 	}
 	return kek
+}
+
+type CrystalType struct {
+	Id                        int
+	CrystalId                 int
+	CrystalEnchantBonusArmor  int
+	CrystalEnchantBonusWeapon int32
+}
+type Items struct {
+	Id              int
+	Name            string
+	Icon            string
+	Weight          int
+	MaterialType    int
+	EquipReuseDelay int
+	Duration        int
+	Time            int
+	AutoDestroyTime int
+	BodyPart        string //struct
+	ReferencePrice  int
+	CrystalType     CrystalType
+	CrystalCount    int
+
+	Stackable               bool
+	Sellable                bool
+	Dropable                bool
+	Destroyable             bool
+	Tradeable               bool
+	Depositable             bool
+	Elementable             bool
+	Enchantable             int
+	QuestItem               bool
+	Freightable             bool
+	Allow_self_resurrection bool
+	Is_oly_restricted       bool
+	For_npc                 bool
+
+	Immediate_effect    bool
+	Ex_immediate_effect bool
+
+	DefaultAction       int
+	UseSkillDisTime     int
+	DefaultEnchantLevel int
+	ReuseDelay          int
+	SharedReuseGroup    int
+}
+
+var AllItems []Items
+
+func GetMyItems(charId int32, db *pgx.Conn) []Items {
+	rows, err := db.Query("SELECT object_id,item,loc_data,enchant_level FROM items WHERE owner_id=$1", charId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_ = rows
+	var myItems []Items
+	myItems = append(myItems, AllItems[1])
+	return myItems
+	//for rows.Next() {
+	//	var objId int
+	//	var Item int
+	//	var EnchantLevel int
+	//	var LocData int
+	//	err := rows.Scan(&objId, &Item, &LocData, &EnchantLevel)
+	//	if err != nil {
+	//		log.Println(err)
+	//	}
+	//
+	//}
+}
+
+func LoadItems() {
+	file, err := os.Open("./data/stats/items/weapon.json")
+	if err != nil {
+		log.Fatal("Failed to load config file")
+	}
+
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&AllItems)
+	if err != nil {
+		log.Fatal("Failed to decode config file")
+	}
 }
