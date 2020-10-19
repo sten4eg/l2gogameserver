@@ -80,6 +80,9 @@ type CrystalType struct {
 }
 type Items struct {
 	Id              int
+	ObjId           int32
+	Loc             int32
+	Count           int64
 	Name            string
 	Icon            string
 	Weight          int
@@ -119,26 +122,57 @@ type Items struct {
 
 var AllItems []Items
 
+type MyItem struct {
+	Id      int32
+	ObjId   int32
+	Name    int32
+	Loc     int32
+	Count   int32
+	Enchant int32
+	Mana    int32
+	Time    int32
+}
+
 func GetMyItems(charId int32, db *pgx.Conn) []Items {
-	rows, err := db.Query("SELECT object_id,item,loc_data,enchant_level FROM items WHERE owner_id=$1", charId)
+	rows, err := db.Query("SELECT object_id,item,loc_data,enchant_level,count FROM items WHERE owner_id=$1", charId)
 	if err != nil {
 		log.Fatal(err)
 	}
-	_ = rows
+
+	type f struct {
+		objId   int
+		Item    int
+		Enchant int
+		Loc     int
+		Count   int
+	}
+	var t []f
+	for rows.Next() {
+		var q f
+		err := rows.Scan(&q.objId, &q.Item, &q.Loc, &q.Enchant, &q.Count)
+		if err != nil {
+			log.Println(err)
+		}
+		t = append(t, q)
+	}
+
 	var myItems []Items
-	myItems = append(myItems, AllItems[1])
+	for _, w := range AllItems {
+		for _, q := range t {
+			if w.Id == q.Item {
+				ni := new(Items)
+				ni = &w
+				ni.ObjId = int32(q.objId)
+				ni.Loc = int32(q.Loc)
+				ni.Count = int64(q.Count)
+				myItems = append(myItems, *ni)
+
+			}
+		}
+	}
+	e := AllItems
+	_ = e
 	return myItems
-	//for rows.Next() {
-	//	var objId int
-	//	var Item int
-	//	var EnchantLevel int
-	//	var LocData int
-	//	err := rows.Scan(&objId, &Item, &LocData, &EnchantLevel)
-	//	if err != nil {
-	//		log.Println(err)
-	//	}
-	//
-	//}
 }
 
 func LoadItems() {
@@ -152,4 +186,5 @@ func LoadItems() {
 	if err != nil {
 		log.Fatal("Failed to decode config file")
 	}
+
 }
