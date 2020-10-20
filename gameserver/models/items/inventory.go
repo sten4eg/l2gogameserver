@@ -85,39 +85,21 @@ type Items struct {
 	Count           int64
 	Name            string
 	Icon            string
+	Type            string
+	WeaponType      string
+	Bodypart        string
+	AttackRange     string
+	DamageRange     string
+	ImmediateEffect bool
 	Weight          int
-	MaterialType    int
-	EquipReuseDelay int
-	Duration        int
-	Time            int
-	AutoDestroyTime int
-	BodyPart        string //struct
-	ReferencePrice  int
-	CrystalType     CrystalType
-	CrystalCount    int
-
-	Stackable               bool
-	Sellable                bool
-	Dropable                bool
-	Destroyable             bool
-	Tradeable               bool
-	Depositable             bool
-	Elementable             bool
-	Enchantable             int
-	QuestItem               bool
-	Freightable             bool
-	Allow_self_resurrection bool
-	Is_oly_restricted       bool
-	For_npc                 bool
-
-	Immediate_effect    bool
-	Ex_immediate_effect bool
-
-	DefaultAction       int
-	UseSkillDisTime     int
-	DefaultEnchantLevel int
-	ReuseDelay          int
-	SharedReuseGroup    int
+	Material        string
+	Price           int
+	Soulshots       int
+	Spiritshots     int
+	PAtk            int
+	MAtk            int
+	CritRate        int
+	PAtkSpd         int
 }
 
 var AllItems []Items

@@ -1,5 +1,38 @@
 [
-{"icon":"icon.weapon_small_sword_i00","price":590,"default_action":"EQUIP","weapon_type":"SWORD","bodypart":"rhand","random_damage":10,"attack_range":40,"damage_range":"0;0;40;120","immediate_effect":true,"material":"STEEL","weight":1600,"soulshots":1,"spiritshots":1,"id":1,"type":"Weapon","name":"Short Sword"},
-
-{"icon":"icon.weapon_long_sword_i00","price":105000,"default_action":"EQUIP","weapon_type":"SWORD","bodypart":"rhand","random_damage":10,"attack_range":40,"damage_range":"0;0;40;120","immediate_effect":true,"material":"FINE_STEEL","weight":1560,"soulshots":2,"spiritshots":2,"id":2,"type":"Weapon","name":"Long Sword"}
+  {
+    "icon": "icon.weapon_small_sword_i00",
+    "price": 590,
+    "default_action": "EQUIP",
+    "weapon_type": "SWORD",
+    "bodypart": "rhand",
+    "random_damage": 10,
+    "attack_range": 40,
+    "damage_range": "0;0;40;120",
+    "immediate_effect": true,
+    "material": "STEEL",
+    "weight": 1600,
+    "soulshots": 1,
+    "spiritshots": 1,
+    "id": 1,
+    "type": "Weapon",
+    "name": "Short Sword"
+  },
+  {
+    "icon": "icon.weapon_long_sword_i00",
+    "price": 105000,
+    "default_action": "EQUIP",
+    "weapon_type": "SWORD",
+    "bodypart": "rhand",
+    "random_damage": 10,
+    "attack_range": 40,
+    "damage_range": "0;0;40;120",
+    "immediate_effect": true,
+    "material": "FINE_STEEL",
+    "weight": 1560,
+    "soulshots": 2,
+    "spiritshots": 2,
+    "id": 2,
+    "type": "Weapon",
+    "name": "Long Sword"
+  }
 ]
