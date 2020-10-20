@@ -111,6 +111,7 @@ type Item struct {
 	Name            string
 	Icon            string
 	Type            string
+	Enchant         int16
 	WeaponType      string
 	Bodypart        int32
 	ItemType        int16
@@ -177,6 +178,7 @@ func GetMyItems(charId int32, db *pgx.Conn) []Item {
 				ni.LocData = int32(q.LocData)
 				ni.Count = int64(q.Count)
 				ni.Loc = q.Loc
+				ni.Enchant = int16(q.Enchant)
 				myItems = append(myItems, *ni)
 
 			}
@@ -223,42 +225,42 @@ var Slots map[string]int32
 func SetSlots() {
 	slots := make(map[string]int32)
 	Slots = slots
-	Slots["shirt"] = 0x0001
-	Slots["lbracelet"] = 0x200000
-	Slots["rbracelet"] = 0x100000
-	Slots["talisman"] = 0x400000
-	Slots["chest"] = 0x0400
-	Slots["fullarmor"] = 0x8000
-	Slots["head"] = 0x0040
-	Slots["hair"] = 0x010000
-	Slots["hairall"] = 0x080000
-	Slots["underwear"] = 0x0001
-	Slots["back"] = 0x2000
-	Slots["neck"] = 0x0008
-	Slots["legs"] = 0x0800
-	Slots["feet"] = 0x1000
-	Slots["gloves"] = 0x0200
-	Slots["chest,legs"] = 0x0400 | 0x0800
-	Slots["belt"] = 0x10000000
-	Slots["rhand"] = 0x0080
-	Slots["lhand"] = 0x0100
-	Slots["lrhand"] = 0x4000
-	Slots["rear;lear"] = 0x0002 | 0x0004
-	Slots["rfinger;lfinger"] = 0x0010 | 0x0020
-	Slots["wolf"] = -100
-	Slots["greatwolf"] = -104
-	Slots["hatchling"] = -101
-	Slots["strider"] = -102
-	Slots["babypet"] = -103
-	Slots["none"] = 0x0000
+	Slots["shirt"] = SlotUnderwear
+	Slots["lbracelet"] = SlotLBracelet
+	Slots["rbracelet"] = SlotRBracelet
+	Slots["talisman"] = SlotDeco
+	Slots["chest"] = SlotChest
+	Slots["fullarmor"] = SlotFullArmor
+	Slots["head"] = SlotHead
+	Slots["hair"] = SlotHair
+	Slots["hairall"] = SlotHairall
+	Slots["underwear"] = SlotUnderwear
+	Slots["back"] = SlotBack
+	Slots["neck"] = SlotNeck
+	Slots["legs"] = SlotLegs
+	Slots["feet"] = SlotFeet
+	Slots["gloves"] = SlotGloves
+	Slots["chest,legs"] = SlotChest | SlotLegs
+	Slots["belt"] = SlotBelt
+	Slots["rhand"] = SlotRHand
+	Slots["lhand"] = SlotLHand
+	Slots["lrhand"] = SlotLrHand
+	Slots["rear;lear"] = SlotREar | SlotLEar
+	Slots["rfinger;lfinger"] = SlotRFinger | SlotLFinger
+	Slots["wolf"] = SlotWolf
+	Slots["greatwolf"] = SlotGreatwolf
+	Slots["hatchling"] = SlotHatchling
+	Slots["strider"] = SlotStrider
+	Slots["babypet"] = SlotBabypet
+	Slots["none"] = SlotNone
 
 	// retail compatibility
-	Slots["onepiece"] = 0x8000
-	Slots["hair2"] = 0x040000
-	Slots["dhair"] = 0x080000
-	Slots["alldress"] = 0x020000
-	Slots["deco1"] = 0x400000
-	Slots["waist"] = 0x10000000
+	Slots["onepiece"] = SlotFullArmor
+	Slots["hair2"] = SlotHair2
+	Slots["dhair"] = SlotHairall
+	Slots["alldress"] = SlotAlldress
+	Slots["deco1"] = SlotDeco
+	Slots["waist"] = SlotBelt
 
 }
 func getSlots(s string) int32 {
