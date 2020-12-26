@@ -51,16 +51,18 @@ func NewUserInfo(user *models.Character, db *pgx.Conn) []byte {
 
 	buffer.WriteD(40) //no weapon
 
+	papa := items.GetPaperdollOrder()
+
 	paperdolls := items.RestoreVisibleInventory(user.CharId, db)
 
-	for i, _ := range paperdolls {
-		buffer.WriteD(paperdolls[i][0]) //objId
+	for _, v := range papa {
+		buffer.WriteD(paperdolls[v][0]) //objId
 	}
-	for i, _ := range paperdolls {
-		buffer.WriteD(paperdolls[i][1]) //itemId
+	for _, v := range papa {
+		buffer.WriteD(paperdolls[v][1]) //itemId
 	}
-	for i, _ := range paperdolls {
-		buffer.WriteD(paperdolls[i][2]) //enchant
+	for _, v := range papa {
+		buffer.WriteD(paperdolls[v][2]) //enchant
 	}
 
 	buffer.WriteD(0) //talisman slot

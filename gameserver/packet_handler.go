@@ -71,11 +71,7 @@ func (g *GameServer) handler(client *models.Client) {
 				log.Println(err)
 			}
 
-			pkg = serverpackets.NewItemList(client.CurrentChar.CharId, g.database)
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			serverpackets.NewItemList(client, g.database)
 
 			pkg = serverpackets.NewExQuestItemList()
 			err = client.Send(pkg, true)
@@ -163,6 +159,10 @@ func (g *GameServer) handler(client *models.Client) {
 			clientpackets.NewRequestTargetCanceld(data, client)
 		case 1:
 			clientpackets.NewAttack(data, client)
+		case 25:
+			clientpackets.NewUseItem(data, client, g.database)
+		case 87:
+			clientpackets.NewRequestRestart(data, client, g.database)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}

@@ -3,6 +3,7 @@ package serverpackets
 import (
 	"github.com/jackc/pgx"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/items"
 	"log"
 )
 
@@ -66,6 +67,8 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 	//todo блок который должен повторяться
 
 	for _, char := range account.Char {
+		papa := items.RestoreVisibleInventory(char.CharId, db)
+		paperdolls := items.GetPaperdollOrder()
 
 		client.Buffer.WriteS(string(char.CharName.Bytes)) // Pers name
 
@@ -80,7 +83,7 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 		client.Buffer.WriteD(char.Race)      // race
 		client.Buffer.WriteD(char.BaseClass) // baseclass
 
-		client.Buffer.WriteD(0) // active ??
+		client.Buffer.WriteD(1) // active ??
 
 		client.Buffer.WriteD(char.Coordinates.X) //x 53
 		client.Buffer.WriteD(char.Coordinates.Y) //y 57
@@ -105,10 +108,10 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 		client.Buffer.WriteD(0)
 		client.Buffer.WriteD(0)
 		client.Buffer.WriteD(0)
-		//
-		//
-		m := make([]byte, 104)
-		client.Buffer.WriteSlice(m)
+
+		for _, v := range paperdolls {
+			client.Buffer.WriteD(papa[v][1])
+		}
 
 		client.Buffer.WriteD(char.HairStyle) //hairStyle
 		client.Buffer.WriteD(char.HairColor) //hairColor

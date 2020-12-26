@@ -105,7 +105,7 @@ func (g *GameServer) Tick() {
 				v.CurrentChar.CurrentRegion = reg
 
 				var info models.PacketByte
-				info.B = serverpackets.NewCharInfo(v.CurrentChar)
+				info.B = serverpackets.NewCharInfo(v.CurrentChar, g.database)
 				g.Broad(v, info)
 				BroadCastToMe(g, v.CurrentChar)
 				log.Println(v.CurrentChar.CharId, " change Region ")
@@ -140,7 +140,7 @@ func BroadCastToMe(g *GameServer, my *models.Character) {
 
 	for _, v := range charIds {
 		var info models.PacketByte
-		info.B = serverpackets.NewCharInfo(g.OnlineCharacters.Char[v])
+		info.B = serverpackets.NewCharInfo(g.OnlineCharacters.Char[v], g.database)
 		me.Send(info.GetB(), true)
 	}
 

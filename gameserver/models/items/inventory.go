@@ -9,33 +9,32 @@ import (
 )
 
 const (
-	PAPERDOLL_UNDER     uint8 = 0
-	PAPERDOLL_REAR      uint8 = 1
-	PAPERDOLL_LEAR      uint8 = 2
-	PAPERDOLL_NECK      uint8 = 3
-	PAPERDOLL_RFINGER   uint8 = 4
-	PAPERDOLL_LFINGER   uint8 = 5
-	PAPERDOLL_HEAD      uint8 = 6
-	PAPERDOLL_RHAND     uint8 = 7
-	PAPERDOLL_LHAND     uint8 = 8
-	PAPERDOLL_GLOVES    uint8 = 9
-	PAPERDOLL_CHEST     uint8 = 10
-	PAPERDOLL_LEGS      uint8 = 11
-	PAPERDOLL_FEET      uint8 = 12
-	PAPERDOLL_BACK      uint8 = 13
-	PAPERDOLL_LRHAND    uint8 = 14
-	PAPERDOLL_HAIR      uint8 = 15
-	PAPERDOLL_DHAIR     uint8 = 16
-	PAPERDOLL_RBRACELET uint8 = 17
-	PAPERDOLL_LBRACELET uint8 = 18
-	PAPERDOLL_DECO1     uint8 = 19
-	PAPERDOLL_DECO2     uint8 = 20
-	PAPERDOLL_DECO3     uint8 = 21
-	PAPERDOLL_DECO4     uint8 = 22
-	PAPERDOLL_DECO5     uint8 = 23
-	PAPERDOLL_DECO6     uint8 = 24
-	PAPERDOLL_BELT      uint8 = 25
-	PaperdollMax        uint8 = 26
+	PAPERDOLL_UNDER      uint8 = 0
+	PAPERDOLL_HEAD       uint8 = 1
+	PAPERDOLL_HAIR       uint8 = 2
+	PAPERDOLL_HAIR2      uint8 = 3
+	PAPERDOLL_NECK       uint8 = 4
+	PAPERDOLL_RHAND      uint8 = 5
+	PAPERDOLL_CHEST      uint8 = 6
+	PAPERDOLL_LHAND      uint8 = 7
+	PAPERDOLL_REAR       uint8 = 8
+	PAPERDOLL_LEAR       uint8 = 9
+	PAPERDOLL_GLOVES     uint8 = 10
+	PAPERDOLL_LEGS       uint8 = 11
+	PAPERDOLL_FEET       uint8 = 12
+	PAPERDOLL_RFINGER    uint8 = 13
+	PAPERDOLL_LFINGER    uint8 = 14
+	PAPERDOLL_LBRACELET  uint8 = 15
+	PAPERDOLL_RBRACELET  uint8 = 16
+	PAPERDOLL_DECO1      uint8 = 17
+	PAPERDOLL_DECO2      uint8 = 18
+	PAPERDOLL_DECO3      uint8 = 19
+	PAPERDOLL_DECO4      uint8 = 20
+	PAPERDOLL_DECO5      uint8 = 21
+	PAPERDOLL_DECO6      uint8 = 22
+	PAPERDOLL_CLOAK      uint8 = 23
+	PAPERDOLL_BELT       uint8 = 24
+	PAPERDOLL_TOTALSLOTS uint8 = 25
 )
 
 type ItemFromDb struct {
@@ -48,8 +47,8 @@ type ItemFromDb struct {
 type Inventory struct {
 }
 
-func RestoreVisibleInventory(charId int32, db *pgx.Conn) [PaperdollMax][3]int32 {
-	var kek [PaperdollMax][3]int32
+func RestoreVisibleInventory(charId int32, db *pgx.Conn) [31][3]int32 {
+	var kek [31][3]int32
 
 	rows, err := db.Query("SELECT object_id,item,loc_data,enchant_level FROM items WHERE owner_id=$1 AND loc=$2", charId, "PAPERDOLL")
 	if err != nil {
@@ -272,4 +271,51 @@ func (i *Item) IsEquipped() int16 {
 		return 0
 	}
 	return 1
+}
+
+func UseEquippableItem(objId int32, charId int32) {
+	log.Println(objId)
+}
+
+func SaveInventoryInDB(conn *pgx.Conn, inventory []Item) {
+
+	for _, v := range inventory {
+		_, err := conn.Exec("UPDATE items SET loc_data = $1, loc = $2", v.LocData, v.Loc)
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}
+}
+
+func GetPaperdollOrder() []uint8 {
+	var x []uint8
+
+	x = append(x, PAPERDOLL_UNDER)
+	x = append(x, PAPERDOLL_REAR)
+	x = append(x, PAPERDOLL_LEAR)
+	x = append(x, PAPERDOLL_NECK)
+	x = append(x, PAPERDOLL_RFINGER)
+	x = append(x, PAPERDOLL_LFINGER)
+	x = append(x, PAPERDOLL_HEAD)
+	x = append(x, PAPERDOLL_RHAND)
+	x = append(x, PAPERDOLL_LHAND)
+	x = append(x, PAPERDOLL_GLOVES)
+	x = append(x, PAPERDOLL_CHEST)
+	x = append(x, PAPERDOLL_LEGS)
+	x = append(x, PAPERDOLL_FEET)
+	x = append(x, PAPERDOLL_CLOAK)
+	x = append(x, PAPERDOLL_RHAND)
+	x = append(x, PAPERDOLL_HAIR)
+	x = append(x, PAPERDOLL_HAIR2)
+	x = append(x, PAPERDOLL_RBRACELET)
+	x = append(x, PAPERDOLL_LBRACELET)
+	x = append(x, PAPERDOLL_DECO1)
+	x = append(x, PAPERDOLL_DECO2)
+	x = append(x, PAPERDOLL_DECO3)
+	x = append(x, PAPERDOLL_DECO4)
+	x = append(x, PAPERDOLL_DECO5)
+	x = append(x, PAPERDOLL_DECO6)
+	x = append(x, PAPERDOLL_BELT)
+
+	return x
 }

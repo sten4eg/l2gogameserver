@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/jackc/pgx/pgtype"
 	"l2gogameserver/data"
+	"l2gogameserver/gameserver/models/items"
 	"log"
 	"math/rand"
 	"os"
@@ -41,7 +42,7 @@ type Character struct {
 	CurrentRegion *WorldRegion
 	Conn          *Client
 	AttackEndTime int64
-	Inventory     int
+	Paperdoll     [items.PAPERDOLL_TOTALSLOTS][]uint8
 }
 
 type Account struct {

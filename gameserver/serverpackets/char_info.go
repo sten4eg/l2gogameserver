@@ -1,11 +1,13 @@
 package serverpackets
 
 import (
+	"github.com/jackc/pgx"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/packets"
 )
 
-func NewCharInfo(user *models.Character) []byte {
+func NewCharInfo(user *models.Character, db *pgx.Conn) []byte {
 
 	buffer := new(packets.Buffer)
 	buffer.WriteSingleByte(0x31)
@@ -26,9 +28,18 @@ func NewCharInfo(user *models.Character) []byte {
 	buffer.WriteD(user.Sex)       //sex
 	buffer.WriteD(user.BaseClass) //baseClass
 
-	////////FOR FOR
-	m := make([]byte, 168)
-	buffer.WriteSlice(m)
+	papa := getPaperdollOrder()
+	paper := items.RestoreVisibleInventory(user.CharId, db)
+	for _, v := range papa {
+		buffer.WriteD(paper[v][1])
+	}
+
+	for _, v := range papa {
+		i := v
+		_ = i
+		buffer.WriteD(0) // augmented
+	}
+
 	buffer.WriteD(0) //talisman
 	buffer.WriteD(0) //cloack
 
@@ -121,4 +132,32 @@ func NewCharInfo(user *models.Character) []byte {
 	buffer.WriteD(0) //getAbnormalVisualEffectSpecial
 
 	return buffer.Bytes()
+}
+
+func getPaperdollOrder() []uint8 {
+	var x []uint8
+
+	x = append(x, items.PAPERDOLL_UNDER)
+	x = append(x, items.PAPERDOLL_HEAD)
+	x = append(x, items.PAPERDOLL_RHAND)
+	x = append(x, items.PAPERDOLL_LHAND)
+	x = append(x, items.PAPERDOLL_GLOVES)
+	x = append(x, items.PAPERDOLL_CHEST)
+	x = append(x, items.PAPERDOLL_LEGS)
+	x = append(x, items.PAPERDOLL_FEET)
+	x = append(x, items.PAPERDOLL_CLOAK)
+	x = append(x, items.PAPERDOLL_RHAND)
+	x = append(x, items.PAPERDOLL_HAIR)
+	x = append(x, items.PAPERDOLL_HAIR2)
+	x = append(x, items.PAPERDOLL_RBRACELET)
+	x = append(x, items.PAPERDOLL_LBRACELET)
+	x = append(x, items.PAPERDOLL_DECO1)
+	x = append(x, items.PAPERDOLL_DECO2)
+	x = append(x, items.PAPERDOLL_DECO3)
+	x = append(x, items.PAPERDOLL_DECO4)
+	x = append(x, items.PAPERDOLL_DECO5)
+	x = append(x, items.PAPERDOLL_DECO6)
+	x = append(x, items.PAPERDOLL_BELT)
+
+	return x
 }
