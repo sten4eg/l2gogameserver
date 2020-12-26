@@ -55,6 +55,11 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 		character.Conn = client
 		account.Char = append(account.Char, &character)
 	}
+	rows.Close()
+
+	for _, v := range account.Char {
+		v.Paperdoll = items.RestoreVisibleInventory(v.CharId, db)
+	}
 
 	client.Buffer.WriteH(0) //reserve
 	client.Buffer.WriteSingleByte(0x09)
@@ -67,8 +72,6 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 	//todo блок который должен повторяться
 
 	for _, char := range account.Char {
-		papa := items.RestoreVisibleInventory(char.CharId, db)
-		paperdolls := items.GetPaperdollOrder()
 
 		client.Buffer.WriteS(string(char.CharName.Bytes)) // Pers name
 
@@ -109,8 +112,9 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 		client.Buffer.WriteD(0)
 		client.Buffer.WriteD(0)
 
-		for _, v := range paperdolls {
-			client.Buffer.WriteD(papa[v][1])
+		paperdoll := items.RestoreVisibleInventory(char.CharId, db)
+		for _, slot := range items.GetPaperdollOrder() {
+			client.Buffer.WriteD(paperdoll[slot][1])
 		}
 
 		client.Buffer.WriteD(char.HairStyle) //hairStyle

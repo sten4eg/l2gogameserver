@@ -55,7 +55,7 @@ func (g *GameServer) handler(client *models.Client) {
 		case 108:
 			serverpackets.NewShowMiniMap(client)
 		case 17:
-			pkg := serverpackets.NewUserInfo(client.CurrentChar, g.database)
+			pkg := serverpackets.NewUserInfo(client.CurrentChar)
 			err := client.Send(pkg, true)
 			if err != nil {
 				log.Println(err)

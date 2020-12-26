@@ -11,12 +11,9 @@ func NewCharInfo(user *models.Character, db *pgx.Conn) []byte {
 
 	buffer := new(packets.Buffer)
 	buffer.WriteSingleByte(0x31)
-	//q.WriteD(-75122)
-	//q.WriteD(258213)
-	//q.WriteD(-3108)
-	buffer.WriteD(user.Coordinates.X) //x 53
-	buffer.WriteD(user.Coordinates.Y) //y 57
-	buffer.WriteD(user.Coordinates.Z) //z 61
+	buffer.WriteD(user.Coordinates.X)
+	buffer.WriteD(user.Coordinates.Y)
+	buffer.WriteD(user.Coordinates.Z)
 
 	buffer.WriteD(0) // Vehicle
 
@@ -28,13 +25,11 @@ func NewCharInfo(user *models.Character, db *pgx.Conn) []byte {
 	buffer.WriteD(user.Sex)       //sex
 	buffer.WriteD(user.BaseClass) //baseClass
 
-	papa := getPaperdollOrder()
-	paper := items.RestoreVisibleInventory(user.CharId, db)
-	for _, v := range papa {
-		buffer.WriteD(paper[v][1])
+	for _, v := range getPaperdollOrder() {
+		buffer.WriteD(user.Paperdoll[v][1])
 	}
 
-	for _, v := range papa {
+	for _, v := range getPaperdollOrder() {
 		i := v
 		_ = i
 		buffer.WriteD(0) // augmented
@@ -135,29 +130,27 @@ func NewCharInfo(user *models.Character, db *pgx.Conn) []byte {
 }
 
 func getPaperdollOrder() []uint8 {
-	var x []uint8
-
-	x = append(x, items.PAPERDOLL_UNDER)
-	x = append(x, items.PAPERDOLL_HEAD)
-	x = append(x, items.PAPERDOLL_RHAND)
-	x = append(x, items.PAPERDOLL_LHAND)
-	x = append(x, items.PAPERDOLL_GLOVES)
-	x = append(x, items.PAPERDOLL_CHEST)
-	x = append(x, items.PAPERDOLL_LEGS)
-	x = append(x, items.PAPERDOLL_FEET)
-	x = append(x, items.PAPERDOLL_CLOAK)
-	x = append(x, items.PAPERDOLL_RHAND)
-	x = append(x, items.PAPERDOLL_HAIR)
-	x = append(x, items.PAPERDOLL_HAIR2)
-	x = append(x, items.PAPERDOLL_RBRACELET)
-	x = append(x, items.PAPERDOLL_LBRACELET)
-	x = append(x, items.PAPERDOLL_DECO1)
-	x = append(x, items.PAPERDOLL_DECO2)
-	x = append(x, items.PAPERDOLL_DECO3)
-	x = append(x, items.PAPERDOLL_DECO4)
-	x = append(x, items.PAPERDOLL_DECO5)
-	x = append(x, items.PAPERDOLL_DECO6)
-	x = append(x, items.PAPERDOLL_BELT)
-
-	return x
+	return []uint8{
+		items.PAPERDOLL_UNDER,
+		items.PAPERDOLL_HEAD,
+		items.PAPERDOLL_RHAND,
+		items.PAPERDOLL_LHAND,
+		items.PAPERDOLL_GLOVES,
+		items.PAPERDOLL_CHEST,
+		items.PAPERDOLL_LEGS,
+		items.PAPERDOLL_FEET,
+		items.PAPERDOLL_CLOAK,
+		items.PAPERDOLL_RHAND,
+		items.PAPERDOLL_HAIR,
+		items.PAPERDOLL_HAIR2,
+		items.PAPERDOLL_RBRACELET,
+		items.PAPERDOLL_LBRACELET,
+		items.PAPERDOLL_DECO1,
+		items.PAPERDOLL_DECO2,
+		items.PAPERDOLL_DECO3,
+		items.PAPERDOLL_DECO4,
+		items.PAPERDOLL_DECO5,
+		items.PAPERDOLL_DECO6,
+		items.PAPERDOLL_BELT,
+	}
 }

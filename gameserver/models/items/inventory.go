@@ -54,6 +54,7 @@ func RestoreVisibleInventory(charId int32, db *pgx.Conn) [31][3]int32 {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer rows.Close()
 	type Items []ItemFromDb
 	for rows.Next() {
 		var objId int
@@ -288,34 +289,32 @@ func SaveInventoryInDB(conn *pgx.Conn, inventory []Item) {
 }
 
 func GetPaperdollOrder() []uint8 {
-	var x []uint8
-
-	x = append(x, PAPERDOLL_UNDER)
-	x = append(x, PAPERDOLL_REAR)
-	x = append(x, PAPERDOLL_LEAR)
-	x = append(x, PAPERDOLL_NECK)
-	x = append(x, PAPERDOLL_RFINGER)
-	x = append(x, PAPERDOLL_LFINGER)
-	x = append(x, PAPERDOLL_HEAD)
-	x = append(x, PAPERDOLL_RHAND)
-	x = append(x, PAPERDOLL_LHAND)
-	x = append(x, PAPERDOLL_GLOVES)
-	x = append(x, PAPERDOLL_CHEST)
-	x = append(x, PAPERDOLL_LEGS)
-	x = append(x, PAPERDOLL_FEET)
-	x = append(x, PAPERDOLL_CLOAK)
-	x = append(x, PAPERDOLL_RHAND)
-	x = append(x, PAPERDOLL_HAIR)
-	x = append(x, PAPERDOLL_HAIR2)
-	x = append(x, PAPERDOLL_RBRACELET)
-	x = append(x, PAPERDOLL_LBRACELET)
-	x = append(x, PAPERDOLL_DECO1)
-	x = append(x, PAPERDOLL_DECO2)
-	x = append(x, PAPERDOLL_DECO3)
-	x = append(x, PAPERDOLL_DECO4)
-	x = append(x, PAPERDOLL_DECO5)
-	x = append(x, PAPERDOLL_DECO6)
-	x = append(x, PAPERDOLL_BELT)
-
-	return x
+	return []uint8{
+		PAPERDOLL_UNDER,
+		PAPERDOLL_REAR,
+		PAPERDOLL_LEAR,
+		PAPERDOLL_NECK,
+		PAPERDOLL_RFINGER,
+		PAPERDOLL_LFINGER,
+		PAPERDOLL_HEAD,
+		PAPERDOLL_RHAND,
+		PAPERDOLL_LHAND,
+		PAPERDOLL_GLOVES,
+		PAPERDOLL_CHEST,
+		PAPERDOLL_LEGS,
+		PAPERDOLL_FEET,
+		PAPERDOLL_CLOAK,
+		PAPERDOLL_RHAND,
+		PAPERDOLL_HAIR,
+		PAPERDOLL_HAIR2,
+		PAPERDOLL_RBRACELET,
+		PAPERDOLL_LBRACELET,
+		PAPERDOLL_DECO1,
+		PAPERDOLL_DECO2,
+		PAPERDOLL_DECO3,
+		PAPERDOLL_DECO4,
+		PAPERDOLL_DECO5,
+		PAPERDOLL_DECO6,
+		PAPERDOLL_BELT,
+	}
 }

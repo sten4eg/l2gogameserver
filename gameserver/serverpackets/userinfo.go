@@ -1,20 +1,19 @@
 package serverpackets
 
 import (
-	"github.com/jackc/pgx"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/packets"
 )
 
-func NewUserInfo(user *models.Character, db *pgx.Conn) []byte {
+func NewUserInfo(user *models.Character) []byte {
 
 	buffer := new(packets.Buffer)
 
 	buffer.WriteSingleByte(0x32)
-	buffer.WriteD(user.Coordinates.X) //x 53
-	buffer.WriteD(user.Coordinates.Y) //y 57
-	buffer.WriteD(user.Coordinates.Z) //z 61
+	buffer.WriteD(user.Coordinates.X)
+	buffer.WriteD(user.Coordinates.Y)
+	buffer.WriteD(user.Coordinates.Z)
 
 	buffer.WriteD(0) // Vehicle
 
@@ -51,18 +50,14 @@ func NewUserInfo(user *models.Character, db *pgx.Conn) []byte {
 
 	buffer.WriteD(40) //no weapon
 
-	papa := items.GetPaperdollOrder()
-
-	paperdolls := items.RestoreVisibleInventory(user.CharId, db)
-
-	for _, v := range papa {
-		buffer.WriteD(paperdolls[v][0]) //objId
+	for _, slot := range items.GetPaperdollOrder() {
+		buffer.WriteD(user.Paperdoll[slot][0]) //objId
 	}
-	for _, v := range papa {
-		buffer.WriteD(paperdolls[v][1]) //itemId
+	for _, slot := range items.GetPaperdollOrder() {
+		buffer.WriteD(user.Paperdoll[slot][1]) //itemId
 	}
-	for _, v := range papa {
-		buffer.WriteD(paperdolls[v][2]) //enchant
+	for _, slot := range items.GetPaperdollOrder() {
+		buffer.WriteD(user.Paperdoll[slot][2]) //enchant
 	}
 
 	buffer.WriteD(0) //talisman slot
