@@ -48,7 +48,11 @@ func NewUserInfo(user *models.Character) []byte {
 
 	buffer.WriteD(109020) //maxLoad
 
-	buffer.WriteD(40) //no weapon
+	if user.IsActiveWeapon() {
+		buffer.WriteD(20) //no weapon
+	} else {
+		buffer.WriteD(40) //equiped weapon
+	}
 
 	for _, slot := range items.GetPaperdollOrder() {
 		buffer.WriteD(user.Paperdoll[slot][0]) //objId

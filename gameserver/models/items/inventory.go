@@ -49,7 +49,6 @@ type Inventory struct {
 
 func RestoreVisibleInventory(charId int32, db *pgx.Conn) [31][3]int32 {
 	var kek [31][3]int32
-
 	rows, err := db.Query("SELECT object_id,item,loc_data,enchant_level FROM items WHERE owner_id=$1 AND loc=$2", charId, "PAPERDOLL")
 	if err != nil {
 		log.Fatal(err)

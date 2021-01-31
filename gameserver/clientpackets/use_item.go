@@ -30,9 +30,9 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 
 	var itm items.Item
 	if ii.IsEquipped() == 1 {
-
+		itm = unEquipedAndRecord(ii, myItems)
 	} else {
-		itm = equipItemAndRecord(ii)
+		itm = equipItemAndRecord(ii, myItems)
 	}
 	myItems[q] = itm
 
@@ -41,21 +41,52 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 	dataq := serverpackets.NewInventoryUpdate(myItems)
 	client.SimpleSend(dataq, true)
 
+	client.CurrentChar.Paperdoll = items.RestoreVisibleInventory(client.CurrentChar.CharId, conn)
+	pkg := serverpackets.NewUserInfo(client.CurrentChar)
+	err := client.Send(pkg, true)
+	if err != nil {
+		log.Println(err)
+	}
 	//items.UseEquippableItem(client.CurrentChar.Inventory)
 }
 
-func equipItemAndRecord(item items.Item) items.Item {
+func unEquipedAndRecord(item items.Item, myItems []items.Item) items.Item {
 	var i items.Item
 	switch item.Bodypart {
 	case 128: // rHand
-		i = setPaperdollItem(items.PAPERDOLL_RHAND, item)
+		i = setPaperdollItem(items.PAPERDOLL_RHAND, nil, myItems)
 	}
 
 	return i
 }
 
-func setPaperdollItem(slot uint8, item items.Item) items.Item {
-	item.LocData = 5
-	item.Loc = "PAPERDOLL"
-	return item
+func equipItemAndRecord(item items.Item, myItems []items.Item) items.Item {
+	var i items.Item
+	switch item.Bodypart {
+	case 128: // rHand
+		i = setPaperdollItem(items.PAPERDOLL_RHAND, &item, myItems)
+	}
+
+	return i
+}
+
+func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) items.Item {
+
+	var old items.Item
+	for _, v := range myItems {
+		if v.LocData == int32(slot) { // todo if locdata or slot == 0
+			old = v
+		}
+	}
+
+	if old.Id != 0 {
+		old.Loc = "INVENTORY"
+		old.LocData = 23
+		return old
+	} else {
+		item.LocData = int32(slot)
+		item.Loc = "PAPERDOLL"
+	}
+
+	return *item
 }

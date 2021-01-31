@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/jackc/pgx/pgtype"
 	"l2gogameserver/data"
+	"l2gogameserver/gameserver/models/items"
 	"log"
 	"math/rand"
 	"os"
@@ -63,6 +64,14 @@ type StartLocation struct {
 }
 type PacketByte struct {
 	B []byte
+}
+
+func (c *Character) IsActiveWeapon() bool {
+	x := c.Paperdoll[items.PAPERDOLL_RHAND]
+	if x[0] != 0 {
+		return false
+	}
+	return true
 }
 
 func (i *PacketByte) GetB() []byte {
