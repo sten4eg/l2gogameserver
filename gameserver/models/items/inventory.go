@@ -188,6 +188,17 @@ func GetMyItems(charId int32, db *pgx.Conn) []Item {
 	return myItems
 }
 
+func GetEmptySlot(charId int32, db *pgx.Conn) int32 {
+	var i int
+	err := db.QueryRow("SELECT max(loc_data) FROM items WHERE owner_id=$1 AND loc=$2", charId, "INVENTORY").Scan(&i)
+	if err != nil {
+		log.Fatal(err)
+	}
+	i = +1
+	r := int32(i)
+	return r
+}
+
 func LoadItems() {
 	file, err := os.Open("./data/stats/items/weapon.json")
 	if err != nil {

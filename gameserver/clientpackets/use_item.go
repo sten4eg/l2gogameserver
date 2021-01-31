@@ -30,9 +30,9 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 
 	var itm items.Item
 	if ii.IsEquipped() == 1 {
-		itm = unEquipedAndRecord(ii, myItems)
+		itm = unEquipedAndRecord(ii, myItems, client, conn)
 	} else {
-		itm = equipItemAndRecord(ii, myItems)
+		itm = equipItemAndRecord(ii, myItems, client, conn)
 	}
 	myItems[q] = itm
 
@@ -50,27 +50,28 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 	//items.UseEquippableItem(client.CurrentChar.Inventory)
 }
 
-func unEquipedAndRecord(item items.Item, myItems []items.Item) items.Item {
+func unEquipedAndRecord(item items.Item, myItems []items.Item, client *models.Client, conn *pgx.Conn) items.Item {
 	var i items.Item
 	switch item.Bodypart {
 	case 128: // rHand
-		i = setPaperdollItem(items.PAPERDOLL_RHAND, nil, myItems)
+		i = setPaperdollItem(items.PAPERDOLL_RHAND, nil, myItems, client, conn)
 	}
 
 	return i
 }
 
-func equipItemAndRecord(item items.Item, myItems []items.Item) items.Item {
+func equipItemAndRecord(item items.Item, myItems []items.Item, client *models.Client, conn *pgx.Conn) items.Item {
 	var i items.Item
 	switch item.Bodypart {
-	case 128: // rHand
-		i = setPaperdollItem(items.PAPERDOLL_RHAND, &item, myItems)
+	case items.SlotRHand: // rHand
+		_ = setPaperdollItem(items.PAPERDOLL_RHAND, nil, myItems, client, conn)
+		i = setPaperdollItem(items.PAPERDOLL_RHAND, &item, myItems, client, conn)
 	}
 
 	return i
 }
 
-func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) items.Item {
+func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item, client *models.Client, conn *pgx.Conn) items.Item {
 
 	var old items.Item
 	for _, v := range myItems {
@@ -81,9 +82,12 @@ func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) items.
 
 	if old.Id != 0 {
 		old.Loc = "INVENTORY"
-		old.LocData = 23
+		old.LocData = items.GetEmptySlot(client.CurrentChar.CharId, conn)
 		return old
 	} else {
+		if item == nil {
+			return items.Item{}
+		}
 		item.LocData = int32(slot)
 		item.Loc = "PAPERDOLL"
 	}
