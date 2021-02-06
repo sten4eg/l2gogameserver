@@ -74,8 +74,10 @@ func equipItemAndRecord(item items.Item, myItems []items.Item, client *models.Cl
 func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item, client *models.Client, conn *pgx.Conn) items.Item {
 
 	var old items.Item
-	for _, v := range myItems {
+	var k int
+	for i, v := range myItems {
 		if v.LocData == int32(slot) { // todo if locdata or slot == 0
+			k = i
 			old = v
 		}
 	}
@@ -83,6 +85,8 @@ func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item, client
 	if old.Id != 0 {
 		old.Loc = "INVENTORY"
 		old.LocData = items.GetEmptySlot(client.CurrentChar.CharId, conn)
+		items.SaveSlotInDB(conn, old)
+		myItems[k] = old
 		return old
 	} else {
 		if item == nil {

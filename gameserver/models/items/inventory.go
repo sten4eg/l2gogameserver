@@ -194,8 +194,7 @@ func GetEmptySlot(charId int32, db *pgx.Conn) int32 {
 	if err != nil {
 		log.Fatal(err)
 	}
-	i = +1
-	r := int32(i)
+	r := int32(i) + 1
 	return r
 }
 
@@ -291,13 +290,18 @@ func UseEquippableItem(objId int32, charId int32) {
 func SaveInventoryInDB(conn *pgx.Conn, inventory []Item) {
 
 	for _, v := range inventory {
-		_, err := conn.Exec("UPDATE items SET loc_data = $1, loc = $2", v.LocData, v.Loc)
+		_, err := conn.Exec("UPDATE items SET loc_data = $1, loc = $2 WHERE object_id = $3", v.LocData, v.Loc, v.ObjId)
 		if err != nil {
 			log.Println(err.Error())
 		}
 	}
 }
-
+func SaveSlotInDB(conn *pgx.Conn, slot Item) {
+	_, err := conn.Exec("UPDATE items SET loc_data = $1, loc = $2 WHERE object_id = $3", slot.LocData, slot.Loc, slot.ObjId)
+	if err != nil {
+		log.Println(err.Error())
+	}
+}
 func GetPaperdollOrder() []uint8 {
 	return []uint8{
 		PAPERDOLL_UNDER,
