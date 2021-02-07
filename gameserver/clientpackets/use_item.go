@@ -19,22 +19,20 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 	myItems := items.GetMyItems(client.CurrentChar.CharId, conn)
 
 	var ii items.Item
-	var q int
-	for i, v := range myItems {
+
+	for _, v := range myItems {
 		if v.Id == objId {
 			ii = v
-			q = i
+
 			break
 		}
 	}
 
-	var itm items.Item
 	if ii.IsEquipped() == 1 {
-		itm = unEquipedAndRecord(ii, myItems, client, conn)
+		unEquipedAndRecord(ii, myItems)
 	} else {
-		itm = equipItemAndRecord(ii, myItems, client, conn)
+		equipItemAndRecord(ii, myItems)
 	}
-	myItems[q] = itm
 
 	items.SaveInventoryInDB(conn, myItems)
 
@@ -47,54 +45,69 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 	if err != nil {
 		log.Println(err)
 	}
-	//items.UseEquippableItem(client.CurrentChar.Inventory)
 }
 
-func unEquipedAndRecord(item items.Item, myItems []items.Item, client *models.Client, conn *pgx.Conn) items.Item {
-	var i items.Item
+func unEquipedAndRecord(item items.Item, myItems []items.Item) {
+
 	switch item.Bodypart {
 	case 128: // rHand
-		i = setPaperdollItem(items.PAPERDOLL_RHAND, nil, myItems, client, conn)
+		setPaperdollItem(items.PAPERDOLL_RHAND, nil, myItems)
 	}
-
-	return i
 }
 
-func equipItemAndRecord(item items.Item, myItems []items.Item, client *models.Client, conn *pgx.Conn) items.Item {
-	var i items.Item
+func equipItemAndRecord(item items.Item, myItems []items.Item) {
 	switch item.Bodypart {
 	case items.SlotRHand: // rHand
-		_ = setPaperdollItem(items.PAPERDOLL_RHAND, nil, myItems, client, conn)
-		i = setPaperdollItem(items.PAPERDOLL_RHAND, &item, myItems, client, conn)
+		setPaperdollItem(items.PAPERDOLL_RHAND, &item, myItems)
 	}
-
-	return i
 }
 
-func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item, client *models.Client, conn *pgx.Conn) items.Item {
+func getEmtpySlot(items []items.Item) {
+	//slot := 0
+	//for _,v := range items {
+	//	if v.Loc == "INVENTORY"
+	//}
+}
+func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
+
+	if item == nil {
+		for i, v := range myItems {
+			if v.LocData == int32(slot) {
+				v.LocData = 32
+				v.Loc = "INVENTORY"
+				myItems[i] = v
+				break
+			}
+		}
+
+		return
+	}
 
 	var old items.Item
 	var k int
+	var keyCurrentItem int
 	for i, v := range myItems {
 		if v.LocData == int32(slot) { // todo if locdata or slot == 0
 			k = i
 			old = v
 		}
+
+		if v == *item {
+			keyCurrentItem = i
+		}
+
 	}
 
 	if old.Id != 0 {
 		old.Loc = "INVENTORY"
-		old.LocData = items.GetEmptySlot(client.CurrentChar.CharId, conn)
-		items.SaveSlotInDB(conn, old)
+		old.LocData = item.LocData
 		myItems[k] = old
-		return old
+		item.LocData = int32(slot)
+		item.Loc = "PAPERDOLL"
 	} else {
-		if item == nil {
-			return items.Item{}
-		}
 		item.LocData = int32(slot)
 		item.Loc = "PAPERDOLL"
 	}
 
-	return *item
+	myItems[keyCurrentItem] = *item
 }

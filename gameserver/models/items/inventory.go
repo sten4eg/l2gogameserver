@@ -302,6 +302,7 @@ func SaveSlotInDB(conn *pgx.Conn, slot Item) {
 		log.Println(err.Error())
 	}
 }
+
 func GetPaperdollOrder() []uint8 {
 	return []uint8{
 		PAPERDOLL_UNDER,
