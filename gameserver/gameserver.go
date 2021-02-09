@@ -82,7 +82,7 @@ func (g *GameServer) Broad(my *models.Client, pkg models.PacketByte) {
 
 	charsIds := models.GetAroundPlayers(my.CurrentChar)
 	for _, v := range charsIds {
-		g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
+		_ = g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
 	}
 
 }

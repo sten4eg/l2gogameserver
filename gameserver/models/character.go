@@ -68,10 +68,7 @@ type PacketByte struct {
 
 func (c *Character) IsActiveWeapon() bool {
 	x := c.Paperdoll[items.PAPERDOLL_RHAND]
-	if x[0] != 0 {
-		return false
-	}
-	return true
+	return x[0] == 0
 }
 
 func (i *PacketByte) GetB() []byte {

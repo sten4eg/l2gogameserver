@@ -21,5 +21,4 @@ func NewAction(data []byte, client *models.Client) {
 	//serverpackets.NewSocialAction(client)
 	//client.SimpleSend(client.Buffer.Bytes(), true)
 	serverpackets.NewTargetSelected(client.CurrentChar.CharId, objectId, originX, originY, originZ, client)
-	return
 }
