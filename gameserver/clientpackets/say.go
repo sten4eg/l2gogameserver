@@ -65,9 +65,9 @@ func NewSay(data []byte, online *models.OnlineCharacters, me *models.Character) 
 		}
 		if receiverExist {
 			_ = me.Conn.Send(toBroad.GetB(), true)
-		} else {
-			//todo systemMSG not found
-		}
+		} // else {
+		//todo systemMSG not found
+		// }
 	case Shout:
 		toBroad.B = serverpackets.NewCreatureSay(&say, me)
 		err := online.Char[me.CharId].Conn.Send(toBroad.GetB(), true) //to me

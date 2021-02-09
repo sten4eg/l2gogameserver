@@ -62,12 +62,6 @@ func equipItemAndRecord(item items.Item, myItems []items.Item) {
 	}
 }
 
-func getEmtpySlot(items []items.Item) {
-	//slot := 0
-	//for _,v := range items {
-	//	if v.Loc == "INVENTORY"
-	//}
-}
 func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
 
 	if item == nil {

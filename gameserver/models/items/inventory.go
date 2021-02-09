@@ -54,7 +54,6 @@ func RestoreVisibleInventory(charId int32, db *pgx.Conn) [31][3]int32 {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-	type Items []ItemFromDb
 	for rows.Next() {
 		var objId int
 		var item int
