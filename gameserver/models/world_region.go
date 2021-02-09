@@ -28,7 +28,6 @@ func (w *WorldRegion) AddVisibleObject(character *Character) {
 
 func GetAroundPlayersInRadius(me *Character, radius int32) []int32 {
 	sqradius := int64(radius * radius)
-
 	x, y, _ := me.GetXYZ()
 	reg := GetRegion(x, y)
 	var charIds []int32

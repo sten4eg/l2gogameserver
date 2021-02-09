@@ -57,16 +57,16 @@ func RestoreVisibleInventory(charId int32, db *pgx.Conn) [31][3]int32 {
 	type Items []ItemFromDb
 	for rows.Next() {
 		var objId int
-		var Item int
-		var EnchantLevel int
-		var LocData int
-		err := rows.Scan(&objId, &Item, &LocData, &EnchantLevel)
+		var item int
+		var enchantLevel int
+		var locData int
+		err := rows.Scan(&objId, &item, &locData, &enchantLevel)
 		if err != nil {
 			log.Println(err)
 		}
-		kek[int32(LocData)][0] = int32(objId)
-		kek[int32(LocData)][1] = int32(Item)
-		kek[int32(LocData)][2] = int32(EnchantLevel)
+		kek[int32(locData)][0] = int32(objId)
+		kek[int32(locData)][1] = int32(item)
+		kek[int32(locData)][2] = int32(enchantLevel)
 	}
 	return kek
 }
@@ -186,16 +186,6 @@ func GetMyItems(charId int32, db *pgx.Conn) []Item {
 	e := AllItems
 	_ = e
 	return myItems
-}
-
-func GetEmptySlot(charId int32, db *pgx.Conn) int32 {
-	var i int
-	err := db.QueryRow("SELECT max(loc_data) FROM items WHERE owner_id=$1 AND loc=$2", charId, "INVENTORY").Scan(&i)
-	if err != nil {
-		log.Fatal(err)
-	}
-	r := int32(i) + 1
-	return r
 }
 
 func LoadItems() {

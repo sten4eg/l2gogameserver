@@ -115,7 +115,16 @@ func GetCreationCoordinates(classId int32) *Coordinates {
 	var coordinates Coordinates
 	for _, v := range config {
 		if v.ClassId == classId {
-			coordinates = v.Spawn[rand.Intn(len(v.Spawn))]
+			rnd := rand.Intn(len(v.Spawn))
+			v.Spawn[rnd].mu.Lock()
+			coordinates.mu.Lock()
+
+			coordinates.X = v.Spawn[rnd].X
+			coordinates.Y = v.Spawn[rnd].Y
+			coordinates.Z = v.Spawn[rnd].Z
+
+			v.Spawn[rnd].mu.Unlock()
+			coordinates.mu.Unlock()
 		}
 	}
 	return &coordinates

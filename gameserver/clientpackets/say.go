@@ -50,7 +50,7 @@ func NewSay(data []byte, online *models.OnlineCharacters, me *models.Character) 
 		}
 		chars := models.GetAroundPlayersInRadius(me, AllChatRange)
 		for _, v := range chars {
-			online.Char[v].Conn.Send(toBroad.GetB(), true) //broad
+			_ = online.Char[v].Conn.Send(toBroad.GetB(), true) //broad
 		}
 	case Tell:
 		toBroad.B = serverpackets.NewCreatureSay(&say, me)
@@ -59,12 +59,12 @@ func NewSay(data []byte, online *models.OnlineCharacters, me *models.Character) 
 		for _, v := range online.Char {
 			if bytes.Equal(v.CharName.Bytes, []byte(toTell)) {
 				receiverExist = true
-				v.Conn.Send(toBroad.GetB(), true)
+				_ = v.Conn.Send(toBroad.GetB(), true)
 
 			}
 		}
 		if receiverExist {
-			me.Conn.Send(toBroad.GetB(), true)
+			_ = me.Conn.Send(toBroad.GetB(), true)
 		} else {
 			//todo systemMSG not found
 		}
@@ -76,7 +76,7 @@ func NewSay(data []byte, online *models.OnlineCharacters, me *models.Character) 
 		}
 		chars := models.GetAroundPlayersInRadius(me, ShoutChatRange)
 		for _, v := range chars {
-			online.Char[v].Conn.Send(toBroad.GetB(), true) //broad
+			_ = online.Char[v].Conn.Send(toBroad.GetB(), true) //broad
 		}
 	}
 

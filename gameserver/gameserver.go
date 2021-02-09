@@ -138,10 +138,13 @@ func BroadCastToMe(g *GameServer, my *models.Character) {
 		}
 	}
 
+	if me == nil {
+		return // todo need log
+	}
 	for _, v := range charIds {
 		var info models.PacketByte
 		info.B = serverpackets.NewCharInfo(g.OnlineCharacters.Char[v], g.database)
-		me.Send(info.GetB(), true)
+		_ = me.Send(info.GetB(), true)
 	}
 
 }
