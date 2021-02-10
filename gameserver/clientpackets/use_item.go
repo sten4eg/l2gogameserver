@@ -22,14 +22,14 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 	var selectedItem items.Item
 
 	for _, v := range myItems {
-		if v.Id == objId {
+		if v.ObjId == objId {
 			selectedItem = v
 			break
 		}
 	}
 
 	if selectedItem.IsEquipped() == 1 {
-		unEquipedAndRecord(selectedItem, myItems)
+		unEquipAndRecord(selectedItem, myItems)
 	} else {
 		equipItemAndRecord(selectedItem, myItems)
 	}
@@ -47,8 +47,7 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 	}
 }
 
-func unEquipedAndRecord(item items.Item, myItems []items.Item) {
-
+func unEquipAndRecord(item items.Item, myItems []items.Item) {
 	switch item.Bodypart {
 	case items.SlotRHand: // rHand
 		setPaperdollItem(items.PAPERDOLL_RHAND, nil, myItems)
@@ -67,13 +66,12 @@ func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
 	if item == nil {
 		for i, v := range myItems {
 			if v.LocData == int32(slot) {
-				v.LocData = 32
+				v.LocData = getFirstEmptySlot(myItems, 0)
 				v.Loc = "INVENTORY"
 				myItems[i] = v
 				break
 			}
 		}
-
 		return
 	}
 
@@ -104,4 +102,16 @@ func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
 	}
 
 	myItems[keyCurrentItem] = *item
+}
+
+func getFirstEmptySlot(items []items.Item, min int32) int32 {
+	for _, v := range items {
+		if v.Loc == "INVENTORY" {
+			if min >= v.LocData && min-1 != v.LocData {
+				min = getFirstEmptySlot(items, min+1) // todo not work
+			}
+		}
+	}
+
+	return min
 }
