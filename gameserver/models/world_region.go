@@ -8,7 +8,7 @@ type WorldRegion struct {
 	TileX         int32
 	TileY         int32
 	Sur           []*WorldRegion
-	CharsInRegion sync.Map //TODO переделать на мапу с RW мьютексом ци шо ци каво
+	CharsInRegion *sync.Map //TODO переделать на мапу с RW мьютексом ци шо ци каво
 }
 
 func NewWorldRegion(x, y int32) WorldRegion {
