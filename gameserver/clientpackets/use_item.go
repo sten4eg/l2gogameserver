@@ -14,24 +14,24 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 
 	objId := packet.ReadInt32() // targetObjId
 	ctrlPressed := packet.ReadInt32() != 0
+
 	log.Print(objId, ctrlPressed)
 
 	myItems := items.GetMyItems(client.CurrentChar.CharId, conn)
 
-	var ii items.Item
+	var selectedItem items.Item
 
 	for _, v := range myItems {
 		if v.Id == objId {
-			ii = v
-
+			selectedItem = v
 			break
 		}
 	}
 
-	if ii.IsEquipped() == 1 {
-		unEquipedAndRecord(ii, myItems)
+	if selectedItem.IsEquipped() == 1 {
+		unEquipedAndRecord(selectedItem, myItems)
 	} else {
-		equipItemAndRecord(ii, myItems)
+		equipItemAndRecord(selectedItem, myItems)
 	}
 
 	items.SaveInventoryInDB(conn, myItems)
@@ -50,7 +50,7 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 func unEquipedAndRecord(item items.Item, myItems []items.Item) {
 
 	switch item.Bodypart {
-	case 128: // rHand
+	case items.SlotRHand: // rHand
 		setPaperdollItem(items.PAPERDOLL_RHAND, nil, myItems)
 	}
 }

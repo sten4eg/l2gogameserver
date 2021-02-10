@@ -1,7 +1,6 @@
 package items
 
 import (
-	"database/sql"
 	"encoding/json"
 	"github.com/jackc/pgx"
 	"log"
@@ -37,19 +36,9 @@ const (
 	PAPERDOLL_TOTALSLOTS uint8 = 25
 )
 
-type ItemFromDb struct {
-	ObjectId     int32
-	Item         int32
-	EnchantLevel int32
-	LocData      sql.NullInt32
-}
-
-type Inventory struct {
-}
-
 func RestoreVisibleInventory(charId int32, db *pgx.Conn) [31][3]int32 {
-	var kek [31][3]int32
-	rows, err := db.Query("SELECT object_id,item,loc_data,enchant_level FROM items WHERE owner_id=$1 AND loc=$2", charId, "PAPERDOLL")
+	var paperdoll [31][3]int32
+	rows, err := db.Query("SELECT object_id, item, loc_data, enchant_level FROM items WHERE owner_id= $1 AND loc= $2", charId, "PAPERDOLL")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,19 +52,13 @@ func RestoreVisibleInventory(charId int32, db *pgx.Conn) [31][3]int32 {
 		if err != nil {
 			log.Println(err)
 		}
-		kek[int32(locData)][0] = int32(objId)
-		kek[int32(locData)][1] = int32(item)
-		kek[int32(locData)][2] = int32(enchantLevel)
+		paperdoll[int32(locData)][0] = int32(objId)
+		paperdoll[int32(locData)][1] = int32(item)
+		paperdoll[int32(locData)][2] = int32(enchantLevel)
 	}
-	return kek
+	return paperdoll
 }
 
-type CrystalType struct {
-	Id                        int
-	CrystalId                 int
-	CrystalEnchantBonusArmor  int
-	CrystalEnchantBonusWeapon int32
-}
 type itemsJson struct {
 	Id              int
 	ObjId           int32
@@ -127,20 +110,9 @@ type Item struct {
 	PAtkSpd         int
 }
 
-var AllJsonItems []itemsJson
+var allJsonItems []itemsJson
 
-var AllItems []Item
-
-type MyItem struct {
-	Id      int32
-	ObjId   int32
-	Name    int32
-	Loc     int32
-	Count   int32
-	Enchant int32
-	Mana    int32
-	Time    int32
-}
+var AllItems map[int32]Item
 
 func GetMyItems(charId int32, db *pgx.Conn) []Item {
 	rows, err := db.Query("SELECT object_id,item,loc_data,enchant_level,count,loc FROM items WHERE owner_id=$1", charId)
@@ -148,7 +120,7 @@ func GetMyItems(charId int32, db *pgx.Conn) []Item {
 		log.Fatal(err)
 	}
 
-	type f struct {
+	type tempItemFromDB struct {
 		objId   int
 		Item    int
 		Enchant int
@@ -156,34 +128,35 @@ func GetMyItems(charId int32, db *pgx.Conn) []Item {
 		Count   int
 		Loc     string
 	}
-	var t []f
+
+	var tmp []tempItemFromDB
+
 	for rows.Next() {
-		var q f
-		err := rows.Scan(&q.objId, &q.Item, &q.LocData, &q.Enchant, &q.Count, &q.Loc)
+		var itm tempItemFromDB
+		err := rows.Scan(&itm.objId, &itm.Item, &itm.LocData, &itm.Enchant, &itm.Count, &itm.Loc)
 		if err != nil {
 			log.Println(err)
 		}
-		t = append(t, q)
+		tmp = append(tmp, itm)
 	}
 
 	var myItems []Item
-	for _, w := range AllItems {
-		for _, q := range t {
-			if w.Id == int32(q.Item) {
-				ni := new(Item)
-				ni = &w
-				ni.ObjId = int32(q.objId)
-				ni.LocData = int32(q.LocData)
-				ni.Count = int64(q.Count)
-				ni.Loc = q.Loc
-				ni.Enchant = int16(q.Enchant)
-				myItems = append(myItems, *ni)
 
-			}
+	for _, itemFromDB := range tmp {
+		_, ok := AllItems[int32(itemFromDB.Item)]
+		if ok {
+			myItem := AllItems[int32(itemFromDB.Item)]
+			myItem.Id = int32(itemFromDB.Item)
+			myItem.ObjId = int32(itemFromDB.objId)
+			myItem.LocData = int32(itemFromDB.LocData)
+			myItem.Count = int64(itemFromDB.Count)
+			myItem.Loc = itemFromDB.Loc
+			myItem.Enchant = int16(itemFromDB.Enchant)
+
+			myItems = append(myItems, myItem)
 		}
 	}
-	e := AllItems
-	_ = e
+
 	return myItems
 }
 
@@ -194,14 +167,15 @@ func LoadItems() {
 	}
 
 	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&AllJsonItems)
+	err = decoder.Decode(&allJsonItems)
 	if err != nil {
 		log.Fatal("Failed to decode config file")
 	}
 	SetSlots()
-	for _, v := range AllJsonItems {
+	AllItems = make(map[int32]Item)
+
+	for _, v := range allJsonItems {
 		weapon := new(Item)
-		weapon.Id = int32(v.Id)
 		weapon.Loc = ""
 		weapon.Bodypart = getSlots(v.Bodypart)
 		weapon.ItemType = 0 //weapon
@@ -213,7 +187,7 @@ func LoadItems() {
 		weapon.ImmediateEffect = v.ImmediateEffect
 		weapon.MAtk = v.MAtk
 		weapon.PAtk = v.PAtk
-		AllItems = append(AllItems, *weapon)
+		AllItems[int32(v.Id)] = *weapon
 	}
 
 }
@@ -272,10 +246,6 @@ func (i *Item) IsEquipped() int16 {
 	return 1
 }
 
-func UseEquippableItem(objId int32, charId int32) {
-	log.Println(objId)
-}
-
 func SaveInventoryInDB(conn *pgx.Conn, inventory []Item) {
 
 	for _, v := range inventory {
@@ -283,12 +253,6 @@ func SaveInventoryInDB(conn *pgx.Conn, inventory []Item) {
 		if err != nil {
 			log.Println(err.Error())
 		}
-	}
-}
-func SaveSlotInDB(conn *pgx.Conn, slot Item) {
-	_, err := conn.Exec("UPDATE items SET loc_data = $1, loc = $2 WHERE object_id = $3", slot.LocData, slot.Loc, slot.ObjId)
-	if err != nil {
-		log.Println(err.Error())
 	}
 }
 
