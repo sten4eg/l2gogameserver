@@ -79,7 +79,7 @@ func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
 	var k int
 	var keyCurrentItem int
 	for i, v := range myItems {
-		if v.LocData == int32(slot) { // todo if locdata or slot == 0
+		if v.LocData == int32(slot) && v.Loc == "PAPERDOLL" { // todo if locdata or slot == 0
 			k = i
 			old = v
 		}
