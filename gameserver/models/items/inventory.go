@@ -59,7 +59,7 @@ func RestoreVisibleInventory(charId int32, db *pgx.Conn) [31][3]int32 {
 	return paperdoll
 }
 
-type itemsJson struct {
+type weaponJson struct {
 	Id              int
 	ObjId           int32
 	Loc             int32
@@ -110,8 +110,6 @@ type Item struct {
 	PAtkSpd         int
 }
 
-var allJsonItems []itemsJson
-
 var AllItems map[int32]Item
 
 func GetMyItems(charId int32, db *pgx.Conn) []Item {
@@ -161,20 +159,29 @@ func GetMyItems(charId int32, db *pgx.Conn) []Item {
 }
 
 func LoadItems() {
+	SetSlots()
+	AllItems = make(map[int32]Item)
+
+	loadWeapons()
+
+}
+
+func loadWeapons() {
 	file, err := os.Open("./data/stats/items/weapon.json")
 	if err != nil {
 		log.Fatal("Failed to load config file")
 	}
 
 	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&allJsonItems)
+
+	var weaponJson []weaponJson
+
+	err = decoder.Decode(&weaponJson)
 	if err != nil {
 		log.Fatal("Failed to decode config file")
 	}
-	SetSlots()
-	AllItems = make(map[int32]Item)
 
-	for _, v := range allJsonItems {
+	for _, v := range weaponJson {
 		weapon := new(Item)
 		weapon.Loc = ""
 		weapon.Bodypart = getSlots(v.Bodypart)
@@ -189,7 +196,6 @@ func LoadItems() {
 		weapon.PAtk = v.PAtk
 		AllItems[int32(v.Id)] = *weapon
 	}
-
 }
 
 var Slots map[string]int32
