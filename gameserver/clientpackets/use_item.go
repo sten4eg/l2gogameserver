@@ -66,7 +66,7 @@ func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
 	if item == nil {
 		for i, v := range myItems {
 			if v.LocData == int32(slot) {
-				v.LocData = getFirstEmptySlot(myItems, 0)
+				v.LocData = getFirstEmptySlot(myItems)
 				v.Loc = "INVENTORY"
 				myItems[i] = v
 				break
@@ -104,14 +104,27 @@ func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
 	myItems[keyCurrentItem] = *item
 }
 
-func getFirstEmptySlot(items []items.Item, min int32) int32 {
+func getFirstEmptySlot(items []items.Item) int32 {
+	var max int32
 	for _, v := range items {
-		if v.Loc == "INVENTORY" {
-			if min >= v.LocData && min-1 != v.LocData {
-				min = getFirstEmptySlot(items, min+1) // todo not work
-			}
+		if v.LocData > max {
+			max = v.LocData
 		}
 	}
 
-	return min
+	var i int32
+	for i = 0; i < max; i++ {
+		flag := false
+		for _, q := range items {
+			if q.LocData == i && q.Loc != "PAPERDOLL" {
+				flag = true
+			}
+		}
+
+		if !flag {
+			return i
+		}
+	}
+
+	return max + 1
 }
