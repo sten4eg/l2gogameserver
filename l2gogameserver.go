@@ -15,7 +15,8 @@ func main() {
 	items.LoadItems()
 	models.NewWorld()
 	data.Load()
-	x := gameserver.New()
-	x.Init()
-	x.Start()
+
+	server := gameserver.New()
+	server.Init()
+	server.Start()
 }

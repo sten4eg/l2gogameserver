@@ -130,6 +130,10 @@ func BroadCastToMe(g *GameServer, my *models.Character) {
 		})
 	}
 
+	if charIds == nil {
+		return
+	}
+
 	var me *models.Client
 	for _, p := range g.clients {
 		if p.CurrentChar.CharId == my.CharId {
