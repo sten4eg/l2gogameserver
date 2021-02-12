@@ -58,6 +58,8 @@ func equipItemAndRecord(item items.Item, myItems []items.Item) {
 	switch item.Bodypart {
 	case items.SlotRHand: // rHand
 		setPaperdollItem(items.PAPERDOLL_RHAND, &item, myItems)
+	case items.SlotLegs:
+		setPaperdollItem(items.PAPERDOLL_LEGS, &item, myItems)
 	}
 }
 
@@ -67,7 +69,7 @@ func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
 		for i, v := range myItems {
 			if v.LocData == int32(slot) {
 				v.LocData = getFirstEmptySlot(myItems)
-				v.Loc = "INVENTORY"
+				v.Loc = items.Inventory
 				myItems[i] = v
 				break
 			}
@@ -79,7 +81,7 @@ func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
 	var k int
 	var keyCurrentItem int
 	for i, v := range myItems {
-		if v.LocData == int32(slot) && v.Loc == "PAPERDOLL" { // todo if locdata or slot == 0
+		if v.LocData == int32(slot) && v.Loc == items.Paperdoll { // todo if locdata or slot == 0
 			k = i
 			old = v
 		}
@@ -91,22 +93,22 @@ func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
 	}
 
 	if old.Id != 0 {
-		old.Loc = "INVENTORY"
+		old.Loc = items.Inventory
 		old.LocData = item.LocData
 		myItems[k] = old
 		item.LocData = int32(slot)
-		item.Loc = "PAPERDOLL"
+		item.Loc = items.Paperdoll
 	} else {
 		item.LocData = int32(slot)
-		item.Loc = "PAPERDOLL"
+		item.Loc = items.Paperdoll
 	}
 
 	myItems[keyCurrentItem] = *item
 }
 
-func getFirstEmptySlot(items []items.Item) int32 {
+func getFirstEmptySlot(myItems []items.Item) int32 {
 	var max int32
-	for _, v := range items {
+	for _, v := range myItems {
 		if v.LocData > max {
 			max = v.LocData
 		}
@@ -115,8 +117,8 @@ func getFirstEmptySlot(items []items.Item) int32 {
 	var i int32
 	for i = 0; i < max; i++ {
 		flag := false
-		for _, q := range items {
-			if q.LocData == i && q.Loc != "PAPERDOLL" {
+		for _, q := range myItems {
+			if q.LocData == i && q.Loc != items.Paperdoll {
 				flag = true
 			}
 		}

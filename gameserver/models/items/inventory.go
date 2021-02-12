@@ -34,11 +34,14 @@ const (
 	PAPERDOLL_CLOAK      uint8 = 23
 	PAPERDOLL_BELT       uint8 = 24
 	PAPERDOLL_TOTALSLOTS uint8 = 25
+
+	Paperdoll string = "PAPERDOLL"
+	Inventory string = "INVENTORY"
 )
 
 func RestoreVisibleInventory(charId int32, db *pgx.Conn) [31][3]int32 {
 	var paperdoll [31][3]int32
-	rows, err := db.Query("SELECT object_id, item, loc_data, enchant_level FROM items WHERE owner_id= $1 AND loc= $2", charId, "PAPERDOLL")
+	rows, err := db.Query("SELECT object_id, item, loc_data, enchant_level FROM items WHERE owner_id= $1 AND loc= $2", charId, Paperdoll)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -194,7 +197,7 @@ func loadArmors() {
 		armor := new(Item)
 		armor.Loc = ""
 		armor.Bodypart = getSlots(v.Bodypart)
-		armor.ItemType = 0 //weapon
+		armor.ItemType = 1 // armor/shield
 		armor.Name = v.Name
 		AllItems[int32(v.Id)] = *armor
 	}
@@ -280,7 +283,7 @@ func getSlots(s string) int32 {
 }
 
 func (i *Item) IsEquipped() int16 {
-	if i.Loc == "INVENTORY" {
+	if i.Loc == Inventory {
 		return 0
 	}
 	return 1

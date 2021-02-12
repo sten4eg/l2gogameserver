@@ -15,26 +15,17 @@ func NewItemList(client *models.Client, conn *pgx.Conn) {
 	myItems := items.GetMyItems(client.CurrentChar.CharId, conn)
 	client.Buffer.WriteH(int16(len(myItems)))
 
-	_ = myItems
 	for _, e := range myItems {
-		client.Buffer.WriteD(e.ObjId)
-		client.Buffer.WriteD(e.Id)
-		client.Buffer.WriteD(e.LocData)
-		client.Buffer.WriteQ(e.Count)
-		client.Buffer.WriteH(e.ItemType)
-		client.Buffer.WriteH(0) // Filler (always 0)
-		client.Buffer.WriteH(e.IsEquipped())
-		client.Buffer.WriteD(e.Bodypart)
-		client.Buffer.WriteH(e.Enchant)
-		//buffer.WriteD(21)    //idItemInDB
-		//buffer.WriteD(1147)  //getDisplayId idItemsInLineage
-		//buffer.WriteD(0)     //Location
-		//buffer.WriteQ(1)     //Count
-		//buffer.WriteH(00)    // Item Type 2 : 00-weapon, 01-shield/armor, 02-ring/earring/necklace, 03-questitem, 04-adena, 05-item
-		//buffer.WriteH(0)     // Filler (always 0)
-		//buffer.WriteH(0)     //  Equipped : 00-No, 01-yes
-		//buffer.WriteD(0)     // Slot : 0006-lr.ear, 0008-neck, 0030-lr.finger, 0040-head, 0100-l.hand, 0200-gloves, 0400-chest, 0800-pants, 1000-feet, 4000-r.hand, 8000-r.hand
-		//buffer.WriteH(0)     // Enchant level (pet level shown in control item)
+		client.Buffer.WriteD(e.ObjId)        //idItemInDB
+		client.Buffer.WriteD(e.Id)           //getDisplayId idItemsInLineage
+		client.Buffer.WriteD(e.LocData)      //Location
+		client.Buffer.WriteQ(e.Count)        //Count
+		client.Buffer.WriteH(e.ItemType)     // Item Type 2 : 00-weapon, 01-shield/armor, 02-ring/earring/necklace, 03-questitem, 04-adena, 05-item
+		client.Buffer.WriteH(0)              // Filler (always 0)
+		client.Buffer.WriteH(e.IsEquipped()) //  Equipped : 00-No, 01-yes
+		client.Buffer.WriteD(e.Bodypart)     // Slot : 0006-lr.ear, 0008-neck, 0030-lr.finger, 0040-head, 0100-l.hand, 0200-gloves, 0400-chest, 0800-pants, 1000-feet, 4000-r.hand, 8000-r.hand
+		client.Buffer.WriteH(e.Enchant)      // Enchant level (pet level shown in control item)
+
 		client.Buffer.WriteH(0)     // Pet name exists or not shown in control item
 		client.Buffer.WriteD(0)     // getAugmentationBonus
 		client.Buffer.WriteD(-1)    // mana
