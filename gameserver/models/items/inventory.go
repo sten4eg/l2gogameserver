@@ -83,6 +83,14 @@ type weaponJson struct {
 	PAtkSpd         int
 }
 
+type armorJson struct {
+	Id        int
+	Type      string
+	Name      string
+	ArmorType string
+	Bodypart  string
+}
+
 type Item struct {
 	Id              int32
 	ObjId           int32
@@ -163,7 +171,33 @@ func LoadItems() {
 	AllItems = make(map[int32]Item)
 
 	loadWeapons()
+	loadArmors()
 
+}
+
+func loadArmors() {
+	file, err := os.Open("./data/stats/items/armor.json")
+	if err != nil {
+		log.Fatal("Failed to load config file")
+	}
+
+	decoder := json.NewDecoder(file)
+
+	var armorsJson []armorJson
+
+	err = decoder.Decode(&armorsJson)
+	if err != nil {
+		log.Fatal("Failed to decode config file")
+	}
+
+	for _, v := range armorsJson {
+		armor := new(Item)
+		armor.Loc = ""
+		armor.Bodypart = getSlots(v.Bodypart)
+		armor.ItemType = 0 //weapon
+		armor.Name = v.Name
+		AllItems[int32(v.Id)] = *armor
+	}
 }
 
 func loadWeapons() {
