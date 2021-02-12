@@ -49,14 +49,16 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 
 func unEquipAndRecord(item items.Item, myItems []items.Item) {
 	switch item.Bodypart {
-	case items.SlotRHand: // rHand
+	case items.SlotRHand:
 		setPaperdollItem(items.PAPERDOLL_RHAND, nil, myItems)
+	case items.SlotLegs:
+		setPaperdollItem(items.PAPERDOLL_LEGS, nil, myItems)
 	}
 }
 
 func equipItemAndRecord(item items.Item, myItems []items.Item) {
 	switch item.Bodypart {
-	case items.SlotRHand: // rHand
+	case items.SlotRHand:
 		setPaperdollItem(items.PAPERDOLL_RHAND, &item, myItems)
 	case items.SlotLegs:
 		setPaperdollItem(items.PAPERDOLL_LEGS, &item, myItems)
