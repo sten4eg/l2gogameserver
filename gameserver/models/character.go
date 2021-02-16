@@ -115,6 +115,7 @@ func GetCreationCoordinates(classId int32) *Coordinates {
 	var coordinates Coordinates
 	for _, v := range config {
 		if v.ClassId == classId {
+			/* #nosec */
 			rnd := rand.Intn(len(v.Spawn))
 			v.Spawn[rnd].mu.Lock()
 			coordinates.mu.Lock()

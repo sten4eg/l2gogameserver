@@ -42,6 +42,7 @@ func (g *GameServer) Init() {
 	} else {
 		log.Println("Successful database connection")
 	}
+	/* #nosec */
 	g.clientsListener, err = net.Listen("tcp", ":7777")
 	if err != nil {
 		panic(err.Error())
