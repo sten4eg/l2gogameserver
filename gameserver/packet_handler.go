@@ -163,6 +163,8 @@ func (g *GameServer) handler(client *models.Client) {
 			clientpackets.NewUseItem(data, client, g.database)
 		case 87:
 			clientpackets.NewRequestRestart(data, client, g.database)
+		case 57:
+			clientpackets.NewRequestMagicSkillUse(data, client)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}
