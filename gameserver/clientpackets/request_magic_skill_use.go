@@ -2,6 +2,7 @@ package clientpackets
 
 import (
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
@@ -13,4 +14,7 @@ func NewRequestMagicSkillUse(data []byte, client *models.Client) {
 	shiftPressed := packet.ReadSingleByte() != 0 // True if Shift pressed
 
 	_, _, _ = magicId, ctrlPressed, shiftPressed
+
+	serverpackets.NewSetupGauge(client)
+	serverpackets.NewMagicSkillUse(client)
 }
