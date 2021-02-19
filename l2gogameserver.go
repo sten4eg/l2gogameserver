@@ -12,6 +12,7 @@ func main() {
 	//defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
 	//defer profile.Start(profile.MemProfileHeap()).Stop()
 
+	models.LoadSkills()
 	items.LoadItems()
 	models.NewWorld()
 	data.Load()
