@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"github.com/jackc/pgx"
 	"log"
 	"os"
 )
@@ -40,4 +41,28 @@ func LoadSkills() {
 		AllSkills[v.ID] = v
 	}
 
+}
+
+func GetMySkills(charId int32, db *pgx.Conn) []Skill {
+	rows, err := db.Query("SELECT skill_id, skill_level FROM character_skills WHERE char_id = $1", charId)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	type tempSkillFromDB struct {
+		SkillId    int
+		SkillLevel int
+	}
+
+	var skills []Skill
+	// todo сейас просто ищу по id в мапе и записываю
+	for rows.Next() {
+		var itm tempSkillFromDB
+		err := rows.Scan(&itm.SkillId, &itm.SkillLevel)
+		if err != nil {
+			log.Println(err)
+		}
+		skills = append(skills, AllSkills[itm.SkillId])
+	}
+	return skills
 }

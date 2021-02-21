@@ -1,12 +1,12 @@
 [
   {
-    "id": 3,
-    "levels": 9,
-    "name": "Power Strike",
-    "power": [30,32,35,46,61,65,71,78,84],
+    "id": 1216,
+    "levels": 1,
+    "name": "Self Heal",
+    "power": [1],
     "castRange": 40,
     "coolTime": 720,
-    "hitTime": 1080,
+    "hitTime": 5000,
     "overHit": true,
     "reuseDelay": 3000
   }

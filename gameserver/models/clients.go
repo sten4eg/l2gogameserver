@@ -63,7 +63,7 @@ func NewClient() *Client {
 			0x97,
 		},
 		Account:     new(Account),
-		CurrentChar: new(Character),
+		CurrentChar: GetNewCharacterModel(),
 	}
 }
 

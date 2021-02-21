@@ -6,62 +6,62 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewUserInfo(user *models.Character) []byte {
+func NewUserInfo(character *models.Character) []byte {
 
 	buffer := new(packets.Buffer)
 
 	buffer.WriteSingleByte(0x32)
-	buffer.WriteD(user.Coordinates.X)
-	buffer.WriteD(user.Coordinates.Y)
-	buffer.WriteD(user.Coordinates.Z)
+	buffer.WriteD(character.Coordinates.X)
+	buffer.WriteD(character.Coordinates.Y)
+	buffer.WriteD(character.Coordinates.Z)
 
 	buffer.WriteD(0) // Vehicle
 
-	buffer.WriteD(user.CharId) //objId
+	buffer.WriteD(character.CharId) //objId
 
-	buffer.WriteS(string(user.CharName.Bytes)) //name //TODO
+	buffer.WriteS(string(character.CharName.Bytes)) //name //TODO
 
-	buffer.WriteD(user.Race)      //race ordinal //TODO
-	buffer.WriteD(user.Sex)       //sex
-	buffer.WriteD(user.BaseClass) //baseClass
+	buffer.WriteD(character.Race)      //race ordinal //TODO
+	buffer.WriteD(character.Sex)       //sex
+	buffer.WriteD(character.BaseClass) //baseClass
 
-	buffer.WriteD(user.Level)                                            //level //TODO
-	buffer.WriteQ(int64(user.Exp))                                       //exp
-	buffer.WriteF(user.GetPercentFromCurrentLevel(user.Exp, user.Level)) //percent
+	buffer.WriteD(character.Level)                                                      //level //TODO
+	buffer.WriteQ(int64(character.Exp))                                                 //exp
+	buffer.WriteF(character.GetPercentFromCurrentLevel(character.Exp, character.Level)) //percent
 
-	buffer.WriteD(40) //str
-	buffer.WriteD(30) //dex
-	buffer.WriteD(43) //con //TODO
-	buffer.WriteD(21) //int
-	buffer.WriteD(11) //wit
-	buffer.WriteD(25) //men
+	buffer.WriteD(character.Stats.Str) //str
+	buffer.WriteD(character.Stats.Dex) //dex
+	buffer.WriteD(character.Stats.Con) //con
+	buffer.WriteD(character.Stats.Int) //int
+	buffer.WriteD(character.Stats.Wit) //wit
+	buffer.WriteD(character.Stats.Men) //men
 
-	buffer.WriteD(user.MaxHp) //Max hp //TODO
+	buffer.WriteD(character.MaxHp) //Max hp //TODO
 
-	buffer.WriteD(user.CurHp) //hp currnebt
+	buffer.WriteD(character.CurHp) //hp currnebt
 
-	buffer.WriteD(user.MaxMp) //max mp
-	buffer.WriteD(user.CurMp) //mp
+	buffer.WriteD(character.MaxMp) //max mp
+	buffer.WriteD(character.CurMp) //mp
 
-	buffer.WriteD(user.Sp) //sp //TODO
-	buffer.WriteD(0)       //currentLoad
+	buffer.WriteD(character.Sp) //sp //TODO
+	buffer.WriteD(0)            //currentLoad
 
 	buffer.WriteD(109020) //maxLoad
 
-	if user.IsActiveWeapon() {
+	if character.IsActiveWeapon() {
 		buffer.WriteD(20) //no weapon
 	} else {
 		buffer.WriteD(40) //equiped weapon
 	}
 
 	for _, slot := range items.GetPaperdollOrder() {
-		buffer.WriteD(user.Paperdoll[slot][0]) //objId
+		buffer.WriteD(character.Paperdoll[slot][0]) //objId
 	}
 	for _, slot := range items.GetPaperdollOrder() {
-		buffer.WriteD(user.Paperdoll[slot][1]) //itemId
+		buffer.WriteD(character.Paperdoll[slot][1]) //itemId
 	}
 	for _, slot := range items.GetPaperdollOrder() {
-		buffer.WriteD(user.Paperdoll[slot][2]) //enchant
+		buffer.WriteD(character.Paperdoll[slot][2]) //enchant
 	}
 
 	buffer.WriteD(0) //talisman slot
@@ -80,8 +80,8 @@ func NewUserInfo(user *models.Character) []byte {
 
 	buffer.WriteD(47) //mdef
 
-	buffer.WriteD(user.PvpKills) //pvp
-	buffer.WriteD(user.Karma)    //karma
+	buffer.WriteD(character.PvpKills) //pvp
+	buffer.WriteD(character.Karma)    //karma
 
 	buffer.WriteD(999) //runSpeed
 	buffer.WriteD(80)  //walkspeed
@@ -98,19 +98,19 @@ func NewUserInfo(user *models.Character) []byte {
 	buffer.WriteF(8.0)  //collisionRadius
 	buffer.WriteF(23.5) //collisionHeight
 
-	buffer.WriteD(user.HairStyle) //hairStyle
-	buffer.WriteD(user.HairColor) //hairColor
-	buffer.WriteD(user.Face)      //face
+	buffer.WriteD(character.HairStyle) //hairStyle
+	buffer.WriteD(character.HairColor) //hairColor
+	buffer.WriteD(character.Face)      //face
 
 	buffer.WriteD(0) //IsGM?
 
-	buffer.WriteS(user.Title.String) //title
+	buffer.WriteS(character.Title.String) //title
 
-	buffer.WriteD(user.ClanId) //clanId
-	buffer.WriteD(0)           //clancrestId
-	buffer.WriteD(0)           //allyId
-	buffer.WriteD(0)           //allyCrestId
-	buffer.WriteD(0)           //RELATION CALCULATE ?
+	buffer.WriteD(character.ClanId) //clanId
+	buffer.WriteD(0)                //clancrestId
+	buffer.WriteD(0)                //allyId
+	buffer.WriteD(0)                //allyCrestId
+	buffer.WriteD(0)                //RELATION CALCULATE ?
 
 	buffer.WriteSingleByte(0) //mountType
 	buffer.WriteSingleByte(0) //privateStoreType
@@ -136,8 +136,8 @@ func NewUserInfo(user *models.Character) []byte {
 
 	buffer.WriteH(80) //inventoryLimit
 
-	buffer.WriteD(user.ClassId) //	classId
-	buffer.WriteD(0)            // special effects? circles around player...
+	buffer.WriteD(character.ClassId) //	classId
+	buffer.WriteD(0)                 // special effects? circles around player...
 
 	buffer.WriteD(50) //MaxCP
 	buffer.WriteD(50) //CurrentCp
@@ -181,10 +181,10 @@ func NewUserInfo(user *models.Character) []byte {
 
 	buffer.WriteD(0) //agationId
 
-	buffer.WriteD(0)             //FAME //TODO
-	buffer.WriteD(0)             //minimap or hellbound
-	buffer.WriteD(user.Vitality) //vitaliti Point
-	buffer.WriteD(0)             //abnormalEffects
+	buffer.WriteD(0)                  //FAME //TODO
+	buffer.WriteD(0)                  //minimap or hellbound
+	buffer.WriteD(character.Vitality) //vitaliti Point
+	buffer.WriteD(0)                  //abnormalEffects
 
 	return buffer.Bytes()
 }

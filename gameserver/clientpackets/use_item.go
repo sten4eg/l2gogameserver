@@ -45,12 +45,6 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 	if err != nil {
 		log.Println(err)
 	}
-
-	sm := serverpackets.NewSystemMessage()
-	err = client.Send(sm, true)
-	if err != nil {
-		log.Println(err)
-	}
 }
 
 func unEquipAndRecord(item items.Item, myItems []items.Item) {
