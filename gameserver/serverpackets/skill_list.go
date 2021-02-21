@@ -16,11 +16,11 @@ func NewSkillList(charId int32, conn *pgx.Conn) []byte {
 	buffer.WriteD(int32(len(skills))) // skill size
 
 	for _, v := range skills {
-		buffer.WriteD(0)           // passiv ?
-		buffer.WriteD(1)           // level
-		buffer.WriteD(int32(v.ID)) // id
-		buffer.WriteD(0)           // disable?
-		buffer.WriteD(0)           // enchant ?
+		buffer.WriteD(v.IsPassive())         // passiv ?
+		buffer.WriteD(int32(v.CurrentLevel)) // level
+		buffer.WriteD(int32(v.ID))           // id
+		buffer.WriteD(0)                     // disable?
+		buffer.WriteD(0)                     // enchant ?
 	}
 
 	return buffer.Bytes()

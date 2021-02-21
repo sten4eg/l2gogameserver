@@ -8,7 +8,9 @@
     "coolTime": 720,
     "hitTime": 5000,
     "overHit": true,
-    "reuseDelay": 3000
+    "reuseDelay": 3000,
+    "operateType": "A1",
+    "targetType": "SELF"
   }
 ]
 

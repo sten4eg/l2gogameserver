@@ -8,15 +8,18 @@ import (
 )
 
 type Skill struct {
-	ID         int    `json:"id"`
-	Levels     int    `json:"levels"`
-	Name       string `json:"name"`
-	Power      []int  `json:"power"`
-	CastRange  int    `json:"castRange"`
-	CoolTime   int    `json:"coolTime"`
-	HitTime    int    `json:"hitTime"`
-	OverHit    bool   `json:"overHit"`
-	ReuseDelay int    `json:"reuseDelay"`
+	ID           int    `json:"id"`
+	Levels       int    `json:"levels"`
+	Name         string `json:"name"`
+	Power        []int  `json:"power"`
+	CastRange    int    `json:"castRange"`
+	CoolTime     int    `json:"coolTime"`
+	HitTime      int    `json:"hitTime"`
+	OverHit      bool   `json:"overHit"`
+	ReuseDelay   int    `json:"reuseDelay"`
+	OperateType  int    `json:"operateType"`
+	TargetType   string `json:"targetType"`
+	CurrentLevel int
 }
 
 var AllSkills map[int]Skill
@@ -55,14 +58,25 @@ func GetMySkills(charId int32, db *pgx.Conn) []Skill {
 	}
 
 	var skills []Skill
-	// todo сейас просто ищу по id в мапе и записываю
 	for rows.Next() {
 		var itm tempSkillFromDB
 		err := rows.Scan(&itm.SkillId, &itm.SkillLevel)
 		if err != nil {
 			log.Println(err)
 		}
-		skills = append(skills, AllSkills[itm.SkillId])
+		sk, ok := AllSkills[itm.SkillId]
+		if !ok {
+			log.Fatal("not found Skill")
+		}
+		sk.CurrentLevel = itm.SkillLevel
+		skills = append(skills, sk)
 	}
 	return skills
+}
+
+func (s *Skill) IsPassive() int32 {
+	if s.OperateType == 3 {
+		return 1
+	}
+	return 0
 }
