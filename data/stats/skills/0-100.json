@@ -1,7 +1,7 @@
 [
   {
     "id": 1216,
-    "levels": 1,
+    "levels": [1],
     "name": "Self Heal",
     "power": [1],
     "castRange": 40,
@@ -9,8 +9,13 @@
     "hitTime": 5000,
     "overHit": true,
     "reuseDelay": 3000,
-    "operateType": "A1",
-    "targetType": "SELF"
+    "operateType": 1,
+    "targetType": "SELF",
+    "isMagic": 1,
+    "magicLvl": 1,
+    "mpConsume1": 2,
+    "mpConsume2": 7
+
   }
 ]
 

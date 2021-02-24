@@ -9,7 +9,7 @@ import (
 
 type Skill struct {
 	ID           int    `json:"id"`
-	Levels       int    `json:"levels"`
+	Levels       []int  `json:"levels"`
 	Name         string `json:"name"`
 	Power        []int  `json:"power"`
 	CastRange    int    `json:"castRange"`
@@ -19,6 +19,10 @@ type Skill struct {
 	ReuseDelay   int    `json:"reuseDelay"`
 	OperateType  int    `json:"operateType"`
 	TargetType   string `json:"targetType"`
+	IsMagic      int    `json:"isMagic"`
+	MagicLvl     int    `json:"magicLvl"`
+	MpConsume1   int    `json:"mpConsume1"`
+	MpConsume2   int    `json:"mpConsume2"`
 	CurrentLevel int
 }
 
@@ -27,7 +31,7 @@ var AllSkills map[int]Skill
 func LoadSkills() {
 	file, err := os.Open("./data/stats/skills/0-100.json")
 	if err != nil {
-		log.Fatal("Failed to load config file")
+		log.Fatal("Failed to load config file " + err.Error())
 	}
 
 	decoder := json.NewDecoder(file)
@@ -36,7 +40,7 @@ func LoadSkills() {
 
 	err = decoder.Decode(&skillsJson)
 	if err != nil {
-		log.Fatal("Failed to decode config file")
+		log.Fatal("Failed to decode config file " + file.Name() + " " + err.Error())
 	}
 	AllSkills = make(map[int]Skill)
 
@@ -60,7 +64,8 @@ func GetMySkills(charId int32, db *pgx.Conn) []Skill {
 	var skills []Skill
 	for rows.Next() {
 		var itm tempSkillFromDB
-		err := rows.Scan(&itm.SkillId, &itm.SkillLevel)
+
+		err = rows.Scan(&itm.SkillId, &itm.SkillLevel)
 		if err != nil {
 			log.Println(err)
 		}

@@ -51,18 +51,10 @@ func GetNewCharacterModel() *Character {
 	return character
 }
 
-type Stats struct {
-	Str, Dex, Con, Int, Wit, Men int32
-}
-
 func SetupStats(char *Character) {
-	// todo for test
-	char.Stats.Str = 40
-	char.Stats.Dex = 41
-	char.Stats.Con = 42
-	char.Stats.Int = 43
-	char.Stats.Wit = 44
-	char.Stats.Men = 45
+	if char.BaseClass == 0 {
+		char.Stats = AllStats["humF"]
+	}
 }
 
 type Account struct {
