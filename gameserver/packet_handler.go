@@ -32,7 +32,7 @@ func (g *GameServer) handler(client *models.Client) {
 		case 18:
 			clientpackets.NewCharSelected(data, client)
 
-			serverpackets.NewCharSelected(client.Account.Char[client.Account.CharSlot], client) // return charId
+			_ = serverpackets.NewCharSelected(client.Account.Char[client.Account.CharSlot], client) // return charId , unused ? remove?
 
 			rg := models.GetRegion(client.CurrentChar.Coordinates.X, client.CurrentChar.Coordinates.Y)
 			rg.AddVisibleObject(client.CurrentChar)

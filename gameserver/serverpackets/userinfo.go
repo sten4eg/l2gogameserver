@@ -29,12 +29,12 @@ func NewUserInfo(character *models.Character) []byte {
 	buffer.WriteQ(int64(character.Exp))                                                 //exp
 	buffer.WriteF(character.GetPercentFromCurrentLevel(character.Exp, character.Level)) //percent
 
-	buffer.WriteD(character.Stats.Str) //str
-	buffer.WriteD(character.Stats.Dex) //dex
-	buffer.WriteD(character.Stats.Con) //con
-	buffer.WriteD(character.Stats.Int) //int
-	buffer.WriteD(character.Stats.Wit) //wit
-	buffer.WriteD(character.Stats.Men) //men
+	//buffer.WriteD(character.Stats.Str) //str
+	//buffer.WriteD(character.Stats.Dex) //dex
+	//buffer.WriteD(character.Stats.Con) //con
+	//buffer.WriteD(character.Stats.Int) //int
+	//buffer.WriteD(character.Stats.Wit) //wit
+	//buffer.WriteD(character.Stats.Men) //men
 
 	buffer.WriteD(character.MaxHp) //Max hp //TODO
 
