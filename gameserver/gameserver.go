@@ -8,17 +8,21 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 	"log"
 	"net"
+	"sync"
 	"time"
 )
 
 type GameServer struct {
 	clientsListener  net.Listener
-	clients          []*models.Client
+	clients          sync.Map
 	Socket           net.Conn
 	database         *pgx.Conn
 	OnlineCharacters *models.OnlineCharacters
 }
 
+func (g *GameServer) AddClient(c *models.Client) {
+	g.clients.Store(c.Account.Login, c)
+}
 func New() *GameServer {
 	return &GameServer{}
 }
@@ -62,7 +66,8 @@ func (g *GameServer) Start() {
 		var err error
 		client := models.NewClient()
 		client.Socket, err = g.clientsListener.Accept()
-		g.clients = append(g.clients, client)
+		g.AddClient(client)
+
 		if err != nil {
 			fmt.Println("Couldn't accept the incoming connection.")
 			continue
@@ -92,33 +97,39 @@ func (g *GameServer) addOnlineChar(character *models.Character) {
 	g.OnlineCharacters.Char[character.CharId] = character
 	g.OnlineCharacters.Mu.Unlock()
 }
+
 func (g *GameServer) Tick() {
 	for {
-		for _, v := range g.clients {
-			if v.CurrentChar.Coordinates == nil {
-				continue
+		g.clients.Range(func(k, v interface{}) bool {
+			client := v.(*models.Client)
+			if client.CurrentChar.Coordinates == nil {
+				return true
 			}
-			x, y, _ := v.CurrentChar.GetXYZ()
+
+			x, y, _ := client.CurrentChar.GetXYZ()
 			reg := models.GetRegion(x, y)
-			if reg != v.CurrentChar.CurrentRegion && v.CurrentChar.CurrentRegion != nil {
-				v.CurrentChar.CurrentRegion.CharsInRegion.Delete(v.CurrentChar.CharId)
-				reg.CharsInRegion.Store(v.CurrentChar.CharId, v.CurrentChar)
-				v.CurrentChar.CurrentRegion = reg
+			if reg != client.CurrentChar.CurrentRegion && client.CurrentChar.CurrentRegion != nil {
+				client.CurrentChar.CurrentRegion.CharsInRegion.Delete(client.CurrentChar.CharId)
+				reg.CharsInRegion.Store(client.CurrentChar.CharId, client.CurrentChar)
+				client.CurrentChar.CurrentRegion = reg
 
 				var info models.PacketByte
-				info.B = serverpackets.NewCharInfo(v.CurrentChar, g.database)
-				g.Broad(v, info)
-				BroadCastToMe(g, v.CurrentChar)
-				log.Println(v.CurrentChar.CharId, " change Region ")
-
+				info.B = serverpackets.NewCharInfo(client.CurrentChar, g.database)
+				g.Broad(client, info)
+				BroadCastToMe(g, client.CurrentChar)
+				log.Println(client.CurrentChar.CharId, " change Region ")
 			}
-		}
+
+			return true // if false, Range stops
+		})
+
 		time.Sleep(1 * time.Second)
 	}
 }
 
 func BroadCastToMe(g *GameServer, my *models.Character) {
-	reg := models.GetRegion(my.Coordinates.X, my.Coordinates.Y)
+	x, y, _ := my.GetXYZ()
+	reg := models.GetRegion(x, y)
 	var charIds []int32
 
 	for _, iii := range reg.Sur {
@@ -136,12 +147,15 @@ func BroadCastToMe(g *GameServer, my *models.Character) {
 	}
 
 	var me *models.Client
-	for _, p := range g.clients {
-		if p.CurrentChar.CharId == my.CharId {
-			me = p
-			break
+
+	g.clients.Range(func(k, v interface{}) bool {
+		client := v.(*models.Client)
+		if client.CurrentChar.CharId == my.CharId {
+			me = client
+			return false
 		}
-	}
+		return true
+	})
 
 	if me == nil {
 		return // todo need log

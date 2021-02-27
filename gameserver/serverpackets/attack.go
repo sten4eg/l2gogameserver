@@ -12,6 +12,8 @@ type Attack struct {
 
 func NewAttack(client *models.Client, attack *Attack) {
 
+	x, y, z := client.CurrentChar.GetXYZ()
+
 	client.Buffer.WriteSingleByte(0x33)
 
 	client.Buffer.WriteD(client.CurrentChar.CharId)
@@ -20,9 +22,9 @@ func NewAttack(client *models.Client, attack *Attack) {
 	client.Buffer.WriteD(4)
 	client.Buffer.WriteD(0)
 
-	client.Buffer.WriteD(client.CurrentChar.Coordinates.X)
-	client.Buffer.WriteD(client.CurrentChar.Coordinates.Y)
-	client.Buffer.WriteD(client.CurrentChar.Coordinates.Z)
+	client.Buffer.WriteD(x)
+	client.Buffer.WriteD(y)
+	client.Buffer.WriteD(z)
 
 	client.Buffer.WriteH(1)
 	//for(int i = 1; i < hits.length; i++)

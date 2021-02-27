@@ -7,10 +7,12 @@ import (
 
 func NewUserInfo(character *models.Character, client *models.Client) {
 
+	x, y, z := character.GetXYZ()
+
 	client.Buffer.WriteSingleByte(0x32)
-	client.Buffer.WriteD(character.Coordinates.X)
-	client.Buffer.WriteD(character.Coordinates.Y)
-	client.Buffer.WriteD(character.Coordinates.Z)
+	client.Buffer.WriteD(x)
+	client.Buffer.WriteD(y)
+	client.Buffer.WriteD(z)
 
 	client.Buffer.WriteD(0) // Vehicle
 

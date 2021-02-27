@@ -9,11 +9,13 @@ import (
 
 func NewCharInfo(user *models.Character, db *pgx.Conn) []byte {
 
+	x, y, z := user.GetXYZ()
+
 	buffer := new(packets.Buffer)
 	buffer.WriteSingleByte(0x31)
-	buffer.WriteD(user.Coordinates.X)
-	buffer.WriteD(user.Coordinates.Y)
-	buffer.WriteD(user.Coordinates.Z)
+	buffer.WriteD(x)
+	buffer.WriteD(y)
+	buffer.WriteD(z)
 
 	buffer.WriteD(0) // Vehicle
 

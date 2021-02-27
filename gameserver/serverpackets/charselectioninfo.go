@@ -88,9 +88,10 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 
 		client.Buffer.WriteD(1) // active ??
 
-		client.Buffer.WriteD(char.Coordinates.X) //x 53
-		client.Buffer.WriteD(char.Coordinates.Y) //y 57
-		client.Buffer.WriteD(char.Coordinates.Z) //z 61
+		x, y, z := char.GetXYZ()
+		client.Buffer.WriteD(x) //x 53
+		client.Buffer.WriteD(y) //y 57
+		client.Buffer.WriteD(z) //z 61
 
 		client.Buffer.WriteF(float64(char.CurHp)) //currentHP
 		client.Buffer.WriteF(float64(char.CurMp)) //currentMP

@@ -6,6 +6,7 @@ import (
 
 func NewCharSelected(user *models.Character, client *models.Client) int32 {
 
+	x, y, z := user.GetXYZ()
 	client.Buffer.WriteSingleByte(0x0b) // 1
 
 	client.Buffer.WriteS(string(user.CharName.Bytes)) // 11
@@ -18,9 +19,9 @@ func NewCharSelected(user *models.Character, client *models.Client) int32 {
 	client.Buffer.WriteD(user.Race)                   //race 41
 	client.Buffer.WriteD(user.ClassId)                //classId 45
 	client.Buffer.WriteD(0x1)                         // ? 49
-	client.Buffer.WriteD(user.Coordinates.X)          //x 53
-	client.Buffer.WriteD(user.Coordinates.Y)          //y 57
-	client.Buffer.WriteD(user.Coordinates.Z)          //z 61
+	client.Buffer.WriteD(x)                           //x 53
+	client.Buffer.WriteD(y)                           //y 57
+	client.Buffer.WriteD(z)                           //z 61
 
 	//buffer.WriteD(83306)  //x 53
 	//buffer.WriteD(148115) //y 57
