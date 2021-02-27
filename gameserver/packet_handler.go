@@ -82,9 +82,17 @@ func (g *GameServer) handler(client *models.Client) {
 			serverpackets.NewStaticObject(client)
 
 			var info models.PacketByte
-			pkg := serverpackets.NewCharInfo(client.CurrentChar, g.database)
+			pkg := serverpackets.NewCharInfo(client.CurrentChar)
 			info.SetB(pkg)
 			g.Broad(client, info)
+
+			//todo вынести это отсюдова
+			charIds := models.GetAroundPlayers(client.CurrentChar)
+			for _, v := range charIds {
+				tt := g.OnlineCharacters.Char[v]
+				pkgs := serverpackets.NewCharInfo(tt)
+				client.Buffer.WriteSlice(pkgs)
+			}
 
 			log.Println("Send NewUserInfo")
 		case 166:
@@ -120,6 +128,12 @@ func (g *GameServer) handler(client *models.Client) {
 			clientpackets.NewAttack(data, client)
 		case 25:
 			clientpackets.NewUseItem(data, client, g.database)
+
+			//todo нужно подумать как это вынести и отправлять =((
+			var info models.PacketByte
+			pkg := serverpackets.NewCharInfo(client.CurrentChar)
+			info.SetB(pkg)
+			g.Broad(client, info)
 		case 87:
 			clientpackets.NewRequestRestart(data, client, g.database)
 		case 57:

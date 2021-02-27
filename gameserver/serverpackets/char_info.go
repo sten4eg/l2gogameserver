@@ -1,13 +1,12 @@
 package serverpackets
 
 import (
-	"github.com/jackc/pgx"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/packets"
 )
 
-func NewCharInfo(user *models.Character, db *pgx.Conn) []byte {
+func NewCharInfo(user *models.Character) []byte {
 
 	x, y, z := user.GetXYZ()
 
@@ -131,6 +130,7 @@ func NewCharInfo(user *models.Character, db *pgx.Conn) []byte {
 	return buffer.Bytes()
 }
 
+// todo что это тут делает?
 func getPaperdollOrder() []uint8 {
 	return []uint8{
 		items.PAPERDOLL_UNDER,
