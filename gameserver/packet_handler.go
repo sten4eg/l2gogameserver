@@ -34,7 +34,8 @@ func (g *GameServer) handler(client *models.Client) {
 
 			_ = serverpackets.NewCharSelected(client.Account.Char[client.Account.CharSlot], client) // return charId , unused ? remove?
 
-			rg := models.GetRegion(client.CurrentChar.Coordinates.X, client.CurrentChar.Coordinates.Y)
+			x, y, _ := client.CurrentChar.GetXYZ()
+			rg := models.GetRegion(x, y)
 			rg.AddVisibleObject(client.CurrentChar)
 			client.CurrentChar.CurrentRegion = rg
 			g.addOnlineChar(client.CurrentChar)
@@ -79,6 +80,11 @@ func (g *GameServer) handler(client *models.Client) {
 			serverpackets.NewQuestList(client)
 
 			serverpackets.NewStaticObject(client)
+
+			var info models.PacketByte
+			pkg := serverpackets.NewCharInfo(client.CurrentChar, g.database)
+			info.SetB(pkg)
+			g.Broad(client, info)
 
 			log.Println("Send NewUserInfo")
 		case 166:
