@@ -1,19 +1,22 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+)
 
-func NewStaticObject() []byte {
-	buffer := new(packets.Buffer)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	return buffer.Bytes()
+func NewStaticObject(client *models.Client) {
+
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+
+	client.SaveAndCryptDataInBufferToSend(true)
 }

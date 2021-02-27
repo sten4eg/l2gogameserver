@@ -7,9 +7,9 @@ import (
 )
 
 func NewRequestTargetCanceld(data []byte, client *models.Client) {
+
 	var packet = packets.NewReader(data)
 	unselect := packet.ReadUInt16()
 	_ = unselect
 	serverpackets.NewTargetUnselected(client)
-	client.SimpleSend(client.Buffer.Bytes(), true)
 }

@@ -6,8 +6,6 @@ import (
 
 func NewCharSelected(user *models.Character, client *models.Client) int32 {
 
-	client.Buffer.WriteH(0) //reserve
-
 	client.Buffer.WriteSingleByte(0x0b) // 1
 
 	client.Buffer.WriteS(string(user.CharName.Bytes)) // 11
@@ -59,6 +57,7 @@ func NewCharSelected(user *models.Character, client *models.Client) int32 {
 
 	client.Buffer.WriteD(0) // 221
 
+	client.SaveAndCryptDataInBufferToSend(true)
 	client.CurrentChar = client.Account.Char[client.Account.CharSlot]
 	return user.CharId
 }

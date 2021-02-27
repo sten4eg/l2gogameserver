@@ -1,15 +1,15 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+)
 
-func NewGameGuardQuery() []byte {
-	buffer := new(packets.Buffer)
+func NewGameGuardQuery(client *models.Client) {
 
-	buffer.WriteSingleByte(0x74)
-	buffer.WriteD(0x27533DD9)
-	buffer.WriteD(0x2E72A51D)
-	buffer.WriteD(0x2017038B)
-	buffer.WriteDU(0xC35B1EA3)
-
-	return buffer.Bytes()
+	client.Buffer.WriteSingleByte(0x74)
+	client.Buffer.WriteD(0x27533DD9)
+	client.Buffer.WriteD(0x2E72A51D)
+	client.Buffer.WriteD(0x2017038B)
+	client.Buffer.WriteDU(0xC35B1EA3)
+	client.SaveAndCryptDataInBufferToSend(true)
 }

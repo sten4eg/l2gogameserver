@@ -26,7 +26,6 @@ var StaticBlowfish = []byte{
 
 func NewKeyPacket(client *models.Client) {
 
-	client.Buffer.WriteH(0) //reserve
 	client.Buffer.WriteSingleByte(0x2e)
 	client.Buffer.WriteSingleByte(1) // protocolOk
 	sk := StaticBlowfish
@@ -39,6 +38,6 @@ func NewKeyPacket(client *models.Client) {
 	client.Buffer.WriteSingleByte(0x01)
 	client.Buffer.WriteD(0x00)
 
-	client.SimpleSend(client.Buffer.Bytes(), false)
+	client.SaveAndCryptDataInBufferToSend(false)
 	log.Println("Send keyPacket")
 }

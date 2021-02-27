@@ -1,16 +1,16 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+)
 
-func NewExGetBookMarkInfoPacket() []byte {
+func NewExGetBookMarkInfoPacket(client *models.Client) {
 
-	buffer := new(packets.Buffer)
+	client.Buffer.WriteSingleByte(0xFE)
+	client.Buffer.WriteH(0x84)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
 
-	buffer.WriteSingleByte(0xFE)
-	buffer.WriteH(0x84)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-
-	return buffer.Bytes()
+	client.SaveAndCryptDataInBufferToSend(true)
 }

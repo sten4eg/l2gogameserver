@@ -12,7 +12,6 @@ type Attack struct {
 
 func NewAttack(client *models.Client, attack *Attack) {
 
-	client.Buffer.WriteH(0) // reserve
 	client.Buffer.WriteSingleByte(0x33)
 
 	client.Buffer.WriteD(client.CurrentChar.CharId)
@@ -41,4 +40,5 @@ func NewAttack(client *models.Client, attack *Attack) {
 	client.Buffer.WriteD(attack.Y)
 	client.Buffer.WriteD(attack.Z)
 
+	client.SaveAndCryptDataInBufferToSend(true)
 }

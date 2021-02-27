@@ -62,7 +62,6 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 		v.Paperdoll = items.RestoreVisibleInventory(v.CharId, db)
 	}
 
-	client.Buffer.WriteH(0) //reserve
 	client.Buffer.WriteSingleByte(0x09)
 	client.Buffer.WriteD(int32(len(account.Char))) //size char in account
 
@@ -145,5 +144,5 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 
 	}
 	client.Account = &account
-	client.SimpleSend(client.Buffer.Bytes(), true)
+	client.SaveAndCryptDataInBufferToSend(true)
 }

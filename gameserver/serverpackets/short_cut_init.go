@@ -1,14 +1,14 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+)
 
-func NewShortCutInit() []byte {
+func NewShortCutInit(client *models.Client) {
 
-	buffer := new(packets.Buffer)
+	client.Buffer.WriteSingleByte(0x45)
 
-	buffer.WriteSingleByte(0x45)
+	client.Buffer.WriteD(0)
 
-	buffer.WriteD(0)
-
-	return buffer.Bytes()
+	client.SaveAndCryptDataInBufferToSend(true)
 }

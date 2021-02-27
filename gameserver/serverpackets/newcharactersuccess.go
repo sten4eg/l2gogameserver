@@ -6,7 +6,6 @@ import (
 
 func NewCharacterSuccess(client *models.Client) {
 
-	client.Buffer.WriteH(0)
 	client.Buffer.WriteSingleByte(0x0D)
 	client.Buffer.WriteD(1)
 	client.Buffer.WriteD(1)
@@ -29,6 +28,6 @@ func NewCharacterSuccess(client *models.Client) {
 	client.Buffer.WriteD(0x46)
 	client.Buffer.WriteD(1)
 	client.Buffer.WriteD(0x0A)
-	client.SimpleSend(client.Buffer.Bytes(), true)
+	client.SaveAndCryptDataInBufferToSend(true)
 
 }

@@ -38,7 +38,6 @@ func (g *GameServer) handler(client *models.Client) {
 			rg.AddVisibleObject(client.CurrentChar)
 			client.CurrentChar.CurrentRegion = rg
 			g.addOnlineChar(client.CurrentChar)
-			client.SimpleSend(client.Buffer.Bytes(), true)
 
 		case 208:
 			if len(data) >= 2 {
@@ -55,77 +54,31 @@ func (g *GameServer) handler(client *models.Client) {
 		case 108:
 			serverpackets.NewShowMiniMap(client)
 		case 17:
-			pkg := serverpackets.NewUserInfo(client.CurrentChar)
-			err := client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-			pkg = serverpackets.NewExBrExtraUserInfo()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
-			pkg = serverpackets.NewSendMacroList()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			serverpackets.NewUserInfo(client.CurrentChar, client)
+
+			serverpackets.NewExBrExtraUserInfo(client)
+
+			serverpackets.NewSendMacroList(client)
 
 			serverpackets.NewItemList(client, g.database)
 
-			pkg = serverpackets.NewExQuestItemList()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			serverpackets.NewExQuestItemList(client)
 
-			pkg = serverpackets.NewGameGuardQuery()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			serverpackets.NewGameGuardQuery(client)
 
-			pkg = serverpackets.NewExGetBookMarkInfoPacket()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			serverpackets.NewExGetBookMarkInfoPacket(client)
 
-			pkg = serverpackets.NewShortCutInit()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			serverpackets.NewShortCutInit(client)
 
-			pkg = serverpackets.NewExBasicActionList()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			serverpackets.NewExBasicActionList(client)
 
-			pkg = serverpackets.NewSkillList(client.CurrentChar.CharId, g.database)
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			serverpackets.NewSkillList(client, g.database)
 
-			pkg = serverpackets.NewHennaInfo()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			serverpackets.NewHennaInfo(client)
 
-			pkg = serverpackets.NewQuestList()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			serverpackets.NewQuestList(client)
 
-			pkg = serverpackets.NewStaticObject()
-			err = client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			serverpackets.NewStaticObject(client)
 
 			log.Println("Send NewUserInfo")
 		case 166:
@@ -168,5 +121,7 @@ func (g *GameServer) handler(client *models.Client) {
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}
+
+		client.SentToSend()
 	}
 }

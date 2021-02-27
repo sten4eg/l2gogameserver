@@ -3,188 +3,185 @@ package serverpackets
 import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
-	"l2gogameserver/packets"
 )
 
-func NewUserInfo(character *models.Character) []byte {
+func NewUserInfo(character *models.Character, client *models.Client) {
 
-	buffer := new(packets.Buffer)
+	client.Buffer.WriteSingleByte(0x32)
+	client.Buffer.WriteD(character.Coordinates.X)
+	client.Buffer.WriteD(character.Coordinates.Y)
+	client.Buffer.WriteD(character.Coordinates.Z)
 
-	buffer.WriteSingleByte(0x32)
-	buffer.WriteD(character.Coordinates.X)
-	buffer.WriteD(character.Coordinates.Y)
-	buffer.WriteD(character.Coordinates.Z)
+	client.Buffer.WriteD(0) // Vehicle
 
-	buffer.WriteD(0) // Vehicle
+	client.Buffer.WriteD(character.CharId) //objId
 
-	buffer.WriteD(character.CharId) //objId
+	client.Buffer.WriteS(string(character.CharName.Bytes)) //name //TODO
 
-	buffer.WriteS(string(character.CharName.Bytes)) //name //TODO
+	client.Buffer.WriteD(character.Race)      //race ordinal //TODO
+	client.Buffer.WriteD(character.Sex)       //sex
+	client.Buffer.WriteD(character.BaseClass) //baseClass
 
-	buffer.WriteD(character.Race)      //race ordinal //TODO
-	buffer.WriteD(character.Sex)       //sex
-	buffer.WriteD(character.BaseClass) //baseClass
+	client.Buffer.WriteD(character.Level)                                                      //level //TODO
+	client.Buffer.WriteQ(int64(character.Exp))                                                 //exp
+	client.Buffer.WriteF(character.GetPercentFromCurrentLevel(character.Exp, character.Level)) //percent
 
-	buffer.WriteD(character.Level)                                                      //level //TODO
-	buffer.WriteQ(int64(character.Exp))                                                 //exp
-	buffer.WriteF(character.GetPercentFromCurrentLevel(character.Exp, character.Level)) //percent
+	client.Buffer.WriteD(40) //str
+	client.Buffer.WriteD(40) //dex
+	client.Buffer.WriteD(40) //con
+	client.Buffer.WriteD(40) //int
+	client.Buffer.WriteD(40) //wit
+	client.Buffer.WriteD(40) //men
 
-	buffer.WriteD(40) //str
-	buffer.WriteD(40) //dex
-	buffer.WriteD(40) //con
-	buffer.WriteD(40) //int
-	buffer.WriteD(40) //wit
-	buffer.WriteD(40) //men
+	client.Buffer.WriteD(character.MaxHp) //Max hp //TODO
 
-	buffer.WriteD(character.MaxHp) //Max hp //TODO
+	client.Buffer.WriteD(character.CurHp) //hp currnebt
 
-	buffer.WriteD(character.CurHp) //hp currnebt
+	client.Buffer.WriteD(character.MaxMp) //max mp
+	client.Buffer.WriteD(character.CurMp) //mp
 
-	buffer.WriteD(character.MaxMp) //max mp
-	buffer.WriteD(character.CurMp) //mp
+	client.Buffer.WriteD(character.Sp) //sp //TODO
+	client.Buffer.WriteD(0)            //currentLoad
 
-	buffer.WriteD(character.Sp) //sp //TODO
-	buffer.WriteD(0)            //currentLoad
-
-	buffer.WriteD(109020) //maxLoad
+	client.Buffer.WriteD(109020) //maxLoad
 
 	if character.IsActiveWeapon() {
-		buffer.WriteD(20) //no weapon
+		client.Buffer.WriteD(20) //no weapon
 	} else {
-		buffer.WriteD(40) //equiped weapon
+		client.Buffer.WriteD(40) //equiped weapon
 	}
 
 	for _, slot := range items.GetPaperdollOrder() {
-		buffer.WriteD(character.Paperdoll[slot][0]) //objId
+		client.Buffer.WriteD(character.Paperdoll[slot][0]) //objId
 	}
 	for _, slot := range items.GetPaperdollOrder() {
-		buffer.WriteD(character.Paperdoll[slot][1]) //itemId
+		client.Buffer.WriteD(character.Paperdoll[slot][1]) //itemId
 	}
 	for _, slot := range items.GetPaperdollOrder() {
-		buffer.WriteD(character.Paperdoll[slot][2]) //enchant
+		client.Buffer.WriteD(character.Paperdoll[slot][2]) //enchant
 	}
 
-	buffer.WriteD(0) //talisman slot
-	buffer.WriteD(0) //Cloack
+	client.Buffer.WriteD(0) //talisman slot
+	client.Buffer.WriteD(0) //Cloack
 
-	buffer.WriteD(4)   //patack //TODO
-	buffer.WriteD(330) //atackSpeed
-	buffer.WriteD(72)  //pdef
-	buffer.WriteD(33)  //evasionRate
-	buffer.WriteD(34)  //accuracy //TODO
-	buffer.WriteD(44)  //critHit
-	buffer.WriteD(3)   //Matack
-	buffer.WriteD(213) //M atackSpped
+	client.Buffer.WriteD(4)   //patack //TODO
+	client.Buffer.WriteD(330) //atackSpeed
+	client.Buffer.WriteD(72)  //pdef
+	client.Buffer.WriteD(33)  //evasionRate
+	client.Buffer.WriteD(34)  //accuracy //TODO
+	client.Buffer.WriteD(44)  //critHit
+	client.Buffer.WriteD(3)   //Matack
+	client.Buffer.WriteD(213) //M atackSpped
 
-	buffer.WriteD(330) //patackSpeed again?
+	client.Buffer.WriteD(330) //patackSpeed again?
 
-	buffer.WriteD(47) //mdef
+	client.Buffer.WriteD(47) //mdef
 
-	buffer.WriteD(character.PvpKills) //pvp
-	buffer.WriteD(character.Karma)    //karma
+	client.Buffer.WriteD(character.PvpKills) //pvp
+	client.Buffer.WriteD(character.Karma)    //karma
 
-	buffer.WriteD(999) //runSpeed
-	buffer.WriteD(80)  //walkspeed
-	buffer.WriteD(50)  //swimRunSpeed
-	buffer.WriteD(50)  //swimWalkSpeed
-	buffer.WriteD(0)   //flyRunSpeed
-	buffer.WriteD(0)   //flyWalkSpeed
-	buffer.WriteD(0)   //flyRunSpeed again
-	buffer.WriteD(0)   //flyWalkSpeed again
-	buffer.WriteF(1.1) //moveMultipler
+	client.Buffer.WriteD(999) //runSpeed
+	client.Buffer.WriteD(80)  //walkspeed
+	client.Buffer.WriteD(50)  //swimRunSpeed
+	client.Buffer.WriteD(50)  //swimWalkSpeed
+	client.Buffer.WriteD(0)   //flyRunSpeed
+	client.Buffer.WriteD(0)   //flyWalkSpeed
+	client.Buffer.WriteD(0)   //flyRunSpeed again
+	client.Buffer.WriteD(0)   //flyWalkSpeed again
+	client.Buffer.WriteF(1.1) //moveMultipler
 
-	buffer.WriteF(1.21) //atackSpeedMultiplier
+	client.Buffer.WriteF(1.21) //atackSpeedMultiplier
 
-	buffer.WriteF(8.0)  //collisionRadius
-	buffer.WriteF(23.5) //collisionHeight
+	client.Buffer.WriteF(8.0)  //collisionRadius
+	client.Buffer.WriteF(23.5) //collisionHeight
 
-	buffer.WriteD(character.HairStyle) //hairStyle
-	buffer.WriteD(character.HairColor) //hairColor
-	buffer.WriteD(character.Face)      //face
+	client.Buffer.WriteD(character.HairStyle) //hairStyle
+	client.Buffer.WriteD(character.HairColor) //hairColor
+	client.Buffer.WriteD(character.Face)      //face
 
-	buffer.WriteD(0) //IsGM?
+	client.Buffer.WriteD(0) //IsGM?
 
-	buffer.WriteS(character.Title.String) //title
+	client.Buffer.WriteS(character.Title.String) //title
 
-	buffer.WriteD(character.ClanId) //clanId
-	buffer.WriteD(0)                //clancrestId
-	buffer.WriteD(0)                //allyId
-	buffer.WriteD(0)                //allyCrestId
-	buffer.WriteD(0)                //RELATION CALCULATE ?
+	client.Buffer.WriteD(character.ClanId) //clanId
+	client.Buffer.WriteD(0)                //clancrestId
+	client.Buffer.WriteD(0)                //allyId
+	client.Buffer.WriteD(0)                //allyCrestId
+	client.Buffer.WriteD(0)                //RELATION CALCULATE ?
 
-	buffer.WriteSingleByte(0) //mountType
-	buffer.WriteSingleByte(0) //privateStoreType
-	buffer.WriteSingleByte(0) //hasDwarfCraft
-	buffer.WriteD(1)          //pk //TODO
-	buffer.WriteD(1)          //pvp //TODO
+	client.Buffer.WriteSingleByte(0) //mountType
+	client.Buffer.WriteSingleByte(0) //privateStoreType
+	client.Buffer.WriteSingleByte(0) //hasDwarfCraft
+	client.Buffer.WriteD(1)          //pk //TODO
+	client.Buffer.WriteD(1)          //pvp //TODO
 
-	buffer.WriteH(0) //cubic size
+	client.Buffer.WriteH(0) //cubic size
 	//FOR cubicks
 
-	buffer.WriteSingleByte(0) //PartyRoom
+	client.Buffer.WriteSingleByte(0) //PartyRoom
 
-	buffer.WriteD(0) //EFFECTS
+	client.Buffer.WriteD(0) //EFFECTS
 
-	buffer.WriteSingleByte(0) //WATER FLY EARTH
+	client.Buffer.WriteSingleByte(0) //WATER FLY EARTH
 
-	buffer.WriteD(0) //clanBitmask
+	client.Buffer.WriteD(0) //clanBitmask
 
-	buffer.WriteH(0) // c2 recommendations remaining
-	buffer.WriteH(0) // c2 recommendations received //TODO
+	client.Buffer.WriteH(0) // c2 recommendations remaining
+	client.Buffer.WriteH(0) // c2 recommendations received //TODO
 
-	buffer.WriteD(0) //npcMountId
+	client.Buffer.WriteD(0) //npcMountId
 
-	buffer.WriteH(80) //inventoryLimit
+	client.Buffer.WriteH(80) //inventoryLimit
 
-	buffer.WriteD(character.ClassId) //	classId
-	buffer.WriteD(0)                 // special effects? circles around player...
+	client.Buffer.WriteD(character.ClassId) //	classId
+	client.Buffer.WriteD(0)                 // special effects? circles around player...
 
-	buffer.WriteD(50) //MaxCP
-	buffer.WriteD(50) //CurrentCp
+	client.Buffer.WriteD(50) //MaxCP
+	client.Buffer.WriteD(50) //CurrentCp
 
-	buffer.WriteSingleByte(0) //mounted air
-	buffer.WriteSingleByte(0) //team Id
+	client.Buffer.WriteSingleByte(0) //mounted air
+	client.Buffer.WriteSingleByte(0) //team Id
 
-	buffer.WriteD(0) //ClanCrestLargeId
+	client.Buffer.WriteD(0) //ClanCrestLargeId
 
-	buffer.WriteSingleByte(0) //isNoble
-	buffer.WriteSingleByte(0) //isHero
+	client.Buffer.WriteSingleByte(0) //isNoble
+	client.Buffer.WriteSingleByte(0) //isHero
 
-	buffer.WriteSingleByte(0) //Fishing??
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
+	client.Buffer.WriteSingleByte(0) //Fishing??
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
 
-	buffer.WriteD(16777215)
+	client.Buffer.WriteD(16777215)
 
-	buffer.WriteSingleByte(1) //// changes the Speed display on Status Window
+	client.Buffer.WriteSingleByte(1) //// changes the Speed display on Status Window
 
-	buffer.WriteD(0) // changes the text above CP on Status Window
-	buffer.WriteD(0) // plegue type
+	client.Buffer.WriteD(0) // changes the text above CP on Status Window
+	client.Buffer.WriteD(0) // plegue type
 
 	title := (255 & 0xFF) + ((168 & 0xFF) << 8) + ((00 & 0xFF) << 16)
-	buffer.WriteD(int32(title)) //titleColor
+	client.Buffer.WriteD(int32(title)) //titleColor
 
-	buffer.WriteD(0) // CursedWEAPON
+	client.Buffer.WriteD(0) // CursedWEAPON
 
-	buffer.WriteD(0) //TransormDisplayId
+	client.Buffer.WriteD(0) //TransormDisplayId
 
 	//attribute
-	buffer.WriteH(-2) //attack element //TODO
-	buffer.WriteH(0)  //attack elementValue
-	buffer.WriteH(0)  //fire
-	buffer.WriteH(0)  //water //TODO
-	buffer.WriteH(0)  //wind //TODO
-	buffer.WriteH(0)  //earth
-	buffer.WriteH(0)  //holy
-	buffer.WriteH(0)  //dark
+	client.Buffer.WriteH(-2) //attack element //TODO
+	client.Buffer.WriteH(0)  //attack elementValue
+	client.Buffer.WriteH(0)  //fire
+	client.Buffer.WriteH(0)  //water //TODO
+	client.Buffer.WriteH(0)  //wind //TODO
+	client.Buffer.WriteH(0)  //earth
+	client.Buffer.WriteH(0)  //holy
+	client.Buffer.WriteH(0)  //dark
 
-	buffer.WriteD(0) //agationId
+	client.Buffer.WriteD(0) //agationId
 
-	buffer.WriteD(0)                  //FAME //TODO
-	buffer.WriteD(0)                  //minimap or hellbound
-	buffer.WriteD(character.Vitality) //vitaliti Point
-	buffer.WriteD(0)                  //abnormalEffects
+	client.Buffer.WriteD(0)                  //FAME //TODO
+	client.Buffer.WriteD(0)                  //minimap or hellbound
+	client.Buffer.WriteD(character.Vitality) //vitaliti Point
+	client.Buffer.WriteD(0)                  //abnormalEffects
 
-	return buffer.Bytes()
+	client.SaveAndCryptDataInBufferToSend(true)
 }

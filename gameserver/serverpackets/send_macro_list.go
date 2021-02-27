@@ -1,16 +1,16 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+)
 
-func NewSendMacroList() []byte {
+func NewSendMacroList(client *models.Client) {
 
-	buffer := new(packets.Buffer)
+	client.Buffer.WriteSingleByte(0xE8)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteSingleByte(0)
+	client.Buffer.WriteSingleByte(0)
+	client.Buffer.WriteSingleByte(0)
 
-	buffer.WriteSingleByte(0xE8)
-	buffer.WriteD(0)
-	buffer.WriteSingleByte(0)
-	buffer.WriteSingleByte(0)
-	buffer.WriteSingleByte(0)
-
-	return buffer.Bytes()
+	client.SaveAndCryptDataInBufferToSend(true)
 }

@@ -3,7 +3,6 @@ package serverpackets
 import "l2gogameserver/gameserver/models"
 
 func NewMagicSkillUse(client *models.Client) {
-	client.Buffer.WriteH(0) // reserve
 
 	client.Buffer.WriteSingleByte(0x48)
 	client.Buffer.WriteD(client.CurrentChar.CharId) // activeChar id
@@ -28,6 +27,6 @@ func NewMagicSkillUse(client *models.Client) {
 	client.Buffer.WriteD(x)
 	client.Buffer.WriteD(y)
 	client.Buffer.WriteD(z)
-	client.SimpleSend(client.Buffer.Bytes(), true)
+	client.SaveAndCryptDataInBufferToSend(true)
 
 }

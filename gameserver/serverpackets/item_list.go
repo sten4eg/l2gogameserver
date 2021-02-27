@@ -8,7 +8,6 @@ import (
 
 func NewItemList(client *models.Client, conn *pgx.Conn) {
 
-	client.Buffer.WriteH(0) // reserve
 	client.Buffer.WriteSingleByte(0x11)
 	client.Buffer.WriteH(0)
 
@@ -53,5 +52,5 @@ func NewItemList(client *models.Client, conn *pgx.Conn) {
 
 	client.Buffer.WriteH(0) //writeInventoryBlock
 
-	client.SimpleSend(client.Buffer.Bytes(), true)
+	client.SaveAndCryptDataInBufferToSend(true)
 }

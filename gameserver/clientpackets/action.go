@@ -19,6 +19,6 @@ func NewAction(data []byte, client *models.Client) {
 
 	//Очень много Логика по action
 	//serverpackets.NewSocialAction(client)
-	//client.SimpleSend(client.Buffer.Bytes(), true)
+	//client.SimpleSend(client.Buffer.Bytes(), true) - simpleSend removed
 	serverpackets.NewTargetSelected(client.CurrentChar.CharId, objectId, originX, originY, originZ, client)
 }

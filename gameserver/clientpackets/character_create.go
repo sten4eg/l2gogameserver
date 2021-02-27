@@ -130,5 +130,4 @@ func (cc *CharCreate) validate(db *pgx.Conn, client *models.Client) {
 
 	//createChar
 	serverpackets.NewCharCreateOk(client)
-	client.SimpleSend(client.Buffer.Bytes(), true)
 }

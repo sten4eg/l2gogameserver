@@ -1,15 +1,15 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+)
 
-func NewExBrExtraUserInfo() []byte {
+func NewExBrExtraUserInfo(client *models.Client) {
 
-	buffer := new(packets.Buffer)
-
-	buffer.WriteSingleByte(0xFE)
-	buffer.WriteH(0xDA)
-	buffer.WriteD(1)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	return buffer.Bytes()
+	client.Buffer.WriteSingleByte(0xFE)
+	client.Buffer.WriteH(0xDA)
+	client.Buffer.WriteD(1)
+	client.Buffer.WriteD(0)
+	client.Buffer.WriteD(0)
+	client.SaveAndCryptDataInBufferToSend(true)
 }

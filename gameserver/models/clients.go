@@ -19,13 +19,16 @@ type Client struct {
 	CurrentChar     *Character
 	Account         *Account
 	ReadBuffer      bytes.Buffer
+	ToSendBuffer    *packets.Buffer
 }
 
 func NewClient() *Client {
 	buff := new(packets.Buffer)
+	toS := new(packets.Buffer)
 	return &Client{
-		Buffer:    buff,
-		NeedCrypt: false,
+		Buffer:       buff,
+		ToSendBuffer: toS,
+		NeedCrypt:    false,
 		OutKey: []int32{
 			0x6b,
 			0x60,
@@ -88,7 +91,14 @@ func (c *Client) Send(data []byte, need bool) error {
 	return nil
 }
 
-func (c *Client) SimpleSend(data []byte, needCrypt bool) {
+func (c *Client) SaveAndCryptDataInBufferToSend(needCrypt bool) {
+	data := c.Buffer.Bytes()
+	if len(data) == 0 {
+		return
+	}
+	// add first two byte
+	data = append([]byte{0, 0}, data...)
+
 	if needCrypt {
 		data = crypt.SimpleEncrypt(data, c.OutKey)
 	}
@@ -96,8 +106,13 @@ func (c *Client) SimpleSend(data []byte, needCrypt bool) {
 	length := int16(len(data))
 	data[0], data[1] = uint8(length&0xff), uint8(length>>8)
 
-	_, err := c.Socket.Write(data)
+	c.ToSendBuffer.WriteSlice(data)
 	c.Buffer.Reset()
+}
+
+func (c *Client) SentToSend() {
+	_, err := c.Socket.Write(c.ToSendBuffer.Bytes())
+	c.ToSendBuffer.Reset()
 	if err != nil {
 		log.Println("ERROR!!!")
 	}

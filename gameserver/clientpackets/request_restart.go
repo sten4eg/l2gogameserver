@@ -12,7 +12,6 @@ func NewRequestRestart(data []byte, client *models.Client, db *pgx.Conn) {
 
 	_ = data
 	serverpackets.NewRestartResponse(client)
-	client.SimpleSend(client.Buffer.Bytes(), true)
 
 	serverpackets.NewCharSelectionInfo(db, client)
 }

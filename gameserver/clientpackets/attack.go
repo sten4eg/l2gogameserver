@@ -21,6 +21,5 @@ func NewAttack(data []byte, client *models.Client) {
 	A.Z = originZ
 	A.Y = originY
 	serverpackets.NewAttack(client, &A)
-	client.SimpleSend(client.Buffer.Bytes(), true)
 	_, _, _, _, _ = objId, originZ, originX, originY, attackId
 }

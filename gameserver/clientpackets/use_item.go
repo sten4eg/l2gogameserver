@@ -36,15 +36,13 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 
 	items.SaveInventoryInDB(conn, myItems)
 
-	dataq := serverpackets.NewInventoryUpdate(myItems)
-	client.SimpleSend(dataq, true)
+	serverpackets.NewInventoryUpdate(client, myItems)
 
 	client.CurrentChar.Paperdoll = items.RestoreVisibleInventory(client.CurrentChar.CharId, conn)
-	pkg := serverpackets.NewUserInfo(client.CurrentChar)
-	err := client.Send(pkg, true)
-	if err != nil {
-		log.Println(err)
-	}
+
+	serverpackets.NewUserInfo(client.CurrentChar, client)
+
+	client.SentToSend()
 }
 
 func unEquipAndRecord(item items.Item, myItems []items.Item) {
