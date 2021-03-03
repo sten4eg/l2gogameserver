@@ -44,6 +44,7 @@ type Character struct {
 	AttackEndTime int64
 	Paperdoll     [31][3]int32
 	Stats         Stats
+	pvpFlag       bool
 }
 
 func GetNewCharacterModel() *Character {

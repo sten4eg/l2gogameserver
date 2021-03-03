@@ -96,6 +96,7 @@ func (c *Client) SaveAndCryptDataInBufferToSend(needCrypt bool) {
 	if len(data) == 0 {
 		return
 	}
+	log.Println("SEND PACKET: ", data[0])
 	// add first two byte
 	data = append([]byte{0, 0}, data...)
 

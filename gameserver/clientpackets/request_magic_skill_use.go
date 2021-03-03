@@ -17,4 +17,6 @@ func NewRequestMagicSkillUse(data []byte, client *models.Client) {
 
 	serverpackets.NewSetupGauge(client)
 	serverpackets.NewMagicSkillUse(client)
+
+	go serverpackets.NewTest(client)
 }

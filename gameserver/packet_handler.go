@@ -84,7 +84,7 @@ func (g *GameServer) handler(client *models.Client) {
 			var info models.PacketByte
 			pkg := serverpackets.NewCharInfo(client.CurrentChar)
 			info.SetB(pkg)
-			g.Broad(client, info)
+			g.BroadToAroundPlayers(client, info)
 
 			//todo вынести это отсюдова
 			charIds := models.GetAroundPlayers(client.CurrentChar)
@@ -110,7 +110,7 @@ func (g *GameServer) handler(client *models.Client) {
 			if err != nil {
 				log.Println(err)
 			}
-			g.Broad(client, info)
+			g.BroadToAroundPlayers(client, info)
 
 			log.Println("Send NewMoveToLocation")
 		case 73:
@@ -133,7 +133,7 @@ func (g *GameServer) handler(client *models.Client) {
 			var info models.PacketByte
 			pkg := serverpackets.NewCharInfo(client.CurrentChar)
 			info.SetB(pkg)
-			g.Broad(client, info)
+			g.BroadToAroundPlayers(client, info)
 		case 87:
 			clientpackets.NewRequestRestart(data, client, g.database)
 		case 57:

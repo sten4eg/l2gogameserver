@@ -16,6 +16,25 @@
     "mpConsume1": 2,
     "mpConsume2": 7
 
+  },
+
+  {
+    "id": 1184,
+    "levels": [1],
+    "name": "Ice Bolt",
+    "power": [1],
+    "castRange": 40,
+    "coolTime": 720,
+    "hitTime": 5000,
+    "overHit": true,
+    "reuseDelay": 3000,
+    "operateType": 1,
+    "targetType": "ONE",
+    "isMagic": 1,
+    "magicLvl": 1,
+    "mpConsume1": 2,
+    "mpConsume2": 7
+
   }
 ]
 

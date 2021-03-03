@@ -84,7 +84,7 @@ func kickClient(client *models.Client) {
 	log.Println("Socket Close For: ", client.CurrentChar.CharName)
 }
 
-func (g *GameServer) Broad(my *models.Client, pkg models.PacketByte) {
+func (g *GameServer) BroadToAroundPlayers(my *models.Client, pkg models.PacketByte) {
 
 	charsIds := models.GetAroundPlayers(my.CurrentChar)
 	for _, v := range charsIds {
@@ -115,7 +115,7 @@ func (g *GameServer) Tick() {
 
 				var info models.PacketByte
 				info.B = serverpackets.NewCharInfo(client.CurrentChar)
-				g.Broad(client, info)
+				g.BroadToAroundPlayers(client, info)
 				BroadCastToMe(g, client.CurrentChar)
 				log.Println(client.CurrentChar.CharId, " change Region ")
 			}
@@ -165,5 +165,4 @@ func BroadCastToMe(g *GameServer, my *models.Character) {
 		info.B = serverpackets.NewCharInfo(g.OnlineCharacters.Char[v])
 		_ = me.Send(info.GetB(), true)
 	}
-
 }
