@@ -37,7 +37,7 @@ var TileXMax = 26
 var TileYMax = 26
 var TileZeroCoordX = 20
 var TileZeroCoordY = 18
-var MapMinX = (TileXMin - TileZeroCoordX) * TileSize
+var MapMinX = (TileXMin - TileZeroCoordX) * TileSize // можно так же 9 << 15
 var MapMinY = (TileYMin - TileZeroCoordY) * TileSize
 
 var MapMaxX = ((TileXMax - TileZeroCoordX) + 1) * TileSize

@@ -79,25 +79,33 @@ type PacketByte struct {
 	B []byte
 }
 
+// IsActiveWeapon есть ли у персонажа оружие в руках
 func (c *Character) IsActiveWeapon() bool {
 	x := c.Paperdoll[items.PAPERDOLL_RHAND]
 	return x[0] == 0
 }
 
+// GetB получение массива байт в PacketByte
 func (i *PacketByte) GetB() []byte {
 	cl := make([]byte, len(i.B))
 	_ = copy(cl, i.B)
 	return cl
 }
+
+// SetB копирует массив байт в PacketByte
 func (i *PacketByte) SetB(v []byte) {
 	cl := make([]byte, len(v))
 	i.B = cl
 	copy(i.B, v)
 }
+
+// GetPercentFromCurrentLevel получить % опыта на текущем уровне
 func (c *Character) GetPercentFromCurrentLevel(exp, level int32) float64 {
 	expPerLevel, expPerLevel2 := data.GetExpData(level)
 	return float64(int64(exp)-expPerLevel) / float64(expPerLevel2-expPerLevel)
 }
+
+// SetXYZ установить координаты для персонажа
 func (c *Character) SetXYZ(x, y, z int32) {
 	c.Coordinates.mu.Lock()
 	c.Coordinates.X = x
@@ -106,11 +114,13 @@ func (c *Character) SetXYZ(x, y, z int32) {
 	c.Coordinates.mu.Unlock()
 }
 
+// GetXYZ получить координаты персонажа
 func (c *Character) GetXYZ() (x, y, z int32) {
-	c.Coordinates.mu.Lock()
-	defer c.Coordinates.mu.Unlock()
 	return c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z
 }
+
+// GetCreationCoordinates получить рандомные координаты при создании
+// персонажа, зависит от classId создаваемого персонажа
 func GetCreationCoordinates(classId int32) *Coordinates {
 
 	var config []StartLocation

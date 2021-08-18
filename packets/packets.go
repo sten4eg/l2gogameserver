@@ -81,6 +81,21 @@ func NewReader(buffer []byte) *Reader {
 	}
 }
 
+func (r *Reader) CurrentIndex() int64 {
+	l := r.r.Len()
+	s := r.r.Size()
+	currIndex := s - int64(l)
+	return currIndex
+}
+
+func (r *Reader) UnreadBytes(b int) {
+	for i := 0; i < b; i++ {
+		err := r.r.UnreadByte()
+		if err != nil {
+			panic(err)
+		}
+	}
+}
 func (r *Reader) ReadBytes(number int) []byte {
 	buffer := make([]byte, number)
 	n, _ := r.r.Read(buffer)
@@ -208,7 +223,26 @@ func (r *Reader) ReadUInt8() uint8 {
 	}
 	return result
 }
+func (r *Reader) ReadInt8() int8 {
+	var result int8
 
+	buffer := make([]byte, 1)
+	n, err := r.r.Read(buffer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if n < 1 {
+		return 0
+	}
+
+	buf := bytes.NewBuffer(buffer)
+
+	err = binary.Read(buf, binary.LittleEndian, &result)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return result
+}
 func (r *Reader) ReadString() string {
 	var result []byte
 	var secondByte byte

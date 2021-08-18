@@ -13,13 +13,16 @@ type Client struct {
 	Socket          net.Conn
 	ScrambleModulus []byte
 	Buffer          *packets.Buffer
-	NeedCrypt       bool
-	OutKey          []int32
-	InKey           []int32
-	CurrentChar     *Character
-	Account         *Account
-	ReadBuffer      bytes.Buffer
-	ToSendBuffer    *packets.Buffer
+	// NeedCrypt - флаг, при создании клиента false
+	// указывает первый пакет пришедший от клиента не нужно расшифровывать
+	NeedCrypt   bool
+	OutKey      []int32
+	InKey       []int32
+	CurrentChar *Character
+	Account     *Account
+	ReadBuffer  bytes.Buffer
+	// ToSendBuffer буффер полностью готовых к отправке пакета/пакетов
+	ToSendBuffer *packets.Buffer
 }
 
 func NewClient() *Client {
@@ -70,11 +73,13 @@ func NewClient() *Client {
 	}
 }
 
+// Send отправка массив data персонажу
+// need - флаг, указывает надо ли шифровать данные
 func (c *Client) Send(data []byte, need bool) error {
 	if need {
 		data = crypt.Encrypt(data, c.OutKey)
 	}
-	// Calculate the packet length
+	// вычисление длинны пакета, 2 первых байта - размер пакета
 	length := int16(len(data) + 2)
 	// Put everything together
 	buffer := packets.NewBuffer()
@@ -91,6 +96,8 @@ func (c *Client) Send(data []byte, need bool) error {
 	return nil
 }
 
+// SaveAndCryptDataInBufferToSend подготавливает данные из
+// c.Buffer ---> c.ToSendBuffer
 func (c *Client) SaveAndCryptDataInBufferToSend(needCrypt bool) {
 	data := c.Buffer.Bytes()
 	if len(data) == 0 {
@@ -111,40 +118,53 @@ func (c *Client) SaveAndCryptDataInBufferToSend(needCrypt bool) {
 	c.Buffer.Reset()
 }
 
+// SentToSend отправляет пользователю данные из c.ToSendBuffer
 func (c *Client) SentToSend() {
 	_, err := c.Socket.Write(c.ToSendBuffer.Bytes())
 	c.ToSendBuffer.Reset()
 	if err != nil {
-		log.Println("ERROR!!!")
+		panic(err)
 	}
 }
 
 func (c *Client) Receive() (opcode byte, data []byte, e error) {
-	// Read the first two bytes to define the packet size
+	// чтение первых 2 байта для определения размера всего пакета
 	header := make([]byte, 2)
 
 	n, err := c.Socket.Read(header)
-	//fmt.Println(n)
-	if n != 2 || err != nil {
-		return 0x00, nil, errors.New("12An error occured while reading the packet header.")
+
+	if err != nil {
+		return 0, nil, err
 	}
 
-	// Calculate the packet size
-	dataSize := (int(header[0]) | int(header[1])<<8) - 2 //hack bits
+	if n != 2 {
+		return 0, nil, errors.New("байтов длинны пакета должно быть 2")
+	}
 
-	// Allocate the appropriate size for our data
+	// длинна пакета
+	dataSize := (int(header[0]) | int(header[1])<<8) - 2
+
+	// аллокация требуемого массива байт для входяшего пакета
 	data = make([]byte, dataSize)
 
-	// Read the encrypted part of the packet
 	n, err = c.Socket.Read(data)
-	if n != dataSize || err != nil {
-		return 0x00, nil, errors.New("An error occured while reading the packet data.")
+	if err != nil {
+		return 0, nil, err
 	}
 
-	// Print the raw packet
-	//fmt.Printf("header packet : %X\n  Raw: %X\n", header, data)
-	data = crypt.Decrypt(data, &c.NeedCrypt, c.InKey)
-	// Extract the op code
+	if n != dataSize {
+		return 0, nil, errors.New("длинна прочитанного пакета не соответствует требуемому размеру")
+	}
+
+	// Если это первый пакет от юзера то его не расшифровываем
+	// todo можно ли приудмать что нибудь лучше?
+	if c.NeedCrypt {
+		data = crypt.Decrypt(data, c.InKey)
+	} else {
+		c.NeedCrypt = true
+	}
+
+	// первый байт opcode, остальные полезная нагрузка
 	opcode = data[0]
 	data = data[1:]
 	e = nil

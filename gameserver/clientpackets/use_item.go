@@ -54,6 +54,7 @@ func unEquipAndRecord(item items.Item, myItems []items.Item) {
 	}
 }
 
+// equipItemAndRecord
 func equipItemAndRecord(item items.Item, myItems []items.Item) {
 	switch item.Bodypart {
 	case items.SlotRHand:

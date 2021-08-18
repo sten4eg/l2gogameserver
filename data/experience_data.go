@@ -2,6 +2,8 @@ package data
 
 var expData [88]int64
 
+// Load устанавливает значиния
+// уровень -> сколько опыта необходимо для его получения
 func Load() {
 	expData[1] = 0
 	expData[2] = 68
