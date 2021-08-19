@@ -22,7 +22,7 @@
       "database": {
         "name": "l2g",
         "host": "127.0.0.1",
-        "port": 5432,
+        "port": "5432",
         "user": "postgres",
         "password": "postgres",
         "pgDSN": "postgres://ma_usr:m4_u$3r@172.22.22.103/ma_db?sslmode=disable&pool_max_conns=60"
@@ -46,7 +46,7 @@
       "database": {
         "name": "l2g",
         "host": "127.0.0.1",
-        "port": 5432,
+        "port": "5432",
         "user": "postgres",
         "password": "postgres",
         "pgDSN": "postgres://ma_usr:m4_u$3r@172.22.22.103/ma_db?sslmode=disable&pool_max_conns=60"

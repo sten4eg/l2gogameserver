@@ -103,8 +103,8 @@ func (c *Client) SaveAndCryptDataInBufferToSend(needCrypt bool) {
 	if len(data) == 0 {
 		return
 	}
-	log.Println("SEND PACKET: ", data[0])
-	// add first two byte
+	log.Println("Пакет с опкодом : ", data[0], " подготовлен к отправке")
+	// добавление первых двух байт для длинны пакета
 	data = append([]byte{0, 0}, data...)
 
 	if needCrypt {
