@@ -8,6 +8,7 @@ import (
 	"log"
 )
 
+// loop клиента в ожидании входящих пакетов
 func (g *GameServer) handler(client *models.Client) {
 	defer kickClient(client)
 
@@ -24,11 +25,11 @@ func (g *GameServer) handler(client *models.Client) {
 		case 14:
 			clientpackets.NewprotocolVersion(data, client)
 		case 43:
-			clientpackets.NewAuthLogin(data, client, g.database)
+			clientpackets.NewAuthLogin(data, client)
 		case 19:
 			serverpackets.NewCharacterSuccess(client)
 		case 12:
-			clientpackets.NewCharacterCreate(data, g.database, client)
+			clientpackets.NewCharacterCreate(data, client)
 		case 18:
 			clientpackets.NewCharSelected(data, client)
 
@@ -46,7 +47,7 @@ func (g *GameServer) handler(client *models.Client) {
 				case 1:
 					serverpackets.NewExSendManorList(client)
 				case 54:
-					serverpackets.NewCharSelectionInfo(g.database, client)
+					serverpackets.NewCharSelectionInfo(client)
 				}
 			}
 
@@ -61,7 +62,7 @@ func (g *GameServer) handler(client *models.Client) {
 
 			serverpackets.NewSendMacroList(client)
 
-			serverpackets.NewItemList(client, g.database)
+			serverpackets.NewItemList(client)
 
 			serverpackets.NewExQuestItemList(client)
 
@@ -73,7 +74,7 @@ func (g *GameServer) handler(client *models.Client) {
 
 			serverpackets.NewExBasicActionList(client)
 
-			serverpackets.NewSkillList(client, g.database)
+			serverpackets.NewSkillList(client)
 
 			serverpackets.NewHennaInfo(client)
 
@@ -127,7 +128,7 @@ func (g *GameServer) handler(client *models.Client) {
 		case 1:
 			clientpackets.NewAttack(data, client)
 		case 25:
-			clientpackets.NewUseItem(data, client, g.database)
+			clientpackets.NewUseItem(data, client)
 
 			//todo нужно подумать как это вынести и отправлять =((
 			var info models.PacketByte
@@ -135,7 +136,7 @@ func (g *GameServer) handler(client *models.Client) {
 			info.SetB(pkg)
 			g.BroadToAroundPlayers(client, info)
 		case 87:
-			clientpackets.NewRequestRestart(data, client, g.database)
+			clientpackets.NewRequestRestart(data, client)
 		case 57:
 			clientpackets.NewRequestMagicSkillUse(data, client)
 		default:

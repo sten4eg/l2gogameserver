@@ -1,13 +1,12 @@
 package clientpackets
 
 import (
-	"github.com/jackc/pgx"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func NewAuthLogin(data []byte, client *models.Client, db *pgx.Conn) {
+func NewAuthLogin(data []byte, client *models.Client) {
 
 	var packet = packets.NewReader(data)
 
@@ -18,7 +17,7 @@ func NewAuthLogin(data []byte, client *models.Client, db *pgx.Conn) {
 	loginKey1 := packet.ReadInt32()
 	loginKey2 := packet.ReadInt32()
 	_, _, _, _ = playKey1, playKey2, loginKey1, loginKey2
-	serverpackets.NewCharSelectionInfo(db, client)
+	serverpackets.NewCharSelectionInfo(client)
 	client.Account.Login = login
 
 }

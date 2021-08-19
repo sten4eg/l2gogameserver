@@ -1,7 +1,6 @@
 package clientpackets
 
 import (
-	"github.com/jackc/pgx"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/serverpackets"
@@ -9,7 +8,7 @@ import (
 	"log"
 )
 
-func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
+func NewUseItem(data []byte, client *models.Client) {
 	var packet = packets.NewReader(data)
 
 	objId := packet.ReadInt32() // targetObjId
@@ -17,7 +16,7 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 
 	log.Print(objId, ctrlPressed)
 
-	myItems := items.GetMyItems(client.CurrentChar.CharId, conn)
+	myItems := items.GetMyItems(client.CurrentChar.CharId)
 
 	var selectedItem items.Item
 
@@ -34,11 +33,11 @@ func NewUseItem(data []byte, client *models.Client, conn *pgx.Conn) {
 		equipItemAndRecord(selectedItem, myItems)
 	}
 
-	items.SaveInventoryInDB(conn, myItems)
+	items.SaveInventoryInDB(myItems)
 
 	serverpackets.NewInventoryUpdate(client, myItems)
 
-	client.CurrentChar.Paperdoll = items.RestoreVisibleInventory(client.CurrentChar.CharId, conn)
+	client.CurrentChar.Paperdoll = items.RestoreVisibleInventory(client.CurrentChar.CharId)
 
 	serverpackets.NewUserInfo(client.CurrentChar, client)
 

@@ -1,15 +1,22 @@
 package serverpackets
 
 import (
-	"github.com/jackc/pgx"
+	"context"
+	"l2gogameserver/db"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
 	"log"
 )
 
-func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
+func NewCharSelectionInfo(client *models.Client) {
 
-	rows, err := db.Query("SELECT * FROM characters WHERE Login = $1", []byte(client.Account.Login))
+	dbConn, err := db.GetConn()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dbConn.Release()
+
+	rows, err := dbConn.Query(context.Background(), "SELECT * FROM characters WHERE Login = $1", []byte(client.Account.Login))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,10 +63,9 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 		models.SetupStats(&character)
 		account.Char = append(account.Char, &character)
 	}
-	rows.Close()
 
 	for _, v := range account.Char {
-		v.Paperdoll = items.RestoreVisibleInventory(v.CharId, db)
+		v.Paperdoll = items.RestoreVisibleInventory(v.CharId)
 	}
 
 	client.Buffer.WriteSingleByte(0x09)
@@ -113,7 +119,7 @@ func NewCharSelectionInfo(db *pgx.Conn, client *models.Client) {
 		client.Buffer.WriteD(0)
 		client.Buffer.WriteD(0)
 
-		paperdoll := items.RestoreVisibleInventory(char.CharId, db)
+		paperdoll := items.RestoreVisibleInventory(char.CharId)
 		for _, slot := range items.GetPaperdollOrder() {
 			client.Buffer.WriteD(paperdoll[slot][1])
 		}

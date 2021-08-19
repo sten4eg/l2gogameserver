@@ -1,8 +1,9 @@
 package models
 
 import (
+	"context"
 	"encoding/json"
-	"github.com/jackc/pgx"
+	"l2gogameserver/db"
 	"log"
 	"os"
 )
@@ -50,8 +51,13 @@ func LoadSkills() {
 
 }
 
-func GetMySkills(charId int32, db *pgx.Conn) []Skill {
-	rows, err := db.Query("SELECT skill_id, skill_level FROM character_skills WHERE char_id = $1", charId)
+func GetMySkills(charId int32) []Skill {
+	dbConn, err := db.GetConn()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rows, err := dbConn.Query(context.Background(), "SELECT skill_id, skill_level FROM character_skills WHERE char_id = $1", charId)
 	if err != nil {
 		log.Fatal(err)
 	}

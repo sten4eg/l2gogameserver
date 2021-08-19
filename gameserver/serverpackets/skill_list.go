@@ -1,13 +1,12 @@
 package serverpackets
 
 import (
-	"github.com/jackc/pgx"
 	"l2gogameserver/gameserver/models"
 )
 
-func NewSkillList(client *models.Client, conn *pgx.Conn) {
+func NewSkillList(client *models.Client) {
 
-	skills := models.GetMySkills(client.CurrentChar.CharId, conn)
+	skills := models.GetMySkills(client.CurrentChar.CharId)
 
 	client.Buffer.WriteSingleByte(0x5F)
 

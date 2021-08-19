@@ -1,17 +1,16 @@
 package serverpackets
 
 import (
-	"github.com/jackc/pgx"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
 )
 
-func NewItemList(client *models.Client, conn *pgx.Conn) {
+func NewItemList(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0x11)
 	client.Buffer.WriteH(0)
 
-	myItems := items.GetMyItems(client.CurrentChar.CharId, conn)
+	myItems := items.GetMyItems(client.CurrentChar.CharId)
 	client.Buffer.WriteH(int16(len(myItems)))
 
 	for _, e := range myItems {

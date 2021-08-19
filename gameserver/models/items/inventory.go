@@ -1,8 +1,9 @@
 package items
 
 import (
+	"context"
 	"encoding/json"
-	"github.com/jackc/pgx"
+	"l2gogameserver/db"
 	"log"
 	"os"
 )
@@ -39,13 +40,20 @@ const (
 	Inventory string = "INVENTORY"
 )
 
-func RestoreVisibleInventory(charId int32, db *pgx.Conn) [31][3]int32 {
+func RestoreVisibleInventory(charId int32) [31][3]int32 {
 	var paperdoll [31][3]int32
-	rows, err := db.Query("SELECT object_id, item, loc_data, enchant_level FROM items WHERE owner_id= $1 AND loc= $2", charId, Paperdoll)
+
+	dbConn, err := db.GetConn()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer rows.Close()
+	defer dbConn.Release()
+
+	rows, err := dbConn.Query(context.Background(), "SELECT object_id, item, loc_data, enchant_level FROM items WHERE owner_id= $1 AND loc= $2", charId, Paperdoll)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for rows.Next() {
 		var objId int
 		var item int
@@ -123,8 +131,12 @@ type Item struct {
 
 var AllItems map[int32]Item
 
-func GetMyItems(charId int32, db *pgx.Conn) []Item {
-	rows, err := db.Query("SELECT object_id,item,loc_data,enchant_level,count,loc FROM items WHERE owner_id=$1", charId)
+func GetMyItems(charId int32) []Item {
+	dbConn, err := db.GetConn()
+	if err != nil {
+		log.Fatal(err)
+	}
+	rows, err := dbConn.Query(context.Background(), "SELECT object_id,item,loc_data,enchant_level,count,loc FROM items WHERE owner_id=$1", charId)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -289,10 +301,15 @@ func (i *Item) IsEquipped() int16 {
 	return 1
 }
 
-func SaveInventoryInDB(conn *pgx.Conn, inventory []Item) {
+func SaveInventoryInDB(inventory []Item) {
+	dbConn, err := db.GetConn()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for _, v := range inventory {
-		_, err := conn.Exec("UPDATE items SET loc_data = $1, loc = $2 WHERE object_id = $3", v.LocData, v.Loc, v.ObjId)
+		//TODO sql в цикле надо переделать
+		_, err = dbConn.Exec(context.Background(), "UPDATE items SET loc_data = $1, loc = $2 WHERE object_id = $3", v.LocData, v.Loc, v.ObjId)
 		if err != nil {
 			log.Println(err.Error())
 		}

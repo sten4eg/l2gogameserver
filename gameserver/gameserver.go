@@ -2,8 +2,6 @@ package gameserver
 
 import (
 	"fmt"
-	"github.com/jackc/pgx"
-	"l2gogameserver/config"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"log"
@@ -16,7 +14,6 @@ type GameServer struct {
 	clientsListener  net.Listener
 	clients          sync.Map
 	Socket           net.Conn
-	database         *pgx.Conn
 	OnlineCharacters *models.OnlineCharacters
 }
 
@@ -29,23 +26,7 @@ func New() *GameServer {
 func (g *GameServer) Init() {
 
 	var err error
-	globalConfig := config.Read()
-	dbConfig := pgx.ConnConfig{
-		Host:              globalConfig.LoginServer.Database.Host,
-		Port:              globalConfig.LoginServer.Database.Port,
-		Database:          globalConfig.LoginServer.Database.Name,
-		User:              globalConfig.LoginServer.Database.User,
-		Password:          globalConfig.LoginServer.Database.Password,
-		TLSConfig:         nil,
-		FallbackTLSConfig: nil,
-	}
 
-	g.database, err = pgx.Connect(dbConfig)
-	if err != nil {
-		panic(err.Error())
-	} else {
-		log.Println("Successful database connection")
-	}
 	/* #nosec */
 	g.clientsListener, err = net.Listen("tcp", ":7777")
 	if err != nil {
