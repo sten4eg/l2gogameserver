@@ -35,8 +35,8 @@ func (g *GameServer) Init() {
 		log.Println("Login server is listening on port 7777")
 	}
 	var onlineChars models.OnlineCharacters
-	x := make(map[int32]*models.Character)
-	onlineChars.Char = x
+
+	onlineChars.Char = make(map[int32]*models.Character)
 	g.OnlineCharacters = &onlineChars
 }
 
@@ -50,7 +50,7 @@ func (g *GameServer) Start() {
 		g.AddClient(client)
 
 		if err != nil {
-			fmt.Println("Couldn't accept the incoming connection.")
+			fmt.Println("Couldn't accept the incoming connection.", err)
 			continue
 		} else {
 			go g.handler(client)
