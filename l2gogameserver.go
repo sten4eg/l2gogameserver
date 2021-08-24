@@ -8,6 +8,8 @@ import (
 	"l2gogameserver/gameserver/models/items"
 )
 
+//todo 	var packet = packets.NewReader(data)
+// в каждом пакете от клиента , возможно лучше сделать пул ?
 func main() {
 	//defer profile.Start().Stop()
 	//defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()

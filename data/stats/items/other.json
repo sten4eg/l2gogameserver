@@ -1,0 +1,21 @@
+[
+  {
+    "id": 1835,
+    "type": "EtcItem",
+    "name": "Soulshot: No Grade",
+    "icon": "icon.etc_spirit_bullet_white_i00",
+    "default_action": "SOULSHOT",
+    "immediate_effect": true,
+    "material": "PAPER",
+    "weight": 4,
+    "price": 7,
+    "isStackable": true,
+    "handler": "SoulShots",
+    "itemSkill": "2039-1",
+    "forNpc": true
+  }
+]
+
+
+
+

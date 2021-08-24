@@ -102,33 +102,46 @@ type armorJson struct {
 	Bodypart  string
 }
 
-type Item struct {
-	Id              int32
-	ObjId           int32
-	Loc             string
-	LocData         int32
-	Count           int64
+type otherJson struct {
+	Id              int
 	Name            string
 	Icon            string
 	Type            string
-	Enchant         int16
-	WeaponType      string
-	Bodypart        int32
-	ItemType        int16
-	AttackRange     int
-	DamageRange     string
-	ImmediateEffect bool
+	ImmediateEffect bool `json:"immediate_effect"`
 	Weight          int
 	Material        string
 	Price           int
-	Soulshots       int
-	Spiritshots     int
-	PAtk            int
-	MAtk            int
-	CritRate        int
-	PAtkSpd         int
 }
 
+type Item struct {
+	Id               int32
+	ObjId            int32
+	Loc              string
+	LocData          int32
+	Count            int64
+	Name             string
+	Icon             string
+	Type             string
+	Enchant          int16
+	WeaponType       string
+	Bodypart         int32
+	ItemType         int16
+	AttackRange      int
+	DamageRange      string
+	ImmediateEffect  bool
+	Weight           int
+	Material         string
+	Price            int
+	Soulshots        int
+	Spiritshots      int
+	PAtk             int
+	MAtk             int
+	CritRate         int
+	PAtkSpd          int
+	SharedReuseGroup int32
+}
+
+// AllItems - ONLY READ MAP, set in init server
 var AllItems map[int32]Item
 
 func GetMyItems(charId int32) []Item {
@@ -187,7 +200,7 @@ func LoadItems() {
 
 	loadWeapons()
 	loadArmors()
-
+	loadOther()
 }
 
 func loadArmors() {
@@ -245,6 +258,33 @@ func loadWeapons() {
 		weapon.PAtk = v.PAtk
 		AllItems[int32(v.Id)] = *weapon
 	}
+}
+
+func loadOther() {
+	file, err := os.Open("./data/stats/items/other.json")
+	if err != nil {
+		log.Fatal("Failed to load config file")
+	}
+
+	decoder := json.NewDecoder(file)
+
+	var otherJson []otherJson
+
+	err = decoder.Decode(&otherJson)
+	if err != nil {
+		log.Fatal("Failed to decode config file")
+	}
+	for _, v := range otherJson {
+		weapon := new(Item)
+		weapon.Loc = ""
+		weapon.Bodypart = 0
+		weapon.ItemType = 05 //item
+		weapon.Name = v.Name
+		weapon.Icon = v.Icon
+		weapon.ImmediateEffect = v.ImmediateEffect
+		AllItems[int32(v.Id)] = *weapon
+	}
+
 }
 
 var Slots map[string]int32
@@ -316,6 +356,22 @@ func SaveInventoryInDB(inventory []Item) {
 	}
 }
 
+func GetMyItemByObjId(charId int32, objId int32) Item {
+	dbConn, err := db.GetConn()
+	if err != nil {
+		return Item{}
+	}
+	defer dbConn.Release()
+
+	items := GetMyItems(charId)
+
+	for _, v := range items {
+		if v.ObjId == objId {
+			return v
+		}
+	}
+	return Item{}
+}
 func GetPaperdollOrder() []uint8 {
 	return []uint8{
 		PAPERDOLL_UNDER,

@@ -139,6 +139,8 @@ func (g *GameServer) handler(client *models.Client) {
 			clientpackets.NewRequestRestart(data, client)
 		case 57:
 			clientpackets.NewRequestMagicSkillUse(data, client)
+		case 61:
+			clientpackets.NewRequestShortCutReg(data, client)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}
