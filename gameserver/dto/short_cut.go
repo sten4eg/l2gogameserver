@@ -24,6 +24,14 @@ type ShortCutDTO struct {
 	SharedReuseGroup int32
 }
 
+type ShortCutSimpleDTO struct {
+	Slot         int32
+	Page         int32
+	ShortcutType int32
+	Id           int32
+	Level        int32
+}
+
 func GetShortCutDTO(slot, page, id, level, characterType int32, shortType string) ShortCutDTO {
 	var shDto ShortCutDTO
 

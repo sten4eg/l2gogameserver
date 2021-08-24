@@ -48,6 +48,10 @@ func (g *GameServer) handler(client *models.Client) {
 					serverpackets.NewExSendManorList(client)
 				case 54:
 					serverpackets.NewCharSelectionInfo(client)
+				case 13:
+					clientpackets.NewRequestAutoSoulShot(data, client)
+				default:
+					log.Println("Не реализованный пакет: ", data[0])
 				}
 			}
 
@@ -141,6 +145,8 @@ func (g *GameServer) handler(client *models.Client) {
 			clientpackets.NewRequestMagicSkillUse(data, client)
 		case 61:
 			clientpackets.NewRequestShortCutReg(data, client)
+		case 63:
+			clientpackets.NewRequestShortCutDel(data, client)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}
