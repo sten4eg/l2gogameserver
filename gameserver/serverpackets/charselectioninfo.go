@@ -5,23 +5,23 @@ import (
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
-	"log"
 )
 
 func NewCharSelectionInfo(client *models.Client) {
 
 	dbConn, err := db.GetConn()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	defer dbConn.Release()
 
 	rows, err := dbConn.Query(context.Background(), "SELECT * FROM characters WHERE Login = $1", []byte(client.Account.Login))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
-	var account models.Account
+	//
+	client.Account.Char = client.Account.Char[:0]
 	for rows.Next() {
 		var character models.Character
 		var coord models.Coordinates
@@ -56,20 +56,20 @@ func NewCharSelectionInfo(client *models.Client) {
 			&character.CharName,
 		)
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 		character.Coordinates = &coord
 		character.Conn = client
 		models.SetupStats(&character)
-		account.Char = append(account.Char, &character)
+		client.Account.Char = append(client.Account.Char, &character)
 	}
 
-	for _, v := range account.Char {
+	for _, v := range client.Account.Char {
 		v.Paperdoll = items.RestoreVisibleInventory(v.CharId)
 	}
 
 	client.Buffer.WriteSingleByte(0x09)
-	client.Buffer.WriteD(int32(len(account.Char))) //size char in account
+	client.Buffer.WriteD(int32(len(client.Account.Char))) //size char in account
 
 	// Can prevent players from creating new characters (if 0); (if 1, the client will ask if chars may be created (0x13) Response: (0x0D) )
 	client.Buffer.WriteD(7)          //char max number
@@ -77,7 +77,7 @@ func NewCharSelectionInfo(client *models.Client) {
 
 	//todo блок который должен повторяться
 
-	for _, char := range account.Char {
+	for _, char := range client.Account.Char {
 
 		client.Buffer.WriteS(string(char.CharName.Bytes)) // Pers name
 
@@ -150,6 +150,5 @@ func NewCharSelectionInfo(client *models.Client) {
 		client.Buffer.WriteD(char.Vitality) // H5 Vitality
 
 	}
-	client.Account = &account
 	client.SaveAndCryptDataInBufferToSend(true)
 }

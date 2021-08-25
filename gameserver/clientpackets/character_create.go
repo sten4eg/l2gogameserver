@@ -7,7 +7,6 @@ import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
-	"log"
 )
 
 type CharCreate struct {
@@ -90,7 +89,7 @@ func (cc *CharCreate) validate(client *models.Client) {
 
 	dbConn, err := db.GetConn()
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 
 	row := dbConn.QueryRow(context.Background(), "(SELECT exists(SELECT char_name from characters WHERE char_name = $1))", cc.Name.Bytes)

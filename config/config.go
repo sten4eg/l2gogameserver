@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 )
 
@@ -58,13 +57,13 @@ func Read() Config {
 	var config Config
 	file, err := os.Open("./config/config.json")
 	if err != nil {
-		log.Fatal("Failed to load config file")
+		panic("Failed to load config file")
 	}
 
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&config)
 	if err != nil {
-		log.Fatal("Failed to decode config file")
+		panic("Failed to decode config file")
 	}
 	return config
 }

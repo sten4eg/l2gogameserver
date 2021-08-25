@@ -86,7 +86,7 @@ func (c *Client) Send(data []byte, need bool) error {
 	buffer.WriteH(length)
 	_, err := buffer.Write(data)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	_, err = c.Socket.Write(buffer.Bytes())

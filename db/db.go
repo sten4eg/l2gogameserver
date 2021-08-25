@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"l2gogameserver/config"
-	"log"
 )
 
 var db *pgxpool.Pool
@@ -22,11 +21,11 @@ func ConfigureDB() {
 
 	pool, err := pgxpool.Connect(context.Background(), dsnString)
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 	err = pool.Ping(context.Background())
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 	db = pool
 }

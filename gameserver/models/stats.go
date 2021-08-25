@@ -2,7 +2,7 @@ package models
 
 import (
 	"encoding/json"
-	"log"
+
 	"os"
 )
 
@@ -58,7 +58,7 @@ type baseMDef struct {
 func LoadStats() {
 	file, err := os.Open("./data/stats/char/baseStats/humanFighter.json")
 	if err != nil {
-		log.Fatal("Failed to load config file " + err.Error())
+		panic("Failed to load config file " + err.Error())
 	}
 
 	decoder := json.NewDecoder(file)
@@ -67,7 +67,7 @@ func LoadStats() {
 
 	err = decoder.Decode(&statsJson)
 	if err != nil {
-		log.Fatal("Failed to decode config file " + file.Name() + " " + err.Error())
+		panic("Failed to decode config file " + file.Name() + " " + err.Error())
 	}
 	AllStats = make(map[string]Stats)
 

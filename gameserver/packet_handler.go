@@ -39,6 +39,7 @@ func (g *GameServer) handler(client *models.Client) {
 			rg := models.GetRegion(x, y)
 			rg.AddVisibleObject(client.CurrentChar)
 			client.CurrentChar.CurrentRegion = rg
+			client.CurrentChar.Load()
 			g.addOnlineChar(client.CurrentChar)
 
 		case 208:

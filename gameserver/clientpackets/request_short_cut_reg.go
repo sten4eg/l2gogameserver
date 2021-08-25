@@ -29,8 +29,8 @@ func NewRequestShortCutReg(data []byte, client *models.Client) {
 		return
 	}
 	sc := dto.GetShortCutDTO(slot, page, id, lvl, characterType, shortType)
-	// registerDTO IN CHARACTER
-	models.RegisterShortCut(sc, client.CurrentChar.CharId, client.CurrentChar.ClassId)
+
+	models.RegisterShortCut(sc, client)
 	serverpackets.NewShortCutRegister(sc, client)
 
 }

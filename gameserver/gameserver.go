@@ -60,7 +60,7 @@ func (g *GameServer) Start() {
 func kickClient(client *models.Client) {
 	err := client.Socket.Close()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	log.Println("Socket Close For: ", client.CurrentChar.CharName)
 }

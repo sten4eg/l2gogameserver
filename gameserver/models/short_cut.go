@@ -4,26 +4,25 @@ import (
 	"context"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/dto"
-	"log"
 	"strconv"
 )
 
 const MaxShortcutsPerBar = 12
 
-func RegisterShortCut(sc dto.ShortCutDTO, charId, classId int32) {
-	shorts := restoreMe(charId, classId)
+func RegisterShortCut(sc dto.ShortCutDTO, client *Client) {
+	shorts := client.CurrentChar.ShortCut
 
 	s, exist := shorts[sc.Slot+(sc.Page*MaxShortcutsPerBar)]
 	if exist {
-		deleteShortCutFromDb(s, charId, classId)
+		deleteShortCutFromDb(s, client.CurrentChar.CharId, client.CurrentChar.ClassId)
 	}
-	registerShortCutInDb(sc, charId, classId)
+	registerShortCutInDb(sc, client.CurrentChar.CharId, client.CurrentChar.ClassId)
 }
 
 func deleteShortCutFromDb(shortCut dto.ShortCutDTO, charId int32, classId int32) {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	defer dbConn.Release()
 
@@ -33,14 +32,14 @@ func deleteShortCutFromDb(shortCut dto.ShortCutDTO, charId int32, classId int32)
 		shortCut.Page,
 		classId)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
 func registerShortCutInDb(shortCut dto.ShortCutDTO, charId, classId int32) {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 	defer dbConn.Release()
 
@@ -53,21 +52,21 @@ func registerShortCutInDb(shortCut dto.ShortCutDTO, charId, classId int32) {
 		strconv.Itoa(int(shortCut.Level)),
 		classId)
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 }
 
 func restoreMe(charId, classId int32) map[int32]dto.ShortCutDTO {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 	defer dbConn.Release()
 
 	shorts := make(map[int32]dto.ShortCutDTO)
 	rows, err := dbConn.Query(context.Background(), "SELECT slot, page, type, shortcut_id, level FROM character_shortcuts WHERE char_id = $1 AND class_index = $2", charId, classId)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	for rows.Next() {
@@ -123,13 +122,13 @@ func GetAllShortCuts(charId, classId int32) []dto.ShortCutSimpleDTO {
 	return shortCuts
 }
 
-func DeleteShortCut(slot, page, charId, classId int32) {
-	all := restoreMe(charId, classId)
+func DeleteShortCut(slot, page int32, client *Client) {
+	all := client.CurrentChar.ShortCut
 	e, ok := all[slot+(page*MaxShortcutsPerBar)]
 	if !ok {
 		return
 	}
-	deleteShortCutFromDb(e, charId, classId)
+	deleteShortCutFromDb(e, client.CurrentChar.CharId, client.CurrentChar.ClassId)
 	// todo Проверка на соски
 
 }

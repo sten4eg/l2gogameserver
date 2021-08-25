@@ -32,7 +32,7 @@ var AllSkills map[int]Skill
 func LoadSkills() {
 	file, err := os.Open("./data/stats/skills/0-100.json")
 	if err != nil {
-		log.Fatal("Failed to load config file " + err.Error())
+		panic("Failed to load config file " + err.Error())
 	}
 
 	decoder := json.NewDecoder(file)
@@ -41,7 +41,7 @@ func LoadSkills() {
 
 	err = decoder.Decode(&skillsJson)
 	if err != nil {
-		log.Fatal("Failed to decode config file " + file.Name() + " " + err.Error())
+		panic("Failed to decode config file " + file.Name() + " " + err.Error())
 	}
 	AllSkills = make(map[int]Skill)
 
@@ -54,12 +54,12 @@ func LoadSkills() {
 func GetMySkills(charId int32) []Skill {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	rows, err := dbConn.Query(context.Background(), "SELECT skill_id, skill_level FROM character_skills WHERE char_id = $1", charId)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	type tempSkillFromDB struct {
@@ -77,7 +77,7 @@ func GetMySkills(charId int32) []Skill {
 		}
 		sk, ok := AllSkills[itm.SkillId]
 		if !ok {
-			log.Fatal("not found Skill")
+			panic("not found Skill")
 		}
 		sk.CurrentLevel = itm.SkillLevel
 		skills = append(skills, sk)

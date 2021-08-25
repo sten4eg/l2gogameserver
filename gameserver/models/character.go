@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"github.com/jackc/pgx/pgtype"
 	"l2gogameserver/data"
+	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/models/items"
-	"log"
 	"math/rand"
 	"os"
 	"sync"
@@ -45,6 +45,7 @@ type Character struct {
 	Paperdoll     [31][3]int32
 	Stats         Stats
 	pvpFlag       bool
+	ShortCut      map[int32]dto.ShortCutDTO
 }
 
 func GetNewCharacterModel() *Character {
@@ -126,13 +127,13 @@ func GetCreationCoordinates(classId int32) *Coordinates {
 	var config []StartLocation
 	file, err := os.Open("./data/stats/char/pcCreationPoint.json")
 	if err != nil {
-		log.Fatal("Failed to load config file")
+		panic("Failed to load config file")
 	}
 
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&config)
 	if err != nil {
-		log.Fatal("Failed to decode config file")
+		panic("Failed to decode config file")
 	}
 
 	var coordinates Coordinates
@@ -152,4 +153,9 @@ func GetCreationCoordinates(classId int32) *Coordinates {
 		}
 	}
 	return &coordinates
+}
+
+// Load загрузка персонажа
+func (c *Character) Load() {
+	c.ShortCut = restoreMe(c.CharId, c.ClassId)
 }

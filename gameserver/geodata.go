@@ -3,7 +3,7 @@ package gameserver
 import (
 	_ "embed"
 	"l2gogameserver/packets"
-	"log"
+
 	"math"
 )
 
@@ -120,7 +120,7 @@ func Load() {
 	//	switch va := v.(type) {
 	//	case ComplexBlock:
 	//		for _, vv := range va.Cell {
-	//			log.Fatal(vv.getHeight())
+	//			panic(vv.getHeight())
 	//		}
 	//	}
 	//}
@@ -145,7 +145,7 @@ func getGeoX(worldX int32) int32 {
 	if worldX >= -655360 && worldX <= 393215 {
 		return (worldX - -655360) / 16
 	}
-	log.Fatal("Illegal world X in getGeoX")
+	panic("Illegal world X in getGeoX")
 	return 0
 }
 
@@ -153,7 +153,7 @@ func getGeoY(worldY int32) int32 {
 	if worldY >= -589824 && worldY <= 458751 {
 		return (worldY - -589824) / 16
 	}
-	log.Fatal("Illegal world X in getGeoX")
+	panic("Illegal world X in getGeoX")
 	return 0
 }
 

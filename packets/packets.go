@@ -3,7 +3,6 @@ package packets
 import (
 	"bytes"
 	"encoding/binary"
-	"log"
 )
 
 type Buffer struct {
@@ -17,46 +16,46 @@ func NewBuffer() *Buffer {
 func (b *Buffer) WriteF(value float64) {
 	err := binary.Write(b, binary.LittleEndian, value)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
 func (b *Buffer) WriteH(value int16) {
 	err := binary.Write(b, binary.LittleEndian, value)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
 func (b *Buffer) WriteQ(value int64) {
 	err := binary.Write(b, binary.LittleEndian, value)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 func (b *Buffer) WriteD(value int32) {
 	err := binary.Write(b, binary.LittleEndian, value)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 func (b *Buffer) WriteDU(value uint32) {
 	err := binary.Write(b, binary.LittleEndian, value)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 func (b *Buffer) WriteSlice(val []byte) {
 	err := binary.Write(b, binary.LittleEndian, val)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
 func (b *Buffer) WriteSingleByte(value byte) {
 	err := b.WriteByte(value)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
@@ -65,7 +64,7 @@ func (b *Buffer) WriteS(value string) {
 	val := append([]byte(value), 0, 0)
 	err := binary.Write(b, binary.LittleEndian, val)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
@@ -121,7 +120,7 @@ func (r *Reader) ReadUInt64() uint64 {
 	buffer := make([]byte, 8)
 	n, err := r.r.Read(buffer)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	if n < 8 {
 		return 0
@@ -131,7 +130,7 @@ func (r *Reader) ReadUInt64() uint64 {
 
 	err = binary.Read(buf, binary.LittleEndian, &result)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	return result
 }
@@ -142,7 +141,7 @@ func (r *Reader) ReadInt32() int32 {
 	buffer := make([]byte, 4)
 	n, err := r.r.Read(buffer)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	if n < 4 {
 		return 0
@@ -152,7 +151,7 @@ func (r *Reader) ReadInt32() int32 {
 
 	err = binary.Read(r.b, binary.LittleEndian, &result)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	r.b.Reset()
 	return result
@@ -164,7 +163,7 @@ func (r *Reader) ReadUInt16() uint16 {
 	buffer := make([]byte, 2)
 	n, err := r.r.Read(buffer)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	if n < 2 {
 		return 0
@@ -175,7 +174,7 @@ func (r *Reader) ReadUInt16() uint16 {
 	err = binary.Read(buf, binary.LittleEndian, &result)
 
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	return result
@@ -187,7 +186,7 @@ func (r *Reader) ReadInt16() int16 {
 	buffer := make([]byte, 2)
 	n, err := r.r.Read(buffer)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	if n < 2 {
 		return 0
@@ -198,7 +197,7 @@ func (r *Reader) ReadInt16() int16 {
 	err = binary.Read(buf, binary.LittleEndian, &result)
 
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	return result
@@ -209,7 +208,7 @@ func (r *Reader) ReadUInt8() uint8 {
 	buffer := make([]byte, 1)
 	n, err := r.r.Read(buffer)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	if n < 1 {
 		return 0
@@ -219,7 +218,7 @@ func (r *Reader) ReadUInt8() uint8 {
 
 	err = binary.Read(buf, binary.LittleEndian, &result)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	return result
 }
@@ -229,7 +228,7 @@ func (r *Reader) ReadInt8() int8 {
 	buffer := make([]byte, 1)
 	n, err := r.r.Read(buffer)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	if n < 1 {
 		return 0
@@ -239,7 +238,7 @@ func (r *Reader) ReadInt8() int8 {
 
 	err = binary.Read(buf, binary.LittleEndian, &result)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	return result
 }
@@ -249,11 +248,11 @@ func (r *Reader) ReadString() string {
 	for {
 		firstByte, err := r.r.ReadByte()
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 		secondByte, err = r.r.ReadByte()
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 
 		if firstByte == 0x00 && secondByte == 0x00 {

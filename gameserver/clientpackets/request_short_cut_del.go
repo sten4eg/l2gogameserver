@@ -16,6 +16,6 @@ func NewRequestShortCutDel(data []byte, client *models.Client) {
 		return
 	}
 
-	models.DeleteShortCut(slot, page, client.CurrentChar.CharId, client.CurrentChar.ClassId)
+	models.DeleteShortCut(slot, page, client)
 	serverpackets.NewShortCutInit(client)
 }

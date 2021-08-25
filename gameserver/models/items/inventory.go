@@ -45,13 +45,13 @@ func RestoreVisibleInventory(charId int32) [31][3]int32 {
 
 	dbConn, err := db.GetConn()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	defer dbConn.Release()
 
 	rows, err := dbConn.Query(context.Background(), "SELECT object_id, item, loc_data, enchant_level FROM items WHERE owner_id= $1 AND loc= $2", charId, Paperdoll)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	for rows.Next() {
@@ -147,11 +147,11 @@ var AllItems map[int32]Item
 func GetMyItems(charId int32) []Item {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	rows, err := dbConn.Query(context.Background(), "SELECT object_id,item,loc_data,enchant_level,count,loc FROM items WHERE owner_id=$1", charId)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	type tempItemFromDB struct {
@@ -206,7 +206,7 @@ func LoadItems() {
 func loadArmors() {
 	file, err := os.Open("./data/stats/items/armor.json")
 	if err != nil {
-		log.Fatal("Failed to load config file")
+		panic("Failed to load config file")
 	}
 
 	decoder := json.NewDecoder(file)
@@ -215,7 +215,7 @@ func loadArmors() {
 
 	err = decoder.Decode(&armorsJson)
 	if err != nil {
-		log.Fatal("Failed to decode config file")
+		panic("Failed to decode config file")
 	}
 
 	for _, v := range armorsJson {
@@ -231,7 +231,7 @@ func loadArmors() {
 func loadWeapons() {
 	file, err := os.Open("./data/stats/items/weapon.json")
 	if err != nil {
-		log.Fatal("Failed to load config file")
+		panic("Failed to load config file")
 	}
 
 	decoder := json.NewDecoder(file)
@@ -240,7 +240,7 @@ func loadWeapons() {
 
 	err = decoder.Decode(&weaponJson)
 	if err != nil {
-		log.Fatal("Failed to decode config file")
+		panic("Failed to decode config file")
 	}
 
 	for _, v := range weaponJson {
@@ -263,7 +263,7 @@ func loadWeapons() {
 func loadOther() {
 	file, err := os.Open("./data/stats/items/other.json")
 	if err != nil {
-		log.Fatal("Failed to load config file")
+		panic("Failed to load config file")
 	}
 
 	decoder := json.NewDecoder(file)
@@ -272,7 +272,7 @@ func loadOther() {
 
 	err = decoder.Decode(&otherJson)
 	if err != nil {
-		log.Fatal("Failed to decode config file")
+		panic("Failed to decode config file")
 	}
 	for _, v := range otherJson {
 		weapon := new(Item)
@@ -344,7 +344,7 @@ func (i *Item) IsEquipped() int16 {
 func SaveInventoryInDB(inventory []Item) {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	for _, v := range inventory {
