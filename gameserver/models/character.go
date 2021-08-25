@@ -13,39 +13,40 @@ import (
 )
 
 type Character struct {
-	Login         pgtype.Bytea
-	CharId        int32
-	Level         int32
-	MaxHp         int32
-	CurHp         int32
-	MaxMp         int32
-	CurMp         int32
-	Face          int32
-	HairStyle     int32
-	HairColor     int32
-	Sex           int32
-	Coordinates   *Coordinates
-	Exp           int32
-	Sp            int32
-	Karma         int32
-	PvpKills      int32
-	PkKills       int32
-	ClanId        int32
-	Race          int32
-	ClassId       int32
-	BaseClass     int32
-	Title         sql.NullString
-	OnlineTime    int32
-	Nobless       int32
-	Vitality      int32
-	CharName      pgtype.Bytea
-	CurrentRegion *WorldRegion
-	Conn          *Client
-	AttackEndTime int64
-	Paperdoll     [31][3]int32
-	Stats         Stats
-	pvpFlag       bool
-	ShortCut      map[int32]dto.ShortCutDTO
+	Login           pgtype.Bytea
+	CharId          int32
+	Level           int32
+	MaxHp           int32
+	CurHp           int32
+	MaxMp           int32
+	CurMp           int32
+	Face            int32
+	HairStyle       int32
+	HairColor       int32
+	Sex             int32
+	Coordinates     *Coordinates
+	Exp             int32
+	Sp              int32
+	Karma           int32
+	PvpKills        int32
+	PkKills         int32
+	ClanId          int32
+	Race            int32
+	ClassId         int32
+	BaseClass       int32
+	Title           sql.NullString
+	OnlineTime      int32
+	Nobless         int32
+	Vitality        int32
+	CharName        pgtype.Bytea
+	CurrentRegion   *WorldRegion
+	Conn            *Client
+	AttackEndTime   int64
+	Paperdoll       [31][3]int32
+	Stats           Stats
+	pvpFlag         bool
+	ShortCut        map[int32]dto.ShortCutDTO
+	ActiveSoulShots []int32
 }
 
 func GetNewCharacterModel() *Character {
@@ -158,4 +159,11 @@ func GetCreationCoordinates(classId int32) *Coordinates {
 // Load загрузка персонажа
 func (c *Character) Load() {
 	c.ShortCut = restoreMe(c.CharId, c.ClassId)
+}
+
+func (c *Character) checkSoulShot() {
+	if len(c.ActiveSoulShots) == 0 {
+		return
+	}
+
 }

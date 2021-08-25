@@ -35,6 +35,18 @@
     "mpConsume1": 2,
     "mpConsume2": 7
 
+  },
+
+  {
+    "id": 2039,
+    "levels": [1],
+    "name": "Soulshot: No Grade",
+    "isMagic": 2,
+    "magicLvl": 1,
+    "operateType": 1,
+    "rideState": "NONE;STRIDER;WYVERN;WOLF",
+    "targetType": "SELF"
   }
+
 ]
 
