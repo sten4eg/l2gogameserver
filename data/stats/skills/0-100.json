@@ -1,7 +1,7 @@
 [
   {
     "id": 1216,
-    "levels": [1],
+    "levels": 1,
     "name": "Self Heal",
     "power": [1],
     "castRange": 40,
@@ -12,17 +12,16 @@
     "operateType": "A1",
     "targetType": "SELF",
     "isMagic": 1,
-    "magicLvl": 1,
-    "mpConsume1": 2,
-    "mpConsume2": 7
-
+    "magicLvl": [1],
+    "mpConsume1": [2],
+    "mpConsume2": [7]
   },
 
   {
     "id": 1184,
-    "levels": [1],
+    "levels": 6,
     "name": "Ice Bolt",
-    "power": [1],
+    "power": [8,9,11,13,14,16],
     "castRange": 40,
     "coolTime": 720,
     "hitTime": 5000,
@@ -31,22 +30,13 @@
     "operateType": "A2",
     "targetType": "ONE",
     "isMagic": 1,
-    "magicLvl": 1,
-    "mpConsume1": 2,
-    "mpConsume2": 7
+    "magicLvl": [4,7,11,14,17,20],
+    "mpConsume1": [2,2,3,3,4,4],
+    "mpConsume2": [7,8,11,12,14,16]
 
-  },
-
-  {
-    "id": 2039,
-    "levels": [1],
-    "name": "Soulshot: No Grade",
-    "isMagic": 2,
-    "magicLvl": 1,
-    "operateType": "A1",
-    "rideState": "NONE;STRIDER;WYVERN;WOLF",
-    "targetType": "SELF"
   }
+
+
 
 ]
 

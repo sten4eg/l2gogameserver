@@ -17,11 +17,11 @@ func NewSkillList(client *models.Client) {
 		if skill.OperateType.IsPassive() {
 			isPassive = 1
 		}
-		client.Buffer.WriteD(isPassive)                 // passiv ?
-		client.Buffer.WriteD(int32(skill.CurrentLevel)) // level
-		client.Buffer.WriteD(int32(skill.ID))           // id
-		client.Buffer.WriteD(0)                         // disable?
-		client.Buffer.WriteD(0)                         // enchant ?
+		client.Buffer.WriteD(isPassive)           // passiv ?
+		client.Buffer.WriteD(int32(skill.Levels)) // level
+		client.Buffer.WriteD(int32(skill.ID))     // id
+		client.Buffer.WriteD(0)                   // disable?
+		client.Buffer.WriteD(0)                   // enchant ?
 	}
 
 	client.SaveAndCryptDataInBufferToSend(true)

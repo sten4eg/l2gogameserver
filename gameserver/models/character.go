@@ -49,6 +49,7 @@ type Character struct {
 	ActiveSoulShots []int32
 	IsDead          bool
 	IsFakeDeath     bool
+	Skills          []Skill
 }
 
 func GetNewCharacterModel() *Character {

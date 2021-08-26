@@ -1,0 +1,10 @@
+{
+  "id": 2039,
+  "levels": 1,
+  "name": "Soulshot: No Grade",
+  "isMagic": 2,
+  "magicLvl": [1],
+  "operateType": "A1",
+  "rideState": "NONE;STRIDER;WYVERN;WOLF",
+  "targetType": "SELF"
+}

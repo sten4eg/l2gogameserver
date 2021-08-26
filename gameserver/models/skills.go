@@ -7,28 +7,51 @@ import (
 	"l2gogameserver/gameserver/models/skills"
 	"log"
 	"os"
+	"strconv"
 )
 
 type Skill struct {
-	ID           int                `json:"id"`
-	Levels       []int              `json:"levels"`
-	Name         string             `json:"name"`
-	Power        []int              `json:"power"`
-	CastRange    int                `json:"castRange"`
-	CoolTime     int                `json:"coolTime"`
-	HitTime      int                `json:"hitTime"`
-	OverHit      bool               `json:"overHit"`
-	ReuseDelay   int                `json:"reuseDelay"`
-	OperateType  skills.OperateType `json:"operateType"`
-	TargetType   string             `json:"targetType"`
-	IsMagic      int                `json:"isMagic"`
-	MagicLvl     int                `json:"magicLvl"`
-	MpConsume1   int                `json:"mpConsume1"`
-	MpConsume2   int                `json:"mpConsume2"`
-	CurrentLevel int
+	ID          int                `json:"id"`
+	Levels      int                `json:"levels"`
+	Name        string             `json:"name"`
+	Power       int                `json:"power"`
+	CastRange   int                `json:"castRange"`
+	CoolTime    int                `json:"coolTime"`
+	HitTime     int                `json:"hitTime"`
+	OverHit     bool               `json:"overHit"`
+	ReuseDelay  int                `json:"reuseDelay"`
+	OperateType skills.OperateType `json:"operateType"`
+	TargetType  string             `json:"targetType"`
+	IsMagic     int                `json:"isMagic"`
+	MagicLvl    int                `json:"magicLvl"`
+	MpConsume1  int                `json:"mpConsume1"`
+	MpConsume2  int                `json:"mpConsume2"`
 }
 
-var AllSkills map[int]Skill
+type SkillForParseJSON struct {
+	ID          int                `json:"id"`
+	Levels      int                `json:"levels"`
+	Name        string             `json:"name"`
+	Power       []int              `json:"power"`
+	CastRange   int                `json:"castRange"`
+	CoolTime    int                `json:"coolTime"`
+	HitTime     int                `json:"hitTime"`
+	OverHit     bool               `json:"overHit"`
+	ReuseDelay  int                `json:"reuseDelay"`
+	OperateType skills.OperateType `json:"operateType"`
+	TargetType  string             `json:"targetType"`
+	IsMagic     int                `json:"isMagic"`
+	MagicLvl    []int              `json:"magicLvl"`
+	MpConsume1  []int              `json:"mpConsume1"`
+	MpConsume2  []int              `json:"mpConsume2"`
+}
+
+var AllSkills map[Tuple]Skill
+
+type Tuple struct {
+	Id  int
+	Lvl int
+}
 
 func LoadSkills() {
 	file, err := os.Open("./data/stats/skills/0-100.json")
@@ -38,18 +61,45 @@ func LoadSkills() {
 
 	decoder := json.NewDecoder(file)
 
-	var skillsJson []Skill
+	var skillsJson []SkillForParseJSON
 
 	err = decoder.Decode(&skillsJson)
 	if err != nil {
 		panic("Failed to decode config file " + file.Name() + " " + err.Error())
 	}
-	AllSkills = make(map[int]Skill)
+	AllSkills = make(map[Tuple]Skill)
 
 	for _, v := range skillsJson {
-		AllSkills[v.ID] = v
-	}
+		fSkill := Skill{
+			ID:          v.ID,
+			Levels:      1,
+			Name:        v.Name,
+			Power:       v.Power[0],
+			CastRange:   v.CastRange,
+			CoolTime:    v.CoolTime,
+			HitTime:     v.HitTime,
+			OverHit:     v.OverHit,
+			ReuseDelay:  v.ReuseDelay,
+			OperateType: v.OperateType,
+			TargetType:  v.TargetType,
+			IsMagic:     v.IsMagic,
+			MagicLvl:    v.MagicLvl[0],
+			MpConsume1:  v.MpConsume1[0],
+			MpConsume2:  v.MpConsume2[0],
+		}
 
+		if v.Levels > 1 {
+			for i := 0; i < v.Levels; i++ {
+				fSkill.Levels = i
+				fSkill.Power = v.Power[i]
+				AllSkills[Tuple{v.ID, i}] = fSkill
+			}
+		} else {
+			AllSkills[Tuple{v.ID, v.Levels}] = fSkill
+		}
+	}
+	qw := AllSkills
+	_ = qw
 }
 
 func GetMySkills(charId int32) []Skill {
@@ -63,25 +113,47 @@ func GetMySkills(charId int32) []Skill {
 		panic(err)
 	}
 
-	type tempSkillFromDB struct {
-		SkillId    int
-		SkillLevel int
-	}
-
 	var skills []Skill
 	for rows.Next() {
-		var itm tempSkillFromDB
+		var skl Tuple
 
-		err = rows.Scan(&itm.SkillId, &itm.SkillLevel)
+		err = rows.Scan(&skl.Id, &skl.Lvl)
 		if err != nil {
 			log.Println(err)
 		}
-		sk, ok := AllSkills[itm.SkillId]
+		sk, ok := AllSkills[skl]
 		if !ok {
 			panic("not found Skill")
 		}
-		sk.CurrentLevel = itm.SkillLevel
 		skills = append(skills, sk)
 	}
 	return skills
+}
+
+func (c *Character) LoadSkills() {
+	dbConn, err := db.GetConn()
+	if err != nil {
+		panic(err)
+	}
+	defer dbConn.Release()
+
+	rows, err := dbConn.Query(context.Background(), "SELECT skill_id,skill_level FROM character_skills WHERE char_id=$1 AND class_id=$2", c.CharId, c.ClassId)
+	if err != nil {
+		panic(err)
+	}
+
+	for rows.Next() {
+		var t Tuple
+		err = rows.Scan(&t.Id, &t.Lvl)
+		if err != nil {
+			panic(err)
+		}
+
+		sk, ok := AllSkills[t]
+		if !ok {
+			panic("Скилл персонажа " + string(c.CharName.Bytes) + " не найден в мапе скиллов id: " + strconv.Itoa(t.Id) + " Level: " + strconv.Itoa(t.Lvl))
+		}
+		c.Skills = append(c.Skills, sk)
+	}
+
 }
