@@ -2,6 +2,7 @@ package serverpackets
 
 import "l2gogameserver/gameserver/models"
 
+// NewSetupGauge полоска над персонажем во время каста скила
 func NewSetupGauge(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0x6b)

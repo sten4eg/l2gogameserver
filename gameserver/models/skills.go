@@ -4,26 +4,27 @@ import (
 	"context"
 	"encoding/json"
 	"l2gogameserver/db"
+	"l2gogameserver/gameserver/models/skills"
 	"log"
 	"os"
 )
 
 type Skill struct {
-	ID           int    `json:"id"`
-	Levels       []int  `json:"levels"`
-	Name         string `json:"name"`
-	Power        []int  `json:"power"`
-	CastRange    int    `json:"castRange"`
-	CoolTime     int    `json:"coolTime"`
-	HitTime      int    `json:"hitTime"`
-	OverHit      bool   `json:"overHit"`
-	ReuseDelay   int    `json:"reuseDelay"`
-	OperateType  int    `json:"operateType"`
-	TargetType   string `json:"targetType"`
-	IsMagic      int    `json:"isMagic"`
-	MagicLvl     int    `json:"magicLvl"`
-	MpConsume1   int    `json:"mpConsume1"`
-	MpConsume2   int    `json:"mpConsume2"`
+	ID           int                `json:"id"`
+	Levels       []int              `json:"levels"`
+	Name         string             `json:"name"`
+	Power        []int              `json:"power"`
+	CastRange    int                `json:"castRange"`
+	CoolTime     int                `json:"coolTime"`
+	HitTime      int                `json:"hitTime"`
+	OverHit      bool               `json:"overHit"`
+	ReuseDelay   int                `json:"reuseDelay"`
+	OperateType  skills.OperateType `json:"operateType"`
+	TargetType   string             `json:"targetType"`
+	IsMagic      int                `json:"isMagic"`
+	MagicLvl     int                `json:"magicLvl"`
+	MpConsume1   int                `json:"mpConsume1"`
+	MpConsume2   int                `json:"mpConsume2"`
 	CurrentLevel int
 }
 
@@ -83,11 +84,4 @@ func GetMySkills(charId int32) []Skill {
 		skills = append(skills, sk)
 	}
 	return skills
-}
-
-func (s *Skill) IsPassive() int32 {
-	if s.OperateType == 3 {
-		return 1
-	}
-	return 0
 }

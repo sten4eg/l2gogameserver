@@ -1,14 +1,17 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+)
 
-func NewSystemMessage() []byte {
-	buffer := new(packets.Buffer)
+func NewSystemMessage(msg models.SysMsg, client *models.Client) {
 
-	buffer.WriteSingleByte(0x62)
-	buffer.WriteD(2970)
-	buffer.WriteD(1)
-	buffer.WriteD(0)
-	buffer.WriteS("fuck")
-	return buffer.Bytes()
+	client.Buffer.WriteSingleByte(0x62) // 062 для всех сис мессаджей
+	client.Buffer.WriteD(msg.Id)
+	client.Buffer.WriteD(1) //params.len
+
+	client.SaveAndCryptDataInBufferToSend(true)
+	//buffer.WriteD(0)
+	//buffer.WriteS("fuck")
+	//return buffer.Bytes()
 }

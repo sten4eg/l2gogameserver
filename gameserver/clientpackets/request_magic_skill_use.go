@@ -13,10 +13,21 @@ func NewRequestMagicSkillUse(data []byte, client *models.Client) {
 	ctrlPressed := packet.ReadInt32() != 0       // True if it's a ForceAttack : Ctrl pressed
 	shiftPressed := packet.ReadSingleByte() != 0 // True if Shift pressed
 
+	if client.CurrentChar.IsDead {
+		serverpackets.NewActionFailed(client)
+		return
+	}
+
+	if client.CurrentChar.IsFakeDeath {
+		serverpackets.NewSystemMessage(models.CantMoveSitting, client)
+		serverpackets.NewActionFailed(client)
+		return
+	}
+
 	_, _, _ = magicId, ctrlPressed, shiftPressed
 
 	serverpackets.NewSetupGauge(client)
 	serverpackets.NewMagicSkillUse(client)
 
-	go serverpackets.NewTest(client)
+	//todo что это такое  / go serverpackets.NewTest(client)
 }

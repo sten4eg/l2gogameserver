@@ -9,7 +9,7 @@
     "hitTime": 5000,
     "overHit": true,
     "reuseDelay": 3000,
-    "operateType": 1,
+    "operateType": "A1",
     "targetType": "SELF",
     "isMagic": 1,
     "magicLvl": 1,
@@ -28,7 +28,7 @@
     "hitTime": 5000,
     "overHit": true,
     "reuseDelay": 3000,
-    "operateType": 1,
+    "operateType": "A2",
     "targetType": "ONE",
     "isMagic": 1,
     "magicLvl": 1,
@@ -43,7 +43,7 @@
     "name": "Soulshot: No Grade",
     "isMagic": 2,
     "magicLvl": 1,
-    "operateType": 1,
+    "operateType": "A1",
     "rideState": "NONE;STRIDER;WYVERN;WOLF",
     "targetType": "SELF"
   }

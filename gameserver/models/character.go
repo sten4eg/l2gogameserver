@@ -47,6 +47,8 @@ type Character struct {
 	pvpFlag         bool
 	ShortCut        map[int32]dto.ShortCutDTO
 	ActiveSoulShots []int32
+	IsDead          bool
+	IsFakeDeath     bool
 }
 
 func GetNewCharacterModel() *Character {

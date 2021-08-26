@@ -7,10 +7,10 @@ func NewMagicSkillUse(client *models.Client) {
 	client.Buffer.WriteSingleByte(0x48)
 	client.Buffer.WriteD(client.CurrentChar.CharId) // activeChar id
 	client.Buffer.WriteD(client.CurrentChar.CharId) // targetChar id
-	client.Buffer.WriteD(1216)                      // skillId
+	client.Buffer.WriteD(2039)                      // skillId
 	client.Buffer.WriteD(1)                         // skillLevel
-	client.Buffer.WriteD(5000)                      // hitTime
-	client.Buffer.WriteD(3000)                      // reuseDelay
+	client.Buffer.WriteD(0)                         // hitTime
+	client.Buffer.WriteD(0)                         // reuseDelay
 
 	x, y, z := client.CurrentChar.GetXYZ()
 	client.Buffer.WriteD(x)

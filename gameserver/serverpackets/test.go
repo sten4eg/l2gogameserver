@@ -5,6 +5,7 @@ import (
 	"log"
 )
 
+//MagicSkillLaunched
 func NewTest(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0x54)
