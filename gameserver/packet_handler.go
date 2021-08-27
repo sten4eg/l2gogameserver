@@ -148,6 +148,8 @@ func (g *GameServer) handler(client *models.Client) {
 			clientpackets.NewRequestShortCutReg(data, client)
 		case 63:
 			clientpackets.NewRequestShortCutDel(data, client)
+		case 80:
+			serverpackets.NewSkillList(client)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}

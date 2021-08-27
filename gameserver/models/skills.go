@@ -131,6 +131,7 @@ func GetMySkills(charId int32) []Skill {
 }
 
 func (c *Character) LoadSkills() {
+	c.Skills = map[int]Skill{}
 	dbConn, err := db.GetConn()
 	if err != nil {
 		panic(err)
@@ -153,7 +154,7 @@ func (c *Character) LoadSkills() {
 		if !ok {
 			panic("Скилл персонажа " + string(c.CharName.Bytes) + " не найден в мапе скиллов id: " + strconv.Itoa(t.Id) + " Level: " + strconv.Itoa(t.Lvl))
 		}
-		c.Skills = append(c.Skills, sk)
+		c.Skills[sk.ID] = sk //= append(c.Skills, sk)
 	}
 
 }

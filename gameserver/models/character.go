@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"github.com/jackc/pgx/pgtype"
 	"l2gogameserver/data"
 	"l2gogameserver/gameserver/dto"
@@ -49,12 +50,29 @@ type Character struct {
 	ActiveSoulShots []int32
 	IsDead          bool
 	IsFakeDeath     bool
-	Skills          []Skill
+	// Skills todo: проверить слайс или мапа лучше для скилов
+	Skills       map[int]Skill
+	IsCastingNow bool
+	SkillQueue   *chan Skill
 }
 
 func GetNewCharacterModel() *Character {
 	character := new(Character)
+	sk := make(map[int]Skill)
+	character.Skills = sk
 	return character
+}
+
+func (c *Character) ListenSkillQueue() {
+	for {
+		select {
+		case res := <-*c.SkillQueue:
+			fmt.Println("SKILL V QUEUE")
+			fmt.Println(res)
+		default:
+			//	fmt.Println("noting")
+		}
+	}
 }
 
 func SetupStats(char *Character) {
@@ -162,6 +180,10 @@ func GetCreationCoordinates(classId int32) *Coordinates {
 // Load загрузка персонажа
 func (c *Character) Load() {
 	c.ShortCut = restoreMe(c.CharId, c.ClassId)
+	c.LoadSkills()
+	qs := make(chan Skill)
+	c.SkillQueue = &qs
+	go c.ListenSkillQueue()
 }
 
 func (c *Character) checkSoulShot() {

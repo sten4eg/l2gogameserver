@@ -6,11 +6,11 @@ import (
 
 func NewSkillList(client *models.Client) {
 
-	skills := models.GetMySkills(client.CurrentChar.CharId)
+	skills := client.CurrentChar.Skills
 
 	client.Buffer.WriteSingleByte(0x5F)
-
-	client.Buffer.WriteD(int32(len(skills))) // skill size
+	l := int32(len(skills))
+	client.Buffer.WriteD(l) // skill size
 
 	for _, skill := range skills {
 		isPassive := int32(0)
@@ -20,8 +20,8 @@ func NewSkillList(client *models.Client) {
 		client.Buffer.WriteD(isPassive)           // passiv ?
 		client.Buffer.WriteD(int32(skill.Levels)) // level
 		client.Buffer.WriteD(int32(skill.ID))     // id
-		client.Buffer.WriteD(0)                   // disable?
-		client.Buffer.WriteD(0)                   // enchant ?
+		client.Buffer.WriteSingleByte(0)          // disable?
+		client.Buffer.WriteSingleByte(0)          // enchant ?
 	}
 
 	client.SaveAndCryptDataInBufferToSend(true)

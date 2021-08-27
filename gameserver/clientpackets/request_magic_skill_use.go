@@ -24,10 +24,16 @@ func NewRequestMagicSkillUse(data []byte, client *models.Client) {
 		return
 	}
 
+	skill, exist := client.CurrentChar.Skills[int(magicId)]
+	if !exist {
+		// todo тут еще идут проверки, возможно это кастомный? скилл или скилл трансформы и если нет то фейл
+		serverpackets.NewActionFailed(client)
+		return
+	}
 	_, _, _ = magicId, ctrlPressed, shiftPressed
 
 	serverpackets.NewSetupGauge(client)
-	serverpackets.NewMagicSkillUse(client)
+	serverpackets.NewMagicSkillUse(client, skill, ctrlPressed, shiftPressed)
 
 	//todo что это такое  / go serverpackets.NewTest(client)
 }
