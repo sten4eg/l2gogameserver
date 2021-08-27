@@ -10,7 +10,7 @@ func NewMagicSkillUse(client *models.Client, skill models.Skill, ctrlPressed, sh
 	}
 
 	if client.CurrentChar.IsCastingNow {
-		*client.CurrentChar.SkillQueue <- skill
+		client.CurrentChar.SetSkillToQueue(skill, ctrlPressed, shiftPressed)
 		NewActionFailed(client)
 		return
 	}

@@ -53,7 +53,7 @@ type Character struct {
 	// Skills todo: проверить слайс или мапа лучше для скилов
 	Skills       map[int]Skill
 	IsCastingNow bool
-	SkillQueue   *chan Skill
+	SkillQueue   chan SkillHolder
 }
 
 func GetNewCharacterModel() *Character {
@@ -66,15 +66,28 @@ func GetNewCharacterModel() *Character {
 func (c *Character) ListenSkillQueue() {
 	for {
 		select {
-		case res := <-*c.SkillQueue:
+		case res := <-c.SkillQueue:
 			fmt.Println("SKILL V QUEUE")
 			fmt.Println(res)
 		default:
-			//	fmt.Println("noting")
 		}
 	}
 }
 
+type SkillHolder struct {
+	skill        Skill
+	ctrlPressed  bool
+	shiftPressed bool
+}
+
+func (c *Character) SetSkillToQueue(skill Skill, ctrlPressed, shiftPressed bool) {
+	s := SkillHolder{
+		skill:        skill,
+		ctrlPressed:  ctrlPressed,
+		shiftPressed: shiftPressed,
+	}
+	c.SkillQueue <- s
+}
 func SetupStats(char *Character) {
 	if char.BaseClass == 0 {
 		char.Stats = AllStats["humF"]
@@ -181,8 +194,7 @@ func GetCreationCoordinates(classId int32) *Coordinates {
 func (c *Character) Load() {
 	c.ShortCut = restoreMe(c.CharId, c.ClassId)
 	c.LoadSkills()
-	qs := make(chan Skill)
-	c.SkillQueue = &qs
+	c.SkillQueue = make(chan SkillHolder)
 	go c.ListenSkillQueue()
 }
 
