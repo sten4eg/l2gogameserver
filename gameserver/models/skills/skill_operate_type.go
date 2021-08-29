@@ -102,6 +102,5 @@ func (o *OperateType) UnmarshalJSON(data []byte) error {
 	default:
 		return errors.New("неправильный OperateType скила, OpType = " + string(data))
 	}
-
 	return nil
 }

@@ -70,79 +70,64 @@ func RestoreVisibleInventory(charId int32) [31][3]int32 {
 	return paperdoll
 }
 
-type weaponJson struct {
-	Id              int
-	ObjId           int32
-	Loc             int32
-	Count           int64
-	Name            string
-	Icon            string
-	Type            string
-	WeaponType      string `json:"weapon_type"`
-	Bodypart        string
-	AttackRange     int    `json:"attack_range"`
-	DamageRange     string `json:"damage_range"`
-	ImmediateEffect bool   `json:"immediate_effect"`
-	Weight          int
-	Material        string
-	Price           int
-	Soulshots       int
-	Spiritshots     int
-	PAtk            int
-	MAtk            int
-	CritRate        int
-	PAtkSpd         int
-}
-
-type armorJson struct {
-	Id        int
-	Type      string
-	Name      string
-	ArmorType string
-	Bodypart  string
-}
-
-type otherJson struct {
-	Id              int
-	Name            string
-	Icon            string
-	Type            string
-	ImmediateEffect bool `json:"immediate_effect"`
-	Weight          int
-	Material        string
-	Price           int
-}
-
 type Item struct {
-	Id               int32
-	ObjId            int32
-	Loc              string
-	LocData          int32
-	Count            int64
-	Name             string
-	Icon             string
-	Type             string
-	Enchant          int16
-	WeaponType       string
-	Bodypart         int32
-	ItemType         int16
-	AttackRange      int
-	DamageRange      string
-	ImmediateEffect  bool
-	Weight           int
-	Material         string
-	Price            int
-	Soulshots        int
-	Spiritshots      int
-	PAtk             int
-	MAtk             int
-	CritRate         int
-	PAtkSpd          int
-	SharedReuseGroup int32
+	Id                     int
+	ItemType               string
+	Name                   string
+	Icon                   string
+	SlotBitType            ItemType `json:"slot_bit_type"`
+	ArmorType              string
+	EtcItemType            string
+	ItemMultiSkillList     string
+	RecipeId               int
+	Weight                 int
+	ConsumeType            string
+	SoulShotCount          int
+	SpiritShotCount        int
+	DropPeriod             int
+	Duration               int
+	Period                 int
+	DefaultPrice           int
+	ItemSkill              string
+	CriticalAttackSkill    string
+	AttackSkill            string
+	MagicSkill             string
+	ItemSkillEnchantedFour int
+	MaterialType           string
+	CrystalType            string
+	CrystalCount           int
+	IsTrade                bool
+	IsDrop                 bool
+	IsDestruct             bool
+	IsPrivateStore         bool
+	KeepType               int
+	PhysicalDamage         int
+	RandomDamage           int
+	WeaponType             string
+	Critical               int
+	HitModify              int
+	AvoidModify            int
+	ShieldDefense          int
+	ShieldDefenseRate      int
+	AttackRange            int
+	AttackSpeed            int
+	ReuseDelay             int
+	MpConsume              int
+	MagicalDamage          int
+	Durability             int
+	PhysicalDefence        int
+	MagicalDefence         int
+	MpBonus                int
+	MagicWeapon            bool
+	EnchantEnable          bool
+	ElementalEnable        bool
+	ForNpc                 bool
+	IsOlympiadCanUse       bool
+	IsPremium              bool
 }
 
 // AllItems - ONLY READ MAP, set in init server
-var AllItems map[int32]Item
+var AllItems map[int]Item
 
 func GetMyItems(charId int32) []Item {
 	dbConn, err := db.GetConn()
@@ -176,114 +161,114 @@ func GetMyItems(charId int32) []Item {
 
 	var myItems []Item
 
-	for _, itemFromDB := range tmp {
-		_, ok := AllItems[int32(itemFromDB.Item)]
-		if ok {
-			myItem := AllItems[int32(itemFromDB.Item)]
-			myItem.Id = int32(itemFromDB.Item)
-			myItem.ObjId = int32(itemFromDB.objId)
-			myItem.LocData = int32(itemFromDB.LocData)
-			myItem.Count = int64(itemFromDB.Count)
-			myItem.Loc = itemFromDB.Loc
-			myItem.Enchant = int16(itemFromDB.Enchant)
-
-			myItems = append(myItems, myItem)
-		}
-	}
+	//for _, itemFromDB := range tmp {
+	//	_, ok := AllItems[int32(itemFromDB.Item)]
+	//	if ok {
+	//		myItem := AllItems[int32(itemFromDB.Item)]
+	//		myItem.Id = int32(itemFromDB.Item)
+	//		myItem.ObjId = int32(itemFromDB.objId)
+	//		myItem.LocData = int32(itemFromDB.LocData)
+	//		myItem.Count = int64(itemFromDB.Count)
+	//		myItem.Loc = itemFromDB.Loc
+	//		myItem.Enchant = int16(itemFromDB.Enchant)
+	//
+	//		myItems = append(myItems, myItem)
+	//	}
+	//}
 
 	return myItems
 }
 
 func LoadItems() {
 	SetSlots()
-	AllItems = make(map[int32]Item)
+	AllItems = make(map[int]Item)
 
-	loadWeapons()
-	loadArmors()
-	loadOther()
+	//loadWeapons()
+	//loadArmors()
+	loadItems()
 }
 
-func loadArmors() {
-	file, err := os.Open("./data/stats/items/armor.json")
+//func loadArmors() {
+//	file, err := os.Open("./data/stats/items/armor.json")
+//	if err != nil {
+//		panic("Failed to load config file")
+//	}
+//
+//	decoder := json.NewDecoder(file)
+//
+//	var armorsJson []armorJson
+//
+//	err = decoder.Decode(&armorsJson)
+//	if err != nil {
+//		panic("Failed to decode config file")
+//	}
+//
+//	for _, v := range armorsJson {
+//		armor := new(Item)
+//		armor.Loc = ""
+//		armor.Bodypart = getSlots(v.Bodypart)
+//		armor.ItemType = 1 // armor/shield
+//		armor.Name = v.Name
+//		AllItems[int32(v.Id)] = *armor
+//	}
+//}
+//
+//func loadWeapons() {
+//	file, err := os.Open("./data/stats/items/weapon.json")
+//	if err != nil {
+//		panic("Failed to load config file")
+//	}
+//
+//	decoder := json.NewDecoder(file)
+//
+//	var weaponJson []weaponJson
+//
+//	err = decoder.Decode(&weaponJson)
+//	if err != nil {
+//		panic("Failed to decode config file")
+//	}
+//
+//	for _, v := range weaponJson {
+//		weapon := new(Item)
+//		weapon.Loc = ""
+//		weapon.Bodypart = getSlots(v.Bodypart)
+//		weapon.ItemType = 0 //weapon
+//		weapon.Name = v.Name
+//		weapon.Icon = v.Icon
+//		weapon.AttackRange = v.AttackRange
+//		weapon.CritRate = v.CritRate
+//		weapon.DamageRange = v.DamageRange
+//		weapon.ImmediateEffect = v.ImmediateEffect
+//		weapon.MAtk = v.MAtk
+//		weapon.PAtk = v.PAtk
+//		AllItems[int32(v.Id)] = *weapon
+//	}
+//}
+
+func loadItems() {
+	file, err := os.Open("./data/stats/items/items.json")
 	if err != nil {
 		panic("Failed to load config file")
 	}
 
 	decoder := json.NewDecoder(file)
 
-	var armorsJson []armorJson
+	var items []Item
 
-	err = decoder.Decode(&armorsJson)
+	err = decoder.Decode(&items)
 	if err != nil {
 		panic("Failed to decode config file")
 	}
-
-	for _, v := range armorsJson {
-		armor := new(Item)
-		armor.Loc = ""
-		armor.Bodypart = getSlots(v.Bodypart)
-		armor.ItemType = 1 // armor/shield
-		armor.Name = v.Name
-		AllItems[int32(v.Id)] = *armor
-	}
-}
-
-func loadWeapons() {
-	file, err := os.Open("./data/stats/items/weapon.json")
-	if err != nil {
-		panic("Failed to load config file")
-	}
-
-	decoder := json.NewDecoder(file)
-
-	var weaponJson []weaponJson
-
-	err = decoder.Decode(&weaponJson)
-	if err != nil {
-		panic("Failed to decode config file")
-	}
-
-	for _, v := range weaponJson {
-		weapon := new(Item)
-		weapon.Loc = ""
-		weapon.Bodypart = getSlots(v.Bodypart)
-		weapon.ItemType = 0 //weapon
-		weapon.Name = v.Name
-		weapon.Icon = v.Icon
-		weapon.AttackRange = v.AttackRange
-		weapon.CritRate = v.CritRate
-		weapon.DamageRange = v.DamageRange
-		weapon.ImmediateEffect = v.ImmediateEffect
-		weapon.MAtk = v.MAtk
-		weapon.PAtk = v.PAtk
-		AllItems[int32(v.Id)] = *weapon
-	}
-}
-
-func loadOther() {
-	file, err := os.Open("./data/stats/items/other.json")
-	if err != nil {
-		panic("Failed to load config file")
-	}
-
-	decoder := json.NewDecoder(file)
-
-	var otherJson []otherJson
-
-	err = decoder.Decode(&otherJson)
-	if err != nil {
-		panic("Failed to decode config file")
-	}
-	for _, v := range otherJson {
-		weapon := new(Item)
-		weapon.Loc = ""
-		weapon.Bodypart = 0
-		weapon.ItemType = 05 //item
-		weapon.Name = v.Name
-		weapon.Icon = v.Icon
-		weapon.ImmediateEffect = v.ImmediateEffect
-		AllItems[int32(v.Id)] = *weapon
-	}
+	//for _, v := range otherJson {
+	//	weapon := new(Item)
+	//	weapon.Loc = ""
+	//	weapon.Bodypart = 0
+	//	weapon.ItemType = 05 //item
+	//	weapon.Name = v.Name
+	//	weapon.Icon = v.Icon
+	////	weapon.ImmediateEffect = v.ImmediateEffect
+	//	AllItems[int32(v.Id)] = *weapon
+	//}
 
 }
 
@@ -335,9 +320,9 @@ func getSlots(s string) int32 {
 }
 
 func (i *Item) IsEquipped() int16 {
-	if i.Loc == Inventory {
-		return 0
-	}
+	//if i.Loc == Inventory {
+	//	return 0
+	//}
 	return 1
 }
 
@@ -346,10 +331,11 @@ func SaveInventoryInDB(inventory []Item) {
 	if err != nil {
 		panic(err)
 	}
+	defer dbConn.Release()
 
-	for _, v := range inventory {
+	for _, _ = range inventory {
 		//TODO sql в цикле надо переделать
-		_, err = dbConn.Exec(context.Background(), "UPDATE items SET loc_data = $1, loc = $2 WHERE object_id = $3", v.LocData, v.Loc, v.ObjId)
+		//		_, err = dbConn.Exec(context.Background(), "UPDATE items SET loc_data = $1, loc = $2 WHERE object_id = $3", v.LocData, v.Loc, v.ObjId)
 		if err != nil {
 			log.Println(err.Error())
 		}
@@ -365,10 +351,10 @@ func GetMyItemByObjId(charId int32, objId int32) Item {
 
 	items := GetMyItems(charId)
 
-	for _, v := range items {
-		if v.ObjId == objId {
-			return v
-		}
+	for _, _ = range items {
+		//if v.ObjId == objId {
+		//	return v
+		//}
 	}
 	return Item{}
 }

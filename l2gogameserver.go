@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/pkg/profile"
 	"l2gogameserver/data"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver"
@@ -11,10 +12,9 @@ import (
 //todo 	var packet = packets.NewReader(data)
 // в каждом пакете от клиента , возможно лучше сделать пул ?
 func main() {
-	//defer profile.Start().Stop()
+	defer profile.Start().Stop()
 	//defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
-	//defer profile.Start(profile.MemProfileHeap()).Stop()
-	//
+	//defer profile.Start(profile.MemProfileHeap).Stop()
 
 	gameserver.Load()
 	//strings.Join()

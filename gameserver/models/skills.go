@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/models/skills"
+	"l2gogameserver/gameserver/models/skills/targets"
 	"log"
 	"os"
 	"strconv"
@@ -21,7 +22,7 @@ type Skill struct {
 	OverHit     bool               `json:"overHit"`
 	ReuseDelay  int                `json:"reuseDelay"`
 	OperateType skills.OperateType `json:"operateType"`
-	TargetType  string             `json:"targetType"`
+	TargetType  targets.TargetType `json:"targetType"`
 	IsMagic     int                `json:"isMagic"`
 	MagicLvl    int                `json:"magicLvl"`
 	MpConsume1  int                `json:"mpConsume1"`
@@ -39,7 +40,7 @@ type SkillForParseJSON struct {
 	OverHit     bool               `json:"overHit"`
 	ReuseDelay  int                `json:"reuseDelay"`
 	OperateType skills.OperateType `json:"operateType"`
-	TargetType  string             `json:"targetType"`
+	TargetType  targets.TargetType `json:"targetType"`
 	IsMagic     int                `json:"isMagic"`
 	MagicLvl    []int              `json:"magicLvl"`
 	MpConsume1  []int              `json:"mpConsume1"`

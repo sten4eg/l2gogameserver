@@ -51,9 +51,11 @@ type Character struct {
 	IsDead          bool
 	IsFakeDeath     bool
 	// Skills todo: проверить слайс или мапа лучше для скилов
-	Skills       map[int]Skill
-	IsCastingNow bool
-	SkillQueue   chan SkillHolder
+	Skills          map[int]Skill
+	IsCastingNow    bool
+	SkillQueue      chan SkillHolder
+	CurrentSkill    *SkillHolder // todo А может быть без * попробовать?
+	CurrentTargetId int32
 }
 
 func GetNewCharacterModel() *Character {
@@ -69,22 +71,21 @@ func (c *Character) ListenSkillQueue() {
 		case res := <-c.SkillQueue:
 			fmt.Println("SKILL V QUEUE")
 			fmt.Println(res)
-		default:
 		}
 	}
 }
 
 type SkillHolder struct {
-	skill        Skill
-	ctrlPressed  bool
-	shiftPressed bool
+	Skill        Skill
+	CtrlPressed  bool
+	ShiftPressed bool
 }
 
 func (c *Character) SetSkillToQueue(skill Skill, ctrlPressed, shiftPressed bool) {
 	s := SkillHolder{
-		skill:        skill,
-		ctrlPressed:  ctrlPressed,
-		shiftPressed: shiftPressed,
+		Skill:        skill,
+		CtrlPressed:  ctrlPressed,
+		ShiftPressed: shiftPressed,
 	}
 	c.SkillQueue <- s
 }
