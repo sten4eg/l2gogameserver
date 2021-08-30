@@ -16,11 +16,21 @@ func NewUseItem(data []byte, client *models.Client) {
 
 	var selectedItem items.MyItem
 
+	find := false
 	for _, v := range client.CurrentChar.Inventory {
 		if v.ObjId == objId {
 			selectedItem = v
+			find = true
 			break
 		}
+	}
+
+	if !find {
+		return
+	}
+
+	if selectedItem.IsEquipable() {
+
 	}
 
 	if selectedItem.IsEquipped() == 1 {

@@ -142,6 +142,11 @@ type MyItem struct {
 	Loc     string
 }
 
+// IsEquipable Можно ли надеть предмет
+func (i *MyItem) IsEquipable() bool {
+	return !((i.SlotBitType == SlotNone) || (i.EtcItemType == "ARROW") || (i.EtcItemType == "BOLT") || (i.EtcItemType == "LURE"))
+}
+
 func GetMyItems(charId int32) []MyItem {
 	dbConn, err := db.GetConn()
 	if err != nil {

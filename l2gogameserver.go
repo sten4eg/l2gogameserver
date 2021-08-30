@@ -6,10 +6,11 @@ import (
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
+	"log"
 )
 
 func main() {
-
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	//	gameserver.Load()
 	//	gameserver.FindPath(-64072, 100856, -3584, -64072, 101048, -3584)
 
