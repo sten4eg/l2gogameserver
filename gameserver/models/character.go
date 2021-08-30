@@ -2,14 +2,13 @@ package models
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"github.com/jackc/pgx/pgtype"
 	"l2gogameserver/data"
 	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/models/items"
 	"math/rand"
-	"os"
+	"strconv"
 	"sync"
 )
 
@@ -44,7 +43,7 @@ type Character struct {
 	Conn            *Client
 	AttackEndTime   int64
 	Paperdoll       [31][3]int32
-	Stats           Stats
+	Stats           StaticData
 	pvpFlag         bool
 	ShortCut        map[int32]dto.ShortCutDTO
 	ActiveSoulShots []int32
@@ -91,9 +90,7 @@ func (c *Character) SetSkillToQueue(skill Skill, ctrlPressed, shiftPressed bool)
 	c.SkillQueue <- s
 }
 func SetupStats(char *Character) {
-	if char.BaseClass == 0 {
-		char.Stats = AllStats["humF"]
-	}
+	char.Stats = AllStats[int(char.ClassId)].StaticData //todo а для чего BaseClass ??
 }
 
 type Account struct {
@@ -109,10 +106,6 @@ type Coordinates struct {
 	Z  int32
 }
 
-type StartLocation struct {
-	ClassId int32
-	Spawn   []Coordinates
-}
 type PacketByte struct {
 	B []byte
 }
@@ -159,37 +152,20 @@ func (c *Character) GetXYZ() (x, y, z int32) {
 
 // GetCreationCoordinates получить рандомные координаты при создании
 // персонажа, зависит от classId создаваемого персонажа
-func GetCreationCoordinates(classId int32) *Coordinates {
+func GetCreationCoordinates(classId int32) (int, int, int) {
 
-	var config []StartLocation
-	file, err := os.Open("./data/stats/char/pcCreationPoint.json")
-	if err != nil {
-		panic("Failed to load config file")
+	e, ok := AllStats[int(classId)]
+	if !ok {
+		panic("не найдена информация в AllStats по classId: " + strconv.Itoa(int(classId)))
 	}
 
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&config)
-	if err != nil {
-		panic("Failed to decode config file")
-	}
+	rnd := rand.Intn(len(e.CreationPoints))
 
-	var coordinates Coordinates
-	for _, v := range config {
-		if v.ClassId == classId {
-			/* #nosec */
-			rnd := rand.Intn(len(v.Spawn))
-			v.Spawn[rnd].mu.Lock()
-			coordinates.mu.Lock()
+	x := e.CreationPoints[rnd].X
+	y := e.CreationPoints[rnd].Y
+	z := e.CreationPoints[rnd].Z
+	return x, y, z
 
-			coordinates.X = v.Spawn[rnd].X
-			coordinates.Y = v.Spawn[rnd].Y
-			coordinates.Z = v.Spawn[rnd].Z
-
-			v.Spawn[rnd].mu.Unlock()
-			coordinates.mu.Unlock()
-		}
-	}
-	return &coordinates
 }
 
 // Load загрузка персонажа

@@ -1,0 +1,848 @@
+[
+    {
+        "classId": 88,
+        "staticData": {
+            "INT": 21,
+            "STR": 40,
+            "CON": 43,
+            "MEN": 25,
+            "DEX": 30,
+            "WIT": 11,
+            "basePAtk": 4,
+            "baseCritRate": 4,
+            "baseAtkType": "FIST",
+            "basePAtkSpd": 300,
+            "basePDef": {
+                "chest": 31,
+                "legs": 18,
+                "head": 12,
+                "feet": 7,
+                "gloves": 8,
+                "underwear": 3,
+                "cloak": 1
+            },
+            "baseMAtk": 6,
+            "baseMDef": {
+                "rear": 9,
+                "lear": 9,
+                "rfinger": 5,
+                "lfinger": 5,
+                "neck": 13
+            },
+            "baseCanPenetrate": 0,
+            "baseAtkRange": 20,
+            "baseDamRange": {
+                "verticalDirection": 0,
+                "horizontalDirection": 0,
+                "distance": 26,
+                "width": 120
+            },
+            "baseRndDam": 10,
+            "baseMoveSpd": {
+                "walk": 80,
+                "run": 115,
+                "slowSwim": 50,
+                "fastSwim": 50
+            },
+            "baseBreath": 100,
+            "baseSafeFall": 250,
+            "collisionMale": {
+                "radius": 9,
+                "height": 22
+            },
+            "collisionFemale": {
+                "radius": 8,
+                "height": 23
+            }
+        },
+        "creationPoints": [
+            {
+                "x": -71338,
+                "y": 258271,
+                "z": -3104
+            },
+            {
+                "x": -71417,
+                "y": 258270,
+                "z": -3104
+            },
+            {
+                "x": -71453,
+                "y": 258305,
+                "z": -3104
+            },
+            {
+                "x": -71467,
+                "y": 258378,
+                "z": -3104
+            }
+        ],
+        "lvlUpgainData": [
+            {
+                "level": 1,
+                "hp": 80,
+                "mp": 30,
+                "cp": 72,
+                "hpRegen": 2,
+                "mpRegen": 0.9,
+                "cpRegen": 2
+            },
+            {
+                "level": 2,
+                "hp": 91.83,
+                "mp": 35.46,
+                "cp": 82.647,
+                "hpRegen": 2.05,
+                "mpRegen": 0.9,
+                "cpRegen": 2
+            },
+            {
+                "level": 3,
+                "hp": 103.79,
+                "mp": 40.98,
+                "cp": 93.411,
+                "hpRegen": 2.1,
+                "mpRegen": 0.9,
+                "cpRegen": 2
+            },
+            {
+                "level": 4,
+                "hp": 115.88,
+                "mp": 46.56,
+                "cp": 104.292,
+                "hpRegen": 2.15,
+                "mpRegen": 0.9,
+                "cpRegen": 2
+            },
+            {
+                "level": 5,
+                "hp": 128.1,
+                "mp": 52.2,
+                "cp": 115.29,
+                "hpRegen": 2.2,
+                "mpRegen": 0.9,
+                "cpRegen": 2
+            },
+            {
+                "level": 6,
+                "hp": 140.45,
+                "mp": 57.9,
+                "cp": 126.405,
+                "hpRegen": 2.25,
+                "mpRegen": 0.9,
+                "cpRegen": 2
+            },
+            {
+                "level": 7,
+                "hp": 152.93,
+                "mp": 63.66,
+                "cp": 137.637,
+                "hpRegen": 2.3,
+                "mpRegen": 0.9,
+                "cpRegen": 2
+            },
+            {
+                "level": 8,
+                "hp": 165.54,
+                "mp": 69.48,
+                "cp": 148.986,
+                "hpRegen": 2.35,
+                "mpRegen": 0.9,
+                "cpRegen": 2
+            },
+            {
+                "level": 9,
+                "hp": 178.28,
+                "mp": 75.36,
+                "cp": 160.452,
+                "hpRegen": 2.4,
+                "mpRegen": 0.9,
+                "cpRegen": 2
+            },
+            {
+                "level": 10,
+                "hp": 191.15,
+                "mp": 81.3,
+                "cp": 172.035,
+                "hpRegen": 2.45,
+                "mpRegen": 0.9,
+                "cpRegen": 2
+            },
+            {
+                "level": 11,
+                "hp": 204.15,
+                "mp": 87.3,
+                "cp": 183.735,
+                "hpRegen": 2.5,
+                "mpRegen": 1.2,
+                "cpRegen": 2.5
+            },
+            {
+                "level": 12,
+                "hp": 217.28,
+                "mp": 93.36,
+                "cp": 195.552,
+                "hpRegen": 2.6,
+                "mpRegen": 1.2,
+                "cpRegen": 2.5
+            },
+            {
+                "level": 13,
+                "hp": 230.54,
+                "mp": 99.48,
+                "cp": 207.486,
+                "hpRegen": 2.7,
+                "mpRegen": 1.2,
+                "cpRegen": 2.5
+            },
+            {
+                "level": 14,
+                "hp": 243.93,
+                "mp": 105.66,
+                "cp": 219.537,
+                "hpRegen": 2.8,
+                "mpRegen": 1.2,
+                "cpRegen": 2.5
+            },
+            {
+                "level": 15,
+                "hp": 257.45,
+                "mp": 111.9,
+                "cp": 231.705,
+                "hpRegen": 2.9,
+                "mpRegen": 1.2,
+                "cpRegen": 2.5
+            },
+            {
+                "level": 16,
+                "hp": 271.1,
+                "mp": 118.2,
+                "cp": 243.99,
+                "hpRegen": 3,
+                "mpRegen": 1.2,
+                "cpRegen": 2.5
+            },
+            {
+                "level": 17,
+                "hp": 284.88,
+                "mp": 124.56,
+                "cp": 256.392,
+                "hpRegen": 3.1,
+                "mpRegen": 1.2,
+                "cpRegen": 2.5
+            },
+            {
+                "level": 18,
+                "hp": 298.79,
+                "mp": 130.98,
+                "cp": 268.911,
+                "hpRegen": 3.2,
+                "mpRegen": 1.2,
+                "cpRegen": 2.5
+            },
+            {
+                "level": 19,
+                "hp": 312.83,
+                "mp": 137.46,
+                "cp": 281.547,
+                "hpRegen": 3.3,
+                "mpRegen": 1.2,
+                "cpRegen": 2.5
+            },
+            {
+                "level": 20,
+                "hp": 327,
+                "mp": 144,
+                "cp": 294.3,
+                "hpRegen": 3.4,
+                "mpRegen": 1.2,
+                "cpRegen": 2.5
+            },
+            {
+                "level": 21,
+                "hp": 360,
+                "mp": 153.9,
+                "cp": 324,
+                "hpRegen": 3.5,
+                "mpRegen": 1.5,
+                "cpRegen": 3.5
+            },
+            {
+                "level": 22,
+                "hp": 393.3,
+                "mp": 163.89,
+                "cp": 353.97,
+                "hpRegen": 3.6,
+                "mpRegen": 1.5,
+                "cpRegen": 3.5
+            },
+            {
+                "level": 23,
+                "hp": 426.9,
+                "mp": 173.97,
+                "cp": 384.21,
+                "hpRegen": 3.7,
+                "mpRegen": 1.5,
+                "cpRegen": 3.5
+            },
+            {
+                "level": 24,
+                "hp": 460.8,
+                "mp": 184.14,
+                "cp": 414.72,
+                "hpRegen": 3.8,
+                "mpRegen": 1.5,
+                "cpRegen": 3.5
+            },
+            {
+                "level": 25,
+                "hp": 495,
+                "mp": 194.4,
+                "cp": 445.5,
+                "hpRegen": 3.9,
+                "mpRegen": 1.5,
+                "cpRegen": 3.5
+            },
+            {
+                "level": 26,
+                "hp": 529.5,
+                "mp": 204.75,
+                "cp": 476.55,
+                "hpRegen": 4,
+                "mpRegen": 1.5,
+                "cpRegen": 3.5
+            },
+            {
+                "level": 27,
+                "hp": 564.3,
+                "mp": 215.19,
+                "cp": 507.87,
+                "hpRegen": 4.1,
+                "mpRegen": 1.5,
+                "cpRegen": 3.5
+            },
+            {
+                "level": 28,
+                "hp": 599.4,
+                "mp": 225.72,
+                "cp": 539.46,
+                "hpRegen": 4.2,
+                "mpRegen": 1.5,
+                "cpRegen": 3.5
+            },
+            {
+                "level": 29,
+                "hp": 634.8,
+                "mp": 236.34,
+                "cp": 571.32,
+                "hpRegen": 4.3,
+                "mpRegen": 1.5,
+                "cpRegen": 3.5
+            },
+            {
+                "level": 30,
+                "hp": 670.5,
+                "mp": 247.05,
+                "cp": 603.45,
+                "hpRegen": 4.4,
+                "mpRegen": 1.5,
+                "cpRegen": 3.5
+            },
+            {
+                "level": 31,
+                "hp": 706.5,
+                "mp": 257.85,
+                "cp": 635.85,
+                "hpRegen": 4.5,
+                "mpRegen": 1.8,
+                "cpRegen": 4.5
+            },
+            {
+                "level": 32,
+                "hp": 742.8,
+                "mp": 268.74,
+                "cp": 668.52,
+                "hpRegen": 4.6,
+                "mpRegen": 1.8,
+                "cpRegen": 4.5
+            },
+            {
+                "level": 33,
+                "hp": 779.4,
+                "mp": 279.72,
+                "cp": 701.46,
+                "hpRegen": 4.7,
+                "mpRegen": 1.8,
+                "cpRegen": 4.5
+            },
+            {
+                "level": 34,
+                "hp": 816.3,
+                "mp": 290.79,
+                "cp": 734.67,
+                "hpRegen": 4.8,
+                "mpRegen": 1.8,
+                "cpRegen": 4.5
+            },
+            {
+                "level": 35,
+                "hp": 853.5,
+                "mp": 301.95,
+                "cp": 768.15,
+                "hpRegen": 4.9,
+                "mpRegen": 1.8,
+                "cpRegen": 4.5
+            },
+            {
+                "level": 36,
+                "hp": 891,
+                "mp": 313.2,
+                "cp": 801.9,
+                "hpRegen": 5,
+                "mpRegen": 1.8,
+                "cpRegen": 4.5
+            },
+            {
+                "level": 37,
+                "hp": 928.8,
+                "mp": 324.54,
+                "cp": 835.92,
+                "hpRegen": 5.1,
+                "mpRegen": 1.8,
+                "cpRegen": 4.5
+            },
+            {
+                "level": 38,
+                "hp": 966.9,
+                "mp": 335.97,
+                "cp": 870.21,
+                "hpRegen": 5.2,
+                "mpRegen": 1.8,
+                "cpRegen": 4.5
+            },
+            {
+                "level": 39,
+                "hp": 1005.3,
+                "mp": 347.49,
+                "cp": 904.77,
+                "hpRegen": 5.3,
+                "mpRegen": 1.8,
+                "cpRegen": 4.5
+            },
+            {
+                "level": 40,
+                "hp": 1044,
+                "mp": 359.1,
+                "cp": 939.6,
+                "hpRegen": 5.4,
+                "mpRegen": 1.8,
+                "cpRegen": 4.5
+            },
+            {
+                "level": 41,
+                "hp": 1093.4,
+                "mp": 378.6,
+                "cp": 984.06,
+                "hpRegen": 5.5,
+                "mpRegen": 2.1,
+                "cpRegen": 5.5
+            },
+            {
+                "level": 42,
+                "hp": 1143.18,
+                "mp": 398.25,
+                "cp": 1028.862,
+                "hpRegen": 5.6,
+                "mpRegen": 2.1,
+                "cpRegen": 5.5
+            },
+            {
+                "level": 43,
+                "hp": 1193.34,
+                "mp": 418.05,
+                "cp": 1074.006,
+                "hpRegen": 5.7,
+                "mpRegen": 2.1,
+                "cpRegen": 5.5
+            },
+            {
+                "level": 44,
+                "hp": 1243.88,
+                "mp": 438,
+                "cp": 1119.492,
+                "hpRegen": 5.8,
+                "mpRegen": 2.1,
+                "cpRegen": 5.5
+            },
+            {
+                "level": 45,
+                "hp": 1294.8,
+                "mp": 458.1,
+                "cp": 1165.32,
+                "hpRegen": 5.9,
+                "mpRegen": 2.1,
+                "cpRegen": 5.5
+            },
+            {
+                "level": 46,
+                "hp": 1346.1,
+                "mp": 478.35,
+                "cp": 1211.49,
+                "hpRegen": 6,
+                "mpRegen": 2.1,
+                "cpRegen": 5.5
+            },
+            {
+                "level": 47,
+                "hp": 1397.78,
+                "mp": 498.75,
+                "cp": 1258.002,
+                "hpRegen": 6.1,
+                "mpRegen": 2.1,
+                "cpRegen": 5.5
+            },
+            {
+                "level": 48,
+                "hp": 1449.84,
+                "mp": 519.3,
+                "cp": 1304.856,
+                "hpRegen": 6.2,
+                "mpRegen": 2.1,
+                "cpRegen": 5.5
+            },
+            {
+                "level": 49,
+                "hp": 1502.28,
+                "mp": 540,
+                "cp": 1352.052,
+                "hpRegen": 6.3,
+                "mpRegen": 2.1,
+                "cpRegen": 5.5
+            },
+            {
+                "level": 50,
+                "hp": 1555.1,
+                "mp": 560.85,
+                "cp": 1399.59,
+                "hpRegen": 6.4,
+                "mpRegen": 2.1,
+                "cpRegen": 5.5
+            },
+            {
+                "level": 51,
+                "hp": 1608.3,
+                "mp": 581.85,
+                "cp": 1447.47,
+                "hpRegen": 6.5,
+                "mpRegen": 2.4,
+                "cpRegen": 6.5
+            },
+            {
+                "level": 52,
+                "hp": 1661.88,
+                "mp": 603,
+                "cp": 1495.692,
+                "hpRegen": 6.6,
+                "mpRegen": 2.4,
+                "cpRegen": 6.5
+            },
+            {
+                "level": 53,
+                "hp": 1715.84,
+                "mp": 624.3,
+                "cp": 1544.256,
+                "hpRegen": 6.7,
+                "mpRegen": 2.4,
+                "cpRegen": 6.5
+            },
+            {
+                "level": 54,
+                "hp": 1770.18,
+                "mp": 645.75,
+                "cp": 1593.162,
+                "hpRegen": 6.8,
+                "mpRegen": 2.4,
+                "cpRegen": 6.5
+            },
+            {
+                "level": 55,
+                "hp": 1824.9,
+                "mp": 667.35,
+                "cp": 1642.41,
+                "hpRegen": 6.9,
+                "mpRegen": 2.4,
+                "cpRegen": 6.5
+            },
+            {
+                "level": 56,
+                "hp": 1880,
+                "mp": 689.1,
+                "cp": 1692,
+                "hpRegen": 7,
+                "mpRegen": 2.4,
+                "cpRegen": 6.5
+            },
+            {
+                "level": 57,
+                "hp": 1935.48,
+                "mp": 711,
+                "cp": 1741.932,
+                "hpRegen": 7.1,
+                "mpRegen": 2.4,
+                "cpRegen": 6.5
+            },
+            {
+                "level": 58,
+                "hp": 1991.34,
+                "mp": 733.05,
+                "cp": 1792.206,
+                "hpRegen": 7.2,
+                "mpRegen": 2.4,
+                "cpRegen": 6.5
+            },
+            {
+                "level": 59,
+                "hp": 2047.58,
+                "mp": 755.25,
+                "cp": 1842.822,
+                "hpRegen": 7.3,
+                "mpRegen": 2.4,
+                "cpRegen": 6.5
+            },
+            {
+                "level": 60,
+                "hp": 2104.2,
+                "mp": 777.6,
+                "cp": 1893.78,
+                "hpRegen": 7.4,
+                "mpRegen": 2.4,
+                "cpRegen": 6.5
+            },
+            {
+                "level": 61,
+                "hp": 2161.2,
+                "mp": 800.1,
+                "cp": 1945.08,
+                "hpRegen": 7.5,
+                "mpRegen": 2.7,
+                "cpRegen": 7.5
+            },
+            {
+                "level": 62,
+                "hp": 2218.58,
+                "mp": 822.75,
+                "cp": 1996.722,
+                "hpRegen": 7.6,
+                "mpRegen": 2.7,
+                "cpRegen": 7.5
+            },
+            {
+                "level": 63,
+                "hp": 2276.34,
+                "mp": 845.55,
+                "cp": 2048.706,
+                "hpRegen": 7.7,
+                "mpRegen": 2.7,
+                "cpRegen": 7.5
+            },
+            {
+                "level": 64,
+                "hp": 2334.48,
+                "mp": 868.5,
+                "cp": 2101.032,
+                "hpRegen": 7.8,
+                "mpRegen": 2.7,
+                "cpRegen": 7.5
+            },
+            {
+                "level": 65,
+                "hp": 2393,
+                "mp": 891.6,
+                "cp": 2153.7,
+                "hpRegen": 7.9,
+                "mpRegen": 2.7,
+                "cpRegen": 7.5
+            },
+            {
+                "level": 66,
+                "hp": 2451.9,
+                "mp": 914.85,
+                "cp": 2206.71,
+                "hpRegen": 8,
+                "mpRegen": 2.7,
+                "cpRegen": 7.5
+            },
+            {
+                "level": 67,
+                "hp": 2511.18,
+                "mp": 938.25,
+                "cp": 2260.062,
+                "hpRegen": 8.1,
+                "mpRegen": 2.7,
+                "cpRegen": 7.5
+            },
+            {
+                "level": 68,
+                "hp": 2570.84,
+                "mp": 961.8,
+                "cp": 2313.756,
+                "hpRegen": 8.2,
+                "mpRegen": 2.7,
+                "cpRegen": 7.5
+            },
+            {
+                "level": 69,
+                "hp": 2630.88,
+                "mp": 985.5,
+                "cp": 2367.792,
+                "hpRegen": 8.3,
+                "mpRegen": 2.7,
+                "cpRegen": 7.5
+            },
+            {
+                "level": 70,
+                "hp": 2691.3,
+                "mp": 1009.35,
+                "cp": 2422.17,
+                "hpRegen": 8.4,
+                "mpRegen": 2.7,
+                "cpRegen": 7.5
+            },
+            {
+                "level": 71,
+                "hp": 2752.1,
+                "mp": 1033.35,
+                "cp": 2476.89,
+                "hpRegen": 8.5,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 72,
+                "hp": 2813.28,
+                "mp": 1057.5,
+                "cp": 2531.952,
+                "hpRegen": 8.6,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 73,
+                "hp": 2874.84,
+                "mp": 1081.8,
+                "cp": 2587.356,
+                "hpRegen": 8.7,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 74,
+                "hp": 2936.78,
+                "mp": 1106.25,
+                "cp": 2643.102,
+                "hpRegen": 8.8,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 75,
+                "hp": 2999.1,
+                "mp": 1130.85,
+                "cp": 2699.19,
+                "hpRegen": 8.9,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 76,
+                "hp": 3061.8,
+                "mp": 1155.6,
+                "cp": 2755.62,
+                "hpRegen": 9,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 77,
+                "hp": 3124.88,
+                "mp": 1180.5,
+                "cp": 2812.392,
+                "hpRegen": 9.1,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 78,
+                "hp": 3188.34,
+                "mp": 1205.55,
+                "cp": 2869.506,
+                "hpRegen": 9.2,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 79,
+                "hp": 3252.18,
+                "mp": 1230.75,
+                "cp": 2926.962,
+                "hpRegen": 9.3,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 80,
+                "hp": 3316.4,
+                "mp": 1256.1,
+                "cp": 2984.76,
+                "hpRegen": 9.4,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 81,
+                "hp": 3381,
+                "mp": 1281.6,
+                "cp": 3042.9,
+                "hpRegen": 9.5,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 82,
+                "hp": 3445.98,
+                "mp": 1307.25,
+                "cp": 3101.382,
+                "hpRegen": 9.6,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 83,
+                "hp": 3511.34,
+                "mp": 1333.05,
+                "cp": 3160.206,
+                "hpRegen": 9.7,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 84,
+                "hp": 3577.08,
+                "mp": 1359,
+                "cp": 3219.372,
+                "hpRegen": 9.8,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            },
+            {
+                "level": 85,
+                "hp": 3643.2,
+                "mp": 1385.1,
+                "cp": 3278.88,
+                "hpRegen": 9.9,
+                "mpRegen": 3,
+                "cpRegen": 8.5
+            }
+        ]
+    }
+]

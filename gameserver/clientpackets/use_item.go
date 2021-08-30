@@ -35,7 +35,7 @@ func NewUseItem(data []byte, client *models.Client) {
 
 	client.CurrentChar.Paperdoll = items.RestoreVisibleInventory(client.CurrentChar.CharId)
 
-	serverpackets.NewUserInfo(client.CurrentChar, client)
+	serverpackets.NewUserInfo(client)
 
 	client.SentToSend()
 }

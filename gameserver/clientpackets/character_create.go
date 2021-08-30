@@ -41,12 +41,14 @@ func NewCharacterCreate(data []byte, client *models.Client) {
 	charCreate.Race = packet.ReadInt32()
 	charCreate.Sex = byte(packet.ReadInt32())
 	charCreate.ClassId = packet.ReadInt32()
+	// зачем клиент присылает статы - ХЗ, они всё равно не используются
 	charCreate.Int = packet.ReadInt32()
 	charCreate.Str = packet.ReadInt32()
 	charCreate.Con = packet.ReadInt32()
 	charCreate.Men = packet.ReadInt32()
 	charCreate.Dex = packet.ReadInt32()
 	charCreate.Wit = packet.ReadInt32()
+	//////////////////////
 	charCreate.HairStyle = byte(packet.ReadInt32())
 	charCreate.HairColor = byte(packet.ReadInt32())
 	charCreate.Face = byte(packet.ReadInt32())
@@ -91,6 +93,7 @@ func (cc *CharCreate) validate(client *models.Client) {
 	if err != nil {
 		panic(err)
 	}
+	defer dbConn.Release()
 
 	row := dbConn.QueryRow(context.Background(), "(SELECT exists(SELECT char_name from characters WHERE char_name = $1))", cc.Name.Bytes)
 	var exist bool
@@ -115,7 +118,7 @@ func (cc *CharCreate) validate(client *models.Client) {
 		serverpackets.NewCharCreateFail(client, ReasonTooManyCharacters)
 		return
 	}
-	spawn := models.GetCreationCoordinates(cc.ClassId)
+	x, y, z := models.GetCreationCoordinates(cc.ClassId)
 	_, err = dbConn.Exec(context.Background(), "INSERT INTO characters (char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
 		cc.Name.Bytes,
 		cc.Race,
@@ -124,9 +127,9 @@ func (cc *CharCreate) validate(client *models.Client) {
 		cc.HairStyle,
 		cc.HairColor,
 		cc.Face,
-		spawn.X,
-		spawn.Y,
-		spawn.Z,
+		x,
+		y,
+		z,
 		[]byte(client.Account.Login),
 		cc.ClassId)
 	if err != nil {

@@ -2,75 +2,117 @@ package models
 
 import (
 	"encoding/json"
-
+	"io/fs"
 	"os"
 )
 
-var AllStats map[string]Stats
+var AllStats map[int]Stats
 
 type Stats struct {
-	BaseSTR      int32        `json:"baseSTR"`
-	BaseDEX      int32        `json:"baseDEX"`
-	BaseCON      int32        `json:"baseCON"`
-	BaseINT      int32        `json:"baseINT"`
-	BaseWIT      int32        `json:"baseWIT"`
-	BaseMEN      int32        `json:"baseMEN"`
-	BaseCritRate int32        `json:"baseCritRate"`
-	BaseAtkType  string       `json:"baseAtkType"`
-	BasePAtkSpd  int32        `json:"basePAtkSpd"`
-	BasePDef     basePDef     `json:"basePDef"`
-	BaseMAtk     int32        `json:"baseMAtk"`
-	BaseMDef     baseMDef     `json:"baseMDef"`
-	BaseAtkRange int32        `json:"baseAtkRange"`
-	BaseDamRange baseDamRange `json:"baseDamRange"`
-	BaseRndDam   int32        `json:"baseRndDam"`
-	BaseMoveSpd  baseMoveSpd  `json:"baseMoveSpd"`
+	ClassId        int
+	StaticData     StaticData
+	CreationPoints []CreationPoint
+	LvlUpgainData  []LvlUpgainData
 }
-type basePDef struct {
-	Chest     int32 `json:"chest"`
-	Legs      int32 `json:"legs"`
-	Head      int32 `json:"head"`
-	Feet      int32 `json:"feet"`
-	Gloves    int32 `json:"gloves"`
-	Underwear int32 `json:"underwear"`
-	Cloak     int32 `json:"cloak"`
+type StaticData struct {
+	INT              int
+	STR              int
+	CON              int
+	MEN              int
+	DEX              int
+	WIT              int
+	BasePAtk         int
+	BaseCritRate     int
+	BaseAtkType      string
+	BasePAtkSpd      int
+	BasePDef         BasePDef
+	BaseMAtk         int
+	BaseMDef         BaseMDef
+	BaseCanPenetrate int
+	BaseAtkRange     int
+	BaseDamRange     BaseDamRange
+	BaseRndDam       int
+	BaseMoveSpd      BaseMoveSpd
+	BaseBreath       int
+	BaseSafeFall     int
+	CollisionMale    Collision
+	CollisionFemale  Collision
 }
-type baseMoveSpd struct {
-	Walk int32 `json:"walk"`
-	Run  int32 `json:"run"`
-	Swim int32 `json:"swim"`
+type Collision struct {
+	Radius int
+	Height int
 }
-type baseDamRange struct {
-	VerticalDirection   int32 `json:"verticalDirection"`
-	HorizontalDirection int32 `json:"horizontalDirection"`
-	Distance            int32 `json:"distance"`
-	Width               int32 `json:"width"`
+type BaseMoveSpd struct {
+	Walk     int
+	Run      int
+	SlowSwim int
+	FastSwim int
 }
-
-type baseMDef struct {
-	Rear    int32 `json:"rear"`
-	Lear    int32 `json:"lear"`
-	Rfinger int32 `json:"rfinger"`
-	Lfinger int32 `json:"lfinger"`
-	Neck    int32 `json:"neck"`
+type BaseDamRange struct {
+	VerticalDirection   int
+	HorizontalDirection int
+	Distance            int
+	Width               int
+}
+type BaseMDef struct {
+	Rear    int
+	Lear    int
+	Rfinger int
+	Lfinger int
+	Neck    int
+}
+type BasePDef struct {
+	Chest     int
+	Legs      int
+	Head      int
+	Feet      int
+	Gloves    int
+	Underwear int
+	Cloak     int
+}
+type CreationPoint struct {
+	X int
+	Y int
+	Z int
+}
+type LvlUpgainData struct {
+	Level   int
+	Hp      float32
+	Mp      float32
+	Cp      float32
+	HpRegen float32
+	MpRegen float32
+	CpRegen float32
 }
 
 func LoadStats() {
-	file, err := os.Open("./data/stats/char/baseStats/humanFighter.json")
+	AllStats = make(map[int]Stats)
+
+	fss := os.DirFS("./data/stats/char/baseStats")
+	r, err := fs.ReadDir(fss, ".")
+	if err != nil {
+		panic(err)
+	}
+
+	for _, v := range r {
+		loadStat(v)
+	}
+}
+
+func loadStat(entry fs.DirEntry) {
+	file, err := os.Open("./data/stats/char/baseStats/" + entry.Name())
 	if err != nil {
 		panic("Failed to load config file " + err.Error())
 	}
 
 	decoder := json.NewDecoder(file)
 
-	var statsJson Stats
+	stats := make([]Stats, 0, 1)
 
-	err = decoder.Decode(&statsJson)
+	err = decoder.Decode(&stats)
 	if err != nil {
 		panic("Failed to decode config file " + file.Name() + " " + err.Error())
 	}
-	AllStats = make(map[string]Stats)
 
-	AllStats["humF"] = statsJson
-
+	AllStats[stats[0].ClassId] = stats[0]
 }

@@ -108,6 +108,7 @@ func GetMySkills(charId int32) []Skill {
 	if err != nil {
 		panic(err)
 	}
+	defer dbConn.Release()
 
 	rows, err := dbConn.Query(context.Background(), "SELECT skill_id, skill_level FROM character_skills WHERE char_id = $1", charId)
 	if err != nil {

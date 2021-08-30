@@ -5,7 +5,9 @@ import (
 	"l2gogameserver/gameserver/models/items"
 )
 
-func NewUserInfo(character *models.Character, client *models.Client) {
+func NewUserInfo(client *models.Client) {
+
+	character := client.CurrentChar
 
 	x, y, z := character.GetXYZ()
 
@@ -28,12 +30,12 @@ func NewUserInfo(character *models.Character, client *models.Client) {
 	client.Buffer.WriteQ(int64(character.Exp))                                                 //exp
 	client.Buffer.WriteF(character.GetPercentFromCurrentLevel(character.Exp, character.Level)) //percent
 
-	client.Buffer.WriteD(40) //str
-	client.Buffer.WriteD(40) //dex
-	client.Buffer.WriteD(40) //con
-	client.Buffer.WriteD(40) //int
-	client.Buffer.WriteD(40) //wit
-	client.Buffer.WriteD(40) //men
+	client.Buffer.WriteD(int32(character.Stats.STR)) //str
+	client.Buffer.WriteD(int32(character.Stats.DEX)) //dex
+	client.Buffer.WriteD(int32(character.Stats.CON)) //con
+	client.Buffer.WriteD(int32(character.Stats.INT)) //int
+	client.Buffer.WriteD(int32(character.Stats.WIT)) //wit
+	client.Buffer.WriteD(int32(character.Stats.MEN)) //men
 
 	client.Buffer.WriteD(character.MaxHp) //Max hp //TODO
 

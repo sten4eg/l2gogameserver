@@ -61,7 +61,7 @@ func (g *GameServer) handler(client *models.Client) {
 		case 108:
 			serverpackets.NewShowMiniMap(client)
 		case 17:
-			serverpackets.NewUserInfo(client.CurrentChar, client)
+			serverpackets.NewUserInfo(client)
 
 			serverpackets.NewExBrExtraUserInfo(client)
 
