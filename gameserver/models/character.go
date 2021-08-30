@@ -56,6 +56,7 @@ type Character struct {
 	SkillQueue      chan SkillHolder
 	CurrentSkill    *SkillHolder // todo А может быть без * попробовать?
 	CurrentTargetId int32
+	Inventory       []items.MyItem
 }
 
 func GetNewCharacterModel() *Character {
@@ -196,6 +197,7 @@ func (c *Character) Load() {
 	c.ShortCut = restoreMe(c.CharId, c.ClassId)
 	c.LoadSkills()
 	c.SkillQueue = make(chan SkillHolder)
+	c.Inventory = items.GetMyItems(c.CharId)
 	go c.ListenSkillQueue()
 }
 

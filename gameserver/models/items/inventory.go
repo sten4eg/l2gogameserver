@@ -38,6 +38,10 @@ const (
 
 	Paperdoll string = "PAPERDOLL"
 	Inventory string = "INVENTORY"
+
+	UpdateTypeAdd    int16 = 1
+	UpdateTypeModify int16 = 2
+	UpdateTypeRemove int16 = 3
 )
 
 func RestoreVisibleInventory(charId int32) [31][3]int32 {
@@ -72,10 +76,10 @@ func RestoreVisibleInventory(charId int32) [31][3]int32 {
 
 type Item struct {
 	Id                     int
-	ItemType               string
+	ItemType               ItemType
 	Name                   string
 	Icon                   string
-	SlotBitType            ItemType `json:"slot_bit_type"`
+	SlotBitType            SlotBitType `json:"slot_bit_type"`
 	ArmorType              string
 	EtcItemType            string
 	ItemMultiSkillList     string
@@ -129,121 +133,52 @@ type Item struct {
 // AllItems - ONLY READ MAP, set in init server
 var AllItems map[int]Item
 
-func GetMyItems(charId int32) []Item {
+type MyItem struct {
+	Item
+	ObjId   int32
+	Enchant int
+	LocData int32
+	Count   int64
+	Loc     string
+}
+
+func GetMyItems(charId int32) []MyItem {
 	dbConn, err := db.GetConn()
 	if err != nil {
 		panic(err)
 	}
+	defer dbConn.Release()
+
 	rows, err := dbConn.Query(context.Background(), "SELECT object_id,item,loc_data,enchant_level,count,loc FROM items WHERE owner_id=$1", charId)
 	if err != nil {
 		panic(err)
 	}
 
-	type tempItemFromDB struct {
-		objId   int
-		Item    int
-		Enchant int
-		LocData int
-		Count   int
-		Loc     string
-	}
-
-	var tmp []tempItemFromDB
+	var myItems []MyItem
 
 	for rows.Next() {
-		var itm tempItemFromDB
-		err := rows.Scan(&itm.objId, &itm.Item, &itm.LocData, &itm.Enchant, &itm.Count, &itm.Loc)
+		var itm MyItem
+		var id int
+		err := rows.Scan(&itm.ObjId, &id, &itm.LocData, &itm.Enchant, &itm.Count, &itm.Loc)
 		if err != nil {
 			log.Println(err)
 		}
-		tmp = append(tmp, itm)
+		it, ok := AllItems[id]
+		if ok {
+			itm.Item = it
+			myItems = append(myItems, itm)
+		}
+
 	}
-
-	var myItems []Item
-
-	//for _, itemFromDB := range tmp {
-	//	_, ok := AllItems[int32(itemFromDB.Item)]
-	//	if ok {
-	//		myItem := AllItems[int32(itemFromDB.Item)]
-	//		myItem.Id = int32(itemFromDB.Item)
-	//		myItem.ObjId = int32(itemFromDB.objId)
-	//		myItem.LocData = int32(itemFromDB.LocData)
-	//		myItem.Count = int64(itemFromDB.Count)
-	//		myItem.Loc = itemFromDB.Loc
-	//		myItem.Enchant = int16(itemFromDB.Enchant)
-	//
-	//		myItems = append(myItems, myItem)
-	//	}
-	//}
 
 	return myItems
 }
 
 func LoadItems() {
-	SetSlots()
 	AllItems = make(map[int]Item)
 
-	//loadWeapons()
-	//loadArmors()
 	loadItems()
 }
-
-//func loadArmors() {
-//	file, err := os.Open("./data/stats/items/armor.json")
-//	if err != nil {
-//		panic("Failed to load config file")
-//	}
-//
-//	decoder := json.NewDecoder(file)
-//
-//	var armorsJson []armorJson
-//
-//	err = decoder.Decode(&armorsJson)
-//	if err != nil {
-//		panic("Failed to decode config file")
-//	}
-//
-//	for _, v := range armorsJson {
-//		armor := new(Item)
-//		armor.Loc = ""
-//		armor.Bodypart = getSlots(v.Bodypart)
-//		armor.ItemType = 1 // armor/shield
-//		armor.Name = v.Name
-//		AllItems[int32(v.Id)] = *armor
-//	}
-//}
-//
-//func loadWeapons() {
-//	file, err := os.Open("./data/stats/items/weapon.json")
-//	if err != nil {
-//		panic("Failed to load config file")
-//	}
-//
-//	decoder := json.NewDecoder(file)
-//
-//	var weaponJson []weaponJson
-//
-//	err = decoder.Decode(&weaponJson)
-//	if err != nil {
-//		panic("Failed to decode config file")
-//	}
-//
-//	for _, v := range weaponJson {
-//		weapon := new(Item)
-//		weapon.Loc = ""
-//		weapon.Bodypart = getSlots(v.Bodypart)
-//		weapon.ItemType = 0 //weapon
-//		weapon.Name = v.Name
-//		weapon.Icon = v.Icon
-//		weapon.AttackRange = v.AttackRange
-//		weapon.CritRate = v.CritRate
-//		weapon.DamageRange = v.DamageRange
-//		weapon.ImmediateEffect = v.ImmediateEffect
-//		weapon.MAtk = v.MAtk
-//		weapon.PAtk = v.PAtk
-//		AllItems[int32(v.Id)] = *weapon
-//	}
-//}
 
 func loadItems() {
 	file, err := os.Open("./data/stats/items/items.json")
@@ -259,104 +194,51 @@ func loadItems() {
 	if err != nil {
 		panic("Failed to decode config file")
 	}
-	//for _, v := range otherJson {
-	//	weapon := new(Item)
-	//	weapon.Loc = ""
-	//	weapon.Bodypart = 0
-	//	weapon.ItemType = 05 //item
-	//	weapon.Name = v.Name
-	//	weapon.Icon = v.Icon
-	////	weapon.ImmediateEffect = v.ImmediateEffect
-	//	AllItems[int32(v.Id)] = *weapon
-	//}
+
+	for _, v := range items {
+		AllItems[v.Id] = v
+	}
 
 }
 
-var Slots map[string]int32
-
-func SetSlots() {
-	slots := make(map[string]int32)
-	Slots = slots
-	Slots["shirt"] = SlotUnderwear
-	Slots["lbracelet"] = SlotLBracelet
-	Slots["rbracelet"] = SlotRBracelet
-	Slots["talisman"] = SlotDeco
-	Slots["chest"] = SlotChest
-	Slots["fullarmor"] = SlotFullArmor
-	Slots["head"] = SlotHead
-	Slots["hair"] = SlotHair
-	Slots["hairall"] = SlotHairall
-	Slots["underwear"] = SlotUnderwear
-	Slots["back"] = SlotBack
-	Slots["neck"] = SlotNeck
-	Slots["legs"] = SlotLegs
-	Slots["feet"] = SlotFeet
-	Slots["gloves"] = SlotGloves
-	Slots["chest,legs"] = SlotChest | SlotLegs
-	Slots["belt"] = SlotBelt
-	Slots["rhand"] = SlotRHand
-	Slots["lhand"] = SlotLHand
-	Slots["lrhand"] = SlotLrHand
-	Slots["rear;lear"] = SlotREar | SlotLEar
-	Slots["rfinger;lfinger"] = SlotRFinger | SlotLFinger
-	Slots["wolf"] = SlotWolf
-	Slots["greatwolf"] = SlotGreatwolf
-	Slots["hatchling"] = SlotHatchling
-	Slots["strider"] = SlotStrider
-	Slots["babypet"] = SlotBabypet
-	Slots["none"] = SlotNone
-
-	// retail compatibility
-	Slots["onepiece"] = SlotFullArmor
-	Slots["hair2"] = SlotHair2
-	Slots["dhair"] = SlotHairall
-	Slots["alldress"] = SlotAlldress
-	Slots["deco1"] = SlotDeco
-	Slots["waist"] = SlotBelt
-
-}
-func getSlots(s string) int32 {
-	return Slots[s]
-}
-
-func (i *Item) IsEquipped() int16 {
-	//if i.Loc == Inventory {
-	//	return 0
-	//}
+func (i *MyItem) IsEquipped() int16 {
+	if i.Loc == Inventory {
+		return 0
+	}
 	return 1
 }
 
-func SaveInventoryInDB(inventory []Item) {
+func SaveInventoryInDB(inventory []MyItem) {
 	dbConn, err := db.GetConn()
 	if err != nil {
 		panic(err)
 	}
 	defer dbConn.Release()
 
-	for _, _ = range inventory {
+	for _, v := range inventory {
 		//TODO sql в цикле надо переделать
-		//		_, err = dbConn.Exec(context.Background(), "UPDATE items SET loc_data = $1, loc = $2 WHERE object_id = $3", v.LocData, v.Loc, v.ObjId)
+		_, err = dbConn.Exec(context.Background(), "UPDATE items SET loc_data = $1, loc = $2 WHERE object_id = $3", v.LocData, v.Loc, v.ObjId)
 		if err != nil {
 			log.Println(err.Error())
 		}
 	}
 }
 
-func GetMyItemByObjId(charId int32, objId int32) Item {
+func GetMyItemByObjId(charId int32, objId int32) MyItem {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		return Item{}
+		return MyItem{}
 	}
 	defer dbConn.Release()
 
 	items := GetMyItems(charId)
 
-	for _, _ = range items {
-		//if v.ObjId == objId {
-		//	return v
-		//}
+	for _, v := range items {
+		if v.ObjId == objId {
+			return v
+		}
 	}
-	return Item{}
+	return MyItem{}
 }
 func GetPaperdollOrder() []uint8 {
 	return []uint8{

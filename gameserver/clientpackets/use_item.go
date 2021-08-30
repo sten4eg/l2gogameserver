@@ -5,7 +5,6 @@ import (
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
-	"log"
 )
 
 func NewUseItem(data []byte, client *models.Client) {
@@ -13,14 +12,11 @@ func NewUseItem(data []byte, client *models.Client) {
 
 	objId := packet.ReadInt32() // targetObjId
 	ctrlPressed := packet.ReadInt32() != 0
+	_ = ctrlPressed
 
-	log.Print(objId, ctrlPressed)
+	var selectedItem items.MyItem
 
-	myItems := items.GetMyItems(client.CurrentChar.CharId)
-
-	var selectedItem items.Item
-
-	for _, v := range myItems {
+	for _, v := range client.CurrentChar.Inventory {
 		if v.ObjId == objId {
 			selectedItem = v
 			break
@@ -28,14 +24,14 @@ func NewUseItem(data []byte, client *models.Client) {
 	}
 
 	if selectedItem.IsEquipped() == 1 {
-		unEquipAndRecord(selectedItem, myItems)
+		unEquipAndRecord(selectedItem, client.CurrentChar.Inventory)
 	} else {
-		equipItemAndRecord(selectedItem, myItems)
+		equipItemAndRecord(selectedItem, client.CurrentChar.Inventory)
 	}
 
-	items.SaveInventoryInDB(myItems)
+	items.SaveInventoryInDB(client.CurrentChar.Inventory)
 
-	serverpackets.NewInventoryUpdate(client, myItems)
+	serverpackets.NewInventoryUpdate(client, items.UpdateTypeModify)
 
 	client.CurrentChar.Paperdoll = items.RestoreVisibleInventory(client.CurrentChar.CharId)
 
@@ -44,8 +40,8 @@ func NewUseItem(data []byte, client *models.Client) {
 	client.SentToSend()
 }
 
-func unEquipAndRecord(item items.Item, myItems []items.Item) {
-	switch item.Bodypart {
+func unEquipAndRecord(item items.MyItem, myItems []items.MyItem) {
+	switch item.SlotBitType {
 	case items.SlotRHand:
 		setPaperdollItem(items.PAPERDOLL_RHAND, nil, myItems)
 	case items.SlotLegs:
@@ -54,8 +50,8 @@ func unEquipAndRecord(item items.Item, myItems []items.Item) {
 }
 
 // equipItemAndRecord
-func equipItemAndRecord(item items.Item, myItems []items.Item) {
-	switch item.Bodypart {
+func equipItemAndRecord(item items.MyItem, myItems []items.MyItem) {
+	switch item.SlotBitType {
 	case items.SlotRHand:
 		setPaperdollItem(items.PAPERDOLL_RHAND, &item, myItems)
 	case items.SlotLegs:
@@ -63,7 +59,7 @@ func equipItemAndRecord(item items.Item, myItems []items.Item) {
 	}
 }
 
-func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
+func setPaperdollItem(slot uint8, item *items.MyItem, myItems []items.MyItem) {
 
 	if item == nil {
 		for i, v := range myItems {
@@ -77,7 +73,7 @@ func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
 		return
 	}
 
-	var old items.Item
+	var old items.MyItem
 	var k int
 	var keyCurrentItem int
 	for i, v := range myItems {
@@ -106,7 +102,7 @@ func setPaperdollItem(slot uint8, item *items.Item, myItems []items.Item) {
 	myItems[keyCurrentItem] = *item
 }
 
-func getFirstEmptySlot(myItems []items.Item) int32 {
+func getFirstEmptySlot(myItems []items.MyItem) int32 {
 	var max int32
 	for _, v := range myItems {
 		if v.LocData > max {
