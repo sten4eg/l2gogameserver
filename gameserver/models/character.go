@@ -14,36 +14,41 @@ import (
 )
 
 type Character struct {
-	Login           pgtype.Bytea
-	CharId          int32
-	Level           int32
-	MaxHp           int32
-	CurHp           int32
-	MaxMp           int32
-	CurMp           int32
-	Face            int32
-	HairStyle       int32
-	HairColor       int32
-	Sex             int32
-	Coordinates     *Coordinates
-	Exp             int32
-	Sp              int32
-	Karma           int32
-	PvpKills        int32
-	PkKills         int32
-	ClanId          int32
-	Race            race.Race
-	ClassId         int32
-	BaseClass       int32
-	Title           sql.NullString
-	OnlineTime      int32
-	Nobless         int32
-	Vitality        int32
-	CharName        pgtype.Bytea
-	CurrentRegion   *WorldRegion
-	Conn            *Client
-	AttackEndTime   int64
-	Paperdoll       [31][3]int32
+	Login         pgtype.Bytea
+	CharId        int32
+	Level         int32
+	MaxHp         int32
+	CurHp         int32
+	MaxMp         int32
+	CurMp         int32
+	Face          int32
+	HairStyle     int32
+	HairColor     int32
+	Sex           int32
+	Coordinates   *Coordinates
+	Exp           int32
+	Sp            int32
+	Karma         int32
+	PvpKills      int32
+	PkKills       int32
+	ClanId        int32
+	Race          race.Race
+	ClassId       int32
+	BaseClass     int32
+	Title         sql.NullString
+	OnlineTime    int32
+	Nobless       int32
+	Vitality      int32
+	CharName      pgtype.Bytea
+	CurrentRegion *WorldRegion
+	Conn          *Client
+	AttackEndTime int64
+	// Paperdoll - массив всех слотов которые можно одеть
+	// [1] -> - PAPERDOLL_HEAD
+	//      [0 => ObjectId] - уникальный id в бд
+	//      [1 => itemId] - id предмета, с файла items.json
+	//      [2 => enchantLevel] - уровень заточки
+	Paperdoll       [26][3]int32
 	Stats           StaticData
 	pvpFlag         bool
 	ShortCut        map[int32]dto.ShortCutDTO
@@ -115,7 +120,8 @@ type PacketByte struct {
 // IsActiveWeapon есть ли у персонажа оружие в руках
 func (c *Character) IsActiveWeapon() bool {
 	x := c.Paperdoll[items.PAPERDOLL_RHAND]
-	return x[0] == 0
+	//todo Еще есть кастеты
+	return x[0] != 0
 }
 
 // GetB получение массива байт в PacketByte
