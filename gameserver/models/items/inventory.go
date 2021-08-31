@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"l2gogameserver/db"
+	"l2gogameserver/gameserver/models/items/armorType"
+	"l2gogameserver/gameserver/models/items/weaponType"
 	"log"
 	"os"
 )
@@ -79,8 +81,8 @@ type Item struct {
 	ItemType               ItemType
 	Name                   string
 	Icon                   string
-	SlotBitType            SlotBitType `json:"slot_bit_type"`
-	ArmorType              string
+	SlotBitType            SlotBitType         `json:"slot_bit_type"`
+	ArmorType              armorType.ArmorType `json:"armor_type"`
 	EtcItemType            string
 	ItemMultiSkillList     string
 	RecipeId               int
@@ -107,7 +109,7 @@ type Item struct {
 	KeepType               int
 	PhysicalDamage         int
 	RandomDamage           int
-	WeaponType             string
+	WeaponType             weaponType.WeaponType `json:"weapon_type"`
 	Critical               int
 	HitModify              int
 	AvoidModify            int
@@ -144,6 +146,7 @@ type MyItem struct {
 
 // IsEquipable Можно ли надеть предмет
 func (i *MyItem) IsEquipable() bool {
+	//todo сделать 'enum' для EtcItemType
 	return !((i.SlotBitType == SlotNone) || (i.EtcItemType == "ARROW") || (i.EtcItemType == "BOLT") || (i.EtcItemType == "LURE"))
 }
 
@@ -191,13 +194,12 @@ func loadItems() {
 		panic("Failed to load config file")
 	}
 
-	decoder := json.NewDecoder(file)
-
 	var items []Item
 
-	err = decoder.Decode(&items)
+	err = json.NewDecoder(file).Decode(&items)
+
 	if err != nil {
-		panic("Failed to decode config file")
+		panic("Ошибка при чтении с файла items.json. " + err.Error())
 	}
 
 	for _, v := range items {
@@ -229,22 +231,27 @@ func SaveInventoryInDB(inventory []MyItem) {
 	}
 }
 
-func GetMyItemByObjId(charId int32, objId int32) MyItem {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		return MyItem{}
-	}
-	defer dbConn.Release()
+//func GetMyItemByObjId(character *models.Character, objId int32) MyItem {
+//	items := character.Inventory
+//
+//	for _, v := range items {
+//		if v.ObjId == objId {
+//			return v
+//		}
+//	}
+//	return MyItem{}
+//}
 
-	items := GetMyItems(charId)
-
-	for _, v := range items {
-		if v.ObjId == objId {
-			return v
+func GetActiveWeapon(inventory []MyItem, paperdoll [31][3]int32) *MyItem {
+	q := paperdoll[PAPERDOLL_RHAND][0]
+	for _, v := range inventory {
+		if v.ObjId == q {
+			return &v
 		}
 	}
-	return MyItem{}
+	return nil
 }
+
 func GetPaperdollOrder() []uint8 {
 	return []uint8{
 		PAPERDOLL_UNDER,

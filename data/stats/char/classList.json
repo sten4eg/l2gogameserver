@@ -1,0 +1,644 @@
+[
+    {
+        "classId": 0,
+        "name": "Human Fighter",
+        "serverName": "fighter",
+        "parentClassId": -1
+    },
+    {
+        "classId": 1,
+        "name": "Warrior",
+        "serverName": "warrior",
+        "parentClassId": 0
+    },
+    {
+        "classId": 2,
+        "name": "Gladiator",
+        "serverName": "gladiator",
+        "parentClassId": 1
+    },
+    {
+        "classId": 3,
+        "name": "Warlord",
+        "serverName": "warlord",
+        "parentClassId": 1
+    },
+    {
+        "classId": 4,
+        "name": "Human Knight",
+        "serverName": "knight",
+        "parentClassId": 0
+    },
+    {
+        "classId": 5,
+        "name": "Paladin",
+        "serverName": "paladin",
+        "parentClassId": 4
+    },
+    {
+        "classId": 6,
+        "name": "Dark Avenger",
+        "serverName": "dark_avenger",
+        "parentClassId": 4
+    },
+    {
+        "classId": 7,
+        "name": "Rogue",
+        "serverName": "rogue",
+        "parentClassId": 0
+    },
+    {
+        "classId": 8,
+        "name": "Treasure Hunter",
+        "serverName": "treasure_hunter",
+        "parentClassId": 7
+    },
+    {
+        "classId": 9,
+        "name": "Hawkeye",
+        "serverName": "hawkeye",
+        "parentClassId": 7
+    },
+    {
+        "classId": 10,
+        "name": "Human Mystic",
+        "serverName": "mage",
+        "parentClassId": -1
+    },
+    {
+        "classId": 11,
+        "name": "Human Wizard",
+        "serverName": "wizard",
+        "parentClassId": 10
+    },
+    {
+        "classId": 12,
+        "name": "Sorcerer",
+        "serverName": "sorcerer",
+        "parentClassId": 11
+    },
+    {
+        "classId": 13,
+        "name": "Necromancer",
+        "serverName": "necromancer",
+        "parentClassId": 11
+    },
+    {
+        "classId": 14,
+        "name": "Warlock",
+        "serverName": "warlock",
+        "parentClassId": 11
+    },
+    {
+        "classId": 15,
+        "name": "Cleric",
+        "serverName": "cleric",
+        "parentClassId": 10
+    },
+    {
+        "classId": 16,
+        "name": "Bishop",
+        "serverName": "bishop",
+        "parentClassId": 15
+    },
+    {
+        "classId": 17,
+        "name": "Prophet",
+        "serverName": "prophet",
+        "parentClassId": 15
+    },
+    {
+        "classId": 18,
+        "name": "Elven Fighter",
+        "serverName": "elven_fighter",
+        "parentClassId": -1
+    },
+    {
+        "classId": 19,
+        "name": "Elven Knight",
+        "serverName": "elven_knight",
+        "parentClassId": 18
+    },
+    {
+        "classId": 20,
+        "name": "Temple Knight",
+        "serverName": "temple_knight",
+        "parentClassId": 19
+    },
+    {
+        "classId": 21,
+        "name": "Sword Singer",
+        "serverName": "swordsinger",
+        "parentClassId": 19
+    },
+    {
+        "classId": 22,
+        "name": "Elven Scout",
+        "serverName": "elven_scout",
+        "parentClassId": 18
+    },
+    {
+        "classId": 23,
+        "name": "Plains Walker",
+        "serverName": "plains_walker",
+        "parentClassId": 22
+    },
+    {
+        "classId": 24,
+        "name": "Silver Ranger",
+        "serverName": "silver_ranger",
+        "parentClassId": 22
+    },
+    {
+        "classId": 25,
+        "name": "Elven Mystic",
+        "serverName": "elven_mage",
+        "parentClassId": -1
+    },
+    {
+        "classId": 26,
+        "name": "Elven Wizard",
+        "serverName": "elven_wizard",
+        "parentClassId": 25
+    },
+    {
+        "classId": 27,
+        "name": "Spellsinger",
+        "serverName": "spellsinger",
+        "parentClassId": 26
+    },
+    {
+        "classId": 28,
+        "name": "Elemental Summoner",
+        "serverName": "elemental_summoner",
+        "parentClassId": 26
+    },
+    {
+        "classId": 29,
+        "name": "Elven Oracle",
+        "serverName": "oracle",
+        "parentClassId": 25
+    },
+    {
+        "classId": 30,
+        "name": "Elven Elder",
+        "serverName": "elder",
+        "parentClassId": 29
+    },
+    {
+        "classId": 31,
+        "name": "Dark Fighter",
+        "serverName": "dark_fighter",
+        "parentClassId": -1
+    },
+    {
+        "classId": 32,
+        "name": "Palus Knight",
+        "serverName": "palus_knight",
+        "parentClassId": 31
+    },
+    {
+        "classId": 33,
+        "name": "Shillien Knight",
+        "serverName": "shillien_knight",
+        "parentClassId": 32
+    },
+    {
+        "classId": 34,
+        "name": "Bladedancer",
+        "serverName": "bladedancer",
+        "parentClassId": 33
+    },
+    {
+        "classId": 35,
+        "name": "Assassin",
+        "serverName": "assassin",
+        "parentClassId": 31
+    },
+    {
+        "classId": 36,
+        "name": "Abyss Walker",
+        "serverName": "abyss_walker",
+        "parentClassId": 35
+    },
+    {
+        "classId": 37,
+        "name": "Phantom Ranger",
+        "serverName": "phantom_ranger",
+        "parentClassId": 35
+    },
+    {
+        "classId": 38,
+        "name": "Dark Mystic",
+        "serverName": "dark_mage",
+        "parentClassId": -1
+    },
+    {
+        "classId": 39,
+        "name": "Dark Wizard",
+        "serverName": "dark_wizard",
+        "parentClassId": 38
+    },
+    {
+        "classId": 40,
+        "name": "Spellhowler",
+        "serverName": "spellhowler",
+        "parentClassId": 39
+    },
+    {
+        "classId": 41,
+        "name": "Phantom Summoner",
+        "serverName": "phantom_summoner",
+        "parentClassId": 39
+    },
+    {
+        "classId": 42,
+        "name": "Shillien Oracle",
+        "serverName": "shillien_oracle",
+        "parentClassId": 38
+    },
+    {
+        "classId": 43,
+        "name": "Shillien Elder",
+        "serverName": "shillien_elder",
+        "parentClassId": 42
+    },
+    {
+        "classId": 44,
+        "name": "Orc Fighter",
+        "serverName": "orc_fighter",
+        "parentClassId": -1
+    },
+    {
+        "classId": 45,
+        "name": "Orc Raider",
+        "serverName": "orc_raider",
+        "parentClassId": 44
+    },
+    {
+        "classId": 46,
+        "name": "Destroyer",
+        "serverName": "destroyer",
+        "parentClassId": 45
+    },
+    {
+        "classId": 47,
+        "name": "Monk",
+        "serverName": "orc_monk",
+        "parentClassId": 44
+    },
+    {
+        "classId": 48,
+        "name": "Tyrant",
+        "serverName": "tyrant",
+        "parentClassId": 47
+    },
+    {
+        "classId": 49,
+        "name": "Orc Mystic",
+        "serverName": "orc_mage",
+        "parentClassId": -1
+    },
+    {
+        "classId": 50,
+        "name": "Orc Shaman",
+        "serverName": "orc_shaman",
+        "parentClassId": 49
+    },
+    {
+        "classId": 51,
+        "name": "Overlord",
+        "serverName": "overlord",
+        "parentClassId": 50
+    },
+    {
+        "classId": 52,
+        "name": "Warcryer",
+        "serverName": "warcryer",
+        "parentClassId": 50
+    },
+    {
+        "classId": 53,
+        "name": "Dwarf Fighter",
+        "serverName": "dwarven_fighter",
+        "parentClassId": -1
+    },
+    {
+        "classId": 54,
+        "name": "Scavenger",
+        "serverName": "scavenger",
+        "parentClassId": 53
+    },
+    {
+        "classId": 55,
+        "name": "Bounty Hunter",
+        "serverName": "bounty_hunter",
+        "parentClassId": 54
+    },
+    {
+        "classId": 56,
+        "name": "Artisan",
+        "serverName": "artisan",
+        "parentClassId": 53
+    },
+    {
+        "classId": 57,
+        "name": "Warsmith",
+        "serverName": "warsmith",
+        "parentClassId": 56
+    },
+    {
+        "classId": 88,
+        "name": "Duelist",
+        "serverName": "duelist",
+        "parentClassId": 2
+    },
+    {
+        "classId": 89,
+        "name": "Dreadnought",
+        "serverName": "dreadnought",
+        "parentClassId": 3
+    },
+    {
+        "classId": 90,
+        "name": "Phoenix Knight",
+        "serverName": "phoenix_knight",
+        "parentClassId": 5
+    },
+    {
+        "classId": 91,
+        "name": "Hell Knight",
+        "serverName": "hell_knight",
+        "parentClassId": 6
+    },
+    {
+        "classId": 92,
+        "name": "Sagittarius",
+        "serverName": "sagittarius",
+        "parentClassId": 9
+    },
+    {
+        "classId": 93,
+        "name": "Adventurer",
+        "serverName": "adventurer",
+        "parentClassId": 8
+    },
+    {
+        "classId": 94,
+        "name": "Archmage",
+        "serverName": "archmage",
+        "parentClassId": 12
+    },
+    {
+        "classId": 95,
+        "name": "Soultaker",
+        "serverName": "soultaker",
+        "parentClassId": 13
+    },
+    {
+        "classId": 96,
+        "name": "Arcana Lord",
+        "serverName": "arcana_lord",
+        "parentClassId": 14
+    },
+    {
+        "classId": 97,
+        "name": "Cardinal",
+        "serverName": "cardinal",
+        "parentClassId": 16
+    },
+    {
+        "classId": 98,
+        "name": "Hierophant",
+        "serverName": "hierophant",
+        "parentClassId": 17
+    },
+    {
+        "classId": 99,
+        "name": "Eva's Templar",
+        "serverName": "evas_templar",
+        "parentClassId": 20
+    },
+    {
+        "classId": 100,
+        "name": "Sword Muse",
+        "serverName": "sword_muse",
+        "parentClassId": 21
+    },
+    {
+        "classId": 101,
+        "name": "Wind Rider",
+        "serverName": "wind_rider",
+        "parentClassId": 23
+    },
+    {
+        "classId": 102,
+        "name": "Moonlight Sentinel",
+        "serverName": "moonlight_sentinel",
+        "parentClassId": 24
+    },
+    {
+        "classId": 103,
+        "name": "Mystic Muse",
+        "serverName": "mystic_muse",
+        "parentClassId": 27
+    },
+    {
+        "classId": 104,
+        "name": "Elemental Master",
+        "serverName": "elemental_master",
+        "parentClassId": 26
+    },
+    {
+        "classId": 105,
+        "name": "Eva's Saint",
+        "serverName": "evas_saint",
+        "parentClassId": 30
+    },
+    {
+        "classId": 106,
+        "name": "Shillien Templar",
+        "serverName": "shillien_templar",
+        "parentClassId": 33
+    },
+    {
+        "classId": 107,
+        "name": "Spectral Dancer",
+        "serverName": "spectral_dancer",
+        "parentClassId": 34
+    },
+    {
+        "classId": 108,
+        "name": "Ghost Hunter",
+        "serverName": "ghost_hunter",
+        "parentClassId": 36
+    },
+    {
+        "classId": 109,
+        "name": "Ghost Sentinel",
+        "serverName": "ghost_sentinel",
+        "parentClassId": 37
+    },
+    {
+        "classId": 110,
+        "name": "Storm Screamer",
+        "serverName": "storm_screamer",
+        "parentClassId": 40
+    },
+    {
+        "classId": 111,
+        "name": "Spectral Master",
+        "serverName": "spectral_master",
+        "parentClassId": 41
+    },
+    {
+        "classId": 112,
+        "name": "Shillien Saint",
+        "serverName": "shillien_saint",
+        "parentClassId": 43
+    },
+    {
+        "classId": 113,
+        "name": "Titan",
+        "serverName": "titan",
+        "parentClassId": 46
+    },
+    {
+        "classId": 114,
+        "name": "Grand Khavatari",
+        "serverName": "grand_khavatari",
+        "parentClassId": 48
+    },
+    {
+        "classId": 115,
+        "name": "Dominator",
+        "serverName": "dominator",
+        "parentClassId": 51
+    },
+    {
+        "classId": 116,
+        "name": "Doom Cryer",
+        "serverName": "doomcryer",
+        "parentClassId": 52
+    },
+    {
+        "classId": 117,
+        "name": "Fortune Seeker",
+        "serverName": "fortune_seeker",
+        "parentClassId": 55
+    },
+    {
+        "classId": 118,
+        "name": "Maestro",
+        "serverName": "maestro",
+        "parentClassId": 57
+    },
+    {
+        "classId": 119,
+        "name": "World Trap",
+        "serverName": "world_trap",
+        "parentClassId": -1
+    },
+    {
+        "classId": 120,
+        "name": "Player Trap",
+        "serverName": "pc_trap",
+        "parentClassId": -1
+    },
+    {
+        "classId": 121,
+        "name": "Double Ghost",
+        "serverName": "doppelganger",
+        "parentClassId": -1
+    },
+    {
+        "classId": 122,
+        "name": "Siege Attacker",
+        "serverName": "siege_attacker",
+        "parentClassId": -1
+    },
+    {
+        "classId": 123,
+        "name": "Male Kamael Soldier",
+        "serverName": "kamael_m_soldier",
+        "parentClassId": -1
+    },
+    {
+        "classId": 124,
+        "name": "Female Kamael Soldier",
+        "serverName": "kamael_f_soldier",
+        "parentClassId": -1
+    },
+    {
+        "classId": 125,
+        "name": "Trooper",
+        "serverName": "trooper",
+        "parentClassId": 123
+    },
+    {
+        "classId": 126,
+        "name": "Warder",
+        "serverName": "warder",
+        "parentClassId": 124
+    },
+    {
+        "classId": 127,
+        "name": "Berserker",
+        "serverName": "berserker",
+        "parentClassId": 125
+    },
+    {
+        "classId": 128,
+        "name": "Male Soul Breaker",
+        "serverName": "m_soul_breaker",
+        "parentClassId": 125
+    },
+    {
+        "classId": 129,
+        "name": "Female Soul Breaker",
+        "serverName": "f_soul_breaker",
+        "parentClassId": 126
+    },
+    {
+        "classId": 130,
+        "name": "Arbalester",
+        "serverName": "arbalester",
+        "parentClassId": 126
+    },
+    {
+        "classId": 131,
+        "name": "Doombringer",
+        "serverName": "doombringer",
+        "parentClassId": 127
+    },
+    {
+        "classId": 132,
+        "name": "Male Soul Hound",
+        "serverName": "m_soul_hound",
+        "parentClassId": 128
+    },
+    {
+        "classId": 133,
+        "name": "Female Soul Hound",
+        "serverName": "f_soul_hound",
+        "parentClassId": 129
+    },
+    {
+        "classId": 134,
+        "name": "Trickster",
+        "serverName": "trickster",
+        "parentClassId": 130
+    },
+    {
+        "classId": 135,
+        "name": "Inspector",
+        "serverName": "inspector",
+        "parentClassId": 126
+    },
+    {
+        "classId": 136,
+        "name": "Judicator",
+        "serverName": "judicator",
+        "parentClassId": 135
+    }
+]

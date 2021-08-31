@@ -22,9 +22,9 @@ func NewCharInfo(user *models.Character) []byte {
 
 	buffer.WriteS(string(user.CharName.Bytes)) //name //TODO
 
-	buffer.WriteD(user.Race)      //race ordinal //TODO
-	buffer.WriteD(user.Sex)       //sex
-	buffer.WriteD(user.BaseClass) //baseClass
+	buffer.WriteD(int32(user.Race)) //race ordinal //TODO
+	buffer.WriteD(user.Sex)         //sex
+	buffer.WriteD(user.BaseClass)   //baseClass
 
 	for _, v := range getPaperdollOrder() {
 		buffer.WriteD(user.Paperdoll[v][1])

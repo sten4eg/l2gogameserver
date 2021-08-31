@@ -2,6 +2,7 @@ package clientpackets
 
 import (
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
@@ -19,7 +20,7 @@ func NewRequestMagicSkillUse(data []byte, client *models.Client) {
 	}
 
 	if client.CurrentChar.IsFakeDeath {
-		serverpackets.NewSystemMessage(models.CantMoveSitting, client)
+		serverpackets.NewSystemMessage(sysmsg.CantMoveSitting, client)
 		serverpackets.NewActionFailed(client)
 		return
 	}

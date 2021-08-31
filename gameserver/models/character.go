@@ -7,6 +7,7 @@ import (
 	"l2gogameserver/data"
 	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/models/items"
+	"l2gogameserver/gameserver/models/race"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -31,7 +32,7 @@ type Character struct {
 	PvpKills        int32
 	PkKills         int32
 	ClanId          int32
-	Race            int32
+	Race            race.Race
 	ClassId         int32
 	BaseClass       int32
 	Title           sql.NullString
@@ -50,12 +51,13 @@ type Character struct {
 	IsDead          bool
 	IsFakeDeath     bool
 	// Skills todo: проверить слайс или мапа лучше для скилов
-	Skills          map[int]Skill
-	IsCastingNow    bool
-	SkillQueue      chan SkillHolder
-	CurrentSkill    *SkillHolder // todo А может быть без * попробовать?
-	CurrentTargetId int32
-	Inventory       []items.MyItem
+	Skills                 map[int]Skill
+	IsCastingNow           bool
+	SkillQueue             chan SkillHolder
+	CurrentSkill           *SkillHolder // todo А может быть без * попробовать?
+	CurrentTargetId        int32
+	Inventory              []items.MyItem
+	CursedWeaponEquippedId int
 }
 
 func GetNewCharacterModel() *Character {
@@ -181,5 +183,8 @@ func (c *Character) checkSoulShot() {
 	if len(c.ActiveSoulShots) == 0 {
 		return
 	}
+}
 
+func (c *Character) IsCursedWeaponEquipped() bool {
+	return c.CursedWeaponEquippedId != 0
 }

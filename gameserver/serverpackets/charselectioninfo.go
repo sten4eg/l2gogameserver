@@ -88,9 +88,9 @@ func NewCharSelectionInfo(client *models.Client) {
 		client.Buffer.WriteD(char.ClanId) //clanId
 		client.Buffer.WriteD(0)           // Builder Level
 
-		client.Buffer.WriteD(char.Sex)       //sex
-		client.Buffer.WriteD(char.Race)      // race
-		client.Buffer.WriteD(char.BaseClass) // baseclass
+		client.Buffer.WriteD(char.Sex)         //sex
+		client.Buffer.WriteD(int32(char.Race)) // race
+		client.Buffer.WriteD(char.BaseClass)   // baseclass
 
 		client.Buffer.WriteD(1) // active ??
 

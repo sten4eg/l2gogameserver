@@ -22,9 +22,9 @@ func NewUserInfo(client *models.Client) {
 
 	client.Buffer.WriteS(string(character.CharName.Bytes)) //name //TODO
 
-	client.Buffer.WriteD(character.Race)      //race ordinal //TODO
-	client.Buffer.WriteD(character.Sex)       //sex
-	client.Buffer.WriteD(character.BaseClass) //baseClass
+	client.Buffer.WriteD(int32(character.Race)) //race ordinal //TODO
+	client.Buffer.WriteD(character.Sex)         //sex
+	client.Buffer.WriteD(character.BaseClass)   //baseClass
 
 	client.Buffer.WriteD(character.Level)                                                      //level //TODO
 	client.Buffer.WriteQ(int64(character.Exp))                                                 //exp

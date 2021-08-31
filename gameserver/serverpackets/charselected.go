@@ -16,7 +16,7 @@ func NewCharSelected(user *models.Character, client *models.Client) int32 {
 	client.Buffer.WriteD(user.ClanId)                 //clanId // 29
 	client.Buffer.WriteD(0)                           // ? //33
 	client.Buffer.WriteD(user.Sex)                    //sex// 37
-	client.Buffer.WriteD(user.Race)                   //race 41
+	client.Buffer.WriteD(int32(user.Race))            //race 41
 	client.Buffer.WriteD(user.ClassId)                //classId 45
 	client.Buffer.WriteD(0x1)                         // ? 49
 	client.Buffer.WriteD(x)                           //x 53

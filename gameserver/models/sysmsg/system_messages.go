@@ -1,4 +1,4 @@
-package models
+package sysmsg
 
 type SysMsg struct {
 	Id  int32
@@ -7,8 +7,10 @@ type SysMsg struct {
 
 var YouHaveInvitedTheWrongTarget = SysMsg{Val: "", Id: 152}
 var CantMoveSitting = SysMsg{Val: "", Id: 31}
+var CannotEquipItemDueToBadCondition = SysMsg{Val: "", Id: 1518}
 
 func q() {
+	_ = CannotEquipItemDueToBadCondition
 	w := CantMoveSitting
 	_ = w
 }

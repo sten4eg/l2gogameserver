@@ -7,40 +7,41 @@ import (
 
 type SlotBitType int32
 
-var SlotNone SlotBitType = 0x0000
-var SlotUnderwear SlotBitType = 0x0001
-var SlotREar SlotBitType = 0x0002
-var SlotLEar SlotBitType = 0x0004
-var SlotLrEar SlotBitType = 0x00006
-var SlotNeck SlotBitType = 0x0008
-var SlotRFinger SlotBitType = 0x0010
-var SlotLFinger SlotBitType = 0x0020
-var SlotLrFinger SlotBitType = 0x0030
-var SlotHead SlotBitType = 0x0040
-var SlotRHand SlotBitType = 0x0080
-var SlotLHand SlotBitType = 0x0100
-var SlotGloves SlotBitType = 0x0200
-var SlotChest SlotBitType = 0x0400
-var SlotLegs SlotBitType = 0x0800
-var SlotFeet SlotBitType = 0x1000
-var SlotBack SlotBitType = 0x2000
-var SlotLrHand SlotBitType = 0x4000
-var SlotFullArmor SlotBitType = 0x8000
-var SlotHair SlotBitType = 0x010000
-var SlotAlldress SlotBitType = 0x020000
-var SlotHair2 SlotBitType = 0x040000
-var SlotHairall SlotBitType = 0x080000
-var SlotRBracelet SlotBitType = 0x100000
-var SlotLBracelet SlotBitType = 0x200000
-var SlotDeco SlotBitType = 0x400000
-var SlotBelt SlotBitType = 0x10000000
-var SlotWolf SlotBitType = -100
-var SlotHatchling SlotBitType = -101
-var SlotStrider SlotBitType = -102
-var SlotBabypet SlotBitType = -103
-var SlotGreatwolf SlotBitType = -104
-
-var SLOT_MULTI_ALLWEAPON SlotBitType = SlotLrHand | SlotRHand
+const (
+	SlotNone             SlotBitType = 0x0000
+	SlotUnderwear        SlotBitType = 0x0001
+	SlotREar             SlotBitType = 0x0002
+	SlotLEar             SlotBitType = 0x0004
+	SlotLrEar            SlotBitType = 0x00006
+	SlotNeck             SlotBitType = 0x0008
+	SlotRFinger          SlotBitType = 0x0010
+	SlotLFinger          SlotBitType = 0x0020
+	SlotLrFinger         SlotBitType = 0x0030
+	SlotHead             SlotBitType = 0x0040
+	SlotRHand            SlotBitType = 0x0080
+	SlotLHand            SlotBitType = 0x0100
+	SlotGloves           SlotBitType = 0x0200
+	SlotChest            SlotBitType = 0x0400
+	SlotLegs             SlotBitType = 0x0800
+	SlotFeet             SlotBitType = 0x1000
+	SlotBack             SlotBitType = 0x2000
+	SlotLrHand           SlotBitType = 0x4000
+	SlotFullArmor        SlotBitType = 0x8000
+	SlotHair             SlotBitType = 0x010000
+	SlotAlldress         SlotBitType = 0x020000
+	SlotHair2            SlotBitType = 0x040000
+	SlotHairall          SlotBitType = 0x080000
+	SlotRBracelet        SlotBitType = 0x100000
+	SlotLBracelet        SlotBitType = 0x200000
+	SlotDeco             SlotBitType = 0x400000
+	SlotBelt             SlotBitType = 0x10000000
+	SlotWolf             SlotBitType = -100
+	SlotHatchling        SlotBitType = -101
+	SlotStrider          SlotBitType = -102
+	SlotBabypet          SlotBitType = -103
+	SlotGreatwolf        SlotBitType = -104
+	SLOT_MULTI_ALLWEAPON SlotBitType = SlotLrHand | SlotRHand
+)
 
 func (t *SlotBitType) UnmarshalJSON(data []byte) error {
 
