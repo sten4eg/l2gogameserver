@@ -95,6 +95,8 @@ func NewUseItem(data []byte, client *models.Client) {
 
 	serverpackets.NewInventoryUpdate(client, items.UpdateTypeModify)
 
+	// После каждого use_item будет запрос в бд на восстановление paperdoll,
+	// надо бы это сделать в UseEquippableItem
 	client.CurrentChar.Paperdoll = items.RestoreVisibleInventory(client.CurrentChar.CharId)
 
 	serverpackets.NewUserInfo(client)

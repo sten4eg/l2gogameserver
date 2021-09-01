@@ -48,9 +48,7 @@ const (
 	UpdateTypeRemove int16 = 3
 )
 
-func RestoreVisibleInventory(charId int32) [26][3]int32 {
-	var paperdoll [26][3]int32
-
+func RestoreVisibleInventory(charId int32) [26]MyItem {
 	dbConn, err := db.GetConn()
 	if err != nil {
 		panic(err)
@@ -62,20 +60,29 @@ func RestoreVisibleInventory(charId int32) [26][3]int32 {
 		panic(err)
 	}
 
+	var mts [26]MyItem
+
 	for rows.Next() {
 		var objId int
-		var item int
+		var itemId int
 		var enchantLevel int
 		var locData int
-		err := rows.Scan(&objId, &item, &locData, &enchantLevel)
+		err = rows.Scan(&objId, &itemId, &locData, &enchantLevel)
 		if err != nil {
 			log.Println(err)
 		}
-		paperdoll[int32(locData)][0] = int32(objId)
-		paperdoll[int32(locData)][1] = int32(item)
-		paperdoll[int32(locData)][2] = int32(enchantLevel)
+
+		item := AllItems[itemId]
+		mt := MyItem{
+			Item:    item,
+			ObjId:   int32(objId),
+			Enchant: enchantLevel,
+			Count:   1,
+			Loc:     Paperdoll,
+		}
+		mts[int32(locData)] = mt
 	}
-	return paperdoll
+	return mts
 }
 
 type Item struct {
@@ -243,10 +250,10 @@ func SaveInventoryInDB(inventory []MyItem) {
 //	return MyItem{}
 //}
 
-func GetActiveWeapon(inventory []MyItem, paperdoll [26][3]int32) *MyItem {
-	q := paperdoll[PAPERDOLL_RHAND][0]
+func GetActiveWeapon(inventory []MyItem, paperdoll [26]MyItem) *MyItem {
+	q := paperdoll[PAPERDOLL_RHAND]
 	for _, v := range inventory {
-		if v.ObjId == q {
+		if v.ObjId == q.ObjId {
 			return &v
 		}
 	}
@@ -254,12 +261,12 @@ func GetActiveWeapon(inventory []MyItem, paperdoll [26][3]int32) *MyItem {
 }
 
 // UseEquippableItem исользовать предмет который можно надеть на персонажа
-func UseEquippableItem(selectedItem MyItem, Inventory []MyItem, paperdoll [26][3]int32) {
+func UseEquippableItem(selectedItem MyItem, Inventory []MyItem, paperdoll [26]MyItem) {
 	//todo надо как то обновлять paperdoll, или возвращать массив или же  вынести это в другой пакет
 	if selectedItem.IsEquipped() == 1 {
 		unEquipAndRecord(selectedItem, Inventory)
 	} else {
-		equipItemAndRecord(selectedItem, Inventory)
+		equipItemAndRecord(selectedItem, Inventory, paperdoll)
 	}
 }
 
@@ -312,38 +319,83 @@ func unEquipAndRecord(item MyItem, myItems []MyItem) {
 }
 
 // equipItemAndRecord одеть предмет
-func equipItemAndRecord(item MyItem, myItems []MyItem) {
+func equipItemAndRecord(item MyItem, myItems []MyItem, paperdoll [26]MyItem) {
 	//todo проверка на приват Store, надо будет передавать character?
 	// еще проверка на ITEM_CONDITIONS
 
+	formal := paperdoll[PAPERDOLL_CHEST]
+	// Проверка надето ли офф. одежда и предмет не является букетом
+	if (item.Id != 21163) && (formal.ObjId != 0) && (formal.SlotBitType == SlotAlldress) {
+		// только chest можно
+		switch item.SlotBitType {
+		case SlotLrHand, SlotLHand, SlotRHand, SlotLegs, SlotFeet, SlotGloves, SlotHead:
+			return
+		}
+	}
+
 	switch item.SlotBitType {
-	case SlotLEar:
-		setPaperdollItem(PAPERDOLL_LEAR, &item, myItems)
-	case SlotREar:
-		setPaperdollItem(PAPERDOLL_REAR, &item, myItems)
+	case SlotLrHand:
+		setPaperdollItem(PAPERDOLL_LHAND, nil, myItems)
+		setPaperdollItem(PAPERDOLL_RHAND, &item, myItems)
+	case SlotLEar, SlotREar, SlotLrEar:
+		if paperdoll[PAPERDOLL_LEAR].ObjId == 0 {
+			setPaperdollItem(PAPERDOLL_LEAR, &item, myItems)
+		} else if paperdoll[PAPERDOLL_REAR].ObjId == 0 {
+			setPaperdollItem(PAPERDOLL_REAR, &item, myItems)
+		} else {
+			setPaperdollItem(PAPERDOLL_LEAR, &item, myItems)
+		}
+
 	case SlotNeck:
 		setPaperdollItem(PAPERDOLL_NECK, &item, myItems)
-	case SlotRFinger:
-		setPaperdollItem(PAPERDOLL_RFINGER, &item, myItems)
-	case SlotLFinger:
-		setPaperdollItem(PAPERDOLL_LFINGER, &item, myItems)
+	case SlotRFinger, SlotLFinger, SlotLrFinger:
+		if paperdoll[PAPERDOLL_LFINGER].ObjId == 0 {
+			setPaperdollItem(PAPERDOLL_LFINGER, &item, myItems)
+		} else if paperdoll[PAPERDOLL_RFINGER].ObjId == 0 {
+			setPaperdollItem(PAPERDOLL_RFINGER, &item, myItems)
+		} else {
+			setPaperdollItem(PAPERDOLL_LFINGER, &item, myItems)
+		}
+
 	case SlotHair:
+		hair := paperdoll[PAPERDOLL_HAIR]
+		if hair.ObjId != 0 && hair.SlotBitType == SlotHairall {
+			setPaperdollItem(PAPERDOLL_HAIR2, nil, myItems)
+		} else {
+			setPaperdollItem(PAPERDOLL_HAIR, nil, myItems)
+		}
 		setPaperdollItem(PAPERDOLL_HAIR, &item, myItems)
 	case SlotHair2:
+		hair2 := paperdoll[PAPERDOLL_HAIR]
+		if hair2.ObjId != 0 && hair2.SlotBitType == SlotHairall {
+			setPaperdollItem(PAPERDOLL_HAIR, nil, myItems)
+		} else {
+			setPaperdollItem(PAPERDOLL_HAIR2, nil, myItems)
+		}
 		setPaperdollItem(PAPERDOLL_HAIR2, &item, myItems)
-	case SlotHairall: //todo Разобраться что тут на l2j
+	case SlotHairall:
+		setPaperdollItem(PAPERDOLL_HAIR2, nil, myItems)
 		setPaperdollItem(PAPERDOLL_HAIR, &item, myItems)
 	case SlotHead:
 		setPaperdollItem(PAPERDOLL_HEAD, &item, myItems)
-	case SlotRHand, SlotLrHand:
+	case SlotRHand:
+		//todo снять стрелы
 		setPaperdollItem(PAPERDOLL_RHAND, &item, myItems)
 	case SlotLHand:
+		rh := paperdoll[PAPERDOLL_RHAND]
+		if (rh.ObjId != 0) && (rh.SlotBitType == SlotLrHand) && !(((rh.WeaponType == weaponType.BOW) && (item.EtcItemType == etcItemType.ARROW)) || ((rh.WeaponType == weaponType.CROSSBOW) && (item.EtcItemType == etcItemType.BOLT)) || ((rh.WeaponType == weaponType.FISHINGROD) && (item.EtcItemType == etcItemType.LURE))) {
+			setPaperdollItem(PAPERDOLL_RHAND, nil, myItems)
+		}
 		setPaperdollItem(PAPERDOLL_LHAND, &item, myItems)
 	case SlotGloves:
 		setPaperdollItem(PAPERDOLL_GLOVES, &item, myItems)
-	case SlotChest, SlotAlldress, SlotFullArmor:
+	case SlotChest:
 		setPaperdollItem(PAPERDOLL_CHEST, &item, myItems)
 	case SlotLegs:
+		chest := paperdoll[PAPERDOLL_CHEST]
+		if chest.ObjId != 0 && chest.SlotBitType == SlotFullArmor {
+			setPaperdollItem(PAPERDOLL_CHEST, nil, myItems)
+		}
 		setPaperdollItem(PAPERDOLL_LEGS, &item, myItems)
 	case SlotBack:
 		setPaperdollItem(PAPERDOLL_CLOAK, &item, myItems)
@@ -359,6 +411,17 @@ func equipItemAndRecord(item MyItem, myItems []MyItem) {
 		setPaperdollItem(PAPERDOLL_DECO1, &item, myItems)
 	case SlotBelt:
 		setPaperdollItem(PAPERDOLL_BELT, &item, myItems)
+	case SlotFullArmor:
+		setPaperdollItem(PAPERDOLL_LEGS, nil, myItems)
+		setPaperdollItem(PAPERDOLL_CHEST, &item, myItems)
+	case SlotAlldress:
+		setPaperdollItem(PAPERDOLL_LEGS, nil, myItems)
+		setPaperdollItem(PAPERDOLL_LHAND, nil, myItems)
+		setPaperdollItem(PAPERDOLL_RHAND, nil, myItems)
+		setPaperdollItem(PAPERDOLL_HEAD, nil, myItems)
+		setPaperdollItem(PAPERDOLL_FEET, nil, myItems)
+		setPaperdollItem(PAPERDOLL_GLOVES, nil, myItems)
+		setPaperdollItem(PAPERDOLL_CHEST, &item, myItems)
 	default:
 		panic("Не определен Slot для itemId: " + strconv.Itoa(item.Id))
 	}
