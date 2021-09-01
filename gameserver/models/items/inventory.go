@@ -324,7 +324,7 @@ func equipItemAndRecord(item MyItem, myItems []MyItem, paperdoll [26]MyItem) {
 	// еще проверка на ITEM_CONDITIONS
 
 	formal := paperdoll[PAPERDOLL_CHEST]
-	// Проверка надето ли офф. одежда и предмет не является букетом
+	// Проверка надето ли офф. одежда и предмет не является букетом(id=21163)
 	if (item.Id != 21163) && (formal.ObjId != 0) && (formal.SlotBitType == SlotAlldress) {
 		// только chest можно
 		switch item.SlotBitType {
