@@ -56,13 +56,13 @@ func NewUserInfo(client *models.Client) {
 	}
 
 	for _, slot := range items.GetPaperdollOrder() {
-		client.Buffer.WriteD(character.Paperdoll[slot][0]) //objId
+		client.Buffer.WriteD(character.Paperdoll[slot].ObjId) //objId
 	}
 	for _, slot := range items.GetPaperdollOrder() {
-		client.Buffer.WriteD(character.Paperdoll[slot][1]) //itemId
+		client.Buffer.WriteD(int32(character.Paperdoll[slot].Id)) //itemId
 	}
 	for _, slot := range items.GetPaperdollOrder() {
-		client.Buffer.WriteD(character.Paperdoll[slot][2]) //enchant
+		client.Buffer.WriteD(int32(character.Paperdoll[slot].Enchant)) //enchant
 	}
 
 	client.Buffer.WriteD(0) //talisman slot

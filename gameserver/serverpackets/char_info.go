@@ -27,7 +27,7 @@ func NewCharInfo(user *models.Character) []byte {
 	buffer.WriteD(user.BaseClass)   //baseClass
 
 	for _, v := range getPaperdollOrder() {
-		buffer.WriteD(user.Paperdoll[v][1])
+		buffer.WriteD(int32(user.Paperdoll[v].Id))
 	}
 
 	for _, v := range getPaperdollOrder() {

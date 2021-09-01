@@ -121,7 +121,7 @@ func NewCharSelectionInfo(client *models.Client) {
 
 		paperdoll := items.RestoreVisibleInventory(char.CharId)
 		for _, slot := range items.GetPaperdollOrder() {
-			client.Buffer.WriteD(paperdoll[slot][1])
+			client.Buffer.WriteD(int32(paperdoll[slot].Id))
 		}
 
 		client.Buffer.WriteD(char.HairStyle) //hairStyle

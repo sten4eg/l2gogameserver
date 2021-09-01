@@ -44,11 +44,7 @@ type Character struct {
 	Conn          *Client
 	AttackEndTime int64
 	// Paperdoll - массив всех слотов которые можно одеть
-	// [1] -> - PAPERDOLL_HEAD
-	//      [0 => ObjectId] - уникальный id в бд
-	//      [1 => itemId] - id предмета, с файла items.json
-	//      [2 => enchantLevel] - уровень заточки
-	Paperdoll       [26][3]int32
+	Paperdoll       [26]items.MyItem
 	Stats           StaticData
 	pvpFlag         bool
 	ShortCut        map[int32]dto.ShortCutDTO
@@ -121,7 +117,8 @@ type PacketByte struct {
 func (c *Character) IsActiveWeapon() bool {
 	x := c.Paperdoll[items.PAPERDOLL_RHAND]
 	//todo Еще есть кастеты
-	return x[0] != 0
+	return x != items.MyItem{}
+	//todo ?
 }
 
 // GetB получение массива байт в PacketByte

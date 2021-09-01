@@ -46,7 +46,6 @@ const (
 func (t *SlotBitType) UnmarshalJSON(data []byte) error {
 
 	sData := strings.ReplaceAll(string(data), "[", "")
-	sData = strings.ReplaceAll(sData, "", "")
 	sData = strings.ReplaceAll(sData, "\n", "")
 	sData = strings.ReplaceAll(sData, " ", "")
 	sData = strings.ReplaceAll(sData, "]", "")
