@@ -126,6 +126,8 @@ func (g *GameServer) handler(client *models.Client) {
 			//Broad(client, info)
 		case 89:
 			clientpackets.NewValidationPosition(data, client.CurrentChar)
+			serverpackets.NeWNpcInfo(client)
+
 		case 31:
 			clientpackets.NewAction(data, client)
 		case 72:
