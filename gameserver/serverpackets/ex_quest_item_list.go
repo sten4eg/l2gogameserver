@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewExQuestItemList(client *models.Client) {
+func ExQuestItemList(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0xFE)
 	client.Buffer.WriteH(0xC6)

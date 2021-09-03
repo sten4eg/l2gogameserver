@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewSkillCoolTime() []byte {
+func SkillCoolTime() []byte {
 
 	buffer := new(packets.Buffer)
 

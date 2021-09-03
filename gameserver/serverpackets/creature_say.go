@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewCreatureSay(say *models.Say, user *models.Character) []byte {
+func CreatureSay(say *models.Say, user *models.Character) []byte {
 
 	buffer := new(packets.Buffer)
 	buffer.WriteSingleByte(0x4a)

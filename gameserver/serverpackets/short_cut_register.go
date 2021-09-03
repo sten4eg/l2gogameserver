@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewShortCutRegister(shortCut dto.ShortCutDTO, client *models.Client) {
+func ShortCutRegister(shortCut dto.ShortCutDTO, client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0x44)
 	client.Buffer.WriteD(dto.IndexOfShortTypes(shortCut.ShortcutType))

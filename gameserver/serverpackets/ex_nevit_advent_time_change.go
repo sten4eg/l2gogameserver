@@ -2,7 +2,7 @@ package serverpackets
 
 import "l2gogameserver/packets"
 
-func NewExNevitAdventTimeChange() []byte {
+func ExNevitAdventTimeChange() []byte {
 
 	buffer := new(packets.Buffer)
 

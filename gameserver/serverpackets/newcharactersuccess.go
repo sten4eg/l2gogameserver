@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewCharacterSuccess(client *models.Client) {
+func CharacterSuccess(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0x0D)
 	client.Buffer.WriteD(1)

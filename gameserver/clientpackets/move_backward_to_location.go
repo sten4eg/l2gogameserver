@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewMoveBackwardToLocation(data []byte) *models.BackwardToLocation {
+func MoveBackwardToLocation(data []byte) *models.BackwardToLocation {
 
 	var location models.BackwardToLocation
 	var packet = packets.NewReader(data)

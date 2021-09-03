@@ -8,19 +8,19 @@ import (
 func NewMagicSkillUse(client *models.Client, skill models.Skill, ctrlPressed, shiftPressed bool) {
 
 	if skill.OperateType.IsPassive() {
-		NewActionFailed(client)
+		ActionFailed(client)
 		return
 	}
 
 	if client.CurrentChar.IsCastingNow {
 		currSkill := client.CurrentChar.CurrentSkill
 		if currSkill != nil && skill.ID == currSkill.Skill.ID {
-			NewActionFailed(client)
+			ActionFailed(client)
 			return
 		} //todo тут еще есть elseif isSkillDisabled()
 
 		client.CurrentChar.SetSkillToQueue(skill, ctrlPressed, shiftPressed)
-		NewActionFailed(client)
+		ActionFailed(client)
 		return
 	}
 

@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewHennaInfo(client *models.Client) {
+func HennaInfo(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0xE5)
 

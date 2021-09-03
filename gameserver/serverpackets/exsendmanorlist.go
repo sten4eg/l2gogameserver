@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewExSendManorList(client *models.Client) {
+func ExSendManorList(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0xFE)
 	client.Buffer.WriteH(0x22)

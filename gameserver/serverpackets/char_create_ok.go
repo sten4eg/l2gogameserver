@@ -2,7 +2,7 @@ package serverpackets
 
 import "l2gogameserver/gameserver/models"
 
-func NewCharCreateOk(client *models.Client) {
+func CharCreateOk(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0x0f)
 	client.Buffer.WriteD(1)

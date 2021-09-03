@@ -2,7 +2,7 @@ package serverpackets
 
 import "l2gogameserver/packets"
 
-func NewExShowContactList() []byte {
+func ExShowContactList() []byte {
 
 	buffer := new(packets.Buffer)
 

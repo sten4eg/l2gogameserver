@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewShowMiniMap(client *models.Client) {
+func ShowMiniMap(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0xa3)
 	client.Buffer.WriteD(1665)

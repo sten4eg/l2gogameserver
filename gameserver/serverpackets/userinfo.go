@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/gameserver/models/items"
 )
 
-func NewUserInfo(client *models.Client) {
+func UserInfo(client *models.Client) {
 
 	character := client.CurrentChar
 

@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewInventoryUpdate(client *models.Client, updateType int16) {
+func InventoryUpdate(client *models.Client, updateType int16) {
 
 	items := client.CurrentChar.Inventory
 

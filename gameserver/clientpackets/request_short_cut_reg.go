@@ -7,7 +7,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewRequestShortCutReg(data []byte, client *models.Client) {
+func RequestShortCutReg(data []byte, client *models.Client) {
 	var packet = packets.NewReader(data)
 
 	typeId := packet.ReadInt32()
@@ -31,6 +31,6 @@ func NewRequestShortCutReg(data []byte, client *models.Client) {
 	sc := dto.GetShortCutDTO(slot, page, id, lvl, characterType, shortType)
 
 	models.RegisterShortCut(sc, client)
-	serverpackets.NewShortCutRegister(sc, client)
+	serverpackets.ShortCutRegister(sc, client)
 
 }

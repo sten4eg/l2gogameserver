@@ -2,7 +2,7 @@ package serverpackets
 
 import "l2gogameserver/gameserver/models"
 
-func NewTargetUnselected(client *models.Client) {
+func TargetUnselected(client *models.Client) {
 
 	x, y, z := client.CurrentChar.GetXYZ()
 

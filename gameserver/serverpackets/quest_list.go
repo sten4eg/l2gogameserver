@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewQuestList(client *models.Client) {
+func QuestList(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0x86)
 	client.Buffer.WriteH(0)

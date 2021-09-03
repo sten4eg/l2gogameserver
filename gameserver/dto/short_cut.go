@@ -53,7 +53,7 @@ func IndexOfShortTypes(shortType string) int32 {
 			return int32(k)
 		}
 	}
-	return 0
+	panic("ShortType: " + shortType + " не найден")
 }
 
 var ShortTypes = [7]string{

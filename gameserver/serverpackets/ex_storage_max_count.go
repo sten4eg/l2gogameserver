@@ -2,7 +2,7 @@ package serverpackets
 
 import "l2gogameserver/packets"
 
-func NewExStorageMaxCount() []byte {
+func ExStorageMaxCount() []byte {
 
 	buffer := new(packets.Buffer)
 

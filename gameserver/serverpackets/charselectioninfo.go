@@ -7,7 +7,7 @@ import (
 	"l2gogameserver/gameserver/models/items"
 )
 
-func NewCharSelectionInfo(client *models.Client) {
+func CharSelectionInfo(client *models.Client) {
 
 	dbConn, err := db.GetConn()
 	if err != nil {

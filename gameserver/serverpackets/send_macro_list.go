@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewSendMacroList(client *models.Client) {
+func SendMacroList(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0xE8)
 	client.Buffer.WriteD(0)

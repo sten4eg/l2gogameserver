@@ -2,7 +2,6 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/models"
-	"log"
 )
 
 var StaticBlowfish = []byte{
@@ -24,7 +23,7 @@ var StaticBlowfish = []byte{
 	151,
 }
 
-func NewKeyPacket(client *models.Client) {
+func KeyPacket(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0x2e)
 	client.Buffer.WriteSingleByte(1) // protocolOk
@@ -39,5 +38,4 @@ func NewKeyPacket(client *models.Client) {
 	client.Buffer.WriteD(0x00)
 
 	client.SaveAndCryptDataInBufferToSend(false)
-	log.Println("Send keyPacket")
 }

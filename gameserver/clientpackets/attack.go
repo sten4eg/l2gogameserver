@@ -6,7 +6,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewAttack(data []byte, client *models.Client) {
+func Attack(data []byte, client *models.Client) {
 	var packet = packets.NewReader(data)
 
 	objId := packet.ReadInt32() // targetObjId
@@ -15,11 +15,11 @@ func NewAttack(data []byte, client *models.Client) {
 	originZ := packet.ReadInt32()
 	attackId := packet.ReadSingleByte() // 0 for simple click 1 for shift-click
 
-	var A serverpackets.Attack
+	var A serverpackets.AttackS
 	A.TargetId = objId
 	A.X = originX
 	A.Z = originZ
 	A.Y = originY
-	serverpackets.NewAttack(client, &A)
+	serverpackets.Attack(client, &A)
 	_, _, _, _, _ = objId, originZ, originX, originY, attackId
 }

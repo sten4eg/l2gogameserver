@@ -31,7 +31,7 @@ var (
 	BATTLEFIELD              int32 = 20 //^
 )
 
-func NewSay(data []byte, online *models.OnlineCharacters, me *models.Character) {
+func Say(data []byte, online *models.OnlineCharacters, me *models.Character) {
 	var packet = packets.NewReader(data)
 	var say models.Say
 	text := packet.ReadString()
@@ -43,7 +43,7 @@ func NewSay(data []byte, online *models.OnlineCharacters, me *models.Character) 
 
 	switch say.Type {
 	case ALL:
-		toBroad.B = serverpackets.NewCreatureSay(&say, me)
+		toBroad.B = serverpackets.CreatureSay(&say, me)
 		err := online.Char[me.CharId].Conn.Send(toBroad.GetB(), true) //to me
 		if err != nil {
 			log.Println(err)
@@ -53,7 +53,7 @@ func NewSay(data []byte, online *models.OnlineCharacters, me *models.Character) 
 			_ = online.Char[v].Conn.Send(toBroad.GetB(), true) //broad
 		}
 	case Tell:
-		toBroad.B = serverpackets.NewCreatureSay(&say, me)
+		toBroad.B = serverpackets.CreatureSay(&say, me)
 		toTell := packet.ReadString()
 		receiverExist := false
 		for _, v := range online.Char {
@@ -69,7 +69,7 @@ func NewSay(data []byte, online *models.OnlineCharacters, me *models.Character) 
 		//todo systemMSG not found
 		// }
 	case Shout:
-		toBroad.B = serverpackets.NewCreatureSay(&say, me)
+		toBroad.B = serverpackets.CreatureSay(&say, me)
 		err := online.Char[me.CharId].Conn.Send(toBroad.GetB(), true) //to me
 		if err != nil {
 			log.Println(err)

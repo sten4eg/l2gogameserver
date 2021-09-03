@@ -2,7 +2,7 @@ package serverpackets
 
 import "l2gogameserver/packets"
 
-func NewEtcStatusUpdate() []byte {
+func EtcStatusUpdate() []byte {
 
 	buffer := new(packets.Buffer)
 

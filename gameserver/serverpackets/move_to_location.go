@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewMoveToLocation(location *models.BackwardToLocation, client *models.Client) []byte {
+func MoveToLocation(location *models.BackwardToLocation, client *models.Client) []byte {
 
 	buffer := new(packets.Buffer)
 	buffer.WriteSingleByte(0x2f)

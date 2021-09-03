@@ -2,7 +2,7 @@ package serverpackets
 
 import "l2gogameserver/packets"
 
-func NewFriendList() []byte {
+func FriendList() []byte {
 
 	buffer := new(packets.Buffer)
 

@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewSkillList(client *models.Client) {
+func SkillList(client *models.Client) {
 
 	skills := client.CurrentChar.Skills
 

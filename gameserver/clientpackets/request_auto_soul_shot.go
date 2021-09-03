@@ -6,7 +6,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewRequestAutoSoulShot(data []byte, client *models.Client) {
+func RequestAutoSoulShot(data []byte, client *models.Client) {
 	var packet = packets.NewReader(data[2:])
 	itemId := packet.ReadInt32()
 	typee := packet.ReadInt32()

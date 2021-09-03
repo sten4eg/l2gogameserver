@@ -2,7 +2,7 @@ package serverpackets
 
 import "l2gogameserver/gameserver/models"
 
-type Attack struct {
+type AttackS struct {
 	TargetId int32
 	Damage   int32
 	X        int32
@@ -10,7 +10,7 @@ type Attack struct {
 	Z        int32
 }
 
-func NewAttack(client *models.Client, attack *Attack) {
+func Attack(client *models.Client, attack *AttackS) {
 
 	x, y, z := client.CurrentChar.GetXYZ()
 

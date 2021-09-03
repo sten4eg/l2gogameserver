@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewStaticObject(client *models.Client) {
+func StaticObject(client *models.Client) {
 
 	client.Buffer.WriteD(0)
 	client.Buffer.WriteD(0)

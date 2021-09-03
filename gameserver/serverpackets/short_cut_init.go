@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewShortCutInit(client *models.Client) {
+func ShortCutInit(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0x45)
 

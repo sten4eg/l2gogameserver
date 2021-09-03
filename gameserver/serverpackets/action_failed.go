@@ -4,6 +4,6 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewActionFailed(client *models.Client) {
+func ActionFailed(client *models.Client) {
 	client.Buffer.WriteSingleByte(0x1f)
 }

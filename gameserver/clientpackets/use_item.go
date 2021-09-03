@@ -13,7 +13,7 @@ import (
 
 const FormalWearId = 6408
 
-func NewUseItem(data []byte, client *models.Client) {
+func UseItem(data []byte, client *models.Client) {
 	var packet = packets.NewReader(data)
 
 	objId := packet.ReadInt32() // targetObjId
@@ -49,7 +49,7 @@ func NewUseItem(data []byte, client *models.Client) {
 
 			// если в руке Combat flag
 			if client.CurrentChar.IsActiveWeapon() && items.GetActiveWeapon(client.CurrentChar.Inventory, client.CurrentChar.Paperdoll).Item.Id == 9819 {
-				serverpackets.NewSystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
+				serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
 				return
 			}
 			//todo тут 2 проврки на  isMounted  и isDisarmed
@@ -65,12 +65,12 @@ func NewUseItem(data []byte, client *models.Client) {
 				switch client.CurrentChar.Race {
 				case race.KAMAEL:
 					if selectedItem.WeaponType == weaponType.NONE {
-						serverpackets.NewSystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
+						serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
 						return
 					}
 				case race.HUMAN, race.DWARF, race.ELF, race.DARK_ELF, race.ORC:
 					if selectedItem.WeaponType == weaponType.RAPIER || selectedItem.WeaponType == weaponType.CROSSBOW || selectedItem.WeaponType == weaponType.ANCIENTSWORD {
-						serverpackets.NewSystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
+						serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
 						return
 					}
 				}
@@ -79,7 +79,7 @@ func NewUseItem(data []byte, client *models.Client) {
 		// они могут носить только лайт, может проверять на !LIGHT ?
 		case items.SlotChest, items.SlotBack, items.SlotGloves, items.SlotFeet, items.SlotHead, items.SlotFullArmor, items.SlotLegs:
 			if client.CurrentChar.Race == race.KAMAEL && (selectedItem.ArmorType == armorType.HEAVY || selectedItem.ArmorType == armorType.MAGIC) {
-				serverpackets.NewSystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
+				serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
 				return
 			}
 		case items.SlotDeco:
@@ -93,13 +93,13 @@ func NewUseItem(data []byte, client *models.Client) {
 
 	items.SaveInventoryInDB(client.CurrentChar.Inventory)
 
-	serverpackets.NewInventoryUpdate(client, items.UpdateTypeModify)
+	serverpackets.InventoryUpdate(client, items.UpdateTypeModify)
 
 	// После каждого use_item будет запрос в бд на восстановление paperdoll,
 	// надо бы это сделать в UseEquippableItem
 	client.CurrentChar.Paperdoll = items.RestoreVisibleInventory(client.CurrentChar.CharId)
 
-	serverpackets.NewUserInfo(client)
+	serverpackets.UserInfo(client)
 
 	client.SentToSend()
 }

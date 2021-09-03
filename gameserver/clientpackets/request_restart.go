@@ -5,12 +5,12 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func NewRequestRestart(data []byte, client *models.Client) {
+func RequestRestart(data []byte, client *models.Client) {
 
 	//todo need save in db
 
 	_ = data
-	serverpackets.NewRestartResponse(client)
+	serverpackets.RestartResponse(client)
 
-	serverpackets.NewCharSelectionInfo(client)
+	serverpackets.CharSelectionInfo(client)
 }

@@ -6,10 +6,10 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewprotocolVersion(data []byte, client *models.Client) {
+func ProtocolVersion(data []byte, client *models.Client) {
 
 	var packet = packets.NewReader(data)
 	protocolVersion := packet.ReadUInt16() //todo check !=273
 	_ = protocolVersion
-	serverpackets.NewKeyPacket(client)
+	serverpackets.KeyPacket(client)
 }

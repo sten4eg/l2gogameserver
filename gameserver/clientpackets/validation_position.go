@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewValidationPosition(data []byte, client *models.Character) {
+func ValidationPosition(data []byte, client *models.Character) {
 	var packet = packets.NewReader(data)
 	var l models.Coordinates
 

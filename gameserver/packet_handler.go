@@ -23,17 +23,17 @@ func (g *GameServer) handler(client *models.Client) {
 		log.Println("income ", opcode)
 		switch opcode {
 		case 14:
-			clientpackets.NewprotocolVersion(data, client)
+			clientpackets.ProtocolVersion(data, client)
 		case 43:
-			clientpackets.NewAuthLogin(data, client)
+			clientpackets.AuthLogin(data, client)
 		case 19:
-			serverpackets.NewCharacterSuccess(client)
+			serverpackets.CharacterSuccess(client)
 		case 12:
-			clientpackets.NewCharacterCreate(data, client)
+			clientpackets.CharacterCreate(data, client)
 		case 18:
-			clientpackets.NewCharSelected(data, client)
+			clientpackets.CharSelected(data, client)
 
-			_ = serverpackets.NewCharSelected(client.Account.Char[client.Account.CharSlot], client) // return charId , unused ? remove?
+			_ = serverpackets.CharSelected(client.Account.Char[client.Account.CharSlot], client) // return charId , unused ? remove?
 
 			x, y, _ := client.CurrentChar.GetXYZ()
 			rg := models.GetRegion(x, y)
@@ -46,49 +46,49 @@ func (g *GameServer) handler(client *models.Client) {
 			if len(data) >= 2 {
 				switch data[0] {
 				case 1:
-					serverpackets.NewExSendManorList(client)
+					serverpackets.ExSendManorList(client)
 				case 54:
-					serverpackets.NewCharSelectionInfo(client)
+					serverpackets.CharSelectionInfo(client)
 				case 13:
-					clientpackets.NewRequestAutoSoulShot(data, client)
+					clientpackets.RequestAutoSoulShot(data, client)
 				default:
 					log.Println("Не реализованный пакет: ", data[0])
 				}
 			}
 
 		case 193:
-			serverpackets.NewObservationReturn(client.CurrentChar, client)
+			serverpackets.ObservationReturn(client.CurrentChar, client)
 		case 108:
-			serverpackets.NewShowMiniMap(client)
+			serverpackets.ShowMiniMap(client)
 		case 17:
-			serverpackets.NewUserInfo(client)
+			serverpackets.UserInfo(client)
 
-			serverpackets.NewExBrExtraUserInfo(client)
+			serverpackets.ExBrExtraUserInfo(client)
 
-			serverpackets.NewSendMacroList(client)
+			serverpackets.SendMacroList(client)
 
-			serverpackets.NewItemList(client)
+			serverpackets.ItemList(client)
 
-			serverpackets.NewExQuestItemList(client)
+			serverpackets.ExQuestItemList(client)
 
-			serverpackets.NewGameGuardQuery(client)
+			serverpackets.GameGuardQuery(client)
 
-			serverpackets.NewExGetBookMarkInfoPacket(client)
+			serverpackets.ExGetBookMarkInfoPacket(client)
 
-			serverpackets.NewShortCutInit(client)
+			serverpackets.ShortCutInit(client)
 
-			serverpackets.NewExBasicActionList(client)
+			serverpackets.ExBasicActionList(client)
 
-			serverpackets.NewSkillList(client)
+			serverpackets.SkillList(client)
 
-			serverpackets.NewHennaInfo(client)
+			serverpackets.HennaInfo(client)
 
-			serverpackets.NewQuestList(client)
+			serverpackets.QuestList(client)
 
-			serverpackets.NewStaticObject(client)
+			serverpackets.StaticObject(client)
 
 			var info models.PacketByte
-			pkg := serverpackets.NewCharInfo(client.CurrentChar)
+			pkg := serverpackets.CharInfo(client.CurrentChar)
 			info.SetB(pkg)
 			g.BroadToAroundPlayers(client, info)
 
@@ -96,20 +96,20 @@ func (g *GameServer) handler(client *models.Client) {
 			charIds := models.GetAroundPlayers(client.CurrentChar)
 			for _, v := range charIds {
 				tt := g.OnlineCharacters.Char[v]
-				pkgs := serverpackets.NewCharInfo(tt)
+				pkgs := serverpackets.CharInfo(tt)
 				client.Buffer.WriteSlice(pkgs)
 			}
 
-			log.Println("Send NewUserInfo")
+			log.Println("Send UserInfo")
 		case 166:
-			pkg := serverpackets.NewSkillCoolTime()
+			pkg := serverpackets.SkillCoolTime()
 			err := client.Send(pkg, true)
 			if err != nil {
 				log.Println(err)
 			}
 		case 15:
-			location := clientpackets.NewMoveBackwardToLocation(data)
-			pkg := serverpackets.NewMoveToLocation(location, client)
+			location := clientpackets.MoveBackwardToLocation(data)
+			pkg := serverpackets.MoveToLocation(location, client)
 			var info models.PacketByte
 			info.SetB(pkg)
 			err := client.Send(pkg, true)
@@ -118,40 +118,40 @@ func (g *GameServer) handler(client *models.Client) {
 			}
 			g.BroadToAroundPlayers(client, info)
 
-			log.Println("Send NewMoveToLocation")
+			log.Println("Send MoveToLocation")
 		case 73:
-			clientpackets.NewSay(data, g.OnlineCharacters, client.CurrentChar)
+			clientpackets.Say(data, g.OnlineCharacters, client.CurrentChar)
 
-			//info.B = serverpackets.NewCharInfo(client.CurrentChar)
+			//info.B = serverpackets.CharInfo(client.CurrentChar)
 			//Broad(client, info)
 		case 89:
-			clientpackets.NewValidationPosition(data, client.CurrentChar)
-			serverpackets.NeWNpcInfo(client)
+			clientpackets.ValidationPosition(data, client.CurrentChar)
+			serverpackets.NpcInfo(client)
 
 		case 31:
-			clientpackets.NewAction(data, client)
+			clientpackets.Action(data, client)
 		case 72:
-			clientpackets.NewRequestTargetCanceld(data, client)
+			clientpackets.RequestTargetCancel(data, client)
 		case 1:
-			clientpackets.NewAttack(data, client)
+			clientpackets.Attack(data, client)
 		case 25:
-			clientpackets.NewUseItem(data, client)
+			clientpackets.UseItem(data, client)
 
 			//todo нужно подумать как это вынести и отправлять =((
 			var info models.PacketByte
-			pkg := serverpackets.NewCharInfo(client.CurrentChar)
+			pkg := serverpackets.CharInfo(client.CurrentChar)
 			info.SetB(pkg)
 			g.BroadToAroundPlayers(client, info)
 		case 87:
-			clientpackets.NewRequestRestart(data, client)
+			clientpackets.RequestRestart(data, client)
 		case 57:
-			clientpackets.NewRequestMagicSkillUse(data, client)
+			clientpackets.RequestMagicSkillUse(data, client)
 		case 61:
-			clientpackets.NewRequestShortCutReg(data, client)
+			clientpackets.RequestShortCutReg(data, client)
 		case 63:
-			clientpackets.NewRequestShortCutDel(data, client)
+			clientpackets.RequestShortCutDel(data, client)
 		case 80:
-			serverpackets.NewSkillList(client)
+			serverpackets.SkillList(client)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}

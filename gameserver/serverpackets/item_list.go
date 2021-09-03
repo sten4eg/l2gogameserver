@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewItemList(client *models.Client) {
+func ItemList(client *models.Client) {
 
 	myItems := client.CurrentChar.Inventory
 

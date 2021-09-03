@@ -32,7 +32,7 @@ type CharCreate struct {
 	CurMp     int32
 }
 
-func NewCharacterCreate(data []byte, client *models.Client) {
+func CharacterCreate(data []byte, client *models.Client) {
 	var packet = packets.NewReader(data)
 	var charCreate CharCreate
 
@@ -70,22 +70,22 @@ var (
 func (cc *CharCreate) validate(client *models.Client) {
 	lenName := len(cc.Name.Bytes)
 	if (lenName < 1) || (lenName > 16) {
-		serverpackets.NewCharCreateFail(client, Reason16EngChars)
+		serverpackets.CharCreateFail(client, Reason16EngChars)
 		return
 	}
 
 	if cc.Face > 2 {
-		serverpackets.NewCharCreateFail(client, ReasonCreationFailed)
+		serverpackets.CharCreateFail(client, ReasonCreationFailed)
 		return
 	}
 
 	if ((cc.Sex == 0) && (cc.HairStyle > 4)) || ((cc.Sex) != 0 && (cc.HairStyle > 6)) {
-		serverpackets.NewCharCreateFail(client, ReasonCreationFailed)
+		serverpackets.CharCreateFail(client, ReasonCreationFailed)
 		return
 	}
 
 	if cc.HairStyle > 3 {
-		serverpackets.NewCharCreateFail(client, ReasonCreationFailed)
+		serverpackets.CharCreateFail(client, ReasonCreationFailed)
 		return
 	}
 
@@ -99,11 +99,11 @@ func (cc *CharCreate) validate(client *models.Client) {
 	var exist bool
 	err = row.Scan(&exist)
 	if err != nil {
-		serverpackets.NewCharCreateFail(client, ReasonCreateNotAllowed)
+		serverpackets.CharCreateFail(client, ReasonCreateNotAllowed)
 		return
 	}
 	if exist {
-		serverpackets.NewCharCreateFail(client, ReasonNameAlreadyExists)
+		serverpackets.CharCreateFail(client, ReasonNameAlreadyExists)
 		return
 	}
 
@@ -111,11 +111,11 @@ func (cc *CharCreate) validate(client *models.Client) {
 	var i int
 	err = row.Scan(&i)
 	if err != nil {
-		serverpackets.NewCharCreateFail(client, ReasonCreateNotAllowed)
+		serverpackets.CharCreateFail(client, ReasonCreateNotAllowed)
 		return
 	}
 	if i > 6 {
-		serverpackets.NewCharCreateFail(client, ReasonTooManyCharacters)
+		serverpackets.CharCreateFail(client, ReasonTooManyCharacters)
 		return
 	}
 	x, y, z := models.GetCreationCoordinates(cc.ClassId)
@@ -133,10 +133,10 @@ func (cc *CharCreate) validate(client *models.Client) {
 		[]byte(client.Account.Login),
 		cc.ClassId)
 	if err != nil {
-		serverpackets.NewCharCreateFail(client, ReasonCreateNotAllowed)
+		serverpackets.CharCreateFail(client, ReasonCreateNotAllowed)
 		return
 	}
 
 	//createChar
-	serverpackets.NewCharCreateOk(client)
+	serverpackets.CharCreateOk(client)
 }

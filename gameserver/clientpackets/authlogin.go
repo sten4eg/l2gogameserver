@@ -6,7 +6,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewAuthLogin(data []byte, client *models.Client) {
+func AuthLogin(data []byte, client *models.Client) {
 
 	var packet = packets.NewReader(data)
 
@@ -17,7 +17,7 @@ func NewAuthLogin(data []byte, client *models.Client) {
 	loginKey1 := packet.ReadInt32()
 	loginKey2 := packet.ReadInt32()
 	_, _, _, _ = playKey1, playKey2, loginKey1, loginKey2
-	serverpackets.NewCharSelectionInfo(client)
+	serverpackets.CharSelectionInfo(client)
 	client.Account.Login = login
 
 }

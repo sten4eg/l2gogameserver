@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewExGetBookMarkInfoPacket(client *models.Client) {
+func ExGetBookMarkInfoPacket(client *models.Client) {
 
 	client.Buffer.WriteSingleByte(0xFE)
 	client.Buffer.WriteH(0x84)

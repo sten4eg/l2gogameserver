@@ -6,7 +6,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NewCharInfo(user *models.Character) []byte {
+func CharInfo(user *models.Character) []byte {
 
 	x, y, z := user.GetXYZ()
 

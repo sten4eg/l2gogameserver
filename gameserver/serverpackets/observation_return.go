@@ -4,7 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func NewObservationReturn(user *models.Character, client *models.Client) {
+func ObservationReturn(user *models.Character, client *models.Client) {
 
 	x, y, z := user.GetXYZ()
 

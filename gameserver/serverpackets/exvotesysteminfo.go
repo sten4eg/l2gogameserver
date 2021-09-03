@@ -2,7 +2,7 @@ package serverpackets
 
 import "l2gogameserver/packets"
 
-func NewExVoteSystemInfo() []byte {
+func ExVoteSystemInfo() []byte {
 
 	buffer := new(packets.Buffer)
 

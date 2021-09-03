@@ -2,7 +2,7 @@ package serverpackets
 
 import "l2gogameserver/gameserver/models"
 
-func NeWNpcInfo(client *models.Client) {
+func NpcInfo(client *models.Client) {
 	client.Buffer.WriteSingleByte(0x0c) //12
 
 	client.Buffer.WriteD(268442366)       // objectId
