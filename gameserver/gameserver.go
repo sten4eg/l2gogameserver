@@ -23,36 +23,32 @@ func (g *GameServer) AddClient(c *models.Client) {
 func New() *GameServer {
 	return &GameServer{}
 }
-func (g *GameServer) Init() {
 
+func (g *GameServer) Start() {
 	var err error
 
 	/* #nosec */
 	g.clientsListener, err = net.Listen("tcp", ":7777")
 	if err != nil {
 		panic(err.Error())
-	} else {
-		log.Println("Login server is listening on port 7777")
 	}
+
 	var onlineChars models.OnlineCharacters
 
 	onlineChars.Char = make(map[int32]*models.Character)
 	g.OnlineCharacters = &onlineChars
-}
 
-func (g *GameServer) Start() {
 	go g.Tick()
 	defer g.clientsListener.Close()
 	for {
-		var err error
 		client := models.NewClient()
 		client.Socket, err = g.clientsListener.Accept()
-		g.AddClient(client)
 
 		if err != nil {
 			fmt.Println("Couldn't accept the incoming connection.", err)
 			continue
 		} else {
+			g.AddClient(client)
 			go g.handler(client)
 		}
 	}

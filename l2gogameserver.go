@@ -16,13 +16,13 @@ func main() {
 
 	setup()
 
-	db.ConfigureDB()
 	server := gameserver.New()
-	server.Init()
+
 	server.Start()
 }
 
 func setup() {
+	db.ConfigureDB()
 	models.LoadStats()
 	models.LoadSkills()
 	items.LoadItems()

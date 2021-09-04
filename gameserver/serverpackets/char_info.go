@@ -31,16 +31,15 @@ func CharInfo(user *models.Character) []byte {
 	}
 
 	for _, v := range getPaperdollOrder() {
-		i := v
-		_ = i
+		_ = v
 		buffer.WriteD(0) // augmented
 	}
 
 	buffer.WriteD(0) //talisman
-	buffer.WriteD(0) //cloack
+	buffer.WriteD(0) //cloack   _activeChar.getInventory().canEquipCloak() ? 1 : 0
 
-	buffer.WriteD(user.PvpKills) // pvpFlag
-	buffer.WriteD(user.Karma)    //karma
+	buffer.WriteD(0)          // pvpFlag The PvP Flag state of the L2PcInstance (0=White, 1=Purple)
+	buffer.WriteD(user.Karma) //karma  The Karma of the L2PcInstance (if higher than 0, the name of the L2PcInstance appears in red)
 
 	buffer.WriteD(0) //MatackSpeed
 	buffer.WriteD(0) //_pAtkSpd
