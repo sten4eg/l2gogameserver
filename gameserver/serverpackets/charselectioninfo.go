@@ -4,7 +4,6 @@ import (
 	"context"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/models"
-	"l2gogameserver/gameserver/models/items"
 )
 
 func CharSelectionInfo(client *models.Client) {
@@ -65,7 +64,7 @@ func CharSelectionInfo(client *models.Client) {
 	}
 
 	for _, v := range client.Account.Char {
-		v.Paperdoll = items.RestoreVisibleInventory(v.CharId)
+		v.Paperdoll = models.RestoreVisibleInventory(v.CharId)
 	}
 
 	client.Buffer.WriteSingleByte(0x09)
@@ -119,8 +118,8 @@ func CharSelectionInfo(client *models.Client) {
 		client.Buffer.WriteD(0)
 		client.Buffer.WriteD(0)
 
-		paperdoll := items.RestoreVisibleInventory(char.CharId)
-		for _, slot := range items.GetPaperdollOrder() {
+		paperdoll := models.RestoreVisibleInventory(char.CharId)
+		for _, slot := range models.GetPaperdollOrder() {
 			client.Buffer.WriteD(int32(paperdoll[slot].Id))
 		}
 

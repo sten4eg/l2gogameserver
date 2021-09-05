@@ -2,7 +2,6 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/models"
-	"l2gogameserver/gameserver/models/items"
 )
 
 func UserInfo(client *models.Client) {
@@ -55,13 +54,13 @@ func UserInfo(client *models.Client) {
 		client.Buffer.WriteD(40) //equiped weapon
 	}
 
-	for _, slot := range items.GetPaperdollOrder() {
+	for _, slot := range models.GetPaperdollOrder() {
 		client.Buffer.WriteD(character.Paperdoll[slot].ObjId) //objId
 	}
-	for _, slot := range items.GetPaperdollOrder() {
+	for _, slot := range models.GetPaperdollOrder() {
 		client.Buffer.WriteD(int32(character.Paperdoll[slot].Id)) //itemId
 	}
-	for _, slot := range items.GetPaperdollOrder() {
+	for _, slot := range models.GetPaperdollOrder() {
 		client.Buffer.WriteD(int32(character.Paperdoll[slot].Enchant)) //enchant
 	}
 

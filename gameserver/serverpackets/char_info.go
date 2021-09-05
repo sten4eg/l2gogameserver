@@ -2,7 +2,6 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/models"
-	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/packets"
 )
 
@@ -132,26 +131,26 @@ func CharInfo(user *models.Character) []byte {
 // todo что это тут делает?
 func getPaperdollOrder() []uint8 {
 	return []uint8{
-		items.PAPERDOLL_UNDER,
-		items.PAPERDOLL_HEAD,
-		items.PAPERDOLL_RHAND,
-		items.PAPERDOLL_LHAND,
-		items.PAPERDOLL_GLOVES,
-		items.PAPERDOLL_CHEST,
-		items.PAPERDOLL_LEGS,
-		items.PAPERDOLL_FEET,
-		items.PAPERDOLL_CLOAK,
-		items.PAPERDOLL_RHAND,
-		items.PAPERDOLL_HAIR,
-		items.PAPERDOLL_HAIR2,
-		items.PAPERDOLL_RBRACELET,
-		items.PAPERDOLL_LBRACELET,
-		items.PAPERDOLL_DECO1,
-		items.PAPERDOLL_DECO2,
-		items.PAPERDOLL_DECO3,
-		items.PAPERDOLL_DECO4,
-		items.PAPERDOLL_DECO5,
-		items.PAPERDOLL_DECO6,
-		items.PAPERDOLL_BELT,
+		models.PAPERDOLL_UNDER,
+		models.PAPERDOLL_HEAD,
+		models.PAPERDOLL_RHAND,
+		models.PAPERDOLL_LHAND,
+		models.PAPERDOLL_GLOVES,
+		models.PAPERDOLL_CHEST,
+		models.PAPERDOLL_LEGS,
+		models.PAPERDOLL_FEET,
+		models.PAPERDOLL_CLOAK,
+		models.PAPERDOLL_RHAND,
+		models.PAPERDOLL_HAIR,
+		models.PAPERDOLL_HAIR2,
+		models.PAPERDOLL_RBRACELET,
+		models.PAPERDOLL_LBRACELET,
+		models.PAPERDOLL_DECO1,
+		models.PAPERDOLL_DECO2,
+		models.PAPERDOLL_DECO3,
+		models.PAPERDOLL_DECO4,
+		models.PAPERDOLL_DECO5,
+		models.PAPERDOLL_DECO6,
+		models.PAPERDOLL_BELT,
 	}
 }

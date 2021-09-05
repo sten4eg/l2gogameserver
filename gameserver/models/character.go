@@ -44,7 +44,7 @@ type Character struct {
 	Conn          *Client
 	AttackEndTime int64
 	// Paperdoll - массив всех слотов которые можно одеть
-	Paperdoll       [26]items.MyItem
+	Paperdoll       [26]MyItem
 	Stats           StaticData
 	pvpFlag         bool
 	ShortCut        map[int32]dto.ShortCutDTO
@@ -57,8 +57,9 @@ type Character struct {
 	SkillQueue             chan SkillHolder
 	CurrentSkill           *SkillHolder // todo А может быть без * попробовать?
 	CurrentTargetId        int32
-	Inventory              []items.MyItem
+	Inventory              []MyItem
 	CursedWeaponEquippedId int
+	BonusStats             []items.ItemBonusStat
 }
 
 func GetNewCharacterModel() *Character {
@@ -115,9 +116,9 @@ type PacketByte struct {
 
 // IsActiveWeapon есть ли у персонажа оружие в руках
 func (c *Character) IsActiveWeapon() bool {
-	x := c.Paperdoll[items.PAPERDOLL_RHAND]
+	x := c.Paperdoll[PAPERDOLL_RHAND]
 	//todo Еще есть кастеты
-	return x != items.MyItem{}
+	return x.ObjId != 0
 	//todo ?
 }
 
@@ -178,7 +179,7 @@ func (c *Character) Load() {
 	c.ShortCut = restoreMe(c.CharId, c.ClassId)
 	c.LoadSkills()
 	c.SkillQueue = make(chan SkillHolder)
-	c.Inventory = items.GetMyItems(c.CharId)
+	c.Inventory = GetMyItems(c.CharId)
 	go c.ListenSkillQueue()
 }
 

@@ -3,8 +3,6 @@ package clientpackets
 import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
-	"l2gogameserver/gameserver/models/items/armorType"
-	"l2gogameserver/gameserver/models/items/weaponType"
 	"l2gogameserver/gameserver/models/race"
 	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/gameserver/serverpackets"
@@ -20,7 +18,7 @@ func UseItem(data []byte, client *models.Client) {
 	ctrlPressed := packet.ReadInt32() != 0
 	_ = ctrlPressed
 
-	var selectedItem items.MyItem
+	var selectedItem models.MyItem
 
 	find := false
 	for _, v := range client.CurrentChar.Inventory {
@@ -48,7 +46,7 @@ func UseItem(data []byte, client *models.Client) {
 		case items.SlotLrHand, items.SlotLHand, items.SlotRHand:
 
 			// если в руке Combat flag
-			if client.CurrentChar.IsActiveWeapon() && items.GetActiveWeapon(client.CurrentChar.Inventory, client.CurrentChar.Paperdoll).Item.Id == 9819 {
+			if client.CurrentChar.IsActiveWeapon() && models.GetActiveWeapon(client.CurrentChar.Inventory, client.CurrentChar.Paperdoll).Item.Id == 9819 {
 				serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
 				return
 			}
@@ -59,17 +57,17 @@ func UseItem(data []byte, client *models.Client) {
 				return
 			}
 
-			//  запрет носить не камаелям эксклюзивное оружие  камаелей
-			if selectedItem.IsEquipped() == 0 && selectedItem.ItemType == items.Weapon { // todo еще проверка && !activeChar.canOverrideCond(ITEM_CONDITIONS))
+			//  запрет носить НЕ камаелям эксклюзивное оружие  камаелей
+			if selectedItem.IsEquipped() == 0 && selectedItem.IsWeapon() { // todo еще проверка && !activeChar.canOverrideCond(ITEM_CONDITIONS))
 
 				switch client.CurrentChar.Race {
 				case race.KAMAEL:
-					if selectedItem.WeaponType == weaponType.NONE {
+					if selectedItem.IsWeaponTypeNone() {
 						serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
 						return
 					}
 				case race.HUMAN, race.DWARF, race.ELF, race.DARK_ELF, race.ORC:
-					if selectedItem.WeaponType == weaponType.RAPIER || selectedItem.WeaponType == weaponType.CROSSBOW || selectedItem.WeaponType == weaponType.ANCIENTSWORD {
+					if selectedItem.IsOnlyKamaelWeapon() {
 						serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
 						return
 					}
@@ -78,7 +76,7 @@ func UseItem(data []byte, client *models.Client) {
 		// камаель не может носить тяжелую или маг броню
 		// они могут носить только лайт, может проверять на !LIGHT ?
 		case items.SlotChest, items.SlotBack, items.SlotGloves, items.SlotFeet, items.SlotHead, items.SlotFullArmor, items.SlotLegs:
-			if client.CurrentChar.Race == race.KAMAEL && (selectedItem.ArmorType == armorType.HEAVY || selectedItem.ArmorType == armorType.MAGIC) {
+			if client.CurrentChar.Race == race.KAMAEL && (selectedItem.IsHeavyArmor() || selectedItem.IsMagicArmor()) {
 				serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
 				return
 			}
@@ -89,15 +87,15 @@ func UseItem(data []byte, client *models.Client) {
 
 	}
 
-	items.UseEquippableItem(selectedItem, client.CurrentChar.Inventory, client.CurrentChar.Paperdoll)
+	models.UseEquippableItem(selectedItem, client.CurrentChar)
 
-	items.SaveInventoryInDB(client.CurrentChar.Inventory)
+	models.SaveInventoryInDB(client.CurrentChar.Inventory)
 
-	serverpackets.InventoryUpdate(client, items.UpdateTypeModify)
+	serverpackets.InventoryUpdate(client, models.UpdateTypeModify)
 
 	// После каждого use_item будет запрос в бд на восстановление paperdoll,
 	// надо бы это сделать в UseEquippableItem
-	client.CurrentChar.Paperdoll = items.RestoreVisibleInventory(client.CurrentChar.CharId)
+	client.CurrentChar.Paperdoll = models.RestoreVisibleInventory(client.CurrentChar.CharId)
 
 	serverpackets.UserInfo(client)
 
