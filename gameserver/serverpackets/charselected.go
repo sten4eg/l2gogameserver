@@ -4,28 +4,24 @@ import (
 	"l2gogameserver/gameserver/models"
 )
 
-func CharSelected(user *models.Character, client *models.Client) int32 {
+func CharSelected(user *models.Character, client *models.Client) {
 
 	x, y, z := user.GetXYZ()
 	client.Buffer.WriteSingleByte(0x0b) // 1
 
-	client.Buffer.WriteS(string(user.CharName.Bytes)) // 11
-	client.Buffer.WriteD(user.CharId)                 // objId 15
-	client.Buffer.WriteS(user.Title.String)           //title // 21 2 нуля
-	client.Buffer.WriteD(0)                           //TODO sessionId //25
-	client.Buffer.WriteD(user.ClanId)                 //clanId // 29
-	client.Buffer.WriteD(0)                           // ? //33
-	client.Buffer.WriteD(user.Sex)                    //sex// 37
-	client.Buffer.WriteD(int32(user.Race))            //race 41
-	client.Buffer.WriteD(user.ClassId)                //classId 45
-	client.Buffer.WriteD(0x1)                         // ? 49
-	client.Buffer.WriteD(x)                           //x 53
-	client.Buffer.WriteD(y)                           //y 57
-	client.Buffer.WriteD(z)                           //z 61
-
-	//buffer.WriteD(83306)  //x 53
-	//buffer.WriteD(148115) //y 57
-	//buffer.WriteD(-3405)  //z 61
+	client.Buffer.WriteS(user.CharName)    // 11
+	client.Buffer.WriteD(user.CharId)      // objId 15
+	client.Buffer.WriteS(user.Title)       //title // 21 2 нуля
+	client.Buffer.WriteD(0)                //TODO sessionId //25
+	client.Buffer.WriteD(user.ClanId)      //clanId // 29
+	client.Buffer.WriteD(0)                // ? //33
+	client.Buffer.WriteD(user.Sex)         //sex// 37
+	client.Buffer.WriteD(int32(user.Race)) //race 41
+	client.Buffer.WriteD(user.ClassId)     //classId 45
+	client.Buffer.WriteD(0x1)              // ? 49
+	client.Buffer.WriteD(x)                //x 53
+	client.Buffer.WriteD(y)                //y 57
+	client.Buffer.WriteD(z)                //z 61
 
 	client.Buffer.WriteF(float64(user.CurHp)) //currentHP 69
 	client.Buffer.WriteF(float64(user.CurMp)) //currentMP 77
@@ -60,5 +56,7 @@ func CharSelected(user *models.Character, client *models.Client) int32 {
 
 	client.SaveAndCryptDataInBufferToSend(true)
 	client.CurrentChar = client.Account.Char[client.Account.CharSlot]
-	return user.CharId
+
+	// загрузка всех данных выбранного чара
+	client.CurrentChar.Load()
 }

@@ -1,10 +1,10 @@
 package clientpackets
 
 import (
-	"bytes"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
+	"l2gogameserver/utils"
 	"log"
 )
 
@@ -39,7 +39,7 @@ func Say(data []byte, online *models.OnlineCharacters, me *models.Character) {
 	say.Text = text
 	say.Type = packet.ReadInt32()
 
-	var toBroad models.PacketByte
+	var toBroad utils.PacketByte
 
 	switch say.Type {
 	case ALL:
@@ -53,16 +53,16 @@ func Say(data []byte, online *models.OnlineCharacters, me *models.Character) {
 			_ = online.Char[v].Conn.Send(toBroad.GetB(), true) //broad
 		}
 	case Tell:
-		toBroad.B = serverpackets.CreatureSay(&say, me)
-		toTell := packet.ReadString()
+		//toBroad.B = serverpackets.CreatureSay(&say, me)
+		//toTell := packet.ReadString()
 		receiverExist := false
-		for _, v := range online.Char {
-			if bytes.Equal(v.CharName.Bytes, []byte(toTell)) {
-				receiverExist = true
-				_ = v.Conn.Send(toBroad.GetB(), true)
-
-			}
-		}
+		//for _, v := range online.Char {
+		//	if bytes.Equal(v.CharName.Bytes, []byte(toTell)) {
+		//		receiverExist = true
+		//		_ = v.Conn.Send(toBroad.GetB(), true)
+		//
+		//	}
+		//}
 		if receiverExist {
 			_ = me.Conn.Send(toBroad.GetB(), true)
 		} // else {

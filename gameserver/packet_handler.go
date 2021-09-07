@@ -5,6 +5,7 @@ import (
 	"l2gogameserver/gameserver/clientpackets"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
+	"l2gogameserver/utils"
 	"log"
 )
 
@@ -33,13 +34,6 @@ func (g *GameServer) handler(client *models.Client) {
 		case 18:
 			clientpackets.CharSelected(data, client)
 
-			_ = serverpackets.CharSelected(client.Account.Char[client.Account.CharSlot], client) // return charId , unused ? remove?
-
-			x, y, _ := client.CurrentChar.GetXYZ()
-			rg := models.GetRegion(x, y)
-			rg.AddVisibleObject(client.CurrentChar)
-			client.CurrentChar.CurrentRegion = rg
-			client.CurrentChar.Load()
 			g.addOnlineChar(client.CurrentChar)
 
 		case 208:
@@ -75,6 +69,8 @@ func (g *GameServer) handler(client *models.Client) {
 
 			serverpackets.ExGetBookMarkInfoPacket(client)
 
+			serverpackets.ExStorageMaxCount(client)
+
 			serverpackets.ShortCutInit(client)
 
 			serverpackets.ExBasicActionList(client)
@@ -87,7 +83,7 @@ func (g *GameServer) handler(client *models.Client) {
 
 			serverpackets.StaticObject(client)
 
-			var info models.PacketByte
+			var info utils.PacketByte
 			pkg := serverpackets.CharInfo(client.CurrentChar)
 			info.SetB(pkg)
 			g.BroadToAroundPlayers(client, info)
@@ -110,7 +106,7 @@ func (g *GameServer) handler(client *models.Client) {
 		case 15:
 			location := clientpackets.MoveBackwardToLocation(data)
 			pkg := serverpackets.MoveToLocation(location, client)
-			var info models.PacketByte
+			var info utils.PacketByte
 			info.SetB(pkg)
 			err := client.Send(pkg, true)
 			if err != nil {
@@ -136,9 +132,9 @@ func (g *GameServer) handler(client *models.Client) {
 			clientpackets.Attack(data, client)
 		case 25:
 			clientpackets.UseItem(data, client)
-
+			serverpackets.NpcHtmlMessage(client)
 			//todo нужно подумать как это вынести и отправлять =((
-			var info models.PacketByte
+			var info utils.PacketByte
 			pkg := serverpackets.CharInfo(client.CurrentChar)
 			info.SetB(pkg)
 			g.BroadToAroundPlayers(client, info)

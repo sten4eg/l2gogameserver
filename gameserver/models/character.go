@@ -1,20 +1,16 @@
 package models
 
 import (
-	"database/sql"
 	"fmt"
-	"github.com/jackc/pgx/pgtype"
 	"l2gogameserver/data"
 	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/race"
-	"math/rand"
-	"strconv"
 	"sync"
 )
 
 type Character struct {
-	Login         pgtype.Bytea
+	Login         string
 	CharId        int32
 	Level         int32
 	MaxHp         int32
@@ -35,11 +31,11 @@ type Character struct {
 	Race          race.Race
 	ClassId       int32
 	BaseClass     int32
-	Title         sql.NullString
+	Title         string
 	OnlineTime    int32
 	Nobless       int32
 	Vitality      int32
-	CharName      pgtype.Bytea
+	CharName      string
 	CurrentRegion *WorldRegion
 	Conn          *Client
 	AttackEndTime int64
@@ -84,6 +80,12 @@ type SkillHolder struct {
 	CtrlPressed  bool
 	ShiftPressed bool
 }
+type Coordinates struct {
+	mu sync.Mutex
+	X  int32
+	Y  int32
+	Z  int32
+}
 
 func (c *Character) SetSkillToQueue(skill Skill, ctrlPressed, shiftPressed bool) {
 	s := SkillHolder{
@@ -93,26 +95,6 @@ func (c *Character) SetSkillToQueue(skill Skill, ctrlPressed, shiftPressed bool)
 	}
 	c.SkillQueue <- s
 }
-func SetupStats(char *Character) {
-	char.Stats = AllStats[int(char.ClassId)].StaticData //todo а для чего BaseClass ??
-}
-
-type Account struct {
-	Char     []*Character
-	CharSlot int32
-	Login    string
-}
-
-type Coordinates struct {
-	mu sync.Mutex
-	X  int32
-	Y  int32
-	Z  int32
-}
-
-type PacketByte struct {
-	B []byte
-}
 
 // IsActiveWeapon есть ли у персонажа оружие в руках
 func (c *Character) IsActiveWeapon() bool {
@@ -120,20 +102,6 @@ func (c *Character) IsActiveWeapon() bool {
 	//todo Еще есть кастеты
 	return x.ObjId != 0
 	//todo ?
-}
-
-// GetB получение массива байт в PacketByte
-func (i *PacketByte) GetB() []byte {
-	cl := make([]byte, len(i.B))
-	_ = copy(cl, i.B)
-	return cl
-}
-
-// SetB копирует массив байт в PacketByte
-func (i *PacketByte) SetB(v []byte) {
-	cl := make([]byte, len(v))
-	i.B = cl
-	copy(i.B, v)
 }
 
 // GetPercentFromCurrentLevel получить % опыта на текущем уровне
@@ -156,30 +124,26 @@ func (c *Character) GetXYZ() (x, y, z int32) {
 	return c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z
 }
 
-// GetCreationCoordinates получить рандомные координаты при создании
-// персонажа, зависит от classId создаваемого персонажа
-func GetCreationCoordinates(classId int32) (int, int, int) {
-
-	e, ok := AllStats[int(classId)]
-	if !ok {
-		panic("не найдена информация в AllStats по classId: " + strconv.Itoa(int(classId)))
-	}
-
-	rnd := rand.Intn(len(e.CreationPoints))
-
-	x := e.CreationPoints[rnd].X
-	y := e.CreationPoints[rnd].Y
-	z := e.CreationPoints[rnd].Z
-	return x, y, z
-
-}
-
 // Load загрузка персонажа
 func (c *Character) Load() {
 	c.ShortCut = restoreMe(c.CharId, c.ClassId)
 	c.LoadSkills()
 	c.SkillQueue = make(chan SkillHolder)
 	c.Inventory = GetMyItems(c.CharId)
+	c.Paperdoll = RestoreVisibleInventory(c.CharId)
+
+	for _, v := range c.Paperdoll {
+		if v.ObjId != 0 {
+			c.AddBonusStat(v.BonusStats)
+		}
+	}
+
+	c.Stats = AllStats[int(c.ClassId)].StaticData //todo а для чего BaseClass ??
+
+	reg := GetRegion(c.Coordinates.X, c.Coordinates.Y)
+	reg.AddVisibleObject(c)
+	c.CurrentRegion = reg
+
 	go c.ListenSkillQueue()
 }
 
@@ -191,4 +155,76 @@ func (c *Character) checkSoulShot() {
 
 func (c *Character) IsCursedWeaponEquipped() bool {
 	return c.CursedWeaponEquippedId != 0
+}
+
+func (c *Character) AddBonusStat(s []items.ItemBonusStat) {
+	c.BonusStats = append(c.BonusStats, s...)
+}
+
+func (c *Character) RemoveBonusStat(s []items.ItemBonusStat) {
+	//for i,v := range c.BonusStats {
+	//	for _,vv := range s {
+	//		if v == vv {
+	//			c.BonusStats[i] = c.BonusStats[len(c.BonusStats)-1] //todo переделать на безопасный вариант ) или еще что нить придумать
+	//			c.BonusStats = c.BonusStats[:len(c.BonusStats)-1]
+	//		}
+	//	}
+	//
+	//}
+
+	news := make([]items.ItemBonusStat, 0, len(c.BonusStats))
+	for _, v := range c.BonusStats {
+		flag := false
+		for _, vv := range s {
+			if v == vv {
+				flag = true
+				break
+			}
+		}
+		if !flag {
+			news = append(news, v)
+		}
+	}
+	c.BonusStats = news
+}
+
+func (c *Character) GetPDef() int32 {
+	var base float64
+	if c.Paperdoll[PAPERDOLL_FEET].ObjId == 0 {
+		base = float64(c.Stats.BasePDef.Feet)
+	}
+	if c.Paperdoll[PAPERDOLL_CHEST].ObjId == 0 {
+		base += float64(c.Stats.BasePDef.Chest)
+	}
+	if c.Paperdoll[PAPERDOLL_CLOAK].ObjId == 0 {
+		base += float64(c.Stats.BasePDef.Cloak)
+	}
+	if c.Paperdoll[PAPERDOLL_HEAD].ObjId == 0 {
+		base += float64(c.Stats.BasePDef.Head)
+	}
+	if c.Paperdoll[PAPERDOLL_GLOVES].ObjId == 0 {
+		base += float64(c.Stats.BasePDef.Gloves)
+	}
+	if c.Paperdoll[PAPERDOLL_LEGS].ObjId == 0 {
+		base += float64(c.Stats.BasePDef.Legs)
+	}
+	if c.Paperdoll[PAPERDOLL_UNDER].ObjId == 0 {
+		base += float64(c.Stats.BasePDef.Underwear)
+	}
+
+	for _, v := range c.BonusStats {
+		if v.Type == "physical_defense" {
+			base += v.Val
+		}
+	}
+	base *= float64(c.Level+89) / 100
+
+	return int32(base)
+}
+
+func (c *Character) GetInventoryLimit() int16 {
+	if c.Race == race.DWARF {
+		return 100
+	}
+	return 80
 }

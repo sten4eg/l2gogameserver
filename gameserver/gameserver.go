@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
+	"l2gogameserver/utils"
 	"log"
 	"net"
 	"sync"
@@ -61,7 +62,7 @@ func kickClient(client *models.Client) {
 	log.Println("Socket Close For: ", client.CurrentChar.CharName)
 }
 
-func (g *GameServer) BroadToAroundPlayers(my *models.Client, pkg models.PacketByte) {
+func (g *GameServer) BroadToAroundPlayers(my *models.Client, pkg utils.PacketByte) {
 
 	charsIds := models.GetAroundPlayers(my.CurrentChar)
 	for _, v := range charsIds {
@@ -90,7 +91,7 @@ func (g *GameServer) Tick() {
 				reg.CharsInRegion.Store(client.CurrentChar.CharId, client.CurrentChar)
 				client.CurrentChar.CurrentRegion = reg
 
-				var info models.PacketByte
+				var info utils.PacketByte
 				info.B = serverpackets.CharInfo(client.CurrentChar)
 				g.BroadToAroundPlayers(client, info)
 				BroadCastToMe(g, client.CurrentChar)
@@ -138,7 +139,7 @@ func BroadCastToMe(g *GameServer, my *models.Character) {
 		return // todo need log
 	}
 	for _, v := range charIds {
-		var info models.PacketByte
+		var info utils.PacketByte
 		info.B = serverpackets.CharInfo(g.OnlineCharacters.Char[v])
 		_ = me.Send(info.GetB(), true)
 	}

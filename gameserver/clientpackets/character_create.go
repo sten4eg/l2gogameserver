@@ -2,7 +2,6 @@ package clientpackets
 
 import (
 	"context"
-	"github.com/jackc/pgx/pgtype"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
@@ -10,7 +9,7 @@ import (
 )
 
 type CharCreate struct {
-	Name      pgtype.Bytea
+	Name      string
 	Race      int32
 	Sex       uint8
 	ClassId   int32
@@ -36,7 +35,7 @@ func CharacterCreate(data []byte, client *models.Client) {
 	var packet = packets.NewReader(data)
 	var charCreate CharCreate
 
-	charCreate.Name.Bytes = []byte(packet.ReadString())
+	charCreate.Name = packet.ReadString()
 
 	charCreate.Race = packet.ReadInt32()
 	charCreate.Sex = byte(packet.ReadInt32())
@@ -68,7 +67,7 @@ var (
 )
 
 func (cc *CharCreate) validate(client *models.Client) {
-	lenName := len(cc.Name.Bytes)
+	lenName := len(cc.Name)
 	if (lenName < 1) || (lenName > 16) {
 		serverpackets.CharCreateFail(client, Reason16EngChars)
 		return
@@ -95,7 +94,7 @@ func (cc *CharCreate) validate(client *models.Client) {
 	}
 	defer dbConn.Release()
 
-	row := dbConn.QueryRow(context.Background(), "(SELECT exists(SELECT char_name from characters WHERE char_name = $1))", cc.Name.Bytes)
+	row := dbConn.QueryRow(context.Background(), "(SELECT exists(SELECT char_name from characters WHERE char_name = $1))", cc.Name)
 	var exist bool
 	err = row.Scan(&exist)
 	if err != nil {
@@ -107,7 +106,7 @@ func (cc *CharCreate) validate(client *models.Client) {
 		return
 	}
 
-	row = dbConn.QueryRow(context.Background(), "SELECT count(*) FROM characters where login = $1", []byte(client.Account.Login))
+	row = dbConn.QueryRow(context.Background(), "SELECT count(*) FROM characters where login = $1", client.Account.Login)
 	var i int
 	err = row.Scan(&i)
 	if err != nil {
@@ -120,7 +119,7 @@ func (cc *CharCreate) validate(client *models.Client) {
 	}
 	x, y, z := models.GetCreationCoordinates(cc.ClassId)
 	_, err = dbConn.Exec(context.Background(), "INSERT INTO characters (char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
-		cc.Name.Bytes,
+		cc.Name,
 		cc.Race,
 		cc.Sex,
 		cc.ClassId,
@@ -130,7 +129,7 @@ func (cc *CharCreate) validate(client *models.Client) {
 		x,
 		y,
 		z,
-		[]byte(client.Account.Login),
+		client.Account.Login,
 		cc.ClassId)
 	if err != nil {
 		serverpackets.CharCreateFail(client, ReasonCreateNotAllowed)

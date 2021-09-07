@@ -12,7 +12,7 @@ func CreatureSay(say *models.Say, user *models.Character) []byte {
 	buffer.WriteD(user.CharId) //objId
 	buffer.WriteD(say.Type)
 
-	buffer.WriteS(string(user.CharName.Bytes))
+	buffer.WriteS(user.CharName)
 
 	buffer.WriteD(-1) // High Five NPCString ID
 	buffer.WriteS(say.Text)

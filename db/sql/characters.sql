@@ -1,7 +1,7 @@
 -- auto-generated definition
 create table characters
 (
-    login       bytea                  not null,
+    login       varchar (25)                 not null,
     id          serial                 not null
         constraint table_name_pk
             primary key,
@@ -26,11 +26,11 @@ create table characters
     race        smallint               not null,
     class_id    integer                not null,
     base_class  integer  default 0     not null,
-    title       bytea,
+    title       varchar(16),
     online_time integer  default 0     not null,
     nobless     integer  default 0     not null,
     vitality    integer  default 20000 not null,
-    char_name   bytea                  not null
+    char_name   varchar(16)                  not null
 );
 
 alter table characters

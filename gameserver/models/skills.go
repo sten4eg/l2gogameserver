@@ -154,7 +154,7 @@ func (c *Character) LoadSkills() {
 
 		sk, ok := AllSkills[t]
 		if !ok {
-			panic("Скилл персонажа " + string(c.CharName.Bytes) + " не найден в мапе скиллов id: " + strconv.Itoa(t.Id) + " Level: " + strconv.Itoa(t.Lvl))
+			panic("Скилл персонажа " + c.CharName + " не найден в мапе скиллов id: " + strconv.Itoa(t.Id) + " Level: " + strconv.Itoa(t.Lvl))
 		}
 		c.Skills[sk.ID] = sk //= append(c.Skills, sk)
 	}

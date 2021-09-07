@@ -3,7 +3,9 @@ package models
 import (
 	"encoding/json"
 	"io/fs"
+	"math/rand"
 	"os"
+	"strconv"
 )
 
 var AllStats map[int]Stats
@@ -161,4 +163,22 @@ func findClassTree(classId int, classes []Class) *ClassTree {
 	}
 
 	return nil
+}
+
+// GetCreationCoordinates получить рандомные координаты при создании
+// персонажа, зависит от classId создаваемого персонажа
+func GetCreationCoordinates(classId int32) (int, int, int) {
+
+	e, ok := AllStats[int(classId)]
+	if !ok {
+		panic("не найдена информация в AllStats по classId: " + strconv.Itoa(int(classId)))
+	}
+
+	rnd := rand.Intn(len(e.CreationPoints))
+
+	x := e.CreationPoints[rnd].X
+	y := e.CreationPoints[rnd].Y
+	z := e.CreationPoints[rnd].Z
+	return x, y, z
+
 }

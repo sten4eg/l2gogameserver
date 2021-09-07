@@ -17,4 +17,5 @@ func CharSelected(data []byte, client *models.Client) {
 
 	client.Account.CharSlot = charSlot
 	serverpackets.SsqInfo(client)
+	serverpackets.CharSelected(client.Account.Char[client.Account.CharSlot], client)
 }

@@ -59,13 +59,22 @@ func (b *Buffer) WriteSingleByte(value byte) {
 	}
 }
 
+const EmptyByte byte = 0
+
 func (b *Buffer) WriteS(value string) {
 
-	val := append([]byte(value), 0, 0)
-	err := binary.Write(b, binary.LittleEndian, val)
-	if err != nil {
-		panic(err)
+	if len(value) != 0 {
+		for _, v := range []byte(value) {
+			err := binary.Write(b, binary.LittleEndian, v)
+			if err != nil {
+				panic(err)
+			}
+			_ = binary.Write(b, binary.LittleEndian, EmptyByte)
+
+		}
 	}
+
+	_ = binary.Write(b, binary.LittleEndian, []byte{EmptyByte, EmptyByte})
 }
 
 type Reader struct {
@@ -258,7 +267,7 @@ func (r *Reader) ReadString() string {
 		if firstByte == 0x00 && secondByte == 0x00 {
 			break
 		} else {
-			result = append(result, firstByte, secondByte)
+			result = append(result, firstByte)
 		}
 	}
 

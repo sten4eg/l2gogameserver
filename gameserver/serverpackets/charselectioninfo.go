@@ -14,7 +14,7 @@ func CharSelectionInfo(client *models.Client) {
 	}
 	defer dbConn.Release()
 
-	rows, err := dbConn.Query(context.Background(), "SELECT * FROM characters WHERE Login = $1", []byte(client.Account.Login))
+	rows, err := dbConn.Query(context.Background(), "SELECT * FROM characters WHERE Login = $1", client.Account.Login)
 	if err != nil {
 		panic(err)
 	}
@@ -59,7 +59,6 @@ func CharSelectionInfo(client *models.Client) {
 		}
 		character.Coordinates = &coord
 		character.Conn = client
-		models.SetupStats(&character)
 		client.Account.Char = append(client.Account.Char, &character)
 	}
 
@@ -78,10 +77,10 @@ func CharSelectionInfo(client *models.Client) {
 
 	for _, char := range client.Account.Char {
 
-		client.Buffer.WriteS(string(char.CharName.Bytes)) // Pers name
+		client.Buffer.WriteS(char.CharName) // Pers name
 
-		client.Buffer.WriteD(char.CharId)              // objId
-		client.Buffer.WriteS(string(char.Login.Bytes)) // loginName
+		client.Buffer.WriteD(char.CharId) // objId
+		client.Buffer.WriteS(char.Login)  // loginName
 
 		client.Buffer.WriteD(0)           //TODO sessionId
 		client.Buffer.WriteD(char.ClanId) //clanId

@@ -19,8 +19,9 @@ func UserInfo(client *models.Client) {
 
 	client.Buffer.WriteD(character.CharId) //objId
 
-	client.Buffer.WriteS(string(character.CharName.Bytes)) //name //TODO
-
+	client.Buffer.WriteS(character.CharName) //name //TODO
+	q := character.CharName
+	_ = q
 	client.Buffer.WriteD(int32(character.Race)) //race ordinal //TODO
 	client.Buffer.WriteD(character.Sex)         //sex
 	client.Buffer.WriteD(character.BaseClass)   //baseClass
@@ -67,14 +68,14 @@ func UserInfo(client *models.Client) {
 	client.Buffer.WriteD(0) //talisman slot
 	client.Buffer.WriteD(0) //Cloack
 
-	client.Buffer.WriteD(4)   //patack //TODO
-	client.Buffer.WriteD(330) //atackSpeed
-	client.Buffer.WriteD(72)  //pdef
-	client.Buffer.WriteD(33)  //evasionRate
-	client.Buffer.WriteD(34)  //accuracy //TODO
-	client.Buffer.WriteD(44)  //critHit
-	client.Buffer.WriteD(3)   //Matack
-	client.Buffer.WriteD(213) //M atackSpped
+	client.Buffer.WriteD(4)                   //patack //TODO
+	client.Buffer.WriteD(330)                 //atackSpeed
+	client.Buffer.WriteD(character.GetPDef()) //pdef
+	client.Buffer.WriteD(33)                  //evasionRate
+	client.Buffer.WriteD(34)                  //accuracy //TODO
+	client.Buffer.WriteD(44)                  //critHit
+	client.Buffer.WriteD(3)                   //Matack
+	client.Buffer.WriteD(213)                 //M atackSpped
 
 	client.Buffer.WriteD(330) //patackSpeed again?
 
@@ -104,7 +105,7 @@ func UserInfo(client *models.Client) {
 
 	client.Buffer.WriteD(0) //IsGM?
 
-	client.Buffer.WriteS(character.Title.String) //title
+	client.Buffer.WriteS(character.Title) //title
 
 	client.Buffer.WriteD(character.ClanId) //clanId
 	client.Buffer.WriteD(0)                //clancrestId
@@ -134,7 +135,7 @@ func UserInfo(client *models.Client) {
 
 	client.Buffer.WriteD(0) //npcMountId
 
-	client.Buffer.WriteH(80) //inventoryLimit
+	client.Buffer.WriteH(character.GetInventoryLimit()) //inventoryLimit
 
 	client.Buffer.WriteD(character.ClassId) //	classId
 	client.Buffer.WriteD(0)                 // special effects? circles around player...

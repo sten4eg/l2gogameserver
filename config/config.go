@@ -6,50 +6,19 @@ import (
 )
 
 type Config struct {
-	LoginServer LoginServerType
-	GameServers []GameServerType
+	GameServer GameServer `json:"gameserver"`
 }
-
-type GameServerConfigObject struct {
-	LoginServer LoginServerType
-	GameServer  GameServerType
+type GameServer struct {
+	Database DatabaseType `json:"database"`
 }
-
 type DatabaseType struct {
-	Name         string
-	Host         string
-	Port         string
-	User         string
-	Password     string
+	Name         string `json:"name"`
+	Host         string `json:"host"`
+	Port         string `json:"port"`
+	User         string `json:"user"`
+	Password     string `json:"password"`
 	SSLMode      string `json:"sslmode"`
 	PoolMaxConns string `json:"pool_max_conns"`
-}
-
-type CacheType struct {
-	Host     string
-	Port     int
-	Password string
-}
-
-type LoginServerType struct {
-	Host       string
-	AutoCreate bool
-	Database   DatabaseType
-}
-
-type GameServerType struct {
-	Name       string
-	InternalIP string
-	ExternalIP string
-	Port       int
-	Database   DatabaseType
-	Cache      CacheType
-	Options    OptionsType
-}
-
-type OptionsType struct {
-	MaxPlayers uint16
-	Testing    bool
 }
 
 func Read() Config {

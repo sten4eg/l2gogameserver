@@ -9,7 +9,8 @@ import (
 	"l2gogameserver/packets"
 )
 
-const FormalWearId = 6408
+const formalWearId = 6408
+const fortFlagId = 9819
 
 func UseItem(data []byte, client *models.Client) {
 	var packet = packets.NewReader(data)
@@ -36,7 +37,7 @@ func UseItem(data []byte, client *models.Client) {
 
 	if selectedItem.IsEquipable() {
 		// нельзя надевать Formal Wear с проклятым оружием
-		if client.CurrentChar.IsCursedWeaponEquipped() && objId == FormalWearId {
+		if client.CurrentChar.IsCursedWeaponEquipped() && objId == formalWearId {
 			return
 		}
 
@@ -46,7 +47,7 @@ func UseItem(data []byte, client *models.Client) {
 		case items.SlotLrHand, items.SlotLHand, items.SlotRHand:
 
 			// если в руке Combat flag
-			if client.CurrentChar.IsActiveWeapon() && models.GetActiveWeapon(client.CurrentChar.Inventory, client.CurrentChar.Paperdoll).Item.Id == 9819 {
+			if client.CurrentChar.IsActiveWeapon() && models.GetActiveWeapon(client.CurrentChar.Inventory, client.CurrentChar.Paperdoll).Item.Id == fortFlagId {
 				serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
 				return
 			}
@@ -85,16 +86,16 @@ func UseItem(data []byte, client *models.Client) {
 
 		}
 
-	}
+		models.UseEquippableItem(selectedItem, client.CurrentChar)
 
-	models.UseEquippableItem(selectedItem, client.CurrentChar)
+	}
 
 	models.SaveInventoryInDB(client.CurrentChar.Inventory)
 
 	serverpackets.InventoryUpdate(client, models.UpdateTypeModify)
 
 	// После каждого use_item будет запрос в бд на восстановление paperdoll,
-	// надо бы это сделать в UseEquippableItem
+	//todo надо бы это сделать в UseEquippableItem
 	client.CurrentChar.Paperdoll = models.RestoreVisibleInventory(client.CurrentChar.CharId)
 
 	serverpackets.UserInfo(client)

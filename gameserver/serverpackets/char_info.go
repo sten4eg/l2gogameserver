@@ -19,7 +19,7 @@ func CharInfo(user *models.Character) []byte {
 
 	buffer.WriteD(user.CharId) //objId
 
-	buffer.WriteS(string(user.CharName.Bytes)) //name //TODO
+	buffer.WriteS(user.CharName) //name //TODO
 
 	buffer.WriteD(int32(user.Race)) //race ordinal //TODO
 	buffer.WriteD(user.Sex)         //sex
@@ -64,7 +64,7 @@ func CharInfo(user *models.Character) []byte {
 	buffer.WriteD(user.HairColor) //hairColor
 	buffer.WriteD(user.Face)      //face
 
-	buffer.WriteS(user.Title.String) //title
+	buffer.WriteS(user.Title) //title
 
 	buffer.WriteD(0) //cursedW
 	buffer.WriteD(0) //cursedW

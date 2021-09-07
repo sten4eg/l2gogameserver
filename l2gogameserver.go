@@ -2,6 +2,7 @@ package main
 
 import (
 	"l2gogameserver/data"
+	"l2gogameserver/db"
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/models"
 	"log"
@@ -20,9 +21,9 @@ func main() {
 }
 
 func setup() {
-	//db.ConfigureDB()
-	//models.LoadStats()
-	//models.LoadSkills()
+	db.ConfigureDB()
+	models.LoadStats()
+	models.LoadSkills()
 	models.LoadItems()
 	models.NewWorld()
 	data.Load()

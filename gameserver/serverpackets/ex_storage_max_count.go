@@ -1,23 +1,24 @@
 package serverpackets
 
-import "l2gogameserver/packets"
+import (
+	"l2gogameserver/gameserver/models"
+)
 
-func ExStorageMaxCount() []byte {
+func ExStorageMaxCount(client *models.Client) {
 
-	buffer := new(packets.Buffer)
+	client.Buffer.WriteSingleByte(0xFE)
+	client.Buffer.WriteH(0x2F)
 
-	buffer.WriteSingleByte(0xFE)
-	buffer.WriteH(0x2F)
+	client.Buffer.WriteD(int32(client.CurrentChar.GetInventoryLimit())) // _inventory Limit
+	client.Buffer.WriteD(0)                                             // _warehouse Limit
+	client.Buffer.WriteD(0)                                             // _clan Limit
+	client.Buffer.WriteD(0)                                             // _privateSell
+	client.Buffer.WriteD(0)                                             // _privateBuy
+	client.Buffer.WriteD(0)                                             // _recipeD (dworf)
+	client.Buffer.WriteD(0)                                             //_recipe
+	client.Buffer.WriteD(0)                                             // _inventoryExtraSlots
+	client.Buffer.WriteD(0)                                             // _inventoryQuestItems
 
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
+	client.SaveAndCryptDataInBufferToSend(true)
 
-	return buffer.Bytes()
 }
