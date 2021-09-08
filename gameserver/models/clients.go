@@ -15,6 +15,7 @@ type Client struct {
 	Buffer          *packets.Buffer
 	// NeedCrypt - флаг, при создании клиента false
 	// указывает первый пакет пришедший от клиента не нужно расшифровывать
+	// костыль
 	NeedCrypt   bool
 	OutKey      []int32
 	InKey       []int32

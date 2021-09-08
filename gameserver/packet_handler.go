@@ -83,6 +83,7 @@ func (g *GameServer) handler(client *models.Client) {
 
 			serverpackets.StaticObject(client)
 
+			serverpackets.ShortBuffStatusUpdate(client) //todo test
 			var info utils.PacketByte
 			pkg := serverpackets.CharInfo(client.CurrentChar)
 			info.SetB(pkg)
@@ -122,7 +123,7 @@ func (g *GameServer) handler(client *models.Client) {
 			//Broad(client, info)
 		case 89:
 			clientpackets.ValidationPosition(data, client.CurrentChar)
-			serverpackets.NpcInfo(client)
+			serverpackets.NpcInfo(client) //todo test
 
 		case 31:
 			clientpackets.Action(data, client)
