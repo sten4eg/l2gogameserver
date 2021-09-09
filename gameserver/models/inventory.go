@@ -6,7 +6,9 @@ import (
 	"l2gogameserver/db"
 	ItemsPkg "l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/items/armorType"
+	"l2gogameserver/gameserver/models/items/crystalType"
 	"l2gogameserver/gameserver/models/items/etcItemType"
+	"l2gogameserver/gameserver/models/items/materialType"
 	"l2gogameserver/gameserver/models/items/weaponType"
 	"log"
 	"os"
@@ -87,53 +89,71 @@ func RestoreVisibleInventory(charId int32) [26]MyItem {
 }
 
 type Item struct {
-	Id                     int                      `json:"id"`
-	ItemType               ItemsPkg.ItemType        `json:"item_type"`
-	Name                   string                   `json:"name"`
-	Icon                   string                   `json:"icon"`
-	SlotBitType            ItemsPkg.SlotBitType     `json:"slot_bit_type"`
-	ArmorType              armorType.ArmorType      `json:"armor_type"`
-	EtcItemType            etcItemType.EtcItemType  `json:"etcitem_type"`
-	ItemMultiSkillList     []string                 `json:"item_multi_skill_list"`
-	RecipeId               int                      `json:"recipe_id"`
-	Weight                 int                      `json:"weight"`
-	ConsumeType            string                   `json:"consume_type"`
-	SoulShotCount          int                      `json:"soulshot_count"`
-	SpiritShotCount        int                      `json:"spiritshot_count"`
-	DropPeriod             int                      `json:"drop_period"`
-	Duration               int                      `json:"duration"`
-	Period                 int                      `json:"period"`
-	DefaultPrice           int                      `json:"default_price"`
-	ItemSkill              string                   `json:"item_skill"`
-	CriticalAttackSkill    string                   `json:"critical_attack_skill"`
-	AttackSkill            string                   `json:"attack_skill"`
-	MagicSkill             string                   `json:"magic_skill"`
-	ItemSkillEnchantedFour string                   `json:"item_skill_enchanted_four"`
-	MaterialType           string                   `json:"material_type"`
-	CrystalType            string                   `json:"crystal_type"`
-	CrystalCount           int                      `json:"crystal_count"`
-	IsTrade                bool                     `json:"is_trade"`
-	IsDrop                 bool                     `json:"is_drop"`
-	IsDestruct             bool                     `json:"is_destruct"`
-	IsPrivateStore         bool                     `json:"is_private_store"`
-	KeepType               int                      `json:"keep_type"`
-	RandomDamage           int                      `json:"random_damage"`
-	WeaponType             weaponType.WeaponType    `json:"weapon_type"`
-	HitModify              int                      `json:"hit_modify"`
-	AvoidModify            int                      `json:"avoid_modify"`
-	ShieldDefense          int                      `json:"shield_defense"`
-	ShieldDefenseRate      int                      `json:"shield_defense_rate"`
-	AttackRange            int                      `json:"attack_range"`
-	ReuseDelay             int                      `json:"reuse_delay"`
-	MpConsume              int                      `json:"mp_consume"`
-	Durability             int                      `json:"durability"`
-	MagicWeapon            int                      `json:"magic_weapon"`     //todo need bool
-	EnchantEnable          int                      `json:"enchant_enable"`   //todo need bool
-	ElementalEnable        int                      `json:"elemental_enable"` // todo need bool
-	ForNpc                 bool                     `json:"for_npc"`
-	IsOlympiadCanUse       bool                     `json:"is_olympiad_can_use"`
-	IsPremium              bool                     `json:"is_premium"`
-	BonusStats             []ItemsPkg.ItemBonusStat `json:"stats"`
+	Id                     int                          `json:"id"`
+	ItemType               ItemsPkg.ItemType            `json:"itemType"`
+	Name                   string                       `json:"name"`
+	Icon                   string                       `json:"icon"`
+	SlotBitType            ItemsPkg.SlotBitType         `json:"slot_bit_type"`
+	ArmorType              armorType.ArmorType          `json:"armor_type"`
+	EtcItemType            etcItemType.EtcItemType      `json:"etcitem_type"`
+	ItemMultiSkillList     []string                     `json:"item_multi_skill_list"`
+	RecipeId               int                          `json:"recipe_id"`
+	Weight                 int                          `json:"weight"`
+	ConsumeType            string                       `json:"consume_type"`
+	SoulShotCount          int                          `json:"soulshot_count"`
+	SpiritShotCount        int                          `json:"spiritshot_count"`
+	DropPeriod             int                          `json:"drop_period"`
+	DefaultPrice           int                          `json:"default_price"`
+	ItemSkill              string                       `json:"item_skill"`
+	CriticalAttackSkill    string                       `json:"critical_attack_skill"`
+	AttackSkill            string                       `json:"attack_skill"`
+	MagicSkill             string                       `json:"magic_skill"`
+	ItemSkillEnchantedFour string                       `json:"item_skill_enchanted_four"`
+	MaterialType           materialType.MaterialType    `json:"material_type"`
+	CrystalType            crystalType.CrystalType      `json:"crystal_type"`
+	CrystalCount           int                          `json:"crystal_count"`
+	IsTrade                bool                         `json:"is_trade"`
+	IsDrop                 bool                         `json:"is_drop"`
+	IsDestruct             bool                         `json:"is_destruct"`
+	IsPrivateStore         bool                         `json:"is_private_store"`
+	KeepType               int                          `json:"keep_type"`
+	RandomDamage           int                          `json:"random_damage"`
+	WeaponType             weaponType.WeaponType        `json:"weapon_type"`
+	HitModify              int                          `json:"hit_modify"`
+	AvoidModify            int                          `json:"avoid_modify"`
+	ShieldDefense          int                          `json:"shield_defense"`
+	ShieldDefenseRate      int                          `json:"shield_defense_rate"`
+	AttackRange            int                          `json:"attack_range"`
+	ReuseDelay             int                          `json:"reuse_delay"`
+	MpConsume              int                          `json:"mp_consume"`
+	Durability             int                          `json:"durability"`
+	MagicWeapon            bool                         `json:"magic_weapon"`
+	EnchantEnable          bool                         `json:"enchant_enable"`
+	ElementalEnable        bool                         `json:"elemental_enable"`
+	ForNpc                 bool                         `json:"for_npc"`
+	IsOlympiadCanUse       bool                         `json:"is_olympiad_can_use"`
+	IsPremium              bool                         `json:"is_premium"`
+	BonusStats             []ItemsPkg.ItemBonusStat     `json:"stats"`
+	DefaultAction          ItemsPkg.DefaultAction       `json:"default_action"`
+	InitialCount           int                          `json:"initial_count"`
+	ImmediateEffect        int                          `json:"immediate_effect"`
+	CapsuledItems          []ItemsPkg.CapsuledItem      `json:"capsuled_items"`
+	DualFhitRate           int                          `json:"dual_fhit_rate"`
+	DamageRange            int                          `json:"damage_range"`
+	Enchanted              int                          `json:"enchanted"`
+	BaseAttributeAttack    ItemsPkg.BaseAttributeAttack `json:"base_attribute_attack"`
+	BaseAttributeDefend    ItemsPkg.BaseAttributeDefend `json:"base_attribute_defend"`
+	UnequipSkill           []string                     `json:"unequip_skill"`
+	ItemEquipOption        []string                     `json:"item_equip_option"`
+	CanMove                bool                         `json:"can_move"`
+	DelayShareGroup        int                          `json:"delay_share_group"`
+	Blessed                int                          `json:"blessed"`
+	ReducedSoulshot        []string                     `json:"reduced_soulshot"`
+	ExImmediateEffect      int                          `json:"ex_immediate_effect"`
+	UseSkillDistime        int                          `json:"use_skill_distime"`
+	Period                 int                          `json:"period"`
+	EquipReuseDelay        int                          `json:"equip_reuse_delay"`
+	Price                  int                          `json:"price"`
 }
 
 // AllItems - ONLY READ MAP, set in init server
@@ -146,13 +166,13 @@ type MyItem struct {
 	LocData int32
 	Count   int64
 	Loc     string
+	Time    int
 }
 
 // IsEquipable Можно ли надеть предмет
 func (i *MyItem) IsEquipable() bool {
 	return !((i.SlotBitType == ItemsPkg.SlotNone) || (i.EtcItemType == etcItemType.ARROW) || (i.EtcItemType == etcItemType.BOLT) || (i.EtcItemType == etcItemType.LURE))
 }
-
 func (i *MyItem) IsHeavyArmor() bool {
 	return i.ArmorType == armorType.HEAVY
 }
@@ -175,7 +195,7 @@ func GetMyItems(charId int32) []MyItem {
 	}
 	defer dbConn.Release()
 
-	rows, err := dbConn.Query(context.Background(), "SELECT object_id,item,loc_data,enchant_level,count,loc FROM items WHERE owner_id=$1", charId)
+	rows, err := dbConn.Query(context.Background(), "SELECT object_id,item,loc_data,enchant_level,count,loc,time FROM items WHERE owner_id=$1", charId)
 	if err != nil {
 		panic(err)
 	}
@@ -185,7 +205,7 @@ func GetMyItems(charId int32) []MyItem {
 	for rows.Next() {
 		var itm MyItem
 		var id int
-		err := rows.Scan(&itm.ObjId, &id, &itm.LocData, &itm.Enchant, &itm.Count, &itm.Loc)
+		err := rows.Scan(&itm.ObjId, &id, &itm.LocData, &itm.Enchant, &itm.Count, &itm.Loc, &itm.Time)
 		if err != nil {
 			log.Println(err)
 		}
@@ -204,6 +224,9 @@ func LoadItems() {
 	AllItems = make(map[int]Item)
 
 	loadItems()
+	var i int
+	i = 23
+	_ = i
 }
 
 func loadItems() {
@@ -224,6 +247,7 @@ func loadItems() {
 		v.removeEmptyStats()
 		AllItems[v.Id] = v
 	}
+
 }
 
 func (i *MyItem) IsEquipped() int16 {

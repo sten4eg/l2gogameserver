@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// SlotBitType слот на персонаже
 type SlotBitType int32
 
 const (
