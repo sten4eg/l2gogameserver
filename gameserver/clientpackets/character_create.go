@@ -118,7 +118,7 @@ func (cc *CharCreate) validate(client *models.Client) {
 		return
 	}
 	x, y, z := models.GetCreationCoordinates(cc.ClassId)
-	_, err = dbConn.Exec(context.Background(), "INSERT INTO characters (char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
+	_, err = dbConn.Exec(context.Background(), "INSERT INTO characters (char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class, title) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",
 		cc.Name,
 		cc.Race,
 		cc.Sex,
@@ -130,7 +130,8 @@ func (cc *CharCreate) validate(client *models.Client) {
 		y,
 		z,
 		client.Account.Login,
-		cc.ClassId)
+		cc.ClassId,
+		"")
 	if err != nil {
 		serverpackets.CharCreateFail(client, ReasonCreateNotAllowed)
 		return
