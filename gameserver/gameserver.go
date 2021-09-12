@@ -51,8 +51,20 @@ func (g *GameServer) Start() {
 		} else {
 			g.AddClient(client)
 			go g.handler(client)
+			go QWE(client)
 		}
 	}
+}
+
+func QWE(client *models.Client) {
+	for {
+		select {
+		case q := <-client.CurrentChar.F:
+			serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
+		default:
+		}
+	}
+
 }
 func kickClient(client *models.Client) {
 	err := client.Socket.Close()

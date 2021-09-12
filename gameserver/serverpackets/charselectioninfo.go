@@ -22,7 +22,7 @@ func CharSelectionInfo(client *models.Client) {
 	//
 	client.Account.Char = client.Account.Char[:0]
 	for rows.Next() {
-		var character models.Character
+		var character = models.GetNewCharacterModel()
 		var coord models.Coordinates
 		err = rows.Scan(
 			&character.Login,
@@ -59,7 +59,7 @@ func CharSelectionInfo(client *models.Client) {
 		}
 		character.Coordinates = &coord
 		character.Conn = client
-		client.Account.Char = append(client.Account.Char, &character)
+		client.Account.Char = append(client.Account.Char, character)
 	}
 
 	for _, v := range client.Account.Char {

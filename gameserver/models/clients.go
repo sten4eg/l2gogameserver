@@ -29,7 +29,7 @@ type Client struct {
 func NewClient() *Client {
 	buff := new(packets.Buffer)
 	toS := new(packets.Buffer)
-	return &Client{
+	c := &Client{
 		Buffer:       buff,
 		ToSendBuffer: toS,
 		NeedCrypt:    false,
@@ -70,8 +70,10 @@ func NewClient() *Client {
 			0x97,
 		},
 		Account:     new(Account),
-		CurrentChar: GetNewCharacterModel(),
+		CurrentChar: &Character{},
 	}
+
+	return c
 }
 
 // Send отправка массив data персонажу

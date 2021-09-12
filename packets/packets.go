@@ -3,10 +3,12 @@ package packets
 import (
 	"bytes"
 	"encoding/binary"
+	"sync"
 )
 
 type Buffer struct {
 	bytes.Buffer
+	Mu sync.Mutex
 }
 
 func NewBuffer() *Buffer {

@@ -109,10 +109,12 @@ func (g *GameServer) handler(client *models.Client) {
 			pkg := serverpackets.MoveToLocation(location, client)
 			var info utils.PacketByte
 			info.SetB(pkg)
-			err := client.Send(pkg, true)
-			if err != nil {
-				log.Println(err)
-			}
+			client.Buffer.Mu.Lock()
+			client.Buffer.WriteSlice(pkg)
+			client.Buffer.Mu.Unlock()
+
+			client.SaveAndCryptDataInBufferToSend(true)
+
 			g.BroadToAroundPlayers(client, info)
 
 			log.Println("Send MoveToLocation")

@@ -22,24 +22,20 @@ func InventoryUpdate(client *models.Client, updateType int16) {
 		client.Buffer.WriteD(int32(e.SlotBitType)) // Slot : 0006-lr.ear, 0008-neck, 0030-lr.finger, 0040-head, 0100-l.hand, 0200-gloves, 0400-chest, 0800-pants, 1000-feet, 4000-r.hand, 8000-r.hand
 		client.Buffer.WriteH(int16(e.Enchant))     // Enchant level (pet level shown in control item)
 
-		client.Buffer.WriteH(0)     // Pet name exists or not shown in control item
-		client.Buffer.WriteD(0)     // getAugmentationBonus
-		client.Buffer.WriteD(-1)    // mana
-		client.Buffer.WriteD(-9999) // time
+		client.Buffer.WriteH(0)             // Pet name exists or not shown in control item
+		client.Buffer.WriteD(0)             // getAugmentationBonus
+		client.Buffer.WriteD(int32(e.Mana)) // mana
+		client.Buffer.WriteD(-9999)         // time
 
-		client.Buffer.WriteH(-2) //getAttackElementType
-		client.Buffer.WriteH(0)  //getAttackElementPower
+		client.Buffer.WriteH(int16(e.GetAttackElement())) //getAttackElementType
+		client.Buffer.WriteH(int16(e.AttackAttributeVal)) //getAttackElementPower
 
-		////// ELEM DEF /////
-		client.Buffer.WriteH(0)
-		client.Buffer.WriteH(0)
-		client.Buffer.WriteH(0)
-		client.Buffer.WriteH(0)
-		client.Buffer.WriteH(0)
-		client.Buffer.WriteH(0)
-		////////////////////
+		// Аттрибут в броне
+		for _, a := range e.AttributeDefend {
+			client.Buffer.WriteH(a)
+		}
 
-		////// ENCHANT OPTION
+		////// АУГМЕНТАЦИЯ
 		client.Buffer.WriteH(0)
 		client.Buffer.WriteH(0)
 		client.Buffer.WriteH(0)
