@@ -1,15 +1,20 @@
 package serverpackets
 
-import "l2gogameserver/gameserver/models"
+import (
+	"l2gogameserver/packets"
+)
 
-func TargetSelected(objectId, targetId, x, y, z int32, client *models.Client) {
+func TargetSelected(objectId, targetId, x, y, z int32) []byte {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
 
-	client.Buffer.WriteSingleByte(0x23)
-	client.Buffer.WriteD(objectId)
-	client.Buffer.WriteD(targetId)
-	client.Buffer.WriteD(x)
-	client.Buffer.WriteD(y)
-	client.Buffer.WriteD(z)
-	client.Buffer.WriteD(0)
-	client.SaveAndCryptDataInBufferToSend(true)
+	buffer.WriteSingleByte(0x23)
+	buffer.WriteD(objectId)
+	buffer.WriteD(targetId)
+	buffer.WriteD(x)
+	buffer.WriteD(y)
+	buffer.WriteD(z)
+	buffer.WriteD(0)
+
+	return buffer.Bytes()
 }

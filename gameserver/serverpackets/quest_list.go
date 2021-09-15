@@ -2,14 +2,17 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/packets"
 )
 
-func QuestList(client *models.Client) {
+func QuestList(client *models.Client) []byte {
+	buffer := packets.Get()
 
-	client.Buffer.WriteSingleByte(0x86)
-	client.Buffer.WriteH(0)
+	buffer.WriteSingleByte(0x86)
+	buffer.WriteH(0)
 	x := make([]byte, 128)
-	client.Buffer.WriteSlice(x)
+	buffer.WriteSlice(x)
 
-	client.SaveAndCryptDataInBufferToSend(true)
+	defer packets.Put(buffer)
+	return buffer.Bytes()
 }

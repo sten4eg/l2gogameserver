@@ -12,7 +12,7 @@ import (
 const formalWearId = 6408
 const fortFlagId = 9819
 
-func UseItem(data []byte, client *models.Client) {
+func UseItem(client *models.Client, data []byte) []byte {
 	var packet = packets.NewReader(data)
 
 	objId := packet.ReadInt32() // targetObjId
@@ -32,13 +32,16 @@ func UseItem(data []byte, client *models.Client) {
 
 	// если предмет не найден в инвентаре, то выходим
 	if !find {
-		return
+		return []byte{}
 	}
+
+	buffer := packets.Get()
+	defer packets.Put(buffer)
 
 	if selectedItem.IsEquipable() {
 		// нельзя надевать Formal Wear с проклятым оружием
 		if client.CurrentChar.IsCursedWeaponEquipped() && objId == formalWearId {
-			return
+			return []byte{}
 		}
 
 		// todo тут еще 2 проверки
@@ -48,14 +51,15 @@ func UseItem(data []byte, client *models.Client) {
 
 			// если в руке Combat flag
 			if client.CurrentChar.IsActiveWeapon() && models.GetActiveWeapon(client.CurrentChar.Inventory, client.CurrentChar.Paperdoll).Item.Id == fortFlagId {
-				serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
-				return
+				pkg := serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
+				buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+				return buffer.Bytes()
 			}
 			//todo тут 2 проврки на  isMounted  и isDisarmed
 
 			// нельзя менять оружие/щит если в руках проклятое оружие
 			if client.CurrentChar.IsCursedWeaponEquipped() {
-				return
+				return []byte{}
 			}
 
 			//  запрет носить НЕ камаелям эксклюзивное оружие  камаелей
@@ -64,13 +68,15 @@ func UseItem(data []byte, client *models.Client) {
 				switch client.CurrentChar.Race {
 				case race.KAMAEL:
 					if selectedItem.IsWeaponTypeNone() {
-						serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
-						return
+						pkg := serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
+						buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+						return buffer.Bytes()
 					}
 				case race.HUMAN, race.DWARF, race.ELF, race.DARK_ELF, race.ORC:
 					if selectedItem.IsOnlyKamaelWeapon() {
-						serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
-						return
+						pkg := serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
+						buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+						return buffer.Bytes()
 					}
 				}
 			}
@@ -78,8 +84,9 @@ func UseItem(data []byte, client *models.Client) {
 		// они могут носить только лайт, может проверять на !LIGHT ?
 		case items.SlotChest, items.SlotBack, items.SlotGloves, items.SlotFeet, items.SlotHead, items.SlotFullArmor, items.SlotLegs:
 			if client.CurrentChar.Race == race.KAMAEL && (selectedItem.IsHeavyArmor() || selectedItem.IsMagicArmor()) {
-				serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
-				return
+				pkg := serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
+				buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+				return buffer.Bytes()
 			}
 		case items.SlotDeco:
 			//todo проверка !item.isEquipped() && (activeChar.getInventory().getTalismanSlots() == 0
@@ -92,13 +99,15 @@ func UseItem(data []byte, client *models.Client) {
 
 	models.SaveInventoryInDB(client.CurrentChar.Inventory)
 
-	serverpackets.InventoryUpdate(client, models.UpdateTypeModify)
+	pkg := serverpackets.InventoryUpdate(client, models.UpdateTypeModify)
+	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
 	// После каждого use_item будет запрос в бд на восстановление paperdoll,
 	//todo надо бы это сделать в UseEquippableItem
 	client.CurrentChar.Paperdoll = models.RestoreVisibleInventory(client.CurrentChar.CharId)
 
-	serverpackets.UserInfo(client)
+	pkg2 := serverpackets.UserInfo(client)
+	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
-	client.SentToSend()
+	return buffer.Bytes()
 }

@@ -3,15 +3,18 @@ package serverpackets
 import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/sysmsg"
+	"l2gogameserver/packets"
 )
 
-func SystemMessage(msg sysmsg.SysMsg, client *models.Client) {
+func SystemMessage(msg sysmsg.SysMsg, client *models.Client) []byte {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
 
-	client.Buffer.WriteSingleByte(0x62) // 062 для всех сис мессаджей
-	client.Buffer.WriteD(msg.Id)
-	client.Buffer.WriteD(1) //params.len
+	buffer.WriteSingleByte(0x62) // 062 для всех сис мессаджей
+	buffer.WriteD(msg.Id)
+	buffer.WriteD(1) //params.len
 
-	client.SaveAndCryptDataInBufferToSend(true)
+	return buffer.Bytes()
 	//buffer.WriteD(0)
 	//buffer.WriteS("fuck")
 	//return buffer.Bytes()

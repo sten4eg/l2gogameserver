@@ -1,32 +1,29 @@
 package serverpackets
 
-import "l2gogameserver/gameserver/models"
+import (
+	"l2gogameserver/gameserver/models"
+	"l2gogameserver/packets"
+)
 
-type AttackS struct {
-	TargetId int32
-	Damage   int32
-	X        int32
-	Y        int32
-	Z        int32
-}
-
-func Attack(client *models.Client, attack *AttackS) {
+func Attack(client *models.Client, targetObjId, targetX, targetY, targetZ int32) []byte {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
 
 	x, y, z := client.CurrentChar.GetXYZ()
 
-	client.Buffer.WriteSingleByte(0x33)
+	buffer.WriteSingleByte(0x33)
 
-	client.Buffer.WriteD(client.CurrentChar.CharId)
+	buffer.WriteD(client.CurrentChar.CharId)
 
-	client.Buffer.WriteD(attack.TargetId)
-	client.Buffer.WriteD(4)
-	client.Buffer.WriteD(0)
+	buffer.WriteD(targetObjId)
+	buffer.WriteD(4)
+	buffer.WriteD(0)
 
-	client.Buffer.WriteD(x)
-	client.Buffer.WriteD(y)
-	client.Buffer.WriteD(z)
+	buffer.WriteD(x)
+	buffer.WriteD(y)
+	buffer.WriteD(z)
 
-	client.Buffer.WriteH(1)
+	buffer.WriteH(1)
 	//for(int i = 1; i < hits.length; i++)
 	//{
 	//writeD(hits[i]._targetId);
@@ -34,13 +31,13 @@ func Attack(client *models.Client, attack *AttackS) {
 	//writeC(hits[i]._flags);
 	//}
 
-	client.Buffer.WriteD(attack.TargetId)
-	client.Buffer.WriteD(4)
-	client.Buffer.WriteD(0)
+	buffer.WriteD(targetObjId)
+	buffer.WriteD(4)
+	buffer.WriteD(0)
 
-	client.Buffer.WriteD(attack.X)
-	client.Buffer.WriteD(attack.Y)
-	client.Buffer.WriteD(attack.Z)
+	buffer.WriteD(targetX)
+	buffer.WriteD(targetY)
+	buffer.WriteD(targetZ)
 
-	client.SaveAndCryptDataInBufferToSend(true)
+	return buffer.Bytes()
 }

@@ -6,16 +6,23 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestShortCutDel(data []byte, client *models.Client) {
+func RequestShortCutDel(data []byte, client *models.Client) []byte {
 	var packet = packets.NewReader(data)
 	id := packet.ReadInt32()
 	slot := id % 12
 	page := id / 12
 
 	if page > 10 || page < 0 {
-		return
+		return []byte{}
 	}
 
+	buffer := packets.Get()
+	defer packets.Put(buffer)
+
 	models.DeleteShortCut(slot, page, client)
-	serverpackets.ShortCutInit(client)
+
+	pkg := serverpackets.ShortCutInit(client)
+	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+
+	return buffer.Bytes()
 }

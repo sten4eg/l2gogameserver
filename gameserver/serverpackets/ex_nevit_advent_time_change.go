@@ -4,7 +4,8 @@ import "l2gogameserver/packets"
 
 func ExNevitAdventTimeChange() []byte {
 
-	buffer := new(packets.Buffer)
+	buffer := packets.Get()
+	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0xFE)
 	buffer.WriteH(0xE1)

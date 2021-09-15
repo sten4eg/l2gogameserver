@@ -3,12 +3,25 @@ package packets
 import (
 	"bytes"
 	"encoding/binary"
+	"math"
 	"sync"
 )
 
 type Buffer struct {
-	bytes.Buffer
+	B  []byte
 	Mu sync.Mutex
+}
+
+func (b *Buffer) Len() int {
+	return len(b.B)
+}
+
+func (b *Buffer) Bytes() []byte {
+	return b.B
+}
+
+func (b *Buffer) Reset() {
+	b.B = b.B[:0]
 }
 
 func NewBuffer() *Buffer {
@@ -16,69 +29,63 @@ func NewBuffer() *Buffer {
 }
 
 func (b *Buffer) WriteF(value float64) {
-	err := binary.Write(b, binary.LittleEndian, value)
-	if err != nil {
-		panic(err)
-	}
+	b.B = append(b.B, float64ToByte(value)...)
+}
+
+func float64ToByte(f float64) []byte {
+	var buf [8]byte
+	binary.LittleEndian.PutUint64(buf[:], math.Float64bits(f))
+	return buf[:]
 }
 
 func (b *Buffer) WriteH(value int16) {
-	err := binary.Write(b, binary.LittleEndian, value)
-	if err != nil {
-		panic(err)
-	}
+	var h, l = byte(value >> 8), byte(value & 0xff)
+	b.B = append(b.B, l, h)
 }
 
 func (b *Buffer) WriteQ(value int64) {
-	err := binary.Write(b, binary.LittleEndian, value)
-	if err != nil {
-		panic(err)
-	}
+	var buf [8]byte
+	binary.LittleEndian.PutUint64(buf[:], uint64(value))
+	b.B = append(b.B, buf[:]...)
 }
+
 func (b *Buffer) WriteD(value int32) {
-	err := binary.Write(b, binary.LittleEndian, value)
-	if err != nil {
-		panic(err)
-	}
+	var buf [4]byte
+	binary.LittleEndian.PutUint32(buf[:], uint32(value))
+	b.B = append(b.B, buf[:]...)
 }
 func (b *Buffer) WriteDU(value uint32) {
-	err := binary.Write(b, binary.LittleEndian, value)
-	if err != nil {
-		panic(err)
-	}
+	var buf [4]byte
+	binary.LittleEndian.PutUint32(buf[:], value)
+	b.B = append(b.B, buf[:]...)
 }
-func (b *Buffer) WriteSlice(val []byte) {
-	err := binary.Write(b, binary.LittleEndian, val)
-	if err != nil {
-		panic(err)
-	}
+
+func (b *Buffer) WriteSlice(value []byte) {
+	b.B = append(b.B, value...)
 }
 
 func (b *Buffer) WriteSingleByte(value byte) {
-	err := b.WriteByte(value)
-	if err != nil {
-		panic(err)
-	}
+	b.B = append(b.B, value)
 }
 
 const EmptyByte byte = 0
 
 func (b *Buffer) WriteS(value string) {
 
+	buf := make([]byte, 0, len(value)*2+2)
 	if len(value) != 0 {
 		for _, v := range []byte(value) {
-			err := binary.Write(b, binary.LittleEndian, v)
-			if err != nil {
-				panic(err)
-			}
-			_ = binary.Write(b, binary.LittleEndian, EmptyByte)
-
+			buf = append(buf, v, EmptyByte)
 		}
 	}
 
-	_ = binary.Write(b, binary.LittleEndian, []byte{EmptyByte, EmptyByte})
+	buf = append(buf, EmptyByte, EmptyByte)
+
+	b.B = append(b.B, buf...)
+
 }
 
+////////////////////////////////////////////////////////////////////////////////////
 type Reader struct {
 	r *bytes.Reader
 	b *Buffer
@@ -158,13 +165,13 @@ func (r *Reader) ReadInt32() int32 {
 		return 0
 	}
 
-	_, _ = r.b.Write(buffer)
+	buf := bytes.NewBuffer(buffer)
 
-	err = binary.Read(r.b, binary.LittleEndian, &result)
+	err = binary.Read(buf, binary.LittleEndian, &result)
 	if err != nil {
 		panic(err)
 	}
-	r.b.Reset()
+	buf.Reset()
 	return result
 }
 

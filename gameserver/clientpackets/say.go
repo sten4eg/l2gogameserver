@@ -2,10 +2,7 @@ package clientpackets
 
 import (
 	"l2gogameserver/gameserver/models"
-	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
-	"l2gogameserver/utils"
-	"log"
 )
 
 var (
@@ -31,7 +28,7 @@ var (
 	BATTLEFIELD              int32 = 20 //^
 )
 
-func Say(data []byte, online *models.OnlineCharacters, me *models.Character) {
+func Say(client *models.Client, data []byte) []byte {
 	var packet = packets.NewReader(data)
 	var say models.Say
 	text := packet.ReadString()
@@ -39,45 +36,44 @@ func Say(data []byte, online *models.OnlineCharacters, me *models.Character) {
 	say.Text = text
 	say.Type = packet.ReadInt32()
 
-	var toBroad utils.PacketByte
-
 	switch say.Type {
 	case ALL:
-		toBroad.B = serverpackets.CreatureSay(&say, me)
-		err := online.Char[me.CharId].Conn.Send(toBroad.GetB(), true) //to me
-		if err != nil {
-			log.Println(err)
-		}
-		chars := models.GetAroundPlayersInRadius(me, AllChatRange)
-		for _, v := range chars {
-			_ = online.Char[v].Conn.Send(toBroad.GetB(), true) //broad
-		}
+		//toBroad.B = serverpackets.CreatureSay(&say, me)
+		//err := online.Char[me.CharId].Conn.Send(toBroad.GetB(), true) //to me
+		//if err != nil {
+		//	log.Println(err)
+		//}
+		//chars := models.GetAroundPlayersInRadius(me, AllChatRange)
+		//for _, v := range chars {
+		//	_ = online.Char[v].Conn.Send(toBroad.GetB(), true) //broad
+		//}
 	case Tell:
 		//toBroad.B = serverpackets.CreatureSay(&say, me)
 		//toTell := packet.ReadString()
-		receiverExist := false
-		//for _, v := range online.Char {
-		//	if bytes.Equal(v.CharName.Bytes, []byte(toTell)) {
-		//		receiverExist = true
-		//		_ = v.Conn.Send(toBroad.GetB(), true)
-		//
-		//	}
-		//}
-		if receiverExist {
-			_ = me.Conn.Send(toBroad.GetB(), true)
-		} // else {
-		//todo systemMSG not found
-		// }
+	//	receiverExist := false
+	//for _, v := range online.Char {
+	//	if bytes.Equal(v.CharName.Bytes, []byte(toTell)) {
+	//		receiverExist = true
+	//		_ = v.Conn.Send(toBroad.GetB(), true)
+	//
+	//	}
+	//}
+	//	if receiverExist {
+	//		_ = me.Conn.Send(toBroad.GetB(), true)
+	//	} // else {
+	//todo systemMSG not found
+	// }
 	case Shout:
-		toBroad.B = serverpackets.CreatureSay(&say, me)
-		err := online.Char[me.CharId].Conn.Send(toBroad.GetB(), true) //to me
-		if err != nil {
-			log.Println(err)
-		}
-		chars := models.GetAroundPlayersInRadius(me, ShoutChatRange)
-		for _, v := range chars {
-			_ = online.Char[v].Conn.Send(toBroad.GetB(), true) //broad
-		}
+		//toBroad.B = serverpackets.CreatureSay(&say, me)
+		//err := online.Char[me.CharId].Conn.Send(toBroad.GetB(), true) //to me
+		//if err != nil {
+		//	log.Println(err)
+		//}
+		//chars := models.GetAroundPlayersInRadius(me, ShoutChatRange)
+		//for _, v := range chars {
+		//	_ = online.Char[v].Conn.Send(toBroad.GetB(), true) //broad
+		//}
 	}
 
+	return []byte{}
 }

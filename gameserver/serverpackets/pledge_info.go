@@ -1,13 +1,18 @@
 package serverpackets
 
-import "l2gogameserver/gameserver/models"
+import (
+	"l2gogameserver/gameserver/models"
+	"l2gogameserver/packets"
+)
 
-func PledgeInfo(client *models.Client) {
+func PledgeInfo(client *models.Client) []byte {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
 
-	client.Buffer.WriteH(0) //reserve
-	client.Buffer.WriteSingleByte(0x89)
-	client.Buffer.WriteD(0)
-	client.Buffer.WriteS("")
-	client.Buffer.WriteS("")
+	buffer.WriteSingleByte(0x89)
+	buffer.WriteD(0)
+	buffer.WriteS("")
+	buffer.WriteS("")
 
+	return buffer.Bytes()
 }

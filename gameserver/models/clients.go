@@ -3,8 +3,6 @@ package models
 import (
 	"errors"
 	"l2gogameserver/gameserver/crypt"
-	"l2gogameserver/packets"
-	"log"
 	"net"
 	"sync"
 )
@@ -13,7 +11,6 @@ type Client struct {
 	m               sync.RWMutex
 	Socket          net.Conn
 	ScrambleModulus []byte
-	Buffer          *packets.Buffer
 	// NeedCrypt - флаг, при создании клиента false
 	// указывает первый пакет пришедший от клиента не нужно расшифровывать
 	// костыль
@@ -22,17 +19,11 @@ type Client struct {
 	InKey       []int32
 	CurrentChar *Character
 	Account     *Account
-	// ToSendBuffer буффер полностью готовых к отправке пакета/пакетов
-	ToSendBuffer *packets.Buffer
 }
 
 func NewClient() *Client {
-	buff := new(packets.Buffer)
-	toS := new(packets.Buffer)
 	c := &Client{
-		Buffer:       buff,
-		ToSendBuffer: toS,
-		NeedCrypt:    false,
+		NeedCrypt: false,
 		OutKey: []int32{
 			0x6b,
 			0x60,
@@ -96,49 +87,37 @@ func (c *Client) Send(data []byte, need bool) error {
 
 	return nil
 }
-
-// SaveAndCryptDataInBufferToSend подготавливает данные из
-// c.Buffer ---> c.ToSendBuffer
-func (c *Client) SaveAndCryptDataInBufferToSend(needCrypt bool) {
-	c.Buffer.Mu.Lock()
-	data := c.Buffer.Bytes()
-	c.Buffer.Reset()
-	c.Buffer.Mu.Unlock()
-
-	if len(data) == 0 {
+func (c *Client) SSend(d []byte) {
+	if len(d) == 0 {
 		return
 	}
-	log.Println("Пакет с опкодом : ", data[0], " подготовлен к отправке")
-	// добавление первых двух байт для длинны пакета
-	data = append([]byte{0, 0}, data...)
-
-	if needCrypt {
-		data = crypt.SimpleEncrypt(data, c.OutKey)
+	err := c.sendDataToSocket(d)
+	if err != nil {
+		panic("Пакет не отправлен, ошибка: " + err.Error())
 	}
-
-	length := int16(len(data))
-	data[0], data[1] = uint8(length&0xff), uint8(length>>8)
-
-	c.ToSendBuffer.Mu.Lock()
-	c.ToSendBuffer.WriteSlice(data)
-	c.ToSendBuffer.Mu.Unlock()
 }
 
-// SentToSend отправляет пользователю данные из c.ToSendBuffer
-func (c *Client) SentToSend() {
-	c.ToSendBuffer.Mu.Lock()
-	data := c.ToSendBuffer.Bytes()
-	c.ToSendBuffer.Reset()
-	c.ToSendBuffer.Mu.Unlock()
+func (c *Client) CryptAndReturnPackageReadyToShip(data []byte) []byte {
+	data = crypt.Encrypt(data, c.OutKey)
+	// вычисление длинны пакета, 2 первых байта - размер пакета
+	length := int16(len(data) + 2)
 
-	if len(data) == 0 {
-		return
-	}
-	err := c.sendDataToSocket(data)
+	s, f := byte(length>>8), byte(length&0xff)
 
-	if err != nil {
-		panic(err)
-	}
+	data = append([]byte{f, s}, data...)
+
+	return data
+}
+
+func (c *Client) ReturnPackageReadyToShip(data []byte) []byte {
+	// вычисление длинны пакета, 2 первых байта - размер пакета
+	length := int16(len(data) + 2)
+
+	s, f := byte(length>>8), byte(length&0xff)
+
+	data = append([]byte{f, s}, data...)
+
+	return data
 }
 
 func (c *Client) Receive() (opcode byte, data []byte, e error) {

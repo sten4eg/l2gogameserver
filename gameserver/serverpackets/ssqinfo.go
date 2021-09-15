@@ -2,13 +2,15 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/packets"
 )
 
-func SsqInfo(client *models.Client) {
+func SsqInfo(client *models.Client) []byte {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
 
-	client.Buffer.WriteSingleByte(0x73)
-	client.Buffer.WriteH(256)
+	buffer.WriteSingleByte(0x73)
+	buffer.WriteH(256)
 
-	client.SaveAndCryptDataInBufferToSend(true)
-
+	return buffer.Bytes()
 }

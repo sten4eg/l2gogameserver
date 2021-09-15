@@ -2,8 +2,13 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/packets"
 )
 
-func ActionFailed(client *models.Client) {
-	client.Buffer.WriteSingleByte(0x1f)
+//TODO нужен ли тут буффер ?
+func ActionFailed(client *models.Client) []byte {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
+	buffer.WriteSingleByte(0x1f)
+	return buffer.Bytes()
 }

@@ -8,7 +8,6 @@ import (
 	"log"
 	"net"
 	"sync"
-	"time"
 )
 
 type GameServer struct {
@@ -39,7 +38,7 @@ func (g *GameServer) Start() {
 	onlineChars.Char = make(map[int32]*models.Character)
 	g.OnlineCharacters = &onlineChars
 
-	go g.Tick()
+	//go g.Tick()
 	defer g.clientsListener.Close()
 	for {
 		client := models.NewClient()
@@ -51,12 +50,12 @@ func (g *GameServer) Start() {
 		} else {
 			g.AddClient(client)
 			go g.handler(client)
-			go g.QWE(client)
+			//	go g.QWE(client)
 		}
 	}
 }
 
-//todo (g Gameser) кажется говном
+//todo (g Gameser) такое говно
 func (g *GameServer) QWE(client *models.Client) {
 	for {
 		select {
@@ -69,7 +68,7 @@ func (g *GameServer) QWE(client *models.Client) {
 			} else {
 				serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
 			}
-			client.SentToSend()
+
 		default:
 		}
 	}
@@ -96,7 +95,6 @@ func (g *GameServer) BroadToAroundPlayersInRadius(my *models.Client, pkg utils.P
 	for _, v := range charsIds {
 		_ = g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
 	}
-
 }
 
 func (g *GameServer) addOnlineChar(character *models.Character) {
@@ -105,34 +103,34 @@ func (g *GameServer) addOnlineChar(character *models.Character) {
 	g.OnlineCharacters.Mu.Unlock()
 }
 
-func (g *GameServer) Tick() {
-	for {
-		g.clients.Range(func(k, v interface{}) bool {
-			client := v.(*models.Client)
-			if client.CurrentChar.Coordinates == nil {
-				return true
-			}
-
-			x, y, _ := client.CurrentChar.GetXYZ()
-			reg := models.GetRegion(x, y)
-			if reg != client.CurrentChar.CurrentRegion && client.CurrentChar.CurrentRegion != nil {
-				client.CurrentChar.CurrentRegion.CharsInRegion.Delete(client.CurrentChar.CharId)
-				reg.CharsInRegion.Store(client.CurrentChar.CharId, client.CurrentChar)
-				client.CurrentChar.CurrentRegion = reg
-
-				var info utils.PacketByte
-				info.B = serverpackets.CharInfo(client.CurrentChar)
-				g.BroadToAroundPlayers(client, info)
-				BroadCastToMe(g, client.CurrentChar)
-				log.Println(client.CurrentChar.CharId, " change Region ")
-			}
-
-			return true // if false, Range stops
-		})
-
-		time.Sleep(1 * time.Second)
-	}
-}
+//func (g *GameServer) Tick() {
+//	for {
+//		g.clients.Range(func(k, v interface{}) bool {
+//			client := v.(*models.Client)
+//			if client.CurrentChar.Coordinates == nil {
+//				return true
+//			}
+//
+//			x, y, _ := client.CurrentChar.GetXYZ()
+//			reg := models.GetRegion(x, y)
+//			if reg != client.CurrentChar.CurrentRegion && client.CurrentChar.CurrentRegion != nil {
+//				client.CurrentChar.CurrentRegion.CharsInRegion.Delete(client.CurrentChar.CharId)
+//				reg.CharsInRegion.Store(client.CurrentChar.CharId, client.CurrentChar)
+//				client.CurrentChar.CurrentRegion = reg
+//
+//				var info utils.PacketByte
+//				info.B = serverpackets.CharInfo(client.CurrentChar)
+//				g.BroadToAroundPlayers(client, info)
+//				BroadCastToMe(g, client.CurrentChar)
+//				log.Println(client.CurrentChar.CharId, " change Region ")
+//			}
+//
+//			return true // if false, Range stops
+//		})
+//
+//		time.Sleep(1 * time.Second)
+//	}
+//}
 
 func BroadCastToMe(g *GameServer, my *models.Character) {
 	x, y, _ := my.GetXYZ()

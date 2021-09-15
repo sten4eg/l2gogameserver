@@ -9,7 +9,9 @@ func CharInfo(user *models.Character) []byte {
 
 	x, y, z := user.GetXYZ()
 
-	buffer := new(packets.Buffer)
+	buffer := packets.Get()
+	defer packets.Put(buffer)
+
 	buffer.WriteSingleByte(0x31)
 	buffer.WriteD(x)
 	buffer.WriteD(y)
