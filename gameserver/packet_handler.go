@@ -99,8 +99,9 @@ func (g *GameServer) handler(client *models.Client) {
 
 			log.Println("Send UserInfo")
 		case 166:
-			pkg := serverpackets.SkillCoolTime()
-			err := client.Send(pkg, true)
+			var info utils.PacketByte
+			info.B = serverpackets.SkillCoolTime()
+			err := client.Send(info.GetB(), true)
 			if err != nil {
 				log.Println(err)
 			}

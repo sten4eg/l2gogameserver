@@ -51,16 +51,25 @@ func (g *GameServer) Start() {
 		} else {
 			g.AddClient(client)
 			go g.handler(client)
-			go QWE(client)
+			go g.QWE(client)
 		}
 	}
 }
 
-func QWE(client *models.Client) {
+//todo (g Gameser) кажется говном
+func (g *GameServer) QWE(client *models.Client) {
 	for {
 		select {
 		case q := <-client.CurrentChar.F:
-			serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
+			if q.UpdateType == models.UpdateTypeRemove {
+				serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
+				var info utils.PacketByte
+				info.B = serverpackets.CharInfo(client.CurrentChar)
+				g.BroadToAroundPlayersInRadius(client, info, 2000)
+			} else {
+				serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
+			}
+			client.SentToSend()
 		default:
 		}
 	}
@@ -75,13 +84,21 @@ func kickClient(client *models.Client) {
 }
 
 func (g *GameServer) BroadToAroundPlayers(my *models.Client, pkg utils.PacketByte) {
-
 	charsIds := models.GetAroundPlayers(my.CurrentChar)
+	for _, v := range charsIds {
+		_ = g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
+	}
+}
+
+func (g *GameServer) BroadToAroundPlayersInRadius(my *models.Client, pkg utils.PacketByte, radius int32) {
+	charsIds := models.GetAroundPlayersInRadius(my.CurrentChar, radius)
+	serverpackets.UserInfo(my)
 	for _, v := range charsIds {
 		_ = g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
 	}
 
 }
+
 func (g *GameServer) addOnlineChar(character *models.Character) {
 	g.OnlineCharacters.Mu.Lock()
 	g.OnlineCharacters.Char[character.CharId] = character

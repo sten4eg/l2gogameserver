@@ -1,15 +1,16 @@
 package models
 
 import (
-	"bytes"
 	"errors"
 	"l2gogameserver/gameserver/crypt"
 	"l2gogameserver/packets"
 	"log"
 	"net"
+	"sync"
 )
 
 type Client struct {
+	m               sync.RWMutex
 	Socket          net.Conn
 	ScrambleModulus []byte
 	Buffer          *packets.Buffer
@@ -21,7 +22,6 @@ type Client struct {
 	InKey       []int32
 	CurrentChar *Character
 	Account     *Account
-	ReadBuffer  bytes.Buffer
 	// ToSendBuffer буффер полностью готовых к отправке пакета/пакетов
 	ToSendBuffer *packets.Buffer
 }
@@ -84,25 +84,27 @@ func (c *Client) Send(data []byte, need bool) error {
 	}
 	// вычисление длинны пакета, 2 первых байта - размер пакета
 	length := int16(len(data) + 2)
-	// Put everything together
-	buffer := packets.NewBuffer()
-	buffer.WriteH(length)
-	_, err := buffer.Write(data)
+
+	s, f := byte(length>>8), byte(length&0xff)
+
+	data = append([]byte{f, s}, data...)
+
+	err := c.sendDataToSocket(data)
 	if err != nil {
-		panic(err)
+		return errors.New("Пакет не отправлен, ошибка: " + err.Error())
 	}
 
-	_, err = c.Socket.Write(buffer.Bytes())
-	if err != nil {
-		return errors.New("The packet couldn't be sent.")
-	}
 	return nil
 }
 
 // SaveAndCryptDataInBufferToSend подготавливает данные из
 // c.Buffer ---> c.ToSendBuffer
 func (c *Client) SaveAndCryptDataInBufferToSend(needCrypt bool) {
+	c.Buffer.Mu.Lock()
 	data := c.Buffer.Bytes()
+	c.Buffer.Reset()
+	c.Buffer.Mu.Unlock()
+
 	if len(data) == 0 {
 		return
 	}
@@ -117,14 +119,23 @@ func (c *Client) SaveAndCryptDataInBufferToSend(needCrypt bool) {
 	length := int16(len(data))
 	data[0], data[1] = uint8(length&0xff), uint8(length>>8)
 
+	c.ToSendBuffer.Mu.Lock()
 	c.ToSendBuffer.WriteSlice(data)
-	c.Buffer.Reset()
+	c.ToSendBuffer.Mu.Unlock()
 }
 
 // SentToSend отправляет пользователю данные из c.ToSendBuffer
 func (c *Client) SentToSend() {
-	_, err := c.Socket.Write(c.ToSendBuffer.Bytes())
+	c.ToSendBuffer.Mu.Lock()
+	data := c.ToSendBuffer.Bytes()
 	c.ToSendBuffer.Reset()
+	c.ToSendBuffer.Mu.Unlock()
+
+	if len(data) == 0 {
+		return
+	}
+	err := c.sendDataToSocket(data)
+
 	if err != nil {
 		panic(err)
 	}
@@ -147,7 +158,7 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	// длинна пакета
 	dataSize := (int(header[0]) | int(header[1])<<8) - 2
 
-	// аллокация требуемого массива байт для входяшего пакета
+	// аллокация требуемого массива байт для входящего пакета
 	data = make([]byte, dataSize)
 
 	n, err = c.Socket.Read(data)
@@ -172,4 +183,11 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	data = data[1:]
 	e = nil
 	return
+}
+
+func (c *Client) sendDataToSocket(data []byte) error {
+	c.m.Lock()
+	_, err := c.Socket.Write(data)
+	c.m.Unlock()
+	return err
 }
