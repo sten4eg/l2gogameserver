@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"l2gogameserver/gameserver/crypt"
+	"log"
 	"net"
 	"sync"
 )
@@ -69,7 +70,7 @@ func NewClient() *Client {
 
 // Send отправка массив data персонажу
 // need - флаг, указывает надо ли шифровать данные
-func (c *Client) Send(data []byte, need bool) error {
+func (c *Client) Send(data []byte, need bool) {
 	if need {
 		data = crypt.Encrypt(data, c.OutKey)
 	}
@@ -82,10 +83,8 @@ func (c *Client) Send(data []byte, need bool) error {
 
 	err := c.sendDataToSocket(data)
 	if err != nil {
-		return errors.New("Пакет не отправлен, ошибка: " + err.Error())
+		panic("Пакет не отправлен, ошибка: " + err.Error())
 	}
-
-	return nil
 }
 func (c *Client) SSend(d []byte) {
 	if len(d) == 0 {
@@ -93,7 +92,7 @@ func (c *Client) SSend(d []byte) {
 	}
 	err := c.sendDataToSocket(d)
 	if err != nil {
-		panic("Пакет не отправлен, ошибка: " + err.Error())
+		log.Println("Пакет не отправлен, ошибка: " + err.Error())
 	}
 }
 

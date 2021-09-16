@@ -59,7 +59,7 @@ func CharSelected(user *models.Character, client *models.Client) []byte {
 
 	client.CurrentChar = client.Account.Char[client.Account.CharSlot]
 
-	// загрузка всех данных выбранного чара
+	//TODO Load загрузка всех данных выбранного чара
 	client.CurrentChar.Load()
 
 	return buffer.Bytes()

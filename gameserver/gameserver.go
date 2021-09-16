@@ -50,30 +50,21 @@ func (g *GameServer) Start() {
 		} else {
 			g.AddClient(client)
 			go g.handler(client)
-			//	go g.QWE(client)
 		}
 	}
 }
 
-//todo (g Gameser) такое говно
-func (g *GameServer) QWE(client *models.Client) {
-	for {
-		select {
-		case q := <-client.CurrentChar.F:
-			if q.UpdateType == models.UpdateTypeRemove {
-				serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
-				var info utils.PacketByte
-				info.B = serverpackets.CharInfo(client.CurrentChar)
-				g.BroadToAroundPlayersInRadius(client, info, 2000)
-			} else {
-				serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
-			}
-
-		default:
+func (g *GameServer) ChannelListener(client *models.Client) {
+	for q := range client.CurrentChar.F {
+		pkg := serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
+		i := client.CryptAndReturnPackageReadyToShip(pkg)
+		client.SSend(i)
+		if q.UpdateType == models.UpdateTypeRemove {
+			g.BroadCastUserInfoInRadius(client, 2000)
 		}
 	}
-
 }
+
 func kickClient(client *models.Client) {
 	err := client.Socket.Close()
 	if err != nil {
@@ -85,15 +76,30 @@ func kickClient(client *models.Client) {
 func (g *GameServer) BroadToAroundPlayers(my *models.Client, pkg utils.PacketByte) {
 	charsIds := models.GetAroundPlayers(my.CurrentChar)
 	for _, v := range charsIds {
-		_ = g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
+		g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
 	}
 }
 
-func (g *GameServer) BroadToAroundPlayersInRadius(my *models.Client, pkg utils.PacketByte, radius int32) {
-	charsIds := models.GetAroundPlayersInRadius(my.CurrentChar, radius)
-	serverpackets.UserInfo(my)
+// BroadCastUserInfoInRadius отправляет всем персонажам в радиусе radius
+// информацию о персонаже, Самому персонажу отправляет полный UserInfo
+func (g *GameServer) BroadCastUserInfoInRadius(me *models.Client, radius int32) {
+	ui := serverpackets.UserInfo(me)
+	me.Send(ui, true)
+
+	charsIds := models.GetAroundPlayersInRadius(me.CurrentChar, radius)
+	if len(charsIds) == 0 {
+		return
+	}
+
+	var ci utils.PacketByte
+	ci.SetB(serverpackets.CharInfo(me.CurrentChar))
+
+	var exUi utils.PacketByte
+	exUi.SetB(serverpackets.ExBrExtraUserInfo(me))
+
 	for _, v := range charsIds {
-		_ = g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
+		g.OnlineCharacters.Char[v].Conn.Send(ci.GetB(), true)
+		g.OnlineCharacters.Char[v].Conn.Send(exUi.GetB(), true)
 	}
 }
 
@@ -168,6 +174,6 @@ func BroadCastToMe(g *GameServer, my *models.Character) {
 	for _, v := range charIds {
 		var info utils.PacketByte
 		info.B = serverpackets.CharInfo(g.OnlineCharacters.Char[v])
-		_ = me.Send(info.GetB(), true)
+		me.Send(info.GetB(), true)
 	}
 }

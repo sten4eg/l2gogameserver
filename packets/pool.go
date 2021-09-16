@@ -32,14 +32,14 @@ type Pool struct {
 	pool sync.Pool
 }
 
-var defaultPool Pool
+var pool Pool
 
 // Get returns an empty byte buffer from the pool.
 //
 // Got byte buffer may be returned to the pool via Put call.
 // This reduces the number of memory allocations required for byte buffer
 // management.
-func Get() *Buffer { return defaultPool.Get() }
+func Get() *Buffer { return pool.Get() }
 
 // Get returns new byte buffer with zero length.
 //
@@ -59,7 +59,7 @@ func (p *Pool) Get() *Buffer {
 //
 // ByteBuffer.B mustn't be touched after returning it to the pool.
 // Otherwise data races will occur.
-func Put(b *Buffer) { defaultPool.Put(b) }
+func Put(b *Buffer) { pool.Put(b) }
 
 // Put releases byte buffer obtained via Get to the pool.
 //

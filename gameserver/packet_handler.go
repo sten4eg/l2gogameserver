@@ -5,7 +5,6 @@ import (
 	"l2gogameserver/gameserver/clientpackets"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
-	"l2gogameserver/utils"
 	"log"
 )
 
@@ -39,6 +38,7 @@ func (g *GameServer) handler(client *models.Client) {
 			pkg := clientpackets.CharSelected(data, client)
 			client.SSend(pkg)
 			g.addOnlineChar(client.CurrentChar)
+			go g.ChannelListener(client)
 
 		case 208:
 			if len(data) >= 2 {
@@ -65,10 +65,8 @@ func (g *GameServer) handler(client *models.Client) {
 			client.SSend(pkg)
 		case 17:
 			pkg := clientpackets.RequestEnterWorld(client, data)
-			var u utils.PacketByte
-			u.SetB(serverpackets.CharInfo(client.CurrentChar))
 			client.SSend(pkg)
-			g.BroadToAroundPlayers(client, u)
+			g.BroadCastUserInfoInRadius(client, 2000)
 		case 166:
 			pkg := clientpackets.RequestSkillCoolTime(client, data)
 			client.SSend(pkg)

@@ -7,13 +7,13 @@ import (
 
 func ExBrExtraUserInfo(client *models.Client) []byte {
 	buffer := packets.Get()
+	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0xFE)
 	buffer.WriteH(0xDA)
-	buffer.WriteD(1)
-	buffer.WriteD(0)
-	buffer.WriteD(0)
+	buffer.WriteD(client.CurrentChar.CharId)
+	buffer.WriteD(0) /** Event abnormal visual effects map. */
+	buffer.WriteD(0) /** Lecture mark. */
 
-	defer packets.Put(buffer)
 	return buffer.Bytes()
 }

@@ -11,6 +11,7 @@ func RestartResponse(client *models.Client) []byte {
 	buffer.WriteSingleByte(0x71)
 	buffer.WriteD(1)
 
+	//todo останавливать всё у клиента
 	defer packets.Put(buffer)
 	return buffer.Bytes()
 }
