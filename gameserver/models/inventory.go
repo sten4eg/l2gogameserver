@@ -362,6 +362,7 @@ func GetActiveWeapon(inventory []MyItem, paperdoll [26]MyItem) *MyItem {
 // UseEquippableItem исользовать предмет который можно надеть на персонажа
 func UseEquippableItem(selectedItem MyItem, character *Character) {
 	//todo надо как то обновлять paperdoll, или возвращать массив или же  вынести это в другой пакет
+	log.Println(selectedItem.ObjId, " and equiped = ", selectedItem.IsEquipped())
 	if selectedItem.IsEquipped() == 1 {
 		unEquipAndRecord(selectedItem, character)
 	} else {
@@ -533,18 +534,18 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 	// переносим его в инвентарь, убираем бонусы этого итема у персонажа
 	if selectedItem == nil {
 		for i, itemInInventory := range character.Inventory {
-			if itemInInventory.LocData == int32(slot) {
+			if itemInInventory.LocData == int32(slot) && itemInInventory.Loc == Paperdoll {
 				itemInInventory.LocData = getFirstEmptySlot(character.Inventory)
 				itemInInventory.Loc = Inventory
 				character.Inventory[i] = itemInInventory
-
+				log.Println(itemInInventory.Loc, itemInInventory.LocData)
 				character.RemoveBonusStat(itemInInventory.BonusStats)
 				break
 			}
 		}
 		return
 	}
-
+	log.Println("не должен дойти")
 	var oldItemInSelectedSlot MyItem
 	var inventoryKeyOldItemInSelectedSlot int
 	var keyCurrentItem int
@@ -583,28 +584,23 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 }
 
 func getFirstEmptySlot(myItems []MyItem) int32 {
-	var max int32
-	for _, v := range myItems {
-		if v.LocData > max {
-			max = v.LocData
-		}
-	}
 
-	var i int32
-	for i = 0; i < max; i++ {
+	limit := int32(80) // todo дефолтно 80 , но может быть больше
+
+	for i := int32(0); i < limit; i++ {
 		flag := false
-		for _, q := range myItems {
-			if q.LocData == i && q.Loc != Paperdoll {
+		for _, v := range myItems {
+			if v.Loc == Inventory && v.LocData == i {
 				flag = true
+				break
 			}
 		}
-
 		if !flag {
 			return i
 		}
 	}
+	panic("не нашёл куда складывать итем")
 
-	return max + 1
 }
 
 func (i *MyItem) GetAttackElement() attribute.Attribute {

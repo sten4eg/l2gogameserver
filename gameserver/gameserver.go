@@ -70,6 +70,8 @@ func kickClient(client *models.Client) {
 	if err != nil {
 		panic(err)
 	}
+	client.CurrentChar.F = nil
+	//todo close all character goroutine, save info in DB
 	log.Println("Socket Close For: ", client.CurrentChar.CharName)
 }
 
@@ -95,12 +97,14 @@ func (g *GameServer) BroadCastUserInfoInRadius(me *models.Client, radius int32) 
 	ci.SetB(serverpackets.CharInfo(me.CurrentChar))
 
 	var exUi utils.PacketByte
-	exUi.SetB(serverpackets.ExBrExtraUserInfo(me))
+	exUi.SetB(serverpackets.ExBrExtraUserInfo(me.CurrentChar))
 
+	g.OnlineCharacters.Mu.Lock()
 	for _, v := range charsIds {
 		g.OnlineCharacters.Char[v].Conn.Send(ci.GetB(), true)
 		g.OnlineCharacters.Char[v].Conn.Send(exUi.GetB(), true)
 	}
+	g.OnlineCharacters.Mu.Unlock()
 }
 
 func (g *GameServer) addOnlineChar(character *models.Character) {

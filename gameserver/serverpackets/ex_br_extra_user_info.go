@@ -5,13 +5,13 @@ import (
 	"l2gogameserver/packets"
 )
 
-func ExBrExtraUserInfo(client *models.Client) []byte {
+func ExBrExtraUserInfo(client *models.Character) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0xFE)
 	buffer.WriteH(0xDA)
-	buffer.WriteD(client.CurrentChar.CharId)
+	buffer.WriteD(client.CharId)
 	buffer.WriteD(0) /** Event abnormal visual effects map. */
 	buffer.WriteD(0) /** Lecture mark. */
 

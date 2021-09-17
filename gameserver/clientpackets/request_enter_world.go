@@ -11,10 +11,7 @@ func RequestEnterWorld(client *models.Client, data []byte) []byte {
 	buff := packets.Get()
 	defer packets.Put(buff)
 
-	//pkg1 := serverpackets.UserInfo(client)
-	//buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg1))
-
-	pkg2 := serverpackets.ExBrExtraUserInfo(client)
+	pkg2 := serverpackets.ExBrExtraUserInfo(client.CurrentChar)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
 	pkg3 := serverpackets.SendMacroList(client)

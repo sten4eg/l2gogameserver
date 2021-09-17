@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"l2gogameserver/gameserver/clientpackets"
 	"l2gogameserver/gameserver/models"
-	"l2gogameserver/gameserver/serverpackets"
 	"log"
 )
 
@@ -52,6 +51,8 @@ func (g *GameServer) handler(client *models.Client) {
 				case 13:
 					pkg := clientpackets.RequestAutoSoulShot(data, client)
 					client.SSend(pkg)
+				case 36:
+					clientpackets.RequestSaveInventoryOrder(client, data)
 				default:
 					log.Println("Не реализованный пакет: ", data[0])
 				}
@@ -117,7 +118,10 @@ func (g *GameServer) handler(client *models.Client) {
 			pkg := clientpackets.RequestShortCutDel(data, client)
 			client.SSend(pkg)
 		case 80:
-			pkg := serverpackets.SkillList(client)
+			pkg := clientpackets.RequestSkillList(client, data)
+			client.SSend(pkg)
+		case 20:
+			pkg := clientpackets.RequestItemList(client, data)
 			client.SSend(pkg)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
