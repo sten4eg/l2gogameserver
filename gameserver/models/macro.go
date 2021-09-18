@@ -52,6 +52,7 @@ func removeMacros(id int32) {
 	if err != nil {
 		panic(err)
 	}
+	defer dbConn.Release()
 	dbConn.Exec(context.Background(), sqlMacros, id)
 	dbConn.Exec(context.Background(), sqlCommands, id)
 }
