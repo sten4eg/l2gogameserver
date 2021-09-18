@@ -59,6 +59,8 @@ type Character struct {
 	BonusStats             []items.ItemBonusStat
 	F                      chan IUP
 	InGame                 bool
+
+	Macros []Macro
 }
 
 func GetNewCharacterModel() *Character {

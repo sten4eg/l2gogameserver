@@ -7,6 +7,8 @@ import (
 )
 
 func RequestEnterWorld(client *models.Client, data []byte) []byte {
+	//Загрузка макросов персонажа
+	client.CurrentChar.LoadCharactersMacros()
 
 	buff := packets.Get()
 	defer packets.Put(buff)
@@ -14,8 +16,11 @@ func RequestEnterWorld(client *models.Client, data []byte) []byte {
 	pkg2 := serverpackets.ExBrExtraUserInfo(client.CurrentChar)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
-	pkg3 := serverpackets.SendMacroList(client)
-	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg3))
+	count := uint8(len(client.CurrentChar.Macros))
+	for index, macro := range client.CurrentChar.Macros {
+		pkg3 := serverpackets.SendMacroList(client, macro, count, index)
+		buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg3))
+	}
 
 	pkg4 := serverpackets.ItemList(client)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg4))

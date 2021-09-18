@@ -123,6 +123,9 @@ func (g *GameServer) handler(client *models.Client) {
 		case 20:
 			pkg := clientpackets.RequestItemList(client, data)
 			client.SSend(pkg)
+		case 205:
+			pkg := clientpackets.RequestMakeMacro(client, data)
+			client.SSend(pkg)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}

@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+	//lolkek
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	//	gameserver.Load()
 	//	gameserver.FindPath(-64072, 100856, -3584, -64072, 101048, -3584)
