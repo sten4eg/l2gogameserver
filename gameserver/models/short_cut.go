@@ -13,10 +13,12 @@ func RegisterShortCut(sc dto.ShortCutDTO, client *Client) {
 	shorts := client.CurrentChar.ShortCut
 
 	s, exist := shorts[sc.Slot+(sc.Page*MaxShortcutsPerBar)]
+
 	if exist {
 		deleteShortCutFromDb(s, client.CurrentChar.CharId, client.CurrentChar.ClassId)
 	}
 	registerShortCutInDb(sc, client.CurrentChar.CharId, client.CurrentChar.ClassId)
+	client.CurrentChar.ShortCut[sc.Slot+(sc.Page*MaxShortcutsPerBar)] = sc
 }
 
 func deleteShortCutFromDb(shortCut dto.ShortCutDTO, charId int32, classId int32) {
