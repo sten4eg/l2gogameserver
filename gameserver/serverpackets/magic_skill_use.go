@@ -3,26 +3,12 @@ package serverpackets
 import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/skills/targets"
+	"l2gogameserver/packets"
 )
 
-func NewMagicSkillUse(client *models.Client, skill models.Skill, ctrlPressed, shiftPressed bool) {
-
-	if skill.OperateType.IsPassive() {
-		ActionFailed(client)
-		return
-	}
-
-	if client.CurrentChar.IsCastingNow {
-		currSkill := client.CurrentChar.CurrentSkill
-		if currSkill != nil && skill.ID == currSkill.Skill.ID {
-			ActionFailed(client)
-			return
-		} //todo тут еще есть elseif isSkillDisabled()
-
-		client.CurrentChar.SetSkillToQueue(skill, ctrlPressed, shiftPressed)
-		ActionFailed(client)
-		return
-	}
+func NewMagicSkillUse(client *models.Client, skill models.Skill, ctrlPressed, shiftPressed bool) []byte {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
 
 	client.CurrentChar.IsCastingNow = true
 	client.CurrentChar.CurrentSkill = &models.SkillHolder{
@@ -43,29 +29,29 @@ func NewMagicSkillUse(client *models.Client, skill models.Skill, ctrlPressed, sh
 	_ = target
 
 	/////////////////////////////////////////////////////////////////////////////////
-	client.Buffer.WriteSingleByte(0x48)
-	client.Buffer.WriteD(client.CurrentChar.CharId) // activeChar id
-	client.Buffer.WriteD(client.CurrentChar.CharId) // targetChar id
-	client.Buffer.WriteD(int32(skill.ID))           // skillId
-	client.Buffer.WriteD(int32(skill.Levels))       // skillLevel
-	client.Buffer.WriteD(int32(skill.HitTime))      // hitTime
-	client.Buffer.WriteD(int32(skill.ReuseDelay))   // reuseDelay
+	buffer.WriteSingleByte(0x48)
+	buffer.WriteD(client.CurrentChar.CharId) // activeChar id
+	buffer.WriteD(client.CurrentChar.CharId) // targetChar id
+	buffer.WriteD(int32(skill.ID))           // skillId
+	buffer.WriteD(int32(skill.Levels))       // skillLevel
+	buffer.WriteD(int32(skill.HitTime))      // hitTime
+	buffer.WriteD(int32(skill.ReuseDelay))   // reuseDelay
 
 	x, y, z := client.CurrentChar.GetXYZ()
-	client.Buffer.WriteD(x)
-	client.Buffer.WriteD(y)
-	client.Buffer.WriteD(z)
+	buffer.WriteD(x)
+	buffer.WriteD(y)
+	buffer.WriteD(z)
 
-	client.Buffer.WriteH(0) //size???
+	buffer.WriteH(0) //size???
 	// for  by size ???
 
-	client.Buffer.WriteH(0) // _groundLocations.size()
+	buffer.WriteH(0) // _groundLocations.size()
 	// for by _groundLocations.size()
 
 	//location target
-	client.Buffer.WriteD(x)
-	client.Buffer.WriteD(y)
-	client.Buffer.WriteD(z)
-	client.SaveAndCryptDataInBufferToSend(true)
+	buffer.WriteD(x)
+	buffer.WriteD(y)
+	buffer.WriteD(z)
 
+	return buffer.Bytes()
 }

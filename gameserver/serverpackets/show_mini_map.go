@@ -2,12 +2,16 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/packets"
 )
 
-func ShowMiniMap(client *models.Client) {
+func ShowMiniMap(client *models.Client) []byte {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
 
-	client.Buffer.WriteSingleByte(0xa3)
-	client.Buffer.WriteD(1665)
-	client.Buffer.WriteSingleByte(2)
-	client.SaveAndCryptDataInBufferToSend(true)
+	buffer.WriteSingleByte(0xa3)
+	buffer.WriteD(1665)
+	buffer.WriteSingleByte(2) //todo currentPeriod
+
+	return buffer.Bytes()
 }

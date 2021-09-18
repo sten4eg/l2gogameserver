@@ -2,14 +2,17 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/packets"
 )
 
-func ExBasicActionList(client *models.Client) {
+func ExBasicActionList(client *models.Client) []byte {
+	buffer := packets.Get()
 
-	client.Buffer.WriteSingleByte(0xfe)
-	client.Buffer.WriteH(0x5f)
+	buffer.WriteSingleByte(0xfe)
+	buffer.WriteH(0x5f)
 
-	client.Buffer.WriteD(0)
+	buffer.WriteD(0)
 
-	client.SaveAndCryptDataInBufferToSend(true)
+	defer packets.Put(buffer)
+	return buffer.Bytes()
 }

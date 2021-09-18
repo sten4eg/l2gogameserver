@@ -1,23 +1,28 @@
 package clientpackets
 
 import (
-	"fmt"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func RequestAutoSoulShot(data []byte, client *models.Client) {
+func RequestAutoSoulShot(data []byte, client *models.Client) []byte {
 	var packet = packets.NewReader(data[2:])
 	itemId := packet.ReadInt32()
 	typee := packet.ReadInt32()
 
 	client.CurrentChar.ActiveSoulShots = append(client.CurrentChar.ActiveSoulShots, itemId)
 
-	client.Buffer.WriteSingleByte(0xFE)
+	buffer := packets.Get()
+	defer packets.Put(buffer)
 
-	client.Buffer.WriteH(0x0c)
-	client.Buffer.WriteD(itemId)
-	client.Buffer.WriteD(typee)
-	client.SaveAndCryptDataInBufferToSend(true)
-	fmt.Println(itemId, typee)
+	buffer.WriteSingleByte(0xFE)
+
+	buffer.WriteH(0x0c)
+	buffer.WriteD(itemId)
+	buffer.WriteD(typee)
+
+	pkg := buffer.Bytes()
+
+	return client.CryptAndReturnPackageReadyToShip(pkg)
+
 }

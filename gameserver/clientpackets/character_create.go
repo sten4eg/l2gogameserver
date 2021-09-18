@@ -31,7 +31,7 @@ type CharCreate struct {
 	CurMp     int32
 }
 
-func CharacterCreate(data []byte, client *models.Client) {
+func CharacterCreate(data []byte, client *models.Client) []byte {
 	var packet = packets.NewReader(data)
 	var charCreate CharCreate
 
@@ -51,8 +51,13 @@ func CharacterCreate(data []byte, client *models.Client) {
 	charCreate.HairStyle = byte(packet.ReadInt32())
 	charCreate.HairColor = byte(packet.ReadInt32())
 	charCreate.Face = byte(packet.ReadInt32())
-	charCreate.validate(client)
 
+	buffer := packets.Get()
+	defer packets.Put(buffer)
+
+	pkg := charCreate.validate(client)
+	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+	return buffer.Bytes()
 }
 
 var (
@@ -66,26 +71,29 @@ var (
 	ReasonOk                  int32 = 99
 )
 
-func (cc *CharCreate) validate(client *models.Client) {
+func (cc *CharCreate) validate(client *models.Client) []byte {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
+
 	lenName := len(cc.Name)
 	if (lenName < 1) || (lenName > 16) {
-		serverpackets.CharCreateFail(client, Reason16EngChars)
-		return
+		buffer.WriteSlice(serverpackets.CharCreateFail(client, Reason16EngChars))
+		return buffer.Bytes()
 	}
 
 	if cc.Face > 2 {
-		serverpackets.CharCreateFail(client, ReasonCreationFailed)
-		return
+		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonCreationFailed))
+		return buffer.Bytes()
 	}
 
 	if ((cc.Sex == 0) && (cc.HairStyle > 4)) || ((cc.Sex) != 0 && (cc.HairStyle > 6)) {
-		serverpackets.CharCreateFail(client, ReasonCreationFailed)
-		return
+		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonCreationFailed))
+		return buffer.Bytes()
 	}
 
 	if cc.HairStyle > 3 {
-		serverpackets.CharCreateFail(client, ReasonCreationFailed)
-		return
+		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonCreationFailed))
+		return buffer.Bytes()
 	}
 
 	dbConn, err := db.GetConn()
@@ -98,27 +106,31 @@ func (cc *CharCreate) validate(client *models.Client) {
 	var exist bool
 	err = row.Scan(&exist)
 	if err != nil {
-		serverpackets.CharCreateFail(client, ReasonCreateNotAllowed)
-		return
+		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonCreateNotAllowed))
+		return buffer.Bytes()
+
 	}
 	if exist {
-		serverpackets.CharCreateFail(client, ReasonNameAlreadyExists)
-		return
+		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonNameAlreadyExists))
+		return buffer.Bytes()
+
 	}
 
 	row = dbConn.QueryRow(context.Background(), "SELECT count(*) FROM characters where login = $1", client.Account.Login)
 	var i int
 	err = row.Scan(&i)
 	if err != nil {
-		serverpackets.CharCreateFail(client, ReasonCreateNotAllowed)
-		return
+		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonCreateNotAllowed))
+		return buffer.Bytes()
+
 	}
 	if i > 6 {
-		serverpackets.CharCreateFail(client, ReasonTooManyCharacters)
-		return
+		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonTooManyCharacters))
+		return buffer.Bytes()
+
 	}
 	x, y, z := models.GetCreationCoordinates(cc.ClassId)
-	_, err = dbConn.Exec(context.Background(), "INSERT INTO characters (char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
+	_, err = dbConn.Exec(context.Background(), "INSERT INTO characters (char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class, title) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",
 		cc.Name,
 		cc.Race,
 		cc.Sex,
@@ -130,12 +142,14 @@ func (cc *CharCreate) validate(client *models.Client) {
 		y,
 		z,
 		client.Account.Login,
-		cc.ClassId)
+		cc.ClassId,
+		"")
 	if err != nil {
-		serverpackets.CharCreateFail(client, ReasonCreateNotAllowed)
-		return
+		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonCreateNotAllowed))
+		return buffer.Bytes()
 	}
 
 	//createChar
-	serverpackets.CharCreateOk(client)
+	buffer.WriteSlice(serverpackets.CharCreateOk(client))
+	return buffer.Bytes()
 }

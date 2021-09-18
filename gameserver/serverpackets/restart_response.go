@@ -1,10 +1,17 @@
 package serverpackets
 
-import "l2gogameserver/gameserver/models"
+import (
+	"l2gogameserver/gameserver/models"
+	"l2gogameserver/packets"
+)
 
-func RestartResponse(client *models.Client) {
+func RestartResponse(client *models.Client) []byte {
+	buffer := packets.Get()
 
-	client.Buffer.WriteSingleByte(0x71)
-	client.Buffer.WriteD(1)
-	client.SaveAndCryptDataInBufferToSend(true)
+	buffer.WriteSingleByte(0x71)
+	buffer.WriteD(1)
+
+	//todo останавливать всё у клиента
+	defer packets.Put(buffer)
+	return buffer.Bytes()
 }

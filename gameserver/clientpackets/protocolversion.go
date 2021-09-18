@@ -6,10 +6,17 @@ import (
 	"l2gogameserver/packets"
 )
 
-func ProtocolVersion(data []byte, client *models.Client) {
+func ProtocolVersion(data []byte, client *models.Client) []byte {
 
 	var packet = packets.NewReader(data)
 	protocolVersion := packet.ReadUInt16() //todo check !=273
 	_ = protocolVersion
-	serverpackets.KeyPacket(client)
+	buffer := packets.Get()
+
+	pkg1 := serverpackets.KeyPacket(client)
+	buffer.WriteSlice(client.ReturnPackageReadyToShip(pkg1))
+
+	defer packets.Put(buffer)
+	return buffer.Bytes()
+
 }

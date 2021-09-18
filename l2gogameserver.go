@@ -1,10 +1,12 @@
 package main
 
 import (
+	"github.com/pkg/profile"
 	"l2gogameserver/data"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/utils"
 	"log"
 )
 
@@ -14,6 +16,7 @@ func main() {
 	//	gameserver.FindPath(-64072, 100856, -3584, -64072, 101048, -3584)
 
 	setup()
+	defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
 
 	server := gameserver.New()
 
@@ -28,4 +31,5 @@ func setup() {
 	models.NewWorld()
 	data.Load()
 
+	utils.SetupServerPackets()
 }

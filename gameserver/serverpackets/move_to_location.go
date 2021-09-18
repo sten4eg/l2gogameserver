@@ -7,7 +7,9 @@ import (
 
 func MoveToLocation(location *models.BackwardToLocation, client *models.Client) []byte {
 
-	buffer := new(packets.Buffer)
+	buffer := packets.Get()
+	defer packets.Put(buffer)
+
 	buffer.WriteSingleByte(0x2f)
 
 	buffer.WriteD(client.CurrentChar.CharId)

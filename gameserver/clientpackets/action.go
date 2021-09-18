@@ -6,7 +6,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func Action(data []byte, client *models.Client) {
+func Action(data []byte, client *models.Client) []byte {
 	var packet = packets.NewReader(data)
 
 	objectId := packet.ReadInt32() //Target
@@ -18,8 +18,11 @@ func Action(data []byte, client *models.Client) {
 	client.CurrentChar.CurrentTargetId = objectId
 	_, _, _, _, _ = objectId, originX, originY, originZ, actionId
 
-	//Очень много Логика по action
-	//serverpackets.SocialAction(client)
-	//client.SimpleSend(client.Buffer.Bytes(), true) - simpleSend removed
-	serverpackets.TargetSelected(client.CurrentChar.CharId, objectId, originX, originY, originZ, client)
+	buffer := packets.Get()
+	defer packets.Put(buffer)
+
+	pkg := serverpackets.TargetSelected(client.CurrentChar.CharId, objectId, originX, originY, originZ)
+	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+
+	return buffer.Bytes()
 }

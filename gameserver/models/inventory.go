@@ -3,9 +3,11 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"github.com/jackc/pgx/v4"
 	"l2gogameserver/db"
 	ItemsPkg "l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/items/armorType"
+	"l2gogameserver/gameserver/models/items/attribute"
 	"l2gogameserver/gameserver/models/items/crystalType"
 	"l2gogameserver/gameserver/models/items/etcItemType"
 	"l2gogameserver/gameserver/models/items/materialType"
@@ -161,12 +163,16 @@ var AllItems map[int]Item
 
 type MyItem struct {
 	Item
-	ObjId   int32
-	Enchant int
-	LocData int32
-	Count   int64
-	Loc     string
-	Time    int
+	ObjId               int32
+	Enchant             int
+	LocData             int32
+	Count               int64
+	Loc                 string
+	Time                int
+	AttackAttributeType attribute.Attribute
+	AttackAttributeVal  int
+	Mana                int
+	AttributeDefend     [6]int16
 }
 
 // IsEquipable Можно ли надеть предмет
@@ -178,6 +184,9 @@ func (i *MyItem) IsHeavyArmor() bool {
 }
 func (i *MyItem) IsMagicArmor() bool {
 	return i.ArmorType == armorType.MAGIC
+}
+func (i *MyItem) IsArmor() bool {
+	return i.ItemType == ItemsPkg.ShieldOrArmor
 }
 func (i *MyItem) IsOnlyKamaelWeapon() bool {
 	return i.WeaponType == weaponType.RAPIER || i.WeaponType == weaponType.CROSSBOW || i.WeaponType == weaponType.ANCIENTSWORD
@@ -195,7 +204,8 @@ func GetMyItems(charId int32) []MyItem {
 	}
 	defer dbConn.Release()
 
-	rows, err := dbConn.Query(context.Background(), "SELECT object_id,item,loc_data,enchant_level,count,loc,time FROM items WHERE owner_id=$1", charId)
+	sqlString := "SELECT items.object_id, item, loc_data, enchant_level, count, loc, time, mana_left FROM items WHERE owner_id = $1"
+	rows, err := dbConn.Query(context.Background(), sqlString, charId)
 	if err != nil {
 		panic(err)
 	}
@@ -205,28 +215,84 @@ func GetMyItems(charId int32) []MyItem {
 	for rows.Next() {
 		var itm MyItem
 		var id int
-		err := rows.Scan(&itm.ObjId, &id, &itm.LocData, &itm.Enchant, &itm.Count, &itm.Loc, &itm.Time)
+
+		err := rows.Scan(&itm.ObjId, &id, &itm.LocData, &itm.Enchant, &itm.Count, &itm.Loc, &itm.Time, &itm.Mana)
 		if err != nil {
-			log.Println(err)
+			panic(err)
 		}
+
 		it, ok := AllItems[id]
 		if ok {
 			itm.Item = it
+
+			if itm.IsWeapon() {
+
+				itm.AttackAttributeType, itm.AttackAttributeVal = getAttributeForWeapon(itm.ObjId)
+			} else if itm.IsArmor() {
+				itm.AttributeDefend = getAttributeForArmor(itm.ObjId)
+			}
+
 			myItems = append(myItems, itm)
 		}
-
 	}
 
 	return myItems
 }
 
+func getAttributeForWeapon(objId int32) (attribute.Attribute, int) {
+	dbConn, err := db.GetConn()
+	if err != nil {
+		panic(err)
+	}
+	defer dbConn.Release()
+	el := attribute.Attribute(-2) // None
+
+	var elementType, elementValue int
+	err = dbConn.QueryRow(context.Background(), "SELECT element_type,element_value FROM item_elementals WHERE object_id = $1", objId).
+		Scan(&elementType, &elementValue)
+
+	if err == pgx.ErrNoRows {
+		return el, 0
+	} else if err != nil {
+		panic(err)
+	}
+
+	el = attribute.Attribute(elementType)
+
+	return el, elementValue
+}
+
+func getAttributeForArmor(objId int32) [6]int16 {
+	var att [6]int16
+	dbConn, err := db.GetConn()
+	if err != nil {
+		panic(err)
+	}
+	defer dbConn.Release()
+
+	rows, err := dbConn.Query(context.Background(), "SELECT element_type,element_value FROM item_elementals WHERE object_id = $1", objId)
+
+	if err == pgx.ErrNoRows {
+		return att
+	} else if err != nil {
+		panic(err)
+	}
+
+	for rows.Next() {
+		var atType, atVal int
+		err = rows.Scan(&atType, &atVal)
+		if err != nil {
+			panic(err)
+		}
+		att[atType] = int16(atVal)
+	}
+
+	return att
+}
+
 func LoadItems() {
 	AllItems = make(map[int]Item)
-
 	loadItems()
-	var i int
-	i = 23
-	_ = i
 }
 
 func loadItems() {
@@ -296,9 +362,9 @@ func GetActiveWeapon(inventory []MyItem, paperdoll [26]MyItem) *MyItem {
 // UseEquippableItem исользовать предмет который можно надеть на персонажа
 func UseEquippableItem(selectedItem MyItem, character *Character) {
 	//todo надо как то обновлять paperdoll, или возвращать массив или же  вынести это в другой пакет
+	log.Println(selectedItem.ObjId, " and equiped = ", selectedItem.IsEquipped())
 	if selectedItem.IsEquipped() == 1 {
 		unEquipAndRecord(selectedItem, character)
-
 	} else {
 		equipItemAndRecord(selectedItem, character)
 	}
@@ -468,18 +534,18 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 	// переносим его в инвентарь, убираем бонусы этого итема у персонажа
 	if selectedItem == nil {
 		for i, itemInInventory := range character.Inventory {
-			if itemInInventory.LocData == int32(slot) {
+			if itemInInventory.LocData == int32(slot) && itemInInventory.Loc == Paperdoll {
 				itemInInventory.LocData = getFirstEmptySlot(character.Inventory)
 				itemInInventory.Loc = Inventory
 				character.Inventory[i] = itemInInventory
-
+				log.Println(itemInInventory.Loc, itemInInventory.LocData)
 				character.RemoveBonusStat(itemInInventory.BonusStats)
 				break
 			}
 		}
 		return
 	}
-
+	log.Println("не должен дойти")
 	var oldItemInSelectedSlot MyItem
 	var inventoryKeyOldItemInSelectedSlot int
 	var keyCurrentItem int
@@ -518,30 +584,62 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 }
 
 func getFirstEmptySlot(myItems []MyItem) int32 {
-	var max int32
-	for _, v := range myItems {
-		if v.LocData > max {
-			max = v.LocData
-		}
-	}
 
-	var i int32
-	for i = 0; i < max; i++ {
+	limit := int32(80) // todo дефолтно 80 , но может быть больше
+
+	for i := int32(0); i < limit; i++ {
 		flag := false
-		for _, q := range myItems {
-			if q.LocData == i && q.Loc != Paperdoll {
+		for _, v := range myItems {
+			if v.Loc == Inventory && v.LocData == i {
 				flag = true
+				break
 			}
 		}
-
 		if !flag {
 			return i
 		}
 	}
+	panic("не нашёл куда складывать итем")
 
-	return max + 1
 }
 
+func (i *MyItem) GetAttackElement() attribute.Attribute {
+	el := attribute.Attribute(-2) // none
+	if i.IsWeapon() {
+		el = i.AttackAttributeType
+	}
+
+	if el == attribute.None {
+		if i.BaseAttributeAttack.Val > 0 {
+			return i.getBaseAttributeElement()
+		}
+	}
+
+	return el
+}
+
+func (i *MyItem) getBaseAttributeElement() attribute.Attribute {
+	return i.BaseAttributeAttack.Type
+}
+func DeleteItem(selectedItem MyItem, character *Character) {
+	dbConn, err := db.GetConn()
+	if err != nil {
+		panic(err)
+	}
+
+	if selectedItem.Loc == Paperdoll {
+		character.Paperdoll[selectedItem.LocData] = MyItem{}
+	}
+	var itm []MyItem
+	for _, v := range character.Inventory {
+		if v.ObjId != selectedItem.ObjId {
+			itm = append(itm, v)
+		}
+	}
+	character.Inventory = itm
+
+	_, _ = dbConn.Exec(context.Background(), "DELETE FROM items WHERE object_id = $1", selectedItem.ObjId)
+}
 func GetPaperdollOrder() []uint8 {
 	return []uint8{
 		PAPERDOLL_UNDER,

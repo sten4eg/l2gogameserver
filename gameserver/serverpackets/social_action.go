@@ -1,12 +1,17 @@
 package serverpackets
 
-import "l2gogameserver/gameserver/models"
+import (
+	"l2gogameserver/gameserver/models"
+	"l2gogameserver/packets"
+)
 
-func SocialAction(client *models.Client) {
+func SocialAction(client *models.Client) []byte {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
 
-	client.Buffer.WriteH(0) //reserve
-	client.Buffer.WriteSingleByte(0x27)
-	client.Buffer.WriteD(client.CurrentChar.CharId)
-	client.Buffer.WriteD(3)
+	buffer.WriteSingleByte(0x27)
+	buffer.WriteD(client.CurrentChar.CharId)
+	buffer.WriteD(3)
 
+	return buffer.Bytes()
 }

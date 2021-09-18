@@ -7,6 +7,7 @@ import (
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/race"
 	"sync"
+	"time"
 )
 
 type Character struct {
@@ -56,12 +57,16 @@ type Character struct {
 	Inventory              []MyItem
 	CursedWeaponEquippedId int
 	BonusStats             []items.ItemBonusStat
+	F                      chan IUP
+	InGame                 bool
 }
 
 func GetNewCharacterModel() *Character {
 	character := new(Character)
 	sk := make(map[int]Skill)
 	character.Skills = sk
+	character.F = make(chan IUP, 10)
+	character.InGame = false
 	return character
 }
 
@@ -126,6 +131,7 @@ func (c *Character) GetXYZ() (x, y, z int32) {
 
 // Load загрузка персонажа
 func (c *Character) Load() {
+	c.InGame = true
 	c.ShortCut = restoreMe(c.CharId, c.ClassId)
 	c.LoadSkills()
 	c.SkillQueue = make(chan SkillHolder)
@@ -143,8 +149,40 @@ func (c *Character) Load() {
 	reg := GetRegion(c.Coordinates.X, c.Coordinates.Y)
 	reg.AddVisibleObject(c)
 	c.CurrentRegion = reg
-
+	go c.Shadow()
 	go c.ListenSkillQueue()
+
+}
+
+type IUP struct {
+	ObjId      int32
+	UpdateType int16
+}
+
+func (c *Character) Shadow() {
+	for {
+		for i, v := range c.Inventory {
+			if v.Item.Durability > 0 && v.Loc == Paperdoll {
+				var iup IUP
+				iup.ObjId = v.ObjId
+				switch c.Inventory[i].Mana {
+
+				case 0:
+					iup.UpdateType = UpdateTypeRemove
+					c.F <- iup
+					DeleteItem(v, c)
+				default:
+					c.Inventory[i].Mana -= 1
+					iup.UpdateType = UpdateTypeModify
+					c.F <- iup
+				}
+
+			}
+		}
+
+		time.Sleep(time.Second)
+	}
+
 }
 
 func (c *Character) checkSoulShot() {

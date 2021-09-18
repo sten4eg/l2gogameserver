@@ -2,20 +2,20 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/models"
-	"log"
+	"l2gogameserver/packets"
 )
 
 //MagicSkillLaunched
-func NewTest(client *models.Client) {
+func NewTest(client *models.Client) []byte {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
 
-	client.Buffer.WriteSingleByte(0x54)
-	client.Buffer.WriteD(client.CurrentChar.CharId)
-	client.Buffer.WriteD(1216)
-	client.Buffer.WriteD(1)
-	client.Buffer.WriteD(1)
-	client.Buffer.WriteD(client.CurrentChar.CharId)
-	log.Println("TESST")
-	client.SaveAndCryptDataInBufferToSend(true)
-	client.SentToSend()
+	buffer.WriteSingleByte(0x54)
+	buffer.WriteD(client.CurrentChar.CharId)
+	buffer.WriteD(1216)
+	buffer.WriteD(1)
+	buffer.WriteD(1)
+	buffer.WriteD(client.CurrentChar.CharId)
 
+	return buffer.Bytes()
 }
