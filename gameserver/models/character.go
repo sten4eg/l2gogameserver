@@ -59,6 +59,8 @@ type Character struct {
 	BonusStats             []items.ItemBonusStat
 	F                      chan IUP
 	InGame                 bool
+	Target                 int32
+	Macros                 []Macro
 }
 
 func GetNewCharacterModel() *Character {
@@ -137,7 +139,7 @@ func (c *Character) Load() {
 	c.SkillQueue = make(chan SkillHolder)
 	c.Inventory = GetMyItems(c.CharId)
 	c.Paperdoll = RestoreVisibleInventory(c.CharId)
-
+	c.LoadCharactersMacros()
 	for _, v := range c.Paperdoll {
 		if v.ObjId != 0 {
 			c.AddBonusStat(v.BonusStats)

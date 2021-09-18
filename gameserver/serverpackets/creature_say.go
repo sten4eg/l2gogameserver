@@ -5,16 +5,16 @@ import (
 	"l2gogameserver/packets"
 )
 
-func CreatureSay(say *models.Say, user *models.Character) []byte {
+func CreatureSay(say *models.Say, character *models.Character) []byte {
 
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x4a)
-	buffer.WriteD(user.CharId) //objId
-	buffer.WriteD(say.Type)
+	buffer.WriteD(character.CharId) //objId
+	buffer.WriteD(say.Type)         //
 
-	buffer.WriteS(user.CharName)
+	buffer.WriteS(character.CharName)
 
 	buffer.WriteD(-1) // High Five NPCString ID
 	buffer.WriteS(say.Text)

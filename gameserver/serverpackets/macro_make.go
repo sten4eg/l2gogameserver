@@ -5,11 +5,12 @@ import (
 	"l2gogameserver/packets"
 )
 
-func SendMacroList(client *models.Client, macro models.Macro, count uint8, index int) []byte {
+func MacroMake(macro models.Macro, count uint8) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 	buffer.WriteSingleByte(0xE8)
-	buffer.WriteD(int32(index))       // macro change revision (changes after each macro edition)
+
+	buffer.WriteD(0)                  // macro change revision (changes after each macro edition)
 	buffer.WriteSingleByte(0x00)      // unknown
 	buffer.WriteSingleByte(count + 1) // count of Macros
 	buffer.WriteSingleByte(1)         // unknown

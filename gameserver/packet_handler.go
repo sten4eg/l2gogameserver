@@ -68,28 +68,17 @@ func (g *GameServer) handler(client *models.Client) {
 			pkg := clientpackets.RequestEnterWorld(client, data)
 			client.SSend(pkg)
 			g.BroadCastUserInfoInRadius(client, 2000)
+			g.GetCharInfoAboutCharactersInRadius(client, 2000)
 		case 166:
 			pkg := clientpackets.RequestSkillCoolTime(client, data)
 			client.SSend(pkg)
 		case 15:
 			pkg := clientpackets.MoveBackwardToLocation(client, data)
-			client.SSend(pkg)
-			//var info utils.PacketByte
-			//info.SetB(pkg)
-			//
-			//client.Buffer.WriteSlice(pkg)
-			//
-			//
-			//client.SaveAndCryptDataInBufferToSend(true)
-			//
-			//g.BroadToAroundPlayers(client, info)
-			//
-			//log.Println("Send MoveToLocation")
-		case 73:
-			_ = clientpackets.Say(client, data) //todo
+			g.Checkaem(client, pkg)
 
-			//info.B = serverpackets.CharInfo(client.CurrentChar)
-			//Broad(client, info)
+		case 73:
+			say := clientpackets.Say(client, data)
+			g.BroadCastChat(client, say)
 		case 89:
 			pkg := clientpackets.ValidationPosition(data, client.CurrentChar)
 			client.SSend(pkg)
@@ -122,6 +111,9 @@ func (g *GameServer) handler(client *models.Client) {
 			client.SSend(pkg)
 		case 20:
 			pkg := clientpackets.RequestItemList(client, data)
+			client.SSend(pkg)
+		case 205:
+			pkg := clientpackets.RequestMakeMacro(client, data)
 			client.SSend(pkg)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)

@@ -92,20 +92,20 @@ func validRegion(x, y int32) bool {
 //}
 //}
 
-//func calculateDistance(ox, oy, oz, mx, my, mz int32, includeZAxis, squared bool) float64 {
-//	var distance float64
-//	if includeZAxis {
-//		distance = math.Pow(float64(ox-mx), 2) + math.Pow(float64(oy-my), 2) + math.Pow(float64(oz-mz), 2)
-//	} else {
-//		distance = math.Pow(float64(ox-mx), 2) + math.Pow(float64(oy-my), 2)
-//	}
-//
-//	if squared {
-//		return distance
-//	}
-//
-//	return math.Sqrt(distance)
-//}
+func CalculateDistance(ox, oy, oz, mx, my, mz int32, includeZAxis, squared bool) float64 {
+	var distance float64
+	if includeZAxis {
+		distance = math.Pow(float64(ox-mx), 2) + math.Pow(float64(oy-my), 2) + math.Pow(float64(oz-mz), 2)
+	} else {
+		distance = math.Pow(float64(ox-mx), 2) + math.Pow(float64(oy-my), 2)
+	}
+
+	if squared {
+		return distance
+	}
+
+	return math.Sqrt(distance)
+}
 
 func GetRegion(x, y int32) *WorldRegion {
 	return &World[(x>>ShiftBy)+int32(OffsetX)][(y>>ShiftBy)+int32(OffsetY)]

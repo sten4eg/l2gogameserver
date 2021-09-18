@@ -26,6 +26,10 @@ func (w *WorldRegion) AddVisibleObject(character *Character) {
 	w.CharsInRegion.Store(character.CharId, character)
 }
 
+func (w *WorldRegion) DeleteVisibleObject(character *Character) {
+	w.CharsInRegion.Delete(character)
+}
+
 func GetAroundPlayersInRadius(me *Character, radius int32) []int32 {
 	sqradius := int64(radius * radius)
 	x, y, _ := me.GetXYZ()
@@ -52,16 +56,25 @@ func GetAroundPlayersInRadius(me *Character, radius int32) []int32 {
 	return charIds
 }
 
-func GetAroundPlayers(me *Character) []int32 {
-
+func GetAroundCharacterInRadius(me *Character, radius int32) []*Character {
+	sqradius := int64(radius * radius)
 	x, y, _ := me.GetXYZ()
 	reg := GetRegion(x, y)
-	var charIds []int32
+	var charIds []*Character
 	for _, region := range reg.Sur {
 		region.CharsInRegion.Range(func(key, value interface{}) bool {
 			val := value.(*Character)
 			if val.CharId != me.CharId {
-				charIds = append(charIds, val.CharId)
+				dx := int64(val.Coordinates.X - x)
+				dx *= dx
+				if dx > sqradius {
+					return true
+				}
+				dy := int64(val.Coordinates.Y - y)
+				dy *= dy
+				if dx+dy < sqradius {
+					charIds = append(charIds, val)
+				}
 			}
 			return true
 		})

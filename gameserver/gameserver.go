@@ -3,6 +3,7 @@ package gameserver
 import (
 	"fmt"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/chat"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/utils"
 	"log"
@@ -75,8 +76,10 @@ func kickClient(client *models.Client) {
 	log.Println("Socket Close For: ", client.CurrentChar.CharName)
 }
 
-func (g *GameServer) BroadToAroundPlayers(my *models.Client, pkg utils.PacketByte) {
-	charsIds := models.GetAroundPlayers(my.CurrentChar)
+// BroadCastToAroundPlayersInRadius отправляет всем персонажам в радиусе radius
+// информацию из пакета pkg
+func (g *GameServer) BroadCastToAroundPlayersInRadius(my *models.Client, pkg utils.PacketByte, radius int32) {
+	charsIds := models.GetAroundPlayersInRadius(my.CurrentChar, radius)
 	for _, v := range charsIds {
 		g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
 	}
@@ -107,10 +110,102 @@ func (g *GameServer) BroadCastUserInfoInRadius(me *models.Client, radius int32) 
 	g.OnlineCharacters.Mu.Unlock()
 }
 
+func (g *GameServer) BroadCastChat(me *models.Client, say models.Say) {
+	switch say.Type {
+	case chat.All:
+		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
+		var pb utils.PacketByte
+		pb.SetB(cs)
+		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetB()))
+		g.BroadCastToAroundPlayersInRadius(me, pb, chat.AllChatRange)
+	case chat.Tell:
+		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
+		var pb utils.PacketByte
+		pb.SetB(cs)
+		ok := g.BroadCastToCharacterByName(pb, say.To)
+		if ok {
+			me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetB()))
+		} else {
+			// systemMSG что не найден перс
+		}
+	case chat.Shout:
+		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
+		var pb utils.PacketByte
+		pb.SetB(cs)
+		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetB()))
+		g.BroadCastToAroundPlayersInRadius(me, pb, chat.ShoutChatRange)
+	case chat.SpecialCommand:
+		if me.CurrentChar.Target == 0 {
+			return
+		}
+		qwe := g.OnlineCharacters.Char[me.CurrentChar.Target]
+		q := models.CalculateDistance(qwe.Coordinates.X, qwe.Coordinates.Y, qwe.Coordinates.Z, me.CurrentChar.Coordinates.X, me.CurrentChar.Coordinates.Y, me.CurrentChar.Coordinates.Z, false, false)
+		say.Text = fmt.Sprintf("%f", q)
+		say.Type = chat.All
+
+		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
+		var pb utils.PacketByte
+		pb.SetB(cs)
+		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetB()))
+		g.BroadCastToAroundPlayersInRadius(me, pb, chat.AllChatRange)
+	}
+}
+
+// BroadCastToCharacterByName отправляет pkg персонажу с ником to
+// true если отправлен, false если персонаж не найден
+func (g *GameServer) BroadCastToCharacterByName(pkg utils.PacketByte, to string) bool {
+	g.OnlineCharacters.Mu.Lock()
+	defer g.OnlineCharacters.Mu.Unlock()
+	for _, v := range g.OnlineCharacters.Char {
+		if v.CharName == to {
+			v.Conn.Send(pkg.GetB(), true)
+			return true
+		}
+	}
+	return false
+}
+
+// GetCharInfoAboutCharactersInRadius отправляет me CharInfo персонажей
+// в радиусе radius
+func (g *GameServer) GetCharInfoAboutCharactersInRadius(me *models.Client, radius int32) {
+	charsIds := models.GetAroundCharacterInRadius(me.CurrentChar, radius)
+	for _, v := range charsIds {
+		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(v)))
+	}
+}
+
 func (g *GameServer) addOnlineChar(character *models.Character) {
 	g.OnlineCharacters.Mu.Lock()
 	g.OnlineCharacters.Char[character.CharId] = character
 	g.OnlineCharacters.Mu.Unlock()
+}
+
+func (g *GameServer) Checkaem(client *models.Client, l models.BackwardToLocation) {
+	cur := client.CurrentChar.CurrentRegion
+	now := models.GetRegion(client.CurrentChar.Coordinates.X, client.CurrentChar.Coordinates.Y)
+	if now != cur {
+		client.CurrentChar.CurrentRegion.DeleteVisibleObject(client.CurrentChar)
+		now.AddVisibleObject(client.CurrentChar)
+		client.CurrentChar.CurrentRegion = now
+		g.GetCharInfoAboutCharactersInRadius(client, 6000)
+	}
+	var ut utils.PacketByte
+	ut.SetB(serverpackets.MoveToLocation(&l, client))
+	client.SSend(client.CryptAndReturnPackageReadyToShip(ut.GetB()))
+	g.BroadCastToAroundPlayersInRadius(client, ut, 6000)
+
+	//flag := true
+	//g.clients.Range(func(key, value interface{}) bool {
+	//	if client == value.(*models.Client) {
+	//		nowReg := models.GetRegion(client.CurrentChar.Coordinates.X,client.CurrentChar.Coordinates.Y)
+	//		if nowReg != client.CurrentChar.CurrentRegion {
+	//			client.CurrentChar.CurrentRegion.DeleteVisibleObject(client.CurrentChar)
+	//			nowReg.AddVisibleObject(client.CurrentChar)
+	//			client.CurrentChar.CurrentRegion = nowReg
+	//			flag = false
+	//		}
+	//	}
+	//})
 }
 
 //func (g *GameServer) Tick() {

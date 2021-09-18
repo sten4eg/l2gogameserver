@@ -24,8 +24,7 @@ func UserInfo(client *models.Client) []byte {
 	buffer.WriteD(character.CharId) //objId
 
 	buffer.WriteS(character.CharName) //name //TODO
-	q := character.CharName
-	_ = q
+
 	buffer.WriteD(int32(character.Race)) //race ordinal //TODO
 	buffer.WriteD(character.Sex)         //sex
 	buffer.WriteD(character.BaseClass)   //baseClass
@@ -88,7 +87,7 @@ func UserInfo(client *models.Client) []byte {
 	buffer.WriteD(character.PvpKills) //pvp
 	buffer.WriteD(character.Karma)    //karma
 
-	buffer.WriteD(999) //runSpeed
+	buffer.WriteD(115) //runSpeed
 	buffer.WriteD(80)  //walkspeed
 	buffer.WriteD(50)  //swimRunSpeed
 	buffer.WriteD(50)  //swimWalkSpeed

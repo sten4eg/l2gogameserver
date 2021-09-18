@@ -2,11 +2,10 @@ package clientpackets
 
 import (
 	"l2gogameserver/gameserver/models"
-	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func MoveBackwardToLocation(client *models.Client, data []byte) []byte {
+func MoveBackwardToLocation(client *models.Client, data []byte) models.BackwardToLocation {
 
 	var location models.BackwardToLocation
 	var packet = packets.NewReader(data)
@@ -18,12 +17,6 @@ func MoveBackwardToLocation(client *models.Client, data []byte) []byte {
 	location.OriginY = packet.ReadInt32()
 	location.OriginZ = packet.ReadInt32()
 
-	buffer := packets.Get()
-	defer packets.Put(buffer)
+	return location
 
-	pkg := serverpackets.MoveToLocation(&location, client)
-
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-
-	return buffer.Bytes()
 }

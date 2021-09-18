@@ -21,6 +21,7 @@ func Action(data []byte, client *models.Client) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
+	client.CurrentChar.Target = objectId
 	pkg := serverpackets.TargetSelected(client.CurrentChar.CharId, objectId, originX, originY, originZ)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
