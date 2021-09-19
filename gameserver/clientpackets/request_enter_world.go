@@ -56,5 +56,8 @@ func RequestEnterWorld(client *models.Client, data []byte) []byte {
 	pkg15 := serverpackets.ShortBuffStatusUpdate(client) //todo test
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg15))
 
+	pkg16 := serverpackets.ActionList(client) //todo test
+	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg16))
+
 	return buff.Bytes()
 }
