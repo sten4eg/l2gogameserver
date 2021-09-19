@@ -11,7 +11,7 @@ const MaxShortcutsPerBar = 12
 
 func RegisterShortCut(sc dto.ShortCutDTO, client *Client) {
 	shorts := client.CurrentChar.ShortCut
-
+	//todo пересмотреть, тут есть еще проверки
 	s, exist := shorts[sc.Slot+(sc.Page*MaxShortcutsPerBar)]
 
 	if exist {

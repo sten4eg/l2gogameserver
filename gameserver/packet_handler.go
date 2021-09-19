@@ -81,6 +81,7 @@ func (g *GameServer) handler(client *models.Client) {
 			g.BroadCastChat(client, say)
 		case 89:
 			pkg := clientpackets.ValidationPosition(data, client.CurrentChar)
+			//g.Checkaem(client, pkg)
 			client.SSend(pkg)
 		case 31:
 			pkg := clientpackets.Action(data, client)

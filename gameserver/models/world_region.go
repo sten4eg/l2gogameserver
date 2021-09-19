@@ -81,3 +81,19 @@ func GetAroundCharacterInRadius(me *Character, radius int32) []*Character {
 	}
 	return charIds
 }
+
+func GetAroundPlayers(me *Character) []*Character {
+	x, y, _ := me.GetXYZ()
+	reg := GetRegion(x, y)
+	var charIds []*Character
+	for _, region := range reg.Sur {
+		region.CharsInRegion.Range(func(key, value interface{}) bool {
+			val := value.(*Character)
+			if val.CharId != me.CharId {
+				charIds = append(charIds, val)
+			}
+			return true
+		})
+	}
+	return charIds
+}
