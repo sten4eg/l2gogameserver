@@ -9,7 +9,6 @@ import (
 
 // loop клиента в ожидании входящих пакетов
 func (g *GameServer) handler(client *models.Client) {
-	defer kickClient(client)
 
 	for {
 		opcode, data, err := client.Receive()
@@ -38,6 +37,8 @@ func (g *GameServer) handler(client *models.Client) {
 			client.SSend(pkg)
 			g.addOnlineChar(client.CurrentChar)
 			go g.ChannelListener(client)
+
+
 
 		case 208:
 			if len(data) >= 2 {
