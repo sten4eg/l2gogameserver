@@ -29,6 +29,7 @@ func setup() {
 	models.LoadItems()
 	models.NewWorld()
 	data.Load()
+	models.LoadNpc()
 
 	utils.SetupServerPackets()
 }

@@ -25,6 +25,7 @@ func New() *GameServer {
 }
 
 func (g *GameServer) Start() {
+
 	var err error
 
 	/* #nosec */
