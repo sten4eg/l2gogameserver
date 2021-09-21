@@ -145,14 +145,15 @@ func (c *Character) Load() {
 			c.AddBonusStat(v.BonusStats)
 		}
 	}
-
-	c.Stats = AllStats[int(c.ClassId)].StaticData //todo а для чего BaseClass ??
+ 	c.Stats = AllStats[int(c.ClassId)].StaticData //todo а для чего BaseClass ??
 
 	reg := GetRegion(c.Coordinates.X, c.Coordinates.Y)
 	reg.AddVisibleObject(c)
 	c.CurrentRegion = reg
 	go c.Shadow()
 	go c.ListenSkillQueue()
+
+
 
 }
 

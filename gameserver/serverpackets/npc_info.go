@@ -5,19 +5,22 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NpcInfo(client *models.Client) []byte {
+func NpcInfo(client *models.Client, objectId int, npc models.Npc, location models.Locations) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x0c) //12
 
-	buffer.WriteD(268442366)       // objectId
-	buffer.WriteD(18342 + 1000000) // npctype id
+	buffer.WriteD(int32(objectId)+200000000)       // objectId
+	buffer.WriteD(npc.NpcId + 1000000) // npctype id
 	buffer.WriteD(1)               //_isAttackable ? 1 : 0
-	buffer.WriteD(-71438)          // x
-	buffer.WriteD(258005)          // y
-	buffer.WriteD(-3104)           // z
-	buffer.WriteD(2077)            //_heading //53460
+	buffer.WriteD(location.Locx)         // x
+	buffer.WriteD(location.Locy)         // y
+	buffer.WriteD(location.Locz)         // z
+	/**
+		Для болей реалистичности, угол разворота NPC лучше менять если NPC является мобом.
+	 */
+	buffer.WriteD(location.Heading)      //_heading //53460
 	buffer.WriteD(0x00)            // static 0
 	buffer.WriteD(333)             // _mAtkSpd
 	buffer.WriteD(278)             // _pAtkSpd
@@ -31,8 +34,8 @@ func NpcInfo(client *models.Client) []byte {
 	buffer.WriteD(0)               // _flyWalkSpd
 	buffer.WriteF(1.1)             // _moveMultiplier
 	buffer.WriteF(1)               // _npc.getAttackSpeedMultiplier()
-	buffer.WriteF(16.0)            // _collisionRadius
-	buffer.WriteF(15.0)            // _collisionHeight
+	buffer.WriteF(npc.CollisionRadius)            // _collisionRadius
+	buffer.WriteF(npc.CollisionHeight)            // _collisionHeight
 	buffer.WriteD(0)               // right hand Weapon
 	buffer.WriteD(0)               // _chest
 	buffer.WriteD(0)               // left hand Weapon
@@ -58,8 +61,8 @@ func NpcInfo(client *models.Client) []byte {
 	buffer.WriteSingleByte(0) // _npc.isInsideZone(ZoneId.WATER) ? 1 : _npc.isFlying() ? 2 : 0// C2
 	buffer.WriteSingleByte(0) // _npc.getTeam().getId()
 
-	buffer.WriteF(10.0) // _collisionRadius
-	buffer.WriteF(15.0) // _collisionHeight
+	buffer.WriteF(npc.CollisionRadius) // _collisionRadius
+	buffer.WriteF(npc.CollisionHeight) // _collisionHeight
 	buffer.WriteD(0)    //_enchantEffect // C4
 	buffer.WriteD(0)    // _npc.isFlying() ? 1 : 0 // C6
 	buffer.WriteD(0x00)

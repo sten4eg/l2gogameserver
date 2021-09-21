@@ -4,6 +4,7 @@ import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
+	"log"
 )
 
 func RequestEnterWorld(client *models.Client, data []byte) []byte {
@@ -59,5 +60,18 @@ func RequestEnterWorld(client *models.Client, data []byte) []byte {
 	pkg16 := serverpackets.ActionList(client) //todo test
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg16))
 
+	NPCdistance := client.CurrentChar.SpawnDistancePoint(5000)
+	log.Printf("Загружено возле игрока %d npc", len(NPCdistance))
+	for id, locdata := range NPCdistance {
+		npc, err := models.GetNpcInfo(locdata.NpcId)
+		if err != nil {
+			//Вернется ошибка что NPC не найден
+			//Крайне маловероятно что такое может случиться, но лучше подстаховаться.
+			log.Println(err)
+			continue
+		}
+		pkg17 := serverpackets.NpcInfo(client, id, npc, locdata)
+		buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg17))
+	}
 	return buff.Bytes()
 }
