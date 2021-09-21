@@ -5,7 +5,6 @@ import (
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/models"
-	"l2gogameserver/utils"
 	"log"
 )
 
@@ -17,9 +16,8 @@ func main() {
 	setup()
 	//defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
 
-	server := gameserver.New()
+	gameserver.New().Start()
 
-	server.Start()
 }
 
 func setup() {
@@ -30,5 +28,4 @@ func setup() {
 	models.NewWorld()
 	data.Load()
 
-	utils.SetupServerPackets()
 }

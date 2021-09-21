@@ -65,6 +65,29 @@ func (g *GameServer) ChannelListener(client *models.Client) {
 	}
 }
 
+func (g *GameServer) MoveListener(client *models.Client) {
+
+	for q := range client.CurrentChar.CharInfoTo {
+		var pkg utils.PacketByte
+		pkg.SetB(serverpackets.CharInfo(client.CurrentChar))
+		for _, v := range q {
+			g.OnlineCharacters.Mu.Lock()
+			g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
+			g.OnlineCharacters.Mu.Unlock()
+		}
+	}
+
+	for q := range client.CurrentChar.DeleteObjectTo {
+		var pkg utils.PacketByte
+		pkg.SetB(serverpackets.DeleteObject(client.CurrentChar))
+		for _, v := range q {
+			g.OnlineCharacters.Mu.Lock()
+			g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
+			g.OnlineCharacters.Mu.Unlock()
+		}
+	}
+}
+
 func kickClient(client *models.Client) {
 	err := client.Socket.Close()
 	if err != nil {
@@ -82,7 +105,7 @@ func (g *GameServer) addOnlineChar(character *models.Character) {
 }
 
 func (g *GameServer) brdsct(me *models.Client, pkg utils.PacketByte) {
-	charsIds := models.GetAroundPlayers(me.CurrentChar)
+	charsIds := models.GetAroundPlayer(me.CurrentChar)
 	for _, v := range charsIds {
 		v.Conn.Send(pkg.GetB(), true)
 		//me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(v)))

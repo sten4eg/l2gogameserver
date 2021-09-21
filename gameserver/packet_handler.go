@@ -37,8 +37,7 @@ func (g *GameServer) handler(client *models.Client) {
 			client.SSend(pkg)
 			g.addOnlineChar(client.CurrentChar)
 			go g.ChannelListener(client)
-
-
+			go g.MoveListener(client)
 
 		case 208:
 			if len(data) >= 2 {
@@ -68,7 +67,7 @@ func (g *GameServer) handler(client *models.Client) {
 		case 17:
 			pkg := clientpackets.RequestEnterWorld(client, data)
 			client.SSend(pkg)
-			g.BroadCastUserInfoInRadius(client, 2000)
+			//g.BroadCastUserInfoInRadius(client, 2000)
 			g.GetCharInfoAboutCharactersInRadius(client, 2000)
 		case 166:
 			pkg := clientpackets.RequestSkillCoolTime(client, data)

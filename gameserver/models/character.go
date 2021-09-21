@@ -6,6 +6,8 @@ import (
 	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/race"
+	"l2gogameserver/utils"
+
 	"sync"
 	"time"
 )
@@ -61,6 +63,13 @@ type Character struct {
 	InGame                 bool
 	Target                 int32
 	Macros                 []Macro
+	CharInfoTo             chan []int32
+	DeleteObjectTo         chan []int32
+	IsMoving               bool
+}
+type ToSendInfo struct {
+	To   []int32
+	Info utils.PacketByte
 }
 
 func GetNewCharacterModel() *Character {
@@ -148,11 +157,16 @@ func (c *Character) Load() {
 
 	c.Stats = AllStats[int(c.ClassId)].StaticData //todo а для чего BaseClass ??
 
-	reg := GetRegion(c.Coordinates.X, c.Coordinates.Y)
-	reg.AddVisibleObject(c)
-	c.CurrentRegion = reg
+	reg := GetRegion(c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z)
+	c.CharInfoTo = make(chan []int32, 2)
+	c.DeleteObjectTo = make(chan []int32, 2)
+	c.setWorldRegion(reg)
+
+	reg.AddVisibleChar(c)
+
 	go c.Shadow()
 	go c.ListenSkillQueue()
+	go c.CheckRegion()
 
 }
 
@@ -267,4 +281,69 @@ func (c *Character) GetInventoryLimit() int16 {
 		return 100
 	}
 	return 80
+}
+
+func (c *Character) setWorldRegion(newRegion *WorldRegion) {
+	var oldAreas []*WorldRegion
+	if c.CurrentRegion != nil {
+		c.CurrentRegion.DeleteVisibleChar(c)
+		oldAreas = newRegion.getNeighbors()
+	}
+
+	var newAreas []*WorldRegion
+	if newRegion != nil {
+		newRegion.AddVisibleChar(c)
+		newAreas = newRegion.getNeighbors()
+	}
+
+	// кому отправить charInfo
+	deleteObjectPkgTo := make([]int32, 0, 64)
+	for _, region := range oldAreas {
+		if !Contains(newAreas, region) {
+			region.CharsInRegion.Range(func(charId, char interface{}) bool {
+				if char.(*Character).CharId == c.CharId {
+					return true
+				}
+				deleteObjectPkgTo = append(deleteObjectPkgTo, char.(*Character).CharId)
+				return true
+			})
+		}
+	}
+	if len(deleteObjectPkgTo) > 0 {
+		c.DeleteObjectTo <- deleteObjectPkgTo
+	}
+
+	// кому отправить charInfo
+	charInfoPkgTo := make([]int32, 0, 64)
+	for _, region := range newAreas {
+		if !Contains(oldAreas, region) {
+			region.CharsInRegion.Range(func(charId, char interface{}) bool {
+				if char.(*Character).CharId == c.CharId {
+					return true
+				}
+				charInfoPkgTo = append(charInfoPkgTo, char.(*Character).CharId)
+				return true
+			})
+		}
+	}
+	if len(charInfoPkgTo) > 0 {
+		c.CharInfoTo <- charInfoPkgTo
+	}
+	c.CurrentRegion = newRegion
+
+}
+
+func (c *Character) CheckRegion() {
+	for {
+		time.Sleep(time.Second)
+		if c.CurrentRegion != nil {
+			curReg := c.CurrentRegion
+			x, y, z := c.GetXYZ()
+			ncurReg := GetRegion(x, y, z)
+			if curReg != ncurReg {
+				c.setWorldRegion(ncurReg)
+			}
+		}
+	}
+
 }
