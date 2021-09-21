@@ -12,6 +12,9 @@ func RequestEnterWorld(client *models.Client, data []byte) []byte {
 	buff := packets.Get()
 	defer packets.Put(buff)
 
+	pkg := serverpackets.UserInfo(client)
+	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+
 	pkg2 := serverpackets.ExBrExtraUserInfo(client.CurrentChar)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 

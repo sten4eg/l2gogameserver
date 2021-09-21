@@ -6,19 +6,20 @@ import (
 	"l2gogameserver/gameserver/models/chat"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/utils"
-	"log"
 )
 
 // BroadCastToAroundPlayersInRadius отправляет всем персонажам в радиусе radius
 // информацию из пакета pkg
 func (g *GameServer) BroadCastToAroundPlayersInRadius(my *models.Client, pkg utils.PacketByte, radius int32) {
+
 	charsIds := models.GetAroundPlayersInRadius(my.CurrentChar, radius)
 	for _, v := range charsIds {
-		g.OnlineCharacters.Char[v].Conn.Send(pkg.GetB(), true)
+		g.OnlineCharacters.Char[v.CharId].Conn.Send(pkg.GetB(), true)
 	}
 }
+
 func (g *GameServer) BroadCastToAroundPlayers(my *models.Client, pkg utils.PacketByte) {
-	charsIds := models.GetAroundPlayers(my.CurrentChar)
+	charsIds := models.GetAroundPlayer(my.CurrentChar)
 	for _, v := range charsIds {
 		v.Conn.Send(pkg.GetB(), true)
 	}
@@ -43,8 +44,8 @@ func (g *GameServer) BroadCastUserInfoInRadius(me *models.Client, radius int32) 
 
 	g.OnlineCharacters.Mu.Lock()
 	for _, v := range charsIds {
-		g.OnlineCharacters.Char[v].Conn.Send(ci.GetB(), true)
-		g.OnlineCharacters.Char[v].Conn.Send(exUi.GetB(), true)
+		g.OnlineCharacters.Char[v.CharId].Conn.Send(ci.GetB(), true)
+		g.OnlineCharacters.Char[v.CharId].Conn.Send(exUi.GetB(), true)
 	}
 	g.OnlineCharacters.Mu.Unlock()
 }
@@ -107,7 +108,7 @@ func (g *GameServer) BroadCastToCharacterByName(pkg utils.PacketByte, to string)
 // GetCharInfoAboutCharactersInRadius отправляет me CharInfo персонажей
 // в радиусе radius
 func (g *GameServer) GetCharInfoAboutCharactersInRadius(me *models.Client, radius int32) {
-	charsIds := models.GetAroundCharacterInRadius(me.CurrentChar, radius)
+	charsIds := models.GetAroundPlayersInRadius(me.CurrentChar, radius)
 	for _, v := range charsIds {
 		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(v)))
 	}
@@ -115,47 +116,17 @@ func (g *GameServer) GetCharInfoAboutCharactersInRadius(me *models.Client, radiu
 
 // GetCharInfoAboutCharacters отправляет me CharInfo персонажей
 func (g *GameServer) GetCharInfoAboutCharacters(me *models.Client) {
-	charsIds := models.GetAroundPlayers(me.CurrentChar)
+	charsIds := models.GetAroundPlayer(me.CurrentChar)
 	for _, v := range charsIds {
 		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(v)))
 	}
 }
 
 func (g *GameServer) Checkaem(client *models.Client, l models.BackwardToLocation) {
-	cur := client.CurrentChar.CurrentRegion
-	now := models.GetRegion(client.CurrentChar.Coordinates.X, client.CurrentChar.Coordinates.Y)
-	if now != cur {
-		log.Println("now!=cur")
-		// если записаный не равен настоящему то надо послать другим пакет о удалении
-		var ut utils.PacketByte
-		ut.SetB(serverpackets.DeleteObject(client))
-		g.brdsct(client, ut)
-		client.CurrentChar.CurrentRegion.DeleteVisibleObject(client.CurrentChar)
-		now.AddVisibleObject(client.CurrentChar)
-		client.CurrentChar.CurrentRegion = now
-		g.GetCharInfoAboutCharacters(client)
-
-		var ut2 utils.PacketByte
-		ut2.SetB(serverpackets.CharInfo(client.CurrentChar))
-		g.brdsct(client, ut2)
-	}
 	var ut utils.PacketByte
 	ut.SetB(serverpackets.MoveToLocation(&l, client))
 	client.SSend(client.CryptAndReturnPackageReadyToShip(ut.GetB()))
 	g.BroadCastToAroundPlayers(client, ut)
-
-	//flag := true
-	//g.clients.Range(func(key, value interface{}) bool {
-	//	if client == value.(*models.Client) {
-	//		nowReg := models.GetRegion(client.CurrentChar.Coordinates.X,client.CurrentChar.Coordinates.Y)
-	//		if nowReg != client.CurrentChar.CurrentRegion {
-	//			client.CurrentChar.CurrentRegion.DeleteVisibleObject(client.CurrentChar)
-	//			nowReg.AddVisibleObject(client.CurrentChar)
-	//			client.CurrentChar.CurrentRegion = nowReg
-	//			flag = false
-	//		}
-	//	}
-	//})
 }
 
 //func (g *GameServer) Tick() {
@@ -187,42 +158,42 @@ func (g *GameServer) Checkaem(client *models.Client, l models.BackwardToLocation
 //	}
 //}
 
-func BroadCastToMe(g *GameServer, my *models.Character) {
-	x, y, _ := my.GetXYZ()
-	reg := models.GetRegion(x, y)
-	var charIds []int32
-
-	for _, iii := range reg.Sur {
-		iii.CharsInRegion.Range(func(key, value interface{}) bool {
-			val := value.(*models.Character)
-			if val.CharId != my.CharId {
-				charIds = append(charIds, val.CharId)
-			}
-			return true
-		})
-	}
-
-	if charIds == nil {
-		return
-	}
-
-	var me *models.Client
-
-	g.clients.Range(func(k, v interface{}) bool {
-		client := v.(*models.Client)
-		if client.CurrentChar.CharId == my.CharId {
-			me = client
-			return false
-		}
-		return true
-	})
-
-	if me == nil {
-		return // todo need log
-	}
-	for _, v := range charIds {
-		var info utils.PacketByte
-		info.B = serverpackets.CharInfo(g.OnlineCharacters.Char[v])
-		me.Send(info.GetB(), true)
-	}
-}
+//func BroadCastToMe(g *GameServer, my *models.Character) {
+//	x, y, z := my.GetXYZ()
+//	reg := models.GetRegion(x, y,z)
+//	var charIds []int32
+//
+//	for _, iii := range reg.Sur {
+//		iii.CharsInRegion.Range(func(key, value interface{}) bool {
+//			val := value.(*models.Character)
+//			if val.CharId != my.CharId {
+//				charIds = append(charIds, val.CharId)
+//			}
+//			return true
+//		})
+//	}
+//
+//	if charIds == nil {
+//		return
+//	}
+//
+//	var me *models.Client
+//
+//	g.clients.Range(func(k, v interface{}) bool {
+//		client := v.(*models.Client)
+//		if client.CurrentChar.CharId == my.CharId {
+//			me = client
+//			return false
+//		}
+//		return true
+//	})
+//
+//	if me == nil {
+//		return // todo need log
+//	}
+//	for _, v := range charIds {
+//		var info utils.PacketByte
+//		info.B = serverpackets.CharInfo(g.OnlineCharacters.Char[v])
+//		me.Send(info.GetB(), true)
+//	}
+//}
