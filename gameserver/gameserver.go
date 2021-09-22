@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
+	"l2gogameserver/packets"
 	"l2gogameserver/utils"
 	"log"
 	"net"
@@ -66,6 +67,17 @@ func (g *GameServer) ChannelListener(client *models.Client) {
 	}
 }
 
+func (g *GameServer) NpcListener(client *models.Client) {
+	for q := range client.CurrentChar.NpcInfo {
+		buff := packets.Get()
+		for _, v := range q {
+			pkg := serverpackets.NpcInfo(v)
+			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+		}
+		client.SSend(buff.Bytes())
+		packets.Put(buff)
+	}
+}
 func (g *GameServer) MoveListener(client *models.Client) {
 
 	for q := range client.CurrentChar.CharInfoTo {
@@ -87,14 +99,12 @@ func (g *GameServer) MoveListener(client *models.Client) {
 			g.OnlineCharacters.Mu.Unlock()
 		}
 	}
+
 }
 
 func kickClient(client *models.Client) {
-	err := client.Socket.Close()
-	if err != nil {
-		panic(err)
-	}
 	client.CurrentChar.F = nil
+	client.CurrentChar.CurrentRegion.DeleteVisibleChar(client.CurrentChar)
 	//todo close all character goroutine, save info in DB
 	log.Println("Socket Close For: ", client.CurrentChar.CharName)
 }

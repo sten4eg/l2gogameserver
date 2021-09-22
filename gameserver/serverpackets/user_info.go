@@ -87,7 +87,7 @@ func UserInfo(client *models.Client) []byte {
 	buffer.WriteD(character.PvpKills) //pvp
 	buffer.WriteD(character.Karma)    //karma
 
-	buffer.WriteD(115) //runSpeed
+	buffer.WriteD(999) //runSpeed
 	buffer.WriteD(80)  //walkspeed
 	buffer.WriteD(50)  //swimRunSpeed
 	buffer.WriteD(50)  //swimWalkSpeed
