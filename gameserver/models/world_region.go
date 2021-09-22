@@ -10,6 +10,7 @@ type WorldRegion struct {
 	TileY         int32
 	TileZ         int32
 	CharsInRegion sync.Map //TODO переделать на мапу с RW мьютексом ци шо ци каво
+	NpcInRegion   sync.Map //TODO переделать на мапу с RW мьютексом ци шо ци каво
 }
 
 func NewWorldRegion(x, y, z int32) *WorldRegion {
@@ -26,6 +27,11 @@ func (w *WorldRegion) AddVisibleChar(character *Character) {
 func (w *WorldRegion) DeleteVisibleChar(character *Character) {
 	w.CharsInRegion.Delete(character)
 }
+
+func (w *WorldRegion) AddVisibleNpc(npc Npc) {
+	w.NpcInRegion.Store(npc.ObjId, npc)
+}
+
 func (w *WorldRegion) getNeighbors() []*WorldRegion {
 	return GetNeighbors(int(w.TileX), int(w.TileY), int(w.TileZ), 1, 1)
 }

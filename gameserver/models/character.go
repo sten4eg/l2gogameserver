@@ -65,6 +65,7 @@ type Character struct {
 	Macros                 []Macro
 	CharInfoTo             chan []int32
 	DeleteObjectTo         chan []int32
+	NpcInfo                chan []Npc
 	IsMoving               bool
 }
 type ToSendInfo struct {
@@ -154,11 +155,12 @@ func (c *Character) Load() {
 			c.AddBonusStat(v.BonusStats)
 		}
 	}
- 	c.Stats = AllStats[int(c.ClassId)].StaticData //todo а для чего BaseClass ??
+	c.Stats = AllStats[int(c.ClassId)].StaticData //todo а для чего BaseClass ??
 
 	reg := GetRegion(c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z)
 	c.CharInfoTo = make(chan []int32, 2)
 	c.DeleteObjectTo = make(chan []int32, 2)
+	c.NpcInfo = make(chan []Npc, 2)
 	c.setWorldRegion(reg)
 
 	reg.AddVisibleChar(c)
@@ -166,8 +168,6 @@ func (c *Character) Load() {
 	go c.Shadow()
 	go c.ListenSkillQueue()
 	go c.CheckRegion()
-
-
 
 }
 
@@ -286,9 +286,10 @@ func (c *Character) GetInventoryLimit() int16 {
 
 func (c *Character) setWorldRegion(newRegion *WorldRegion) {
 	var oldAreas []*WorldRegion
+
 	if c.CurrentRegion != nil {
 		c.CurrentRegion.DeleteVisibleChar(c)
-		oldAreas = newRegion.getNeighbors()
+		oldAreas = c.CurrentRegion.getNeighbors()
 	}
 
 	var newAreas []*WorldRegion
@@ -316,6 +317,7 @@ func (c *Character) setWorldRegion(newRegion *WorldRegion) {
 
 	// кому отправить charInfo
 	charInfoPkgTo := make([]int32, 0, 64)
+	npcPkgTo := make([]Npc, 0, 64)
 	for _, region := range newAreas {
 		if !Contains(oldAreas, region) {
 			region.CharsInRegion.Range(func(charId, char interface{}) bool {
@@ -325,12 +327,21 @@ func (c *Character) setWorldRegion(newRegion *WorldRegion) {
 				charInfoPkgTo = append(charInfoPkgTo, char.(*Character).CharId)
 				return true
 			})
+
+			region.NpcInRegion.Range(func(charId, char interface{}) bool {
+				npcPkgTo = append(npcPkgTo, char.(Npc))
+				return true
+			})
 		}
 	}
 	if len(charInfoPkgTo) > 0 {
 		c.CharInfoTo <- charInfoPkgTo
 	}
 	c.CurrentRegion = newRegion
+
+	if len(npcPkgTo) > 0 {
+		c.NpcInfo <- npcPkgTo
+	}
 
 }
 
