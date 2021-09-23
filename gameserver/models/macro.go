@@ -68,7 +68,7 @@ func (c *Character) saveMacros(macro Macro) {
 	lastInsertId := 0
 	sql := `INSERT INTO "macros" ("char_id", "icon", "name", "desc", "acronym")
 			VALUES ($1, $2, $3, $4, $5) RETURNING id`
-	_ = dbConn.QueryRow(context.Background(), sql, c.CharId, macro.Icon, macro.Name, macro.Desc, macro.Acronym).Scan(&lastInsertId)
+	_ = dbConn.QueryRow(context.Background(), sql, c.ObjectId, macro.Icon, macro.Name, macro.Desc, macro.Acronym).Scan(&lastInsertId)
 	sql = `INSERT INTO "macros_commands" ("command_id", "index", "type", "skill_id", "shortcut_id", "name") VALUES ($1, $2, $3, $4, $5, $6)`
 	for _, command := range macro.Commands {
 		_, err = dbConn.Exec(context.Background(), sql, lastInsertId, command.Index, command.Type, command.SkillID, command.ShortcutID, command.Name)
@@ -103,7 +103,7 @@ func (c *Character) LoadCharactersMacros() {
 	defer dbConn.Release()
 
 	sql := `SELECT * FROM "macros" WHERE char_id=$1 `
-	rows, err := dbConn.Query(context.Background(), sql, c.CharId)
+	rows, err := dbConn.Query(context.Background(), sql, c.ObjectId)
 	if err != nil {
 		log.Println(err.Error())
 		return

@@ -21,7 +21,7 @@ func UserInfo(client *models.Client) []byte {
 
 	buffer.WriteD(0) // Vehicle
 
-	buffer.WriteD(character.CharId) //objId
+	buffer.WriteD(character.ObjectId) //objId
 
 	buffer.WriteS(character.CharName) //name //TODO
 

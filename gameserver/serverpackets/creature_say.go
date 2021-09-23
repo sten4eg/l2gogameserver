@@ -11,8 +11,8 @@ func CreatureSay(say *models.Say, character *models.Character) []byte {
 	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x4a)
-	buffer.WriteD(character.CharId) //objId
-	buffer.WriteD(say.Type)         //
+	buffer.WriteD(character.ObjectId) //objId
+	buffer.WriteD(say.Type)           //
 
 	buffer.WriteS(character.CharName)
 

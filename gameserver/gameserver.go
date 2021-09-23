@@ -111,7 +111,7 @@ func kickClient(client *models.Client) {
 
 func (g *GameServer) addOnlineChar(character *models.Character) {
 	g.OnlineCharacters.Mu.Lock()
-	g.OnlineCharacters.Char[character.CharId] = character
+	g.OnlineCharacters.Char[character.ObjectId] = character
 	g.OnlineCharacters.Mu.Unlock()
 }
 

@@ -13,7 +13,7 @@ func Attack(client *models.Client, targetObjId, targetX, targetY, targetZ int32)
 
 	buffer.WriteSingleByte(0x33)
 
-	buffer.WriteD(client.CurrentChar.CharId)
+	buffer.WriteD(client.CurrentChar.ObjectId)
 
 	buffer.WriteD(targetObjId)
 	buffer.WriteD(4)
