@@ -12,7 +12,7 @@ import (
 )
 
 var IdExtracts = [][]string{
-	{"characters", "id"},
+	{"characters", "object_id"},
 	{"items", "object_id"},
 	//{"clan_data","clan_id"},//todo когда появятся таблиы - расскоментить
 	//{"itemsonground","object_id"},

@@ -15,7 +15,7 @@ func CharSelectionInfo(client *models.Client) []byte {
 		panic(err)
 	}
 	defer dbConn.Release()
-
+	//todo допистаь sql , убрать *
 	rows, err := dbConn.Query(context.Background(), "SELECT * FROM characters WHERE Login = $1", client.Account.Login)
 	if err != nil {
 		panic(err)
@@ -28,7 +28,7 @@ func CharSelectionInfo(client *models.Client) []byte {
 		var coord models.Coordinates
 		err = rows.Scan(
 			&character.Login,
-			&character.CharId,
+			&character.ObjectId,
 			&character.Level,
 			&character.MaxHp,
 			&character.CurHp,
@@ -65,7 +65,7 @@ func CharSelectionInfo(client *models.Client) []byte {
 	}
 
 	for _, v := range client.Account.Char {
-		v.Paperdoll = models.RestoreVisibleInventory(v.CharId)
+		v.Paperdoll = models.RestoreVisibleInventory(v.ObjectId)
 	}
 
 	buffer.WriteSingleByte(0x09)
@@ -81,8 +81,8 @@ func CharSelectionInfo(client *models.Client) []byte {
 
 		buffer.WriteS(char.CharName) // Pers name
 
-		buffer.WriteD(char.CharId) // objId
-		buffer.WriteS(char.Login)  // loginName
+		buffer.WriteD(char.ObjectId) // objId
+		buffer.WriteS(char.Login)    // loginName
 
 		buffer.WriteD(0)           //TODO sessionId
 		buffer.WriteD(char.ClanId) //clanId
@@ -119,7 +119,7 @@ func CharSelectionInfo(client *models.Client) []byte {
 		buffer.WriteD(0)
 		buffer.WriteD(0)
 
-		paperdoll := models.RestoreVisibleInventory(char.CharId)
+		paperdoll := models.RestoreVisibleInventory(char.ObjectId)
 		for _, slot := range models.GetPaperdollOrder() {
 			buffer.WriteD(int32(paperdoll[slot].Id))
 		}

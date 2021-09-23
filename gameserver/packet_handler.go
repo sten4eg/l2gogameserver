@@ -8,7 +8,6 @@ import (
 	"log"
 )
 
-
 // loop клиента в ожидании входящих пакетов
 func (g *GameServer) handler(client *models.Client) {
 	for {
@@ -64,8 +63,8 @@ func (g *GameServer) handler(client *models.Client) {
 					pkg0 := clientpackets.ChangeWaitType(client)
 					client.SSend(pkg0)
 				case 10: //Продажа в личном лавке
-					pkg := clientpackets.PrivateStoreManageListSell(client)
-					client.SSend(pkg)
+					//	pkg := clientpackets.PrivateStoreManageListSell(client)
+					//	client.SSend(pkg)
 				}
 
 			}

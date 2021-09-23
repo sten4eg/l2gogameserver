@@ -104,7 +104,7 @@ func UseItem(client *models.Client, data []byte) []byte {
 
 	// После каждого use_item будет запрос в бд на восстановление paperdoll,
 	//todo надо бы это сделать в UseEquippableItem
-	client.CurrentChar.Paperdoll = models.RestoreVisibleInventory(client.CurrentChar.CharId)
+	client.CurrentChar.Paperdoll = models.RestoreVisibleInventory(client.CurrentChar.ObjectId)
 
 	pkg2 := serverpackets.UserInfo(client)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))

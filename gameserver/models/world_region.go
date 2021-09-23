@@ -22,7 +22,7 @@ func NewWorldRegion(x, y, z int32) *WorldRegion {
 }
 
 func (w *WorldRegion) AddVisibleChar(character *Character) {
-	w.CharsInRegion.Store(character.CharId, character)
+	w.CharsInRegion.Store(character.ObjectId, character)
 }
 func (w *WorldRegion) DeleteVisibleChar(character *Character) {
 	w.CharsInRegion.Delete(character)
@@ -72,7 +72,7 @@ func GetAroundPlayersInRadius(c *Character, radius int32) []*Character {
 	for _, v := range currentRegion.getNeighbors() {
 		v.CharsInRegion.Range(func(key, value interface{}) bool {
 			char := value.(*Character)
-			if char.CharId == c.CharId {
+			if char.ObjectId == c.ObjectId {
 				return true
 			}
 
