@@ -2,9 +2,9 @@ package models
 
 import (
 	"encoding/json"
+	"l2gogameserver/gameserver/idfactory"
 	"log"
 	"os"
-	"sync/atomic"
 )
 
 type Npc struct {
@@ -124,20 +124,13 @@ type Locations struct {
 	PeriodOfDay   int   `json:"periodOfDay"`
 }
 
-//Список всех NPC
+// Npcs Список всех NPC
 var Npcs map[int32]map[int32]Npc
-
-var atom int32
-
-func getNext() int32 {
-	atomic.AddInt32(&atom, 1)
-	return atom
-}
 
 //Временное функция подгрузки листа с спаунами NPC
 func LoadNpc() {
-	// npcId -> objId(с уникальным спауном) -> Npc
 	Npcs = make(map[int32]map[int32]Npc)
+
 	log.Println("Загрузка NPC")
 	file, err := os.Open("./data/stats/npcdata/npcdata.json")
 	if err != nil {
@@ -148,14 +141,14 @@ func LoadNpc() {
 	if err = jsonParser.Decode(&NpcData); err != nil {
 		panic("parsing config file" + err.Error())
 	}
-	atomic.AddInt32(&atom, 33)
+
 	for _, p := range NpcData {
 		if len(p.Locations) == 0 {
 			continue
 		}
 		tmp := make(map[int32]Npc)
 		for _, vv := range p.Locations {
-			objId := getNext()
+			objId := idfactory.GetNext()
 			p.ObjId = objId
 			p.Spawn = vv
 			tmp[objId] = p
@@ -182,52 +175,4 @@ func LoadNpc() {
 		}
 	}
 
-	//log.Printf("Загружено %d спаунов", len(Spawnlist))
 }
-
-//Функция возращает массив ближайших NPC к игроку
-// maxDistance максимальное поинтов от NPC к игроку
-//func (c *Character) NpcDistancePoint(maxDistance float64) []Npc {
-//	playerX, playerY, _ := c.GetXYZ()
-//	var npcdata []Npc
-//	for _, npc := range Npcs {
-//		for _, location := range npc.Locations {
-//			NpcX := float64(location.Locx)
-//			NpcY := float64(location.Locy)
-//			distance := math.Sqrt(math.Pow(float64(playerX)-NpcX, 2) + math.Pow(float64(playerY)-NpcY, 2))
-//			if distance < maxDistance {
-//				npcdata = append(npcdata, npc)
-//			}
-//		}
-//	}
-//	return npcdata
-//}
-
-//Получение информации о NPC
-//func GetNpcInfo(id int32) (Npc, error) {
-//	for _, npc := range Npcs {
-//		if npc.NpcId == id {
-//			return npc, nil
-//		}
-//	}
-//	return Npc{}, errors.New("Not find NPC " + strconv.Itoa(int(id)))
-//}
-
-//Список ближайших NPC
-//Параметр maxDistance указывается максимальный диапазон поиска NPC
-//диапазона 3000 хватает чтоб получить список всех NPC в Talking Village (стоя в центре)
-//диапазона 7000 хватает для прогрузки NPC аж до моста от Talking Village (стоя в центре)
-//Если персонаж находится в центре города
-//func (c *Character) SpawnDistancePoint(maxDistance float64) []Locations {
-//	playerX, playerY, _ := c.GetXYZ()
-//	var npcdata []Locations
-//	for _, spawn := range Spawnlist {
-//			NpcX := float64(spawn.Locx)
-//			NpcY := float64(spawn.Locy)
-//			distance := math.Sqrt(math.Pow(float64(playerX)-NpcX, 2) + math.Pow(float64(playerY)-NpcY, 2))
-//			if distance < maxDistance {
-//				npcdata = append(npcdata, spawn)
-//			}
-//	}
-//	return npcdata
-//}
