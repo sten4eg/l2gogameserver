@@ -61,6 +61,18 @@ type Character struct {
 	InGame                 bool
 	Target                 int32
 	Macros                 []Macro
+	Sit                    bool
+}
+
+//Меняет положение персонажа от сидячего к стоячему и на оборот
+//Возращает значение нового положения
+func (c *Character) SetSitStandPose() int32 {
+	if c.Sit == false {
+		c.Sit = true
+		return 0
+	}
+	c.Sit = false
+	return 1
 }
 
 func GetNewCharacterModel() *Character {
@@ -145,15 +157,13 @@ func (c *Character) Load() {
 			c.AddBonusStat(v.BonusStats)
 		}
 	}
- 	c.Stats = AllStats[int(c.ClassId)].StaticData //todo а для чего BaseClass ??
+	c.Stats = AllStats[int(c.ClassId)].StaticData //todo а для чего BaseClass ??
 
 	reg := GetRegion(c.Coordinates.X, c.Coordinates.Y)
 	reg.AddVisibleObject(c)
 	c.CurrentRegion = reg
 	go c.Shadow()
 	go c.ListenSkillQueue()
-
-
 
 }
 
