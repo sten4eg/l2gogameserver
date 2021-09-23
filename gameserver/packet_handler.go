@@ -13,7 +13,7 @@ import (
 func (g *GameServer) handler(client *models.Client) {
 	for {
 		opcode, data, err := client.Receive()
-
+		//defer kickClient(client)
 		if err != nil {
 			fmt.Println(err)
 			fmt.Println("Коннект закрыт")
@@ -37,8 +37,6 @@ func (g *GameServer) handler(client *models.Client) {
 			pkg := clientpackets.CharSelected(data, client)
 			client.SSend(pkg)
 			g.addOnlineChar(client.CurrentChar)
-			go g.ChannelListener(client)
-
 		case 208:
 			if len(data) >= 2 {
 				switch data[0] {
@@ -81,8 +79,11 @@ func (g *GameServer) handler(client *models.Client) {
 		case 17:
 			pkg := clientpackets.RequestEnterWorld(client, data)
 			client.SSend(pkg)
-			g.BroadCastUserInfoInRadius(client, 2000)
+			//g.BroadCastUserInfoInRadius(client, 2000)
 			g.GetCharInfoAboutCharactersInRadius(client, 2000)
+			go g.ChannelListener(client)
+			go g.MoveListener(client)
+			go g.NpcListener(client)
 		case 166:
 			pkg := clientpackets.RequestSkillCoolTime(client, data)
 			client.SSend(pkg)
@@ -95,6 +96,7 @@ func (g *GameServer) handler(client *models.Client) {
 			g.BroadCastChat(client, say)
 		case 89:
 			pkg := clientpackets.ValidationPosition(data, client.CurrentChar)
+			//g.Checkaem(client, pkg)
 			client.SSend(pkg)
 		case 31:
 			pkg := clientpackets.Action(data, client)

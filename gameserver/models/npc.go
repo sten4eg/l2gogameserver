@@ -2,16 +2,14 @@ package models
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
-	"math"
 	"os"
-	"strconv"
+	"sync/atomic"
 )
 
 type Npc struct {
 	Type                string              `json:"type"`
-	NpcId               int32                 `json:"npcid"`
+	NpcId               int32               `json:"npcid"`
 	Name                string              `json:"name"`
 	Level               int                 `json:"level"`
 	Exp                 int                 `json:"exp"`
@@ -23,8 +21,8 @@ type Npc struct {
 	SkillList           []string            `json:"skill_list"`
 	SlotRhand           string              `json:"slot_rhand"`
 	SlotLhand           interface{}         `json:"slot_lhand"`
-	CollisionRadius     float64              `json:"collision_radius"`
-	CollisionHeight     float64              `json:"collision_height"`
+	CollisionRadius     float64             `json:"collision_radius"`
+	CollisionHeight     float64             `json:"collision_height"`
 	HitTimeFactor       float64             `json:"hit_time_factor"`
 	HitTimeFactorSkill  int                 `json:"hit_time_factor_skill"`
 	GroundHigh          int                 `json:"ground_high"`
@@ -79,22 +77,25 @@ type Npc struct {
 			Val string `json:"val"`
 		} `json:"list"`
 	} `json:"npc_ai"`
-	EventFlag               string                    `json:"event_flag"`
+	EventFlag               int                       `json:"event_flag"`
 	Unsowing                int                       `json:"unsowing"`
 	PrivateRespawnLog       int                       `json:"private_respawn_log"`
 	AcquireExpRate          float64                   `json:"acquire_exp_rate"`
 	AcquireSp               int                       `json:"acquire_sp"`
 	AcquireRp               int                       `json:"acquire_rp"`
 	CorpseMakeList          []CorpseMakeList          `json:"corpse_make_list"`
-	AdditionalMakeList      string                    `json:"additional_make_list"`
+	AdditionalMakeList      []AdditionalMakeList      `json:"additional_make_list"`
 	AdditionalMakeMultiList []AdditionalMakeMultiList `json:"additional_make_multi_list"`
 	ExItemDropList          []ExItemDropList          `json:"ex_item_drop_list"`
-	FakeClassId             string                    `json:"fake_class_id"`
+	FakeClassId             int                       `json:"fake_class_id"`
 	Locations               []Locations               `json:"locations"`
+	ObjId                   int32
+	Spawn                   Locations
 }
+
 /**
 Структуры NPC пока пусты ибо не подготовил их реализацию и содержимое в правильном формате
- */
+*/
 type BaseDamageRange struct {
 }
 type BaseAttributeAttack struct {
@@ -107,9 +108,10 @@ type CorpseMakeList struct {
 }
 type ExItemDropList struct {
 }
-
+type AdditionalMakeList struct {
+}
 type Locations struct {
-	NpcId          int32 `json:"npc_id"`
+	NpcId         int32 `json:"npc_id"`
 	Locx          int32 `json:"locx"`
 	Locy          int32 `json:"locy"`
 	Locz          int32 `json:"locz"`
@@ -123,12 +125,19 @@ type Locations struct {
 }
 
 //Список всех NPC
-var Npcs []Npc
-//Список всех локаций NPC
-var Spawnlist []Locations
+var Npcs map[int32]map[int32]Npc
+
+var atom int32
+
+func getNext() int32 {
+	atomic.AddInt32(&atom, 1)
+	return atom
+}
 
 //Временное функция подгрузки листа с спаунами NPC
 func LoadNpc() {
+	// npcId -> objId(с уникальным спауном) -> Npc
+	Npcs = make(map[int32]map[int32]Npc)
 	log.Println("Загрузка NPC")
 	file, err := os.Open("./data/stats/npcdata/npcdata.json")
 	if err != nil {
@@ -139,69 +148,86 @@ func LoadNpc() {
 	if err = jsonParser.Decode(&NpcData); err != nil {
 		panic("parsing config file" + err.Error())
 	}
+	atomic.AddInt32(&atom, 33)
 	for _, p := range NpcData {
-		Npcs = append(Npcs, p)
+		if len(p.Locations) == 0 {
+			continue
+		}
+		tmp := make(map[int32]Npc)
+		for _, vv := range p.Locations {
+			objId := getNext()
+			p.ObjId = objId
+			p.Spawn = vv
+			tmp[objId] = p
+		}
+		Npcs[p.NpcId] = tmp
 	}
+
 	log.Printf("Загружено %d Npc", len(Npcs))
 
 	file, err = os.Open("./data/stats/npcdata/spawnlist.json")
 	if err != nil {
 		panic("Failed to load config file " + err.Error())
 	}
-	var NpcSpawn []Locations
+	var npcSpawn []Locations
 	jsonParser = json.NewDecoder(file)
-	if err = jsonParser.Decode(&NpcSpawn); err != nil {
+	if err = jsonParser.Decode(&npcSpawn); err != nil {
 		panic("parsing config file" + err.Error())
 	}
-	for _, p := range NpcSpawn {
-		Spawnlist = append(Spawnlist, p)
+
+	for _, v := range Npcs {
+		for _, vv := range v {
+			reg := GetRegion(vv.Spawn.Locx, vv.Spawn.Locy, vv.Spawn.Locz)
+			reg.AddVisibleNpc(vv)
+		}
 	}
-	log.Printf("Загружено %d спаунов", len(Spawnlist))
+
+	//log.Printf("Загружено %d спаунов", len(Spawnlist))
 }
 
 //Функция возращает массив ближайших NPC к игроку
 // maxDistance максимальное поинтов от NPC к игроку
-func (c *Character) NpcDistancePoint(maxDistance float64) []Npc {
-	playerX, playerY, _ := c.GetXYZ()
-	var npcdata []Npc
-	for _, npc := range Npcs {
-		for _, location := range npc.Locations {
-			NpcX := float64(location.Locx)
-			NpcY := float64(location.Locy)
-			distance := math.Sqrt(math.Pow(float64(playerX)-NpcX, 2) + math.Pow(float64(playerY)-NpcY, 2))
-			if distance < maxDistance {
-				npcdata = append(npcdata, npc)
-			}
-		}
-	}
-	return npcdata
-}
+//func (c *Character) NpcDistancePoint(maxDistance float64) []Npc {
+//	playerX, playerY, _ := c.GetXYZ()
+//	var npcdata []Npc
+//	for _, npc := range Npcs {
+//		for _, location := range npc.Locations {
+//			NpcX := float64(location.Locx)
+//			NpcY := float64(location.Locy)
+//			distance := math.Sqrt(math.Pow(float64(playerX)-NpcX, 2) + math.Pow(float64(playerY)-NpcY, 2))
+//			if distance < maxDistance {
+//				npcdata = append(npcdata, npc)
+//			}
+//		}
+//	}
+//	return npcdata
+//}
 
 //Получение информации о NPC
-func GetNpcInfo(id int32) (Npc, error) {
-	for _, npc := range Npcs {
-		if npc.NpcId == id {
-			return npc, nil
-		}
-	}
-	return Npc{}, errors.New("Not find NPC " + strconv.Itoa(int(id)))
-}
+//func GetNpcInfo(id int32) (Npc, error) {
+//	for _, npc := range Npcs {
+//		if npc.NpcId == id {
+//			return npc, nil
+//		}
+//	}
+//	return Npc{}, errors.New("Not find NPC " + strconv.Itoa(int(id)))
+//}
 
 //Список ближайших NPC
 //Параметр maxDistance указывается максимальный диапазон поиска NPC
 //диапазона 3000 хватает чтоб получить список всех NPC в Talking Village (стоя в центре)
 //диапазона 7000 хватает для прогрузки NPC аж до моста от Talking Village (стоя в центре)
 //Если персонаж находится в центре города
-func (c *Character) SpawnDistancePoint(maxDistance float64) []Locations {
-	playerX, playerY, _ := c.GetXYZ()
-	var npcdata []Locations
-	for _, spawn := range Spawnlist {
-			NpcX := float64(spawn.Locx)
-			NpcY := float64(spawn.Locy)
-			distance := math.Sqrt(math.Pow(float64(playerX)-NpcX, 2) + math.Pow(float64(playerY)-NpcY, 2))
-			if distance < maxDistance {
-				npcdata = append(npcdata, spawn)
-			}
-	}
-	return npcdata
-}
+//func (c *Character) SpawnDistancePoint(maxDistance float64) []Locations {
+//	playerX, playerY, _ := c.GetXYZ()
+//	var npcdata []Locations
+//	for _, spawn := range Spawnlist {
+//			NpcX := float64(spawn.Locx)
+//			NpcY := float64(spawn.Locy)
+//			distance := math.Sqrt(math.Pow(float64(playerX)-NpcX, 2) + math.Pow(float64(playerY)-NpcY, 2))
+//			if distance < maxDistance {
+//				npcdata = append(npcdata, spawn)
+//			}
+//	}
+//	return npcdata
+//}
