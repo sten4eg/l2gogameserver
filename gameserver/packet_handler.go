@@ -64,8 +64,6 @@ func (g *GameServer) handler(client *models.Client) {
 					pkg0 := clientpackets.ChangeWaitType(client)
 					client.SSend(pkg0)
 				case 10: //Продажа в личном лавке
-					pkg := clientpackets.PrivateStoreManageListSell(client)
-					client.SSend(pkg)
 				}
 
 			}
