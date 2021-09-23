@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 var IdExtracts = [][]string{
@@ -29,7 +30,8 @@ const FreeObjectIdSize = LastOid - FirstOid
 var mu sync.Mutex
 
 func Load() {
-	FreeIds = *bitset.New(100000)
+	primeInit()
+	FreeIds = *bitset.New(uint(NextPrime(100000)))
 	FreeIds.ClearAll()
 	FreeIdCount = FreeObjectIdSize
 
@@ -47,8 +49,11 @@ func Load() {
 	}
 	v, _ := FreeIds.NextClear(0)
 	NextFreeId = uint64(v)
+
+	go bitSetCapacityCheck()
 }
 
+// GetNext получение свободного идентификатора objectId
 func GetNext() int32 {
 	mu.Lock()
 	newID := atomic.LoadUint64(&NextFreeId)
@@ -62,7 +67,7 @@ func GetNext() int32 {
 
 	if nextFree < 0 {
 		if FreeIds.Len() < FreeObjectIdSize {
-			//increaseBitSetCapacity()
+			increaseBitSetCapacity()
 		} else {
 			panic("Закончились objectId")
 		}
@@ -73,6 +78,8 @@ func GetNext() int32 {
 	return int32(newID + FirstOid)
 }
 
+// extractUsedObjectIDTable чтение из БД всех objectId
+// и установка их как занятых
 func extractUsedObjectIDTable() []int {
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -102,4 +109,48 @@ func extractUsedObjectIDTable() []int {
 
 	sort.Ints(tmp)
 	return tmp
+}
+
+// Release если objectId уже не используется его можно вернуть в пулл
+// Чтобы в дальнейшем использовать снова
+func Release(objectId int32) {
+	mu.Lock()
+	id := objectId - FirstOid
+	if id > -1 {
+		FreeIds.Clear(uint(id))
+		atomic.AddInt32(&FreeIdCount, 1)
+	} else {
+		panic("Попытка release objectId")
+	}
+}
+
+// usedIdCount количество использованных идентификаторов
+func usedIdCount() int32 {
+	return FreeIdCount - FirstOid
+}
+
+// increaseBitSetCapacity увеличение емкости BitSet
+func increaseBitSetCapacity() {
+	mu.Lock()
+	newBitSet := bitset.New(uint(NextPrime(int(usedIdCount() * 11 / 10))))
+	newBitSet.Union(&FreeIds)
+	FreeIds = *newBitSet
+	mu.Unlock()
+}
+
+// reachingBitSetCapacity достиг ли bitSet максимальной capacity
+func reachingBitSetCapacity() bool {
+	return uint(NextPrime(int(usedIdCount()*11/10))) > FreeIds.Len()
+}
+
+// bitSetCapacityCheck проверка каждые 30 секунд
+// достиг ли bitSet максимальной capacity
+// и увеличение его если необходимо
+func bitSetCapacityCheck() {
+	for {
+		time.Sleep(time.Second * 30)
+		if reachingBitSetCapacity() {
+			increaseBitSetCapacity()
+		}
+	}
 }
