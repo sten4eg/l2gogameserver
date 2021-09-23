@@ -63,11 +63,24 @@ type Character struct {
 	InGame                 bool
 	Target                 int32
 	Macros                 []Macro
-	CharInfoTo             chan []int32
+  CharInfoTo             chan []int32
 	DeleteObjectTo         chan []int32
 	NpcInfo                chan []Npc
 	IsMoving               bool
+	Sit                    bool
 }
+
+//Меняет положение персонажа от сидячего к стоячему и на оборот
+//Возращает значение нового положения
+func (c *Character) SetSitStandPose() int32 {
+	if c.Sit == false {
+		c.Sit = true
+		return 0
+	}
+	c.Sit = false
+	return 1
+}
+
 type ToSendInfo struct {
 	To   []int32
 	Info utils.PacketByte
@@ -168,6 +181,7 @@ func (c *Character) Load() {
 	go c.Shadow()
 	go c.ListenSkillQueue()
 	go c.CheckRegion()
+
 
 }
 

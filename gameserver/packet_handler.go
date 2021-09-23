@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"l2gogameserver/gameserver/clientpackets"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/packets"
 	"log"
 )
 
+
 // loop клиента в ожидании входящих пакетов
 func (g *GameServer) handler(client *models.Client) {
-
 	for {
 		opcode, data, err := client.Receive()
 		//defer kickClient(client)
@@ -18,7 +19,7 @@ func (g *GameServer) handler(client *models.Client) {
 			fmt.Println("Коннект закрыт")
 			break // todo  return ?
 		}
-		log.Println("income ", opcode)
+		log.Println("Client->Server: #", opcode, packets.GetNamePacket(opcode))
 		switch opcode {
 		case 14:
 			pkg := clientpackets.ProtocolVersion(data, client)
@@ -36,7 +37,6 @@ func (g *GameServer) handler(client *models.Client) {
 			pkg := clientpackets.CharSelected(data, client)
 			client.SSend(pkg)
 			g.addOnlineChar(client.CurrentChar)
-
 		case 208:
 			if len(data) >= 2 {
 				switch data[0] {
@@ -52,8 +52,22 @@ func (g *GameServer) handler(client *models.Client) {
 				case 36:
 					clientpackets.RequestSaveInventoryOrder(client, data)
 				default:
-					log.Println("Не реализованный пакет: ", data[0])
+					log.Println("Не реализованный пакет: ", data[0], packets.GetNamePacket(data[0]))
 				}
+			}
+
+		case 86:
+			if len(data) >= 2 {
+				log.Println(data[0])
+				switch data[0] {
+				case 0: //посадить персонажа на жопу
+					pkg0 := clientpackets.ChangeWaitType(client)
+					client.SSend(pkg0)
+				case 10: //Продажа в личном лавке
+					pkg := clientpackets.PrivateStoreManageListSell(client)
+					client.SSend(pkg)
+				}
+
 			}
 
 		case 193:
