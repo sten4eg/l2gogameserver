@@ -131,7 +131,7 @@ func (cc *CharCreate) validate(client *models.Client) []byte {
 
 	}
 	x, y, z := models.GetCreationCoordinates(cc.ClassId)
-	_, err = dbConn.Exec(context.Background(), "INSERT INTO characters (id, char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class, title) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)",
+	_, err = dbConn.Exec(context.Background(), "INSERT INTO characters (object_id, char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class, title) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)",
 		idfactory.GetNext(),
 		cc.Name,
 		cc.Race,
