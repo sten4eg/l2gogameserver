@@ -16,13 +16,13 @@ type MacroCommand struct {
 }
 
 type Macro struct {
-	Id       int32
-	Name     string
-	Desc     string
-	Acronym  string
-	Icon     byte
-	Count    byte
-	Commands []MacroCommand
+	Id          int32
+	Name        string
+	Description string
+	Acronym     string
+	Icon        byte
+	Count       byte
+	Commands    []MacroCommand
 }
 
 //AddMacros Добавление нового макроса
@@ -62,9 +62,9 @@ func (c *Character) saveMacros(macro Macro) {
 	}
 	defer dbConn.Release()
 	lastInsertId := 0
-	sql := `INSERT INTO "macros" ("char_id", "icon", "name", "desc", "acronym")
+	sql := `INSERT INTO "macros" ("char_id", "icon", "name", "description", "acronym")
 			VALUES ($1, $2, $3, $4, $5) RETURNING id`
-	_ = dbConn.QueryRow(context.Background(), sql, c.ObjectId, macro.Icon, macro.Name, macro.Desc, macro.Acronym).Scan(&lastInsertId)
+	_ = dbConn.QueryRow(context.Background(), sql, c.ObjectId, macro.Icon, macro.Name, macro.Description, macro.Acronym).Scan(&lastInsertId)
 	sql = `INSERT INTO "macros_commands" ("command_id", "index", "type", "skill_id", "shortcut_id", "name") VALUES ($1, $2, $3, $4, $5, $6)`
 	for _, command := range macro.Commands {
 		_, err = dbConn.Exec(context.Background(), sql, lastInsertId, command.Index, command.Type, command.SkillID, command.ShortcutID, command.Name)
@@ -98,7 +98,7 @@ func (c *Character) LoadCharactersMacros() {
 	}
 	defer dbConn.Release()
 
-	sql := `SELECT id,icon,name,desc,acronym FROM "macros" WHERE char_id=$1 `
+	sql := `SELECT id,icon,name,description,acronym FROM "macros" WHERE char_id=$1 `
 	rows, err := dbConn.Query(context.Background(), sql, c.ObjectId)
 	if err != nil {
 		log.Println(err.Error())
@@ -106,7 +106,7 @@ func (c *Character) LoadCharactersMacros() {
 	}
 	for rows.Next() {
 		m := Macro{}
-		err = rows.Scan(&m.Id, &m.Icon, &m.Name, &m.Desc, &m.Acronym)
+		err = rows.Scan(&m.Id, &m.Icon, &m.Name, &m.Description, &m.Acronym)
 		if err != nil {
 			log.Println(err)
 			return
