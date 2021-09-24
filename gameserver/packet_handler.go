@@ -15,7 +15,7 @@ func (g *GameServer) handler(client *models.Client) {
 		//defer kickClient(client)
 		if err != nil {
 			fmt.Println(err)
-			fmt.Println("Коннект закрыт")
+			g.charOffline(client)
 			break // todo  return ?
 		}
 		log.Println("Client->Server: #", opcode, packets.GetNamePacket(opcode))

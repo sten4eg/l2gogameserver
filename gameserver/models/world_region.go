@@ -25,7 +25,7 @@ func (w *WorldRegion) AddVisibleChar(character *Character) {
 	w.CharsInRegion.Store(character.ObjectId, character)
 }
 func (w *WorldRegion) DeleteVisibleChar(character *Character) {
-	w.CharsInRegion.Delete(character)
+	w.CharsInRegion.Delete(character.ObjectId)
 }
 
 func (w *WorldRegion) AddVisibleNpc(npc Npc) {

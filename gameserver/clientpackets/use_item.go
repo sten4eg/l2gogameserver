@@ -22,7 +22,7 @@ func UseItem(client *models.Client, data []byte) []byte {
 	var selectedItem models.MyItem
 
 	find := false
-	for _, v := range client.CurrentChar.Inventory {
+	for _, v := range client.CurrentChar.Inventory.Items {
 		if v.ObjId == objId {
 			selectedItem = v
 			find = true
@@ -50,7 +50,7 @@ func UseItem(client *models.Client, data []byte) []byte {
 		case items.SlotLrHand, items.SlotLHand, items.SlotRHand:
 
 			// если в руке Combat flag
-			if client.CurrentChar.IsActiveWeapon() && models.GetActiveWeapon(client.CurrentChar.Inventory, client.CurrentChar.Paperdoll).Item.Id == fortFlagId {
+			if client.CurrentChar.IsActiveWeapon() && models.GetActiveWeapon(client.CurrentChar.Inventory.Items, client.CurrentChar.Paperdoll).Item.Id == fortFlagId {
 				pkg := serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition, client)
 				buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 				return buffer.Bytes()
@@ -97,7 +97,7 @@ func UseItem(client *models.Client, data []byte) []byte {
 
 	}
 
-	models.SaveInventoryInDB(client.CurrentChar.Inventory)
+	models.SaveInventoryInDB(client.CurrentChar.Inventory.Items)
 
 	pkg := serverpackets.InventoryUpdate(client, selectedItem.ObjId, models.UpdateTypeModify)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))

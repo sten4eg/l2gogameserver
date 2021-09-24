@@ -55,7 +55,7 @@ type Character struct {
 	IsCastingNow           bool
 	SkillQueue             chan SkillHolder
 	CurrentSkill           *SkillHolder // todo А может быть без * попробовать?
-	Inventory              []MyItem
+	Inventory              Inventory
 	CursedWeaponEquippedId int
 	BonusStats             []items.ItemBonusStat
 	F                      chan IUP
@@ -190,18 +190,18 @@ type IUP struct {
 
 func (c *Character) Shadow() {
 	for {
-		for i, v := range c.Inventory {
-			if v.Item.Durability > 0 && v.Loc == Paperdoll {
+		for i, v := range c.Inventory.Items {
+			if v.Item.Durability > 0 && v.Loc == PaperdollLoc {
 				var iup IUP
 				iup.ObjId = v.ObjId
-				switch c.Inventory[i].Mana {
+				switch c.Inventory.Items[i].Mana {
 
 				case 0:
 					iup.UpdateType = UpdateTypeRemove
 					c.F <- iup
 					DeleteItem(v, c)
 				default:
-					c.Inventory[i].Mana -= 1
+					c.Inventory.Items[i].Mana -= 1
 					iup.UpdateType = UpdateTypeModify
 					c.F <- iup
 				}
