@@ -18,95 +18,139 @@ type OnlineCharacters struct {
 	Mu   sync.Mutex
 }
 
-var World [][]WorldRegion
-
-/** Gracia border Flying objects not allowed to the east of it. */
 var GraciaMaxX = -166168
 var GraciaMaxZ = 6105
 var GraciaMinZ = -895
 
-/** Biteshift, defines number of regions note, shifting by 15 will result in regions corresponding to map tiles shifting by 12 divides one tile to 8x8 regions. */
-var ShiftBy = 12
-
-var TileSize = 32768
-
-/** Map dimensions */
 var TileXMin = 11
 var TileYMin = 10
 var TileXMax = 26
 var TileYMax = 26
-var TileZeroCoordX = 20
-var TileZeroCoordY = 18
-var MapMinX = (TileXMin - TileZeroCoordX) * TileSize // можно так же 9 << 15
-var MapMinY = (TileYMin - TileZeroCoordY) * TileSize
 
-var MapMaxX = ((TileXMax - TileZeroCoordX) + 1) * TileSize
-var MapMaxY = ((TileYMax - TileZeroCoordY) + 1) * TileSize
+var WorldSizeX = 26 - 11 + 1
+var WorldSizeY = 26 - 10 + 1
 
-/** calculated offset used so top left region is 0,0 */
+var MapMinX = (TileXMin - 20) << 15
+var MapMaxX = ((TileXMax - 19) << 15) - 1
+
+var MapMinY = (TileYMin - 18) << 15
+var MapMaxY = ((TileYMax - 17) << 15) - 1
+
+var MapMinZ = -16384
+var MapMaxZ = 16383
+
+var ShiftBy = 12
+var ShiftByForZ = 10
+
 var OffsetX = math.Abs(float64(MapMinX >> ShiftBy))
 var OffsetY = math.Abs(float64(MapMinY >> ShiftBy))
+var OffsetZ = math.Abs(float64(MapMinZ >> ShiftByForZ))
 
-/** number of regions */
 var RegionsX = int32((float64(MapMaxX >> ShiftBy)) + OffsetX)
 var RegionsY = int32((float64(MapMaxY >> ShiftBy)) + OffsetY)
+var RegionsZ = int32((float64(MapMaxZ >> ShiftByForZ)) + OffsetZ)
+
+var World [][][]*WorldRegion
 
 func NewWorld() {
-
-	var i int32
-	var j int32
-	World = make([][]WorldRegion, RegionsX+1)
-	for i = 0; i <= RegionsX; i++ {
-		wj := make([]WorldRegion, RegionsY+1)
-		for j = 0; j <= RegionsY; j++ {
-			wj[j] = NewWorldRegion(i, j)
+	World = make([][][]*WorldRegion, RegionsX+1)
+	for i := 0; i <= int(RegionsX); i++ {
+		wj := make([][]*WorldRegion, RegionsY+1)
+		for j := 0; j <= int(RegionsY); j++ {
+			wz := make([]*WorldRegion, 1)
+			for z := 0; z < 1; z++ { //todo Z из конфига??
+				wz[z] = NewWorldRegion(int32(i), int32(j), int32(z))
+			}
+			wj[j] = wz
 		}
 		World[i] = wj
 	}
-	var x, y, a, b int32
-	for x = 0; x <= RegionsX; x++ {
-		for y = 0; y <= RegionsY; y++ {
-			for a = -1; a <= 1; a++ {
-				for b = -1; b <= 1; b++ {
-					if validRegion(x+a, y+b) {
-						World[x+a][y+b].AddSurrounding(&World[x][y])
+	qw := World
+	_ = qw
+}
+func GetNeighbors(regX, regY, regZ, deepH, deepV int) []*WorldRegion {
+	neighbors := make([]*WorldRegion, 0, 9)
+	deepH *= 2
+	deepV *= 2
+	var rx, ry, rz int
+
+	for x := 0; x <= deepH; x++ {
+		for y := 0; y <= deepH; y++ {
+			for z := 0; z <= deepV; z++ {
+
+				if x%2 == 0 {
+					rx = regX + (-x / 2)
+				} else {
+					rx = regX + (x - x/2)
+				}
+
+				if y%2 == 0 {
+					ry = regY + (-y / 2)
+				} else {
+					ry = regY + (y - y/2)
+				}
+				rz = 0
+				if validRegion(rx, ry, rz) {
+					if len(World[rx][ry]) > 1 {
+						if z%2 == 0 {
+							rz = regZ + (-z / 2)
+						} else {
+							rz = regZ + (z - z/2)
+						}
+
+						if !validRegion(rx, ry, rz) {
+							continue
+						}
+					} else {
+						z = deepV + 1
+					}
+
+					qw := rx
+					qe := ry
+					qq := rz
+					_, _, _ = qw, qe, qq
+					if World[rx][ry][rz] != nil {
+						neighbors = append(neighbors, World[rx][ry][rz])
 					}
 				}
 			}
 		}
 	}
+	return neighbors
 }
 
-func validRegion(x, y int32) bool {
-	return (x >= 0) && (x <= RegionsX) && (y >= 0) && (y <= RegionsY)
+func GetRegion(x, y, z int32) *WorldRegion {
+	_x := int(x>>ShiftBy) + int(OffsetX)
+	_y := int(y>>ShiftBy) + int(OffsetY)
+	_z := 0
+	if validRegion(_x, _y, _z) {
+		if len(World[_x][_y]) > 1 {
+			_z = int(z>>ShiftByForZ) + int(OffsetZ)
+		}
+
+		if World[_x][_y][_z] == nil {
+			World[_x][_y][_z] = NewWorldRegion(int32(_x), int32(_y), int32(_z))
+		}
+		return World[_x][_y][_z]
+	}
+	return nil
 }
 
-//func getVisibleObjects(region WorldRegion, radius int32) {
-//	sqRadius := radius * radius
-//
-//for regi := range region.Sur {
-//	//Todo если я то надо континью (не надо для самого себя высчитывать)
-//	if sqRadius >  {
-//		calculateDistance()
-//	}
-//}
-//}
+func CalculateDistance(ox, oy, oz, mx, my, mz int32, includeZAxis, squared bool) float64 {
+	var distance float64
+	if includeZAxis {
+		distance = math.Pow(float64(ox-mx), 2) + math.Pow(float64(oy-my), 2) + math.Pow(float64(oz-mz), 2)
+	} else {
+		distance = math.Pow(float64(ox-mx), 2) + math.Pow(float64(oy-my), 2)
+	}
 
-//func calculateDistance(ox, oy, oz, mx, my, mz int32, includeZAxis, squared bool) float64 {
-//	var distance float64
-//	if includeZAxis {
-//		distance = math.Pow(float64(ox-mx), 2) + math.Pow(float64(oy-my), 2) + math.Pow(float64(oz-mz), 2)
-//	} else {
-//		distance = math.Pow(float64(ox-mx), 2) + math.Pow(float64(oy-my), 2)
-//	}
-//
-//	if squared {
-//		return distance
-//	}
-//
-//	return math.Sqrt(distance)
-//}
+	if squared {
+		return distance
+	}
 
-func GetRegion(x, y int32) *WorldRegion {
-	return &World[(x>>ShiftBy)+int32(OffsetX)][(y>>ShiftBy)+int32(OffsetY)]
+	return math.Sqrt(distance)
+}
+
+func validRegion(x, y, z int) bool {
+	return x >= 0 && x < int(RegionsX) && y >= 0 && y < int(RegionsY) && z >= 0 && z < int(RegionsZ)
 }

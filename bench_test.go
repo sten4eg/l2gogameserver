@@ -1,22 +1,26 @@
 package main
 
 import (
+	"l2gogameserver/packets"
 	"testing"
 )
 
-func BenchmarkSimplest(b *testing.B) {
+var Data []byte
 
-	for i := 0; i < b.N; i++ {
-		w, e := by()
-		_, _ = w, e
-	}
-
+func init() {
+	Data = []byte{123, 0, 0, 0}
 }
 
-func by() (opcode byte, data []byte) {
-	f := make([]byte, 1024*1024)
-
-	opcode = f[0]
-	data = f[:1]
-	return
+//func BenchmarkNew(b *testing.B) {
+//	for i:=0;i<b.N;i++ {
+//		var read = packets.NewReader(Data)
+//	//	_ = read.NormTema()
+//	}
+//
+//}
+func BenchmarkOld(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var read = packets.NewReader(Data)
+		_ = read.ReadInt32()
+	}
 }

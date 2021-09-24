@@ -8,6 +8,7 @@ import (
 
 func RequestRestart(data []byte, client *models.Client) []byte {
 
+	client.SaveUser()
 	//todo need save in db
 
 	_ = data

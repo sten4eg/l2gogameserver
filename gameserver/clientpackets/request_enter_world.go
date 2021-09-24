@@ -13,6 +13,9 @@ func RequestEnterWorld(client *models.Client, data []byte) []byte {
 	buff := packets.Get()
 	defer packets.Put(buff)
 
+	pkg := serverpackets.UserInfo(client)
+	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+
 	pkg2 := serverpackets.ExBrExtraUserInfo(client.CurrentChar)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
@@ -58,5 +61,21 @@ func RequestEnterWorld(client *models.Client, data []byte) []byte {
 	pkg15 := serverpackets.ShortBuffStatusUpdate(client) //todo test
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg15))
 
+	pkg16 := serverpackets.ActionList(client) //todo test
+	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg16))
+
+	//NPCdistance := client.CurrentChar.SpawnDistancePoint(5000)
+	//log.Printf("Загружено возле игрока %d npc", len(NPCdistance))
+	//for id, locdata := range NPCdistance {
+	//	npc, err := models.GetNpcInfo(locdata.NpcId)
+	//	if err != nil {
+	//		//Вернется ошибка что NPC не найден
+	//		//Крайне маловероятно что такое может случиться, но лучше подстаховаться.
+	//		log.Println(err)
+	//		continue
+	//	}
+	//	pkg17 := serverpackets.NpcInfo(client, id, npc, locdata)
+	//	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg17))
+	//}
 	return buff.Bytes()
 }
