@@ -19,7 +19,7 @@ func DropItem(client *models.Client, objectId int32, count int64, x, y, z int32)
 	var inCount int64 = 0       //Кол-во
 	var remainder int64 = 0     //Кол-во которое осталось после выброса у персонажа
 	var isStackable byte = 0x01 //0 стыкуется, 1 не стыкуется
-	for _, e := range client.CurrentChar.Inventory {
+	for _, e := range client.CurrentChar.Inventory.Items {
 		if e.ObjId == objectId {
 			itemId = e.Id
 			inCount = e.Count
@@ -42,7 +42,7 @@ func DropItem(client *models.Client, objectId int32, count int64, x, y, z int32)
 		defer packets.Put(buffer)
 
 		buffer.WriteSingleByte(0x16)
-		buffer.WriteD(client.CurrentChar.CharId)
+		buffer.WriteD(client.CurrentChar.ObjectId)
 		buffer.WriteD(objectId)
 		buffer.WriteD(int32(itemId))
 		buffer.WriteD(x)

@@ -102,9 +102,17 @@ func (g *GameServer) MoveListener(client *models.Client) {
 
 }
 
-func kickClient(client *models.Client) {
-	client.CurrentChar.F = nil
+func (g *GameServer) charOffline(client *models.Client) {
+	g.OnlineCharacters.Mu.Lock()
+	delete(g.OnlineCharacters.Char, client.CurrentChar.ObjectId)
+	g.OnlineCharacters.Mu.Unlock()
 	client.CurrentChar.CurrentRegion.DeleteVisibleChar(client.CurrentChar)
+
+	client.CurrentChar.F = nil
+	client.CurrentChar.NpcInfo = nil
+	client.CurrentChar.CharInfoTo = nil
+	client.CurrentChar.DeleteObjectTo = nil
+
 	//todo close all character goroutine, save info in DB
 	log.Println("Socket Close For: ", client.CurrentChar.CharName)
 }
