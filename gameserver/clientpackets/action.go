@@ -15,7 +15,7 @@ func Action(data []byte, client *models.Client) []byte {
 	originZ := packet.ReadInt32()
 	actionId := packet.ReadSingleByte() // Action identifier : 0-Simple click, 1-Shift click
 
-	client.CurrentChar.CurrentTargetId = objectId
+	client.CurrentChar.Target = objectId
 	_, _, _, _, _ = objectId, originX, originY, originZ, actionId
 
 	buffer := packets.Get()

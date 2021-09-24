@@ -30,7 +30,7 @@ func (g *GameServer) Start() {
 	var err error
 
 	/* #nosec */
-	g.clientsListener, err = net.Listen("tcp", ":7777")
+	g.clientsListener, err = net.Listen("tcp4", ":7777")
 	if err != nil {
 		panic(err.Error())
 	}

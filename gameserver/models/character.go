@@ -55,7 +55,6 @@ type Character struct {
 	IsCastingNow           bool
 	SkillQueue             chan SkillHolder
 	CurrentSkill           *SkillHolder // todo А может быть без * попробовать?
-	CurrentTargetId        int32
 	Inventory              []MyItem
 	CursedWeaponEquippedId int
 	BonusStats             []items.ItemBonusStat
