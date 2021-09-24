@@ -19,8 +19,8 @@ type Npc struct {
 	Race                string              `json:"race"`
 	Sex                 string              `json:"sex"`
 	SkillList           []string            `json:"skill_list"`
-	SlotRhand           string              `json:"slot_rhand"`
-	SlotLhand           interface{}         `json:"slot_lhand"`
+	SlotRhand           int32              `json:"slot_rhand"`
+	SlotLhand           int32         `json:"slot_lhand"`
 	CollisionRadius     float64             `json:"collision_radius"`
 	CollisionHeight     float64             `json:"collision_height"`
 	HitTimeFactor       float64             `json:"hit_time_factor"`

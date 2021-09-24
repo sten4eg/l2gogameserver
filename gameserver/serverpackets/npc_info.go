@@ -17,9 +17,6 @@ func NpcInfo(npc models.Npc) []byte {
 	buffer.WriteD(npc.Spawn.Locx)      // x
 	buffer.WriteD(npc.Spawn.Locy)      // y
 	buffer.WriteD(npc.Spawn.Locz)      // z
-	/**
-	Для болей реалистичности, угол разворота NPC лучше менять если NPC является мобом.
-	*/
 	buffer.WriteD(npc.Spawn.Heading)   //_heading //53460
 	buffer.WriteD(0x00)                // static 0
 	buffer.WriteD(333)                 // _mAtkSpd
@@ -36,9 +33,9 @@ func NpcInfo(npc models.Npc) []byte {
 	buffer.WriteF(1)                   // _npc.getAttackSpeedMultiplier()
 	buffer.WriteF(npc.CollisionRadius) // _collisionRadius
 	buffer.WriteF(npc.CollisionHeight) // _collisionHeight
-	buffer.WriteD(0)                   // right hand Weapon
+	buffer.WriteD(npc.SlotRhand)       // right hand Weapon
+	buffer.WriteD(npc.SlotLhand)       // left hand Weapon
 	buffer.WriteD(0)                   // _chest
-	buffer.WriteD(0)                   // left hand Weapon
 	buffer.WriteSingleByte(1)          // name above char 1=true ... ?? //todo - static in l2j
 	buffer.WriteSingleByte(0)          // _npc.isRunning() ? 1 : 0
 	buffer.WriteSingleByte(0)          // _npc.isInCombat() ? 1 : 0
