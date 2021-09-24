@@ -140,7 +140,7 @@ func (c *Character) LoadSkills() {
 	}
 	defer dbConn.Release()
 
-	rows, err := dbConn.Query(context.Background(), "SELECT skill_id,skill_level FROM character_skills WHERE char_id=$1 AND class_id=$2", c.CharId, c.ClassId)
+	rows, err := dbConn.Query(context.Background(), "SELECT skill_id,skill_level FROM character_skills WHERE char_id=$1 AND class_id=$2", c.ObjectId, c.ClassId)
 	if err != nil {
 		panic(err)
 	}

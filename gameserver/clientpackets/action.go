@@ -15,14 +15,14 @@ func Action(data []byte, client *models.Client) []byte {
 	originZ := packet.ReadInt32()
 	actionId := packet.ReadSingleByte() // Action identifier : 0-Simple click, 1-Shift click
 
-	client.CurrentChar.CurrentTargetId = objectId
+	client.CurrentChar.Target = objectId
 	_, _, _, _, _ = objectId, originX, originY, originZ, actionId
 
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
 	client.CurrentChar.Target = objectId
-	pkg := serverpackets.TargetSelected(client.CurrentChar.CharId, objectId, originX, originY, originZ)
+	pkg := serverpackets.TargetSelected(client.CurrentChar.ObjectId, objectId, originX, originY, originZ)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
 	return buffer.Bytes()

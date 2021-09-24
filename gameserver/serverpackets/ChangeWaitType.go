@@ -13,7 +13,7 @@ func ChangeWaitType(client *models.Client) []byte {
 	locx, locy, locz := client.CurrentChar.GetXYZ()
 
 	buffer.WriteSingleByte(0x29)
-	buffer.WriteD(client.CurrentChar.CharId)
+	buffer.WriteD(client.CurrentChar.ObjectId)
 	buffer.WriteD(client.CurrentChar.SetSitStandPose())
 	buffer.WriteD(locx)
 	buffer.WriteD(locy)

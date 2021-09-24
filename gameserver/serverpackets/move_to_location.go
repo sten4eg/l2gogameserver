@@ -12,7 +12,7 @@ func MoveToLocation(location *models.BackwardToLocation, client *models.Client) 
 
 	buffer.WriteSingleByte(0x2f)
 
-	buffer.WriteD(client.CurrentChar.CharId)
+	buffer.WriteD(client.CurrentChar.ObjectId)
 
 	buffer.WriteD(location.TargetX)
 	buffer.WriteD(location.TargetY)

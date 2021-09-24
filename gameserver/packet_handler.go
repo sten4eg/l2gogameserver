@@ -62,7 +62,6 @@ func (g *GameServer) handler(client *models.Client) {
 				case 0: //посадить персонажа на жопу
 					pkg0 := clientpackets.ChangeWaitType(client)
 					client.SSend(pkg0)
-				case 10: //Продажа в личном лавке
 				}
 
 			}
