@@ -30,7 +30,7 @@ func (g *GameServer) Start() {
 	var err error
 
 	/* #nosec */
-	g.clientsListener, err = net.Listen("tcp", ":7777")
+	g.clientsListener, err = net.Listen("tcp4", ":7777")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -111,7 +111,7 @@ func kickClient(client *models.Client) {
 
 func (g *GameServer) addOnlineChar(character *models.Character) {
 	g.OnlineCharacters.Mu.Lock()
-	g.OnlineCharacters.Char[character.CharId] = character
+	g.OnlineCharacters.Char[character.ObjectId] = character
 	g.OnlineCharacters.Mu.Unlock()
 }
 

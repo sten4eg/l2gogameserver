@@ -3,7 +3,7 @@ module l2gogameserver
 go 1.17
 
 require (
-	github.com/jackc/pgx v3.6.2+incompatible
+	github.com/bits-and-blooms/bitset v1.2.1
 	github.com/jackc/pgx/v4 v4.13.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkg/profile v1.6.0

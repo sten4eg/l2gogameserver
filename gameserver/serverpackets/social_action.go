@@ -10,7 +10,7 @@ func SocialAction(client *models.Client) []byte {
 	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x27)
-	buffer.WriteD(client.CurrentChar.CharId)
+	buffer.WriteD(client.CurrentChar.ObjectId)
 	buffer.WriteD(3)
 
 	return buffer.Bytes()

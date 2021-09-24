@@ -25,19 +25,15 @@ type Macro struct {
 	Commands []MacroCommand
 }
 
-//Добавление нового макроса
-//Также эта функция служит и для изменения
-//макроса(если пользователь добавил или поменял содержимое макроса)
+//AddMacros Добавление нового макроса
+//Также эта функция служит, и для изменения
+//макроса (если пользователь добавил или поменял содержимое макроса)
 func (c *Character) AddMacros(macro Macro) {
 	//Если макрос найден, тогда делаем замену параметров его
 	if c.CheckMacros(macro.Id) {
-		for _, m := range c.Macros {
-			if m.Id == macro.Id {
-				removeMacros(macro.Id)
-				c.saveMacros(macro)
-				return
-			}
-		}
+		removeMacros(macro.Id)
+		c.saveMacros(macro)
+		return
 	} else {
 		c.saveMacros(macro)
 	}
@@ -71,7 +67,7 @@ func (c *Character) saveMacros(macro Macro) {
 	lastInsertId := 0
 	sql := `INSERT INTO "macros" ("char_id", "icon", "name", "desc", "acronym")
 			VALUES ($1, $2, $3, $4, $5) RETURNING id`
-	_ = dbConn.QueryRow(context.Background(), sql, c.CharId, macro.Icon, macro.Name, macro.Desc, macro.Acronym).Scan(&lastInsertId)
+	_ = dbConn.QueryRow(context.Background(), sql, c.ObjectId, macro.Icon, macro.Name, macro.Desc, macro.Acronym).Scan(&lastInsertId)
 	sql = `INSERT INTO "macros_commands" ("command_id", "index", "type", "skill_id", "shortcut_id", "name") VALUES ($1, $2, $3, $4, $5, $6)`
 	for _, command := range macro.Commands {
 		_, err = dbConn.Exec(context.Background(), sql, lastInsertId, command.Index, command.Type, command.SkillID, command.ShortcutID, command.Name)
@@ -83,7 +79,7 @@ func (c *Character) saveMacros(macro Macro) {
 	c.LoadCharactersMacros() //todo
 }
 
-//Проверка существования макроса
+// CheckMacros Проверка существования макроса
 func (c *Character) CheckMacros(id int32) bool {
 	for _, macro := range c.Macros {
 		if macro.Id == id {
@@ -93,7 +89,7 @@ func (c *Character) CheckMacros(id int32) bool {
 	return false
 }
 
-//Загрузка всех макросов игрока
+// LoadCharactersMacros Загрузка всех макросов игрока
 func (c *Character) LoadCharactersMacros() {
 	var Macroses []Macro
 	var MacrosesCommands []MacroCommand
@@ -105,15 +101,15 @@ func (c *Character) LoadCharactersMacros() {
 	}
 	defer dbConn.Release()
 
-	sql := `SELECT * FROM "macros" WHERE char_id=$1 `
-	rows, err := dbConn.Query(context.Background(), sql, c.CharId)
+	sql := `SELECT id,icon,name,desc,acronym FROM "macros" WHERE char_id=$1 `
+	rows, err := dbConn.Query(context.Background(), sql, c.ObjectId)
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
 	for rows.Next() {
 		m := Macro{}
-		err = rows.Scan(nil, &m.Id, &m.Icon, &m.Name, &m.Desc, &m.Acronym)
+		err = rows.Scan(&m.Id, &m.Icon, &m.Name, &m.Desc, &m.Acronym)
 		if err != nil {
 			log.Println(err)
 			return
@@ -144,7 +140,7 @@ func (c *Character) LoadCharactersMacros() {
 	}
 }
 
-//Кол-во имеющихся макросов у персонажа
+//MacrosesCount Кол-во имеющихся макросов у персонажа
 func (c *Character) MacrosesCount() uint8 {
 	return uint8(len(c.Macros))
 }

@@ -248,7 +248,7 @@ func getAttributeForWeapon(objId int32) (attribute.Attribute, int) {
 	el := attribute.Attribute(-2) // None
 
 	var elementType, elementValue int
-	err = dbConn.QueryRow(context.Background(), "SELECT element_type,element_value FROM item_elementals WHERE object_id = $1", objId).
+	err = dbConn.QueryRow(context.Background(), "SELECT element_type,element_value FROM item_elementals WHERE item_id = $1", objId).
 		Scan(&elementType, &elementValue)
 
 	if err == pgx.ErrNoRows {
@@ -270,7 +270,7 @@ func getAttributeForArmor(objId int32) [6]int16 {
 	}
 	defer dbConn.Release()
 
-	rows, err := dbConn.Query(context.Background(), "SELECT element_type,element_value FROM item_elementals WHERE object_id = $1", objId)
+	rows, err := dbConn.Query(context.Background(), "SELECT element_type,element_value FROM item_elementals WHERE item_id = $1", objId)
 
 	if err == pgx.ErrNoRows {
 		return att

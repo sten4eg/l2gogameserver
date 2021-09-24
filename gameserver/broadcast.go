@@ -14,7 +14,7 @@ func (g *GameServer) BroadCastToAroundPlayersInRadius(my *models.Client, pkg uti
 
 	charsIds := models.GetAroundPlayersInRadius(my.CurrentChar, radius)
 	for _, v := range charsIds {
-		g.OnlineCharacters.Char[v.CharId].Conn.Send(pkg.GetB(), true)
+		g.OnlineCharacters.Char[v.ObjectId].Conn.Send(pkg.GetB(), true)
 	}
 }
 
@@ -44,8 +44,8 @@ func (g *GameServer) BroadCastUserInfoInRadius(me *models.Client, radius int32) 
 
 	g.OnlineCharacters.Mu.Lock()
 	for _, v := range charsIds {
-		g.OnlineCharacters.Char[v.CharId].Conn.Send(ci.GetB(), true)
-		g.OnlineCharacters.Char[v.CharId].Conn.Send(exUi.GetB(), true)
+		g.OnlineCharacters.Char[v.ObjectId].Conn.Send(ci.GetB(), true)
+		g.OnlineCharacters.Char[v.ObjectId].Conn.Send(exUi.GetB(), true)
 	}
 	g.OnlineCharacters.Mu.Unlock()
 }
@@ -140,15 +140,15 @@ func (g *GameServer) Checkaem(client *models.Client, l models.BackwardToLocation
 //			x, y, _ := client.CurrentChar.GetXYZ()
 //			reg := models.GetRegion(x, y)
 //			if reg != client.CurrentChar.CurrentRegion && client.CurrentChar.CurrentRegion != nil {
-//				client.CurrentChar.CurrentRegion.CharsInRegion.Delete(client.CurrentChar.CharId)
-//				reg.CharsInRegion.Store(client.CurrentChar.CharId, client.CurrentChar)
+//				client.CurrentChar.CurrentRegion.CharsInRegion.Delete(client.CurrentChar.ObjectId)
+//				reg.CharsInRegion.Store(client.CurrentChar.ObjectId, client.CurrentChar)
 //				client.CurrentChar.CurrentRegion = reg
 //
 //				var info utils.PacketByte
 //				info.B = serverpackets.CharInfo(client.CurrentChar)
 //				g.BroadToAroundPlayers(client, info)
 //				BroadCastToMe(g, client.CurrentChar)
-//				log.Println(client.CurrentChar.CharId, " change Region ")
+//				log.Println(client.CurrentChar.ObjectId, " change Region ")
 //			}
 //
 //			return true // if false, Range stops
@@ -166,8 +166,8 @@ func (g *GameServer) Checkaem(client *models.Client, l models.BackwardToLocation
 //	for _, iii := range reg.Sur {
 //		iii.CharsInRegion.Range(func(key, value interface{}) bool {
 //			val := value.(*models.Character)
-//			if val.CharId != my.CharId {
-//				charIds = append(charIds, val.CharId)
+//			if val.ObjectId != my.ObjectId {
+//				charIds = append(charIds, val.ObjectId)
 //			}
 //			return true
 //		})
@@ -181,7 +181,7 @@ func (g *GameServer) Checkaem(client *models.Client, l models.BackwardToLocation
 //
 //	g.clients.Range(func(k, v interface{}) bool {
 //		client := v.(*models.Client)
-//		if client.CurrentChar.CharId == my.CharId {
+//		if client.CurrentChar.ObjectId == my.ObjectId {
 //			me = client
 //			return false
 //		}

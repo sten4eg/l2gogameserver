@@ -1,8 +1,8 @@
 -- auto-generated definition
 create table characters
 (
-    login       varchar (25)                 not null,
-    id          serial                 not null
+    login       varchar(25)            not null,
+    object_id          serial                 not null
         constraint table_name_pk
             primary key,
     level       smallint default 1     not null,
@@ -15,10 +15,10 @@ create table characters
     hair_color  smallint               not null,
     sex         smallint               not null,
     x           integer                not null,
-    y           integer,
-    z           integer,
-    exp         integer  default 0     not null,
-    sp          integer  default 0     not null,
+    y           integer not null,
+    z           integer not null,
+    exp         bigint  default 0     not null,
+    sp          bigint  default 0     not null,
     karma       integer  default 0     not null,
     pvp_kills   integer  default 0     not null,
     pk_kills    integer  default 0     not null,
@@ -30,12 +30,12 @@ create table characters
     online_time integer  default 0     not null,
     nobless     integer  default 0     not null,
     vitality    integer  default 20000 not null,
-    char_name   varchar(16)                  not null
+    char_name   varchar(16)            not null
 );
 
 alter table characters
     owner to postgres;
 
-create unique index table_name_id_uindex
-    on characters (id);
+create unique index table_name_char_id_uindex
+    on characters (object_id);
 

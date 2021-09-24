@@ -14,7 +14,7 @@ import (
 
 type Character struct {
 	Login         string
-	CharId        int32
+	ObjectId      int32
 	Level         int32
 	MaxHp         int32
 	CurHp         int32
@@ -55,7 +55,6 @@ type Character struct {
 	IsCastingNow           bool
 	SkillQueue             chan SkillHolder
 	CurrentSkill           *SkillHolder // todo А может быть без * попробовать?
-	CurrentTargetId        int32
 	Inventory              []MyItem
 	CursedWeaponEquippedId int
 	BonusStats             []items.ItemBonusStat
@@ -71,7 +70,20 @@ type Character struct {
 	DeleteObjectTo         chan []int32
 	NpcInfo                chan []Npc
 	IsMoving               bool
+	Sit                    bool
 }
+
+//Меняет положение персонажа от сидячего к стоячему и на оборот
+//Возращает значение нового положения
+func (c *Character) SetSitStandPose() int32 {
+	if c.Sit == false {
+		c.Sit = true
+		return 0
+	}
+	c.Sit = false
+	return 1
+}
+
 type ToSendInfo struct {
 	To   []int32
 	Info utils.PacketByte
@@ -149,11 +161,11 @@ func (c *Character) GetXYZ() (x, y, z int32) {
 // Load загрузка персонажа
 func (c *Character) Load() {
 	c.InGame = true
-	c.ShortCut = restoreMe(c.CharId, c.ClassId)
+	c.ShortCut = restoreMe(c.ObjectId, c.ClassId)
 	c.LoadSkills()
 	c.SkillQueue = make(chan SkillHolder)
-	c.Inventory = GetMyItems(c.CharId)
-	c.Paperdoll = RestoreVisibleInventory(c.CharId)
+	c.Inventory = GetMyItems(c.ObjectId)
+	c.Paperdoll = RestoreVisibleInventory(c.ObjectId)
 	c.LoadCharactersMacros()
 	for _, v := range c.Paperdoll {
 		if v.ObjId != 0 {
@@ -307,11 +319,11 @@ func (c *Character) setWorldRegion(newRegion *WorldRegion) {
 	deleteObjectPkgTo := make([]int32, 0, 64)
 	for _, region := range oldAreas {
 		if !Contains(newAreas, region) {
-			region.CharsInRegion.Range(func(charId, char interface{}) bool {
-				if char.(*Character).CharId == c.CharId {
+			region.CharsInRegion.Range(func(objId, char interface{}) bool {
+				if char.(*Character).ObjectId == c.ObjectId {
 					return true
 				}
-				deleteObjectPkgTo = append(deleteObjectPkgTo, char.(*Character).CharId)
+				deleteObjectPkgTo = append(deleteObjectPkgTo, char.(*Character).ObjectId)
 				return true
 			})
 		}
@@ -325,16 +337,16 @@ func (c *Character) setWorldRegion(newRegion *WorldRegion) {
 	npcPkgTo := make([]Npc, 0, 64)
 	for _, region := range newAreas {
 		if !Contains(oldAreas, region) {
-			region.CharsInRegion.Range(func(charId, char interface{}) bool {
-				if char.(*Character).CharId == c.CharId {
+			region.CharsInRegion.Range(func(objId, char interface{}) bool {
+				if char.(*Character).ObjectId == c.ObjectId {
 					return true
 				}
-				charInfoPkgTo = append(charInfoPkgTo, char.(*Character).CharId)
+				charInfoPkgTo = append(charInfoPkgTo, char.(*Character).ObjectId)
 				return true
 			})
 
-			region.NpcInRegion.Range(func(charId, char interface{}) bool {
-				npcPkgTo = append(npcPkgTo, char.(Npc))
+			region.NpcInRegion.Range(func(objId, npc interface{}) bool {
+				npcPkgTo = append(npcPkgTo, npc.(Npc))
 				return true
 			})
 		}

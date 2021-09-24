@@ -13,7 +13,7 @@ func CharSelected(user *models.Character, client *models.Client) []byte {
 	buffer.WriteSingleByte(0x0b) // 1
 
 	buffer.WriteS(user.CharName)    // 11
-	buffer.WriteD(user.CharId)      // objId 15
+	buffer.WriteD(user.ObjectId)    // objId 15
 	buffer.WriteS(user.Title)       //title // 21 2 нуля
 	buffer.WriteD(0)                //TODO sessionId //25
 	buffer.WriteD(user.ClanId)      //clanId // 29
@@ -59,11 +59,9 @@ func CharSelected(user *models.Character, client *models.Client) []byte {
 
 	client.CurrentChar = client.Account.Char[client.Account.CharSlot]
 
-
 	//TODO Load загрузка всех данных выбранного чара
 	client.CurrentChar.Load()
 
 	return buffer.Bytes()
-
 
 }

@@ -19,7 +19,7 @@ func CharInfo(user *models.Character) []byte {
 
 	buffer.WriteD(0) // Vehicle
 
-	buffer.WriteD(user.CharId) //objId
+	buffer.WriteD(user.ObjectId) //objId
 
 	buffer.WriteS(user.CharName) //name //TODO
 
