@@ -8,7 +8,6 @@ import (
 	"log"
 )
 
-
 // loop клиента в ожидании входящих пакетов
 func (g *GameServer) handler(client *models.Client) {
 	for {
@@ -67,6 +66,10 @@ func (g *GameServer) handler(client *models.Client) {
 				}
 
 			}
+
+		case 23:
+			pkg := clientpackets.DropItem(client, data)
+			client.SSend(pkg)
 
 		case 193:
 			pkg := clientpackets.RequestObserverEnd(client, data)

@@ -33,8 +33,8 @@ func NpcInfo(npc models.Npc) []byte {
 	buffer.WriteF(1)                   // _npc.getAttackSpeedMultiplier()
 	buffer.WriteF(npc.CollisionRadius) // _collisionRadius
 	buffer.WriteF(npc.CollisionHeight) // _collisionHeight
-	buffer.WriteD(npc.SlotRhand)                   // right hand Weapon
-	buffer.WriteD(npc.SlotRhand)                   // left hand Weapon
+	buffer.WriteD(npc.SlotRhand)       // right hand Weapon
+	buffer.WriteD(npc.SlotLhand)       // left hand Weapon
 	buffer.WriteD(0)                   // _chest
 	buffer.WriteSingleByte(1)          // name above char 1=true ... ?? //todo - static in l2j
 	buffer.WriteSingleByte(0)          // _npc.isRunning() ? 1 : 0
