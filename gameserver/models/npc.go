@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"l2gogameserver/gameserver/idfactory"
 	"log"
 	"os"
@@ -19,8 +20,8 @@ type Npc struct {
 	Race                string              `json:"race"`
 	Sex                 string              `json:"sex"`
 	SkillList           []string            `json:"skill_list"`
-	SlotRhand           int32              `json:"slot_rhand"`
-	SlotLhand           int32         `json:"slot_lhand"`
+	SlotRhand           int32               `json:"slot_rhand"`
+	SlotLhand           int32               `json:"slot_lhand"`
 	CollisionRadius     float64             `json:"collision_radius"`
 	CollisionHeight     float64             `json:"collision_height"`
 	HitTimeFactor       float64             `json:"hit_time_factor"`
@@ -124,12 +125,16 @@ type Locations struct {
 	PeriodOfDay   int   `json:"periodOfDay"`
 }
 
-// Npcs Список всех NPC
+// Npcs Список всех NPC map[NPCID]map[OBJECTID]Npc
 var Npcs map[int32]map[int32]Npc
+
+//	Список объектов, map[OBJECTID]map[Location]
+var NpcObject map[int32]Locations
 
 //Временное функция подгрузки листа с спаунами NPC
 func LoadNpc() {
 	Npcs = make(map[int32]map[int32]Npc)
+	NpcObject = make(map[int32]Locations)
 
 	log.Println("Загрузка NPC")
 	file, err := os.Open("./data/stats/npcdata/npcdata.json")
@@ -152,12 +157,28 @@ func LoadNpc() {
 			p.ObjId = objId
 			p.Spawn = vv
 			tmp[objId] = p
+
+			NpcObject[objId] = Locations{
+				NpcId:         p.NpcId,
+				Locx:          vv.Locx,
+				Locy:          vv.Locy,
+				Locz:          vv.Locz,
+				Randomx:       vv.Randomx,
+				Randomy:       vv.Randomy,
+				Heading:       vv.Heading,
+				RespawnDelay:  vv.RespawnDelay,
+				RespawnRandom: vv.RespawnRandom,
+				LocId:         vv.LocId,
+				PeriodOfDay:   vv.PeriodOfDay,
+			}
+
 		}
+
 		Npcs[p.NpcId] = tmp
 	}
 
 	log.Printf("Загружено %d Npc", len(Npcs))
-
+	log.Printf("Загружено %d Npc Object", len(NpcObject))
 	file, err = os.Open("./data/stats/npcdata/spawnlist.json")
 	if err != nil {
 		panic("Failed to load config file " + err.Error())
@@ -175,4 +196,49 @@ func LoadNpc() {
 		}
 	}
 
+}
+
+// 0 - нпц с диалогом
+// 1 - нпц монстер/рб...
+//Необходимо для того чтоб понимать, это моб, или NPC диалога
+func GetDialogNPC(npctype string) int32 {
+	//Список не полный
+	//типы нпц которые при обращении открывают HTML диалоги
+	npcDialogs := []string{"citizen", "guild_coach", "guild_master", "teleporter", "merchant", "guard"}
+	for _, dialog := range npcDialogs {
+		if npctype == dialog {
+			return 0
+		}
+	}
+	return 1
+}
+
+//Информация о объекте
+func GetNpcObject(objectId int32) (Npc, int32, int32, int32, error) {
+	for npcObjId, npc := range NpcObject {
+		if objectId == npcObjId {
+			npcInfo, err := GetNpc(npc.NpcId, objectId)
+			if err != nil {
+				log.Println(err)
+				return Npc{}, 0, 0, 0, err
+			}
+			return npcInfo, npc.Locx, npc.Locy, npc.Locz, nil
+		}
+	}
+	return Npc{}, 0, 0, 0, errors.New("Not find object")
+}
+
+// Информация о NPC
+func GetNpc(getNpcID, objectId int32) (Npc, error) {
+	for npcId, npcinfo := range Npcs {
+		if npcId == getNpcID {
+			for _, npc := range npcinfo {
+				if npc.ObjId == objectId {
+					return npc, nil
+				}
+			}
+			return Npc{}, errors.New("Not find npc#2")
+		}
+	}
+	return Npc{}, errors.New("Not find npc#1")
 }
