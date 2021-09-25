@@ -9,7 +9,7 @@ func ItemUpdate(client *models.Client, updateType int16, objId int32) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
-	items := client.CurrentChar.Inventory
+	items := client.CurrentChar.Inventory.Items
 	var item models.MyItem
 
 	for _, v := range items {

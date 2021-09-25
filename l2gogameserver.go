@@ -6,6 +6,7 @@ import (
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/items"
 	"log"
 )
 
@@ -27,7 +28,7 @@ func setup() {
 	idfactory.Load()
 	models.LoadStats()
 	models.LoadSkills()
-	models.LoadItems()
+	items.LoadItems()
 	models.NewWorld()
 	data.Load()
 	models.LoadNpc()

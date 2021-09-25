@@ -17,7 +17,7 @@ func MacroMake(macro models.Macro, count uint8) []byte {
 
 	buffer.WriteD(macro.Id)            // Macro ID
 	buffer.WriteS(macro.Name)          // Macro Name
-	buffer.WriteS(macro.Desc)          // Desc
+	buffer.WriteS(macro.Description)   // Description
 	buffer.WriteS(macro.Acronym)       // acronym
 	buffer.WriteSingleByte(macro.Icon) // icon
 

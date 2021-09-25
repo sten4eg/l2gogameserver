@@ -13,7 +13,7 @@ func InventoryUpdate(client *models.Client, objId int32, updateType int16) []byt
 	var item models.MyItem
 
 	find := false
-	for _, v := range client.CurrentChar.Inventory {
+	for _, v := range client.CurrentChar.Inventory.Items {
 		if v.ObjId == objId {
 			item = v
 			find = true

@@ -8,7 +8,7 @@ import (
 func ItemList(client *models.Client) []byte {
 	buffer := packets.Get()
 
-	myItems := client.CurrentChar.Inventory
+	myItems := client.CurrentChar.Inventory.Items
 
 	buffer.WriteSingleByte(0x11)
 	buffer.WriteH(0)                   // 1 - открывает окно инвентаря

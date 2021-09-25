@@ -6,6 +6,7 @@ import (
 )
 
 func TargetUnselected(client *models.Client) []byte {
+	client.CurrentChar.Target = 0
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
