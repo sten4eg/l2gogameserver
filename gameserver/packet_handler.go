@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"l2gogameserver/gameserver/clientpackets"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
+	"l2gogameserver/utils"
 	"log"
 )
 
 // loop клиента в ожидании входящих пакетов
+// g.Checkaem отправляет это еще и другим пользователям
 func (g *GameServer) handler(client *models.Client) {
 	for {
 		opcode, data, err := client.Receive()
+		client.CurrentChar.LastOpcode = opcode
 		//defer kickClient(client)
 		if err != nil {
 			fmt.Println(err)
@@ -36,6 +40,9 @@ func (g *GameServer) handler(client *models.Client) {
 			pkg := clientpackets.CharSelected(data, client)
 			client.SSend(pkg)
 			g.addOnlineChar(client.CurrentChar)
+		case 0:
+			client.SSend(serverpackets.Logout(client))
+
 		case 208:
 			if len(data) >= 2 {
 				switch data[0] {
@@ -60,8 +67,11 @@ func (g *GameServer) handler(client *models.Client) {
 				log.Println(data[0])
 				switch data[0] {
 				case 0: //посадить персонажа на жопу
-					pkg0 := clientpackets.ChangeWaitType(client)
-					client.SSend(pkg0)
+					cs := serverpackets.ChangeWaitType(client)
+					var pb utils.PacketByte
+					pb.SetB(cs)
+					client.SSend(client.CryptAndReturnPackageReadyToShip(pb.GetB()))
+					g.BroadCastToAroundPlayers(client, pb)
 				}
 
 			}
@@ -80,6 +90,7 @@ func (g *GameServer) handler(client *models.Client) {
 			pkg := clientpackets.RequestEnterWorld(client, data)
 			client.SSend(pkg)
 			//g.BroadCastUserInfoInRadius(client, 2000)
+
 			g.GetCharInfoAboutCharactersInRadius(client, 2000)
 			go g.ChannelListener(client)
 			go g.MoveListener(client)
@@ -95,54 +106,11 @@ func (g *GameServer) handler(client *models.Client) {
 			say := clientpackets.Say(client, data)
 			g.BroadCastChat(client, say)
 		case 89:
-			pkg := clientpackets.ValidationPosition(data, client.CurrentChar)
-			//g.Checkaem(client, pkg)
-			client.SSend(pkg)
+			client.SSend(clientpackets.ValidationPosition(data, client.CurrentChar))
+
+		//case 31: attack.IsAttack(data, client)
 		case 31:
-			pkg, objectId, actionId, reAppeal := clientpackets.Action(data, client)
-			client.SSend(pkg)
-
-			npc, npcx, npcy, npcz, err := models.GetNpcObject(objectId)
-			if err != nil {
-				log.Println(err)
-			}
-
-			//Прост тест вызова HTML при клике
-			if actionId == 1 {
-				NpcHtmlMessage := clientpackets.NpcHtmlMessage(client, npc.NpcId)
-				client.SSend(NpcHtmlMessage)
-			}
-			//Если повторный клик по нпц
-			if reAppeal == true {
-				//npc, npcx, npcy, npcz, err := models.GetNpcObject(objectId)
-				//if err != nil {
-				//	log.Println(err)
-				//}
-				x, y, z := client.CurrentChar.GetXYZ()
-				distance := models.CalculateDistance(npcx, npcy, npcz, x, y, z, false, false)
-				_, _ = distance, npc
-
-				//подбегаем
-				if distance <= 60 {
-					log.Println("Расстояние до NPC подходящее")
-					if models.GetDialogNPC(npc.Type) == 0 {
-						//НПЦ для разговора, открываем диалог
-						//Пускай макс. дистанция разговора будет 60 поинтов
-						//Пока откроем ID нпц
-						NpcHtmlMessage := clientpackets.NpcHtmlMessage(client, npc.NpcId)
-						client.SSend(NpcHtmlMessage)
-					} else {
-						//бьем нпц
-						client.SSend(clientpackets.Attack(data, client))
-					}
-				} else {
-					log.Println("Расстояние до NPC слишком больше, необходимо подбежать")
-					pkg2 := clientpackets.MoveToLocation(client, npcx, npcy, npcz)
-					g.Checkaem(client, pkg2)
-				}
-
-			}
-
+			g.IsAttack(data, client)
 		case 72:
 			pkg := clientpackets.RequestTargetCancel(data, client)
 			client.SSend(pkg)

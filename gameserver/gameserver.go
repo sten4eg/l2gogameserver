@@ -2,13 +2,16 @@ package gameserver
 
 import (
 	"fmt"
+	"l2gogameserver/gameserver/clientpackets"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/attack"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
 	"log"
 	"net"
 	"sync"
+	"time"
 )
 
 type GameServer struct {
@@ -26,7 +29,6 @@ func New() *GameServer {
 }
 
 func (g *GameServer) Start() {
-
 	var err error
 
 	/* #nosec */
@@ -128,5 +130,91 @@ func (g *GameServer) brdsct(me *models.Client, pkg utils.PacketByte) {
 	for _, v := range charsIds {
 		v.Conn.Send(pkg.GetB(), true)
 		//me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(v)))
+	}
+}
+
+//Действие при атаки
+func (g *GameServer) IsAttack(data []byte, client *models.Client) {
+	npc, npcx, npcy, npcz, targetObjectId, actionId, reAppeal, err := attack.IsAttack(data, client)
+	if err != nil {
+		return
+	}
+	_ = actionId
+	if reAppeal == true {
+		distance := attack.DistanceToNpc(client, npcx, npcy, npcz)
+		if distance <= 60 { //Если дистанция соблюдена
+			attack.ReAppeal(npc, npcx, npcy, npcz, targetObjectId, data, client)
+		} else { //Если необходимо добежать до цели
+			pkg2 := clientpackets.MoveToLocation(client, npcx, npcy, npcz)
+			g.Checkaem(client, pkg2)
+			go func() {
+				for {
+					/**
+					Увы, пока в коде формулы подсчета месторасположения игрока
+					Предпологается что во время бега, мы будем постоянно обновлять игрока XYZ
+					Игрок нажимает на цель (берет в таргет), и потом нажимает "атаковать" NPC
+					персонаж будет бежать до NPC, и когда останется N расстояния до NPC нужно
+					открыть диалоговое окно с NPC, с мобом точно так же только начинаем атаковать.
+
+					Сейчас же работает так, берем в таргет ,жмем ещё раз атаковать и персонаж подбегает
+					к NPC,и необходимо сновать нажать атаку, для открытия диалога либо атаки.
+					*/
+					distance = attack.DistanceToNpc(client, npcx, npcy, npcz)
+					if client.CurrentChar.LastOpcode == 72 { //отменяем необходимость бежать к NPC либо атаковать, либо снимаем каст
+						log.Println("cancel target")
+						return
+					}
+					if distance <= 60 {
+						attack.ReAppeal(npc, npcx, npcy, npcz, targetObjectId, data, client)
+						return
+					}
+					time.Sleep(250 * time.Millisecond)
+				}
+			}()
+		}
+
+	}
+}
+
+//Действие при атаки
+func (g *GameServer) IsAttack(data []byte, client *models.Client) {
+	npc, npcx, npcy, npcz, targetObjectId, actionId, reAppeal, err := attack.IsAttack(data, client)
+	if err != nil {
+		return
+	}
+	_ = actionId
+	if reAppeal == true {
+		distance := attack.DistanceToNpc(client, npcx, npcy, npcz)
+		if distance <= 60 { //Если дистанция соблюдена
+			attack.ReAppeal(npc, npcx, npcy, npcz, targetObjectId, data, client)
+		} else { //Если необходимо добежать до цели
+			pkg2 := clientpackets.MoveToLocation(client, npcx, npcy, npcz)
+			g.Checkaem(client, pkg2)
+			go func() {
+				for {
+					/**
+					Увы, пока в коде формулы подсчета месторасположения игрока
+					Предпологается что во время бега, мы будем постоянно обновлять игрока XYZ
+					Игрок нажимает на цель (берет в таргет), и потом нажимает "атаковать" NPC
+					персонаж будет бежать до NPC, и когда останется N расстояния до NPC нужно
+					открыть диалоговое окно с NPC, с мобом точно так же только начинаем атаковать.
+
+					Сейчас же работает так, берем в таргет ,жмем ещё раз атаковать и персонаж подбегает
+					к NPC,и необходимо сновать нажать атаку, для открытия диалога либо атаки.
+					*/
+					distance = attack.DistanceToNpc(client, npcx, npcy, npcz)
+					if client.CurrentChar.LastOpcode == 72 { //отменяем необходимость бежать к NPC либо атаковать, либо снимаем каст
+						log.Println("cancel target")
+						return
+					}
+					if distance <= 60 {
+						attack.ReAppeal(npc, npcx, npcy, npcz, targetObjectId, data, client)
+						return
+					}
+					time.Sleep(250 * time.Millisecond)
+				}
+			}()
+		}
+
 	}
 }

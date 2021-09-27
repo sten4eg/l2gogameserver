@@ -18,7 +18,6 @@ func MoveBackwardToLocation(client *models.Client, data []byte) models.BackwardT
 	location.OriginZ = packet.ReadInt32()
 
 	return location
-
 }
 
 func MoveToLocation(client *models.Client, targetX, targetY, targetZ int32) models.BackwardToLocation {

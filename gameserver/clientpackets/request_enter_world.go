@@ -7,8 +7,8 @@ import (
 )
 
 func RequestEnterWorld(client *models.Client, data []byte) []byte {
-	//Загрузка макросов персонажа
-	client.CurrentChar.LoadCharactersMacros()
+	////Загрузка макросов персонажа
+	//client.CurrentChar.LoadCharactersMacros()
 
 	buff := packets.Get()
 	defer packets.Put(buff)

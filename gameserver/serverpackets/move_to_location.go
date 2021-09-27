@@ -6,7 +6,6 @@ import (
 )
 
 func MoveToLocation(location *models.BackwardToLocation, client *models.Client) []byte {
-
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 

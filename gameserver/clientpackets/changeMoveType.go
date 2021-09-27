@@ -6,12 +6,14 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NpcHtmlMessage(client *models.Client, npc models.Npc) []byte {
+func ChangeMoveType(client *models.Client, targetObjectId int32) []byte {
+
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
-	pkg := serverpackets.NpcHtmlMessage(client, npc)
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+	pkg1 := serverpackets.ChangeMoveType(client, targetObjectId)
+	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg1))
 
 	return buffer.Bytes()
+
 }

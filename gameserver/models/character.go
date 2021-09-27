@@ -60,17 +60,14 @@ type Character struct {
 	BonusStats             []items.ItemBonusStat
 	F                      chan IUP
 	InGame                 bool
-<<<<<<< HEAD
-
-	Macros []Macro
-=======
-	Target                 int32
 	Macros                 []Macro
+	Target                 int32
 	CharInfoTo             chan []int32
 	DeleteObjectTo         chan []int32
 	NpcInfo                chan []Npc
 	IsMoving               bool
 	Sit                    bool
+	LastOpcode             byte //записываем последний опкод персонажа
 }
 
 //Меняет положение персонажа от сидячего к стоячему и на оборот
@@ -87,7 +84,6 @@ func (c *Character) SetSitStandPose() int32 {
 type ToSendInfo struct {
 	To   []int32
 	Info utils.PacketByte
->>>>>>> 67ebec2007b68bf2c47d3ecf1ae277e36cfd3071
 }
 
 func GetNewCharacterModel() *Character {
@@ -166,7 +162,7 @@ func (c *Character) Load() {
 	c.SkillQueue = make(chan SkillHolder)
 	c.Inventory = GetMyItems(c.ObjectId)
 	c.Paperdoll = RestoreVisibleInventory(c.ObjectId)
-	c.LoadCharactersMacros()
+	//c.LoadCharactersMacros()
 	for _, v := range c.Paperdoll {
 		if v.ObjId != 0 {
 			c.AddBonusStat(v.BonusStats)

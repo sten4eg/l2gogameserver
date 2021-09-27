@@ -48,10 +48,7 @@ func removeMacros(id int32) {
 	if err != nil {
 		panic(err)
 	}
-<<<<<<< HEAD
-=======
 	defer dbConn.Release()
->>>>>>> 67ebec2007b68bf2c47d3ecf1ae277e36cfd3071
 	dbConn.Exec(context.Background(), sqlMacros, id)
 	dbConn.Exec(context.Background(), sqlCommands, id)
 }
@@ -119,7 +116,7 @@ func (c *Character) LoadCharactersMacros() {
 	}
 	for index, macros := range Macroses {
 		MacrosesCommands = nil
-		sqlCommand := `SELECT * FROM "macros_commands" WHERE command_id=$1`
+		sqlCommand := `SELECT "command_id", "index", "type", "skill_id", "shortcut_id", "name" FROM "macros_commands" WHERE command_id=$1`
 		rowsCommand, err := dbConn.Query(context.Background(), sqlCommand, macros.Id)
 		if err != nil {
 			log.Println(err.Error())

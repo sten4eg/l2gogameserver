@@ -17,7 +17,6 @@ func AuthLogin(data []byte, client *models.Client) []byte {
 	loginKey1 := packet.ReadInt32()
 	loginKey2 := packet.ReadInt32()
 	_, _, _, _ = playKey1, playKey2, loginKey1, loginKey2
-
 	buffer := packets.Get()
 	pkg := serverpackets.CharSelectionInfo(client)
 	client.Account.Login = login
