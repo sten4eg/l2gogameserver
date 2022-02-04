@@ -10,18 +10,17 @@ import (
 
 // BroadCastToAroundPlayersInRadius отправляет всем персонажам в радиусе radius
 // информацию из пакета pkg
-func (g *GameServer) BroadCastToAroundPlayersInRadius(my *models.Client, pkg utils.PacketByte, radius int32) {
-
+func (g *GameServer) BroadCastToAroundPlayersInRadius(my *models.Client, pkg *utils.PacketByte, radius int32) {
 	charsIds := models.GetAroundPlayersInRadius(my.CurrentChar, radius)
 	for i := range charsIds {
-		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.Send(pkg.GetB(), true)
+		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.Send(pkg.GetData(), true)
 	}
 }
 
-func (g *GameServer) BroadCastToAroundPlayers(my *models.Client, pkg utils.PacketByte) {
+func (g *GameServer) BroadCastToAroundPlayers(my *models.Client, pkg *utils.PacketByte) {
 	charsIds := models.GetAroundPlayer(my.CurrentChar)
 	for i := range charsIds {
-		charsIds[i].Conn.Send(pkg.GetB(), true)
+		charsIds[i].Conn.Send(pkg.GetData(), true)
 	}
 }
 
@@ -36,43 +35,46 @@ func (g *GameServer) BroadCastUserInfoInRadius(me *models.Client, radius int32) 
 		return
 	}
 
-	var ci utils.PacketByte
-	ci.SetB(serverpackets.CharInfo(me.CurrentChar))
+	ci := utils.GetPacketByte()
+	defer ci.Release()
 
-	var exUi utils.PacketByte
-	exUi.SetB(serverpackets.ExBrExtraUserInfo(me.CurrentChar))
+	ci.SetData(serverpackets.CharInfo(me.CurrentChar))
+
+	exUi := utils.GetPacketByte()
+	defer exUi.Release()
+	exUi.SetData(serverpackets.ExBrExtraUserInfo(me.CurrentChar))
 
 	g.OnlineCharacters.Mu.Lock()
 	for i := range charsIds {
-		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.Send(ci.GetB(), true)
-		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.Send(exUi.GetB(), true)
+		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.Send(ci.GetData(), true)
+		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.Send(exUi.GetData(), true)
 	}
 	g.OnlineCharacters.Mu.Unlock()
 }
 
 func (g *GameServer) BroadCastChat(me *models.Client, say models.Say) {
+	pb := utils.GetPacketByte()
+	defer pb.Release()
+
 	switch say.Type {
 	case chat.All:
 		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
-		var pb utils.PacketByte
-		pb.SetB(cs)
-		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetB()))
+		pb.SetData(cs)
+		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
 		g.BroadCastToAroundPlayersInRadius(me, pb, chat.AllChatRange)
 	case chat.Tell:
 		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
-		var pb utils.PacketByte
-		pb.SetB(cs)
+		pb.SetData(cs)
 		ok := g.BroadCastToCharacterByName(pb, say.To)
 		if ok {
-			me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetB()))
+			me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
 		} else {
 			// systemMSG что не найден перс
 		}
 	case chat.Shout:
 		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
-		var pb utils.PacketByte
-		pb.SetB(cs)
-		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetB()))
+		pb.SetData(cs)
+		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
 		g.BroadCastToAroundPlayersInRadius(me, pb, chat.ShoutChatRange)
 	case chat.SpecialCommand:
 		if me.CurrentChar.Target == 0 {
@@ -84,21 +86,20 @@ func (g *GameServer) BroadCastChat(me *models.Client, say models.Say) {
 		say.Type = chat.All
 
 		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
-		var pb utils.PacketByte
-		pb.SetB(cs)
-		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetB()))
+		pb.SetData(cs)
+		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
 		g.BroadCastToAroundPlayersInRadius(me, pb, chat.AllChatRange)
 	}
 }
 
 // BroadCastToCharacterByName отправляет pkg персонажу с ником to
 // true если отправлен, false если персонаж не найден
-func (g *GameServer) BroadCastToCharacterByName(pkg utils.PacketByte, to string) bool {
+func (g *GameServer) BroadCastToCharacterByName(pkg *utils.PacketByte, to string) bool {
 	g.OnlineCharacters.Mu.Lock()
 	defer g.OnlineCharacters.Mu.Unlock()
 	for i := range g.OnlineCharacters.Char {
 		if g.OnlineCharacters.Char[i].CharName == to {
-			g.OnlineCharacters.Char[i].Conn.Send(pkg.GetB(), true)
+			g.OnlineCharacters.Char[i].Conn.Send(pkg.GetData(), true)
 			return true
 		}
 	}
@@ -123,9 +124,9 @@ func (g *GameServer) GetCharInfoAboutCharacters(me *models.Client) {
 }
 
 func (g *GameServer) Checkaem(client *models.Client, l models.BackwardToLocation) {
-	var ut utils.PacketByte
-	ut.SetB(serverpackets.MoveToLocation(&l, client))
-	client.SSend(client.CryptAndReturnPackageReadyToShip(ut.GetB()))
+	ut := utils.GetPacketByte()
+	ut.SetData(serverpackets.MoveToLocation(&l, client))
+	client.SSend(client.CryptAndReturnPackageReadyToShip(ut.GetData()))
 	g.BroadCastToAroundPlayers(client, ut)
 }
 
@@ -144,7 +145,7 @@ func (g *GameServer) Checkaem(client *models.Client, l models.BackwardToLocation
 //				reg.CharsInRegion.Store(client.CurrentChar.ObjectId, client.CurrentChar)
 //				client.CurrentChar.CurrentRegion = reg
 //
-//				var info utils.PacketByte
+//				var info utils.packetByte
 //				info.B = serverpackets.CharInfo(client.CurrentChar)
 //				g.BroadToAroundPlayers(client, info)
 //				BroadCastToMe(g, client.CurrentChar)
@@ -192,8 +193,8 @@ func (g *GameServer) Checkaem(client *models.Client, l models.BackwardToLocation
 //		return // todo need log
 //	}
 //	for _, v := range charIds {
-//		var info utils.PacketByte
+//		var info utils.packetByte
 //		info.B = serverpackets.CharInfo(g.OnlineCharacters.Char[v])
-//		me.Send(info.GetB(), true)
+//		me.Send(info.GetData(), true)
 //	}
 //}
