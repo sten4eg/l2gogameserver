@@ -13,15 +13,15 @@ import (
 func (g *GameServer) BroadCastToAroundPlayersInRadius(my *models.Client, pkg utils.PacketByte, radius int32) {
 
 	charsIds := models.GetAroundPlayersInRadius(my.CurrentChar, radius)
-	for _, v := range charsIds {
-		g.OnlineCharacters.Char[v.ObjectId].Conn.Send(pkg.GetB(), true)
+	for i := range charsIds {
+		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.Send(pkg.GetB(), true)
 	}
 }
 
 func (g *GameServer) BroadCastToAroundPlayers(my *models.Client, pkg utils.PacketByte) {
 	charsIds := models.GetAroundPlayer(my.CurrentChar)
-	for _, v := range charsIds {
-		v.Conn.Send(pkg.GetB(), true)
+	for i := range charsIds {
+		charsIds[i].Conn.Send(pkg.GetB(), true)
 	}
 }
 
@@ -43,9 +43,9 @@ func (g *GameServer) BroadCastUserInfoInRadius(me *models.Client, radius int32) 
 	exUi.SetB(serverpackets.ExBrExtraUserInfo(me.CurrentChar))
 
 	g.OnlineCharacters.Mu.Lock()
-	for _, v := range charsIds {
-		g.OnlineCharacters.Char[v.ObjectId].Conn.Send(ci.GetB(), true)
-		g.OnlineCharacters.Char[v.ObjectId].Conn.Send(exUi.GetB(), true)
+	for i := range charsIds {
+		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.Send(ci.GetB(), true)
+		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.Send(exUi.GetB(), true)
 	}
 	g.OnlineCharacters.Mu.Unlock()
 }
@@ -96,9 +96,9 @@ func (g *GameServer) BroadCastChat(me *models.Client, say models.Say) {
 func (g *GameServer) BroadCastToCharacterByName(pkg utils.PacketByte, to string) bool {
 	g.OnlineCharacters.Mu.Lock()
 	defer g.OnlineCharacters.Mu.Unlock()
-	for _, v := range g.OnlineCharacters.Char {
-		if v.CharName == to {
-			v.Conn.Send(pkg.GetB(), true)
+	for i := range g.OnlineCharacters.Char {
+		if g.OnlineCharacters.Char[i].CharName == to {
+			g.OnlineCharacters.Char[i].Conn.Send(pkg.GetB(), true)
 			return true
 		}
 	}
@@ -109,16 +109,16 @@ func (g *GameServer) BroadCastToCharacterByName(pkg utils.PacketByte, to string)
 // в радиусе radius
 func (g *GameServer) GetCharInfoAboutCharactersInRadius(me *models.Client, radius int32) {
 	charsIds := models.GetAroundPlayersInRadius(me.CurrentChar, radius)
-	for _, v := range charsIds {
-		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(v)))
+	for i := range charsIds {
+		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(charsIds[i])))
 	}
 }
 
 // GetCharInfoAboutCharacters отправляет me CharInfo персонажей
 func (g *GameServer) GetCharInfoAboutCharacters(me *models.Client) {
 	charsIds := models.GetAroundPlayer(me.CurrentChar)
-	for _, v := range charsIds {
-		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(v)))
+	for i := range charsIds {
+		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(charsIds[i])))
 	}
 }
 
