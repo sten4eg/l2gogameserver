@@ -1,9 +1,12 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
+	"log"
 )
 
 func RequestEnterWorld(client *models.Client, data []byte) []byte {
@@ -16,6 +19,45 @@ func RequestEnterWorld(client *models.Client, data []byte) []byte {
 
 	pkg2 := serverpackets.ExBrExtraUserInfo(client.CurrentChar)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
+
+	//Если персонажа никогда не заходил в игру, выдадим ему какие-то стартовые предметы
+	if client.CurrentChar.FirstEnterGame == false {
+		client.CurrentChar.SaveFirstInGamePlayer()
+		log.Println("Выдача предметов новому персонажу: ", client.CurrentChar.CharName)
+
+		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
+			ObjId: idfactory.GetNext(),
+			Item: items.Item{
+				Id: 6379,
+			},
+			Count: 1,
+		}, client.CurrentChar)
+
+		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
+			ObjId: idfactory.GetNext(),
+			Item: items.Item{
+				Id: 6382,
+			},
+			Count: 1,
+		}, client.CurrentChar)
+
+		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
+			ObjId: idfactory.GetNext(),
+			Item: items.Item{
+				Id: 6381,
+			},
+			Count: 1,
+		}, client.CurrentChar)
+
+		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
+			ObjId: idfactory.GetNext(),
+			Item: items.Item{
+				Id: 6380,
+			},
+			Count: 1,
+		}, client.CurrentChar)
+
+	}
 
 	count := uint8(len(client.CurrentChar.Macros))
 	for index, macro := range client.CurrentChar.Macros {

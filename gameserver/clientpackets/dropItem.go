@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/drops"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
@@ -14,6 +15,8 @@ func DropItem(client *models.Client, data []byte) []byte {
 	x := read.ReadInt32()
 	y := read.ReadInt32()
 	z := read.ReadInt32()
+
+	drops.DropItemCharacter(client, objectId, count, x, y, z)
 
 	buffer := packets.Get()
 	defer packets.Put(buffer)
