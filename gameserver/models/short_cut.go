@@ -21,23 +21,6 @@ func RegisterShortCut(sc dto.ShortCutDTO, client *Client) {
 	client.CurrentChar.ShortCut[sc.Slot+(sc.Page*MaxShortcutsPerBar)] = sc
 }
 
-func deleteShortCutFromDb(shortCut dto.ShortCutDTO, charId int32, classId int32) {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		panic(err)
-	}
-	defer dbConn.Release()
-
-	_, err = dbConn.Exec(context.Background(), "DELETE FROM character_shortcuts WHERE char_id=$1 AND slot=$2 AND page=$3 AND class_index=$4",
-		charId,
-		shortCut.Slot,
-		shortCut.Page,
-		classId)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func registerShortCutInDb(shortCut dto.ShortCutDTO, charId, classId int32) {
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -133,4 +116,20 @@ func DeleteShortCut(slot, page int32, client *Client) {
 	deleteShortCutFromDb(e, client.CurrentChar.ObjectId, client.CurrentChar.ClassId)
 	// todo Проверка на соски
 
+}
+func deleteShortCutFromDb(shortCut dto.ShortCutDTO, charId int32, classId int32) {
+	dbConn, err := db.GetConn()
+	if err != nil {
+		panic(err)
+	}
+	defer dbConn.Release()
+
+	_, err = dbConn.Exec(context.Background(), "DELETE FROM character_shortcuts WHERE char_id=$1 AND slot=$2 AND page=$3 AND class_index=$4",
+		charId,
+		shortCut.Slot,
+		shortCut.Page,
+		classId)
+	if err != nil {
+		panic(err)
+	}
 }

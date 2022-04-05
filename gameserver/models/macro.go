@@ -40,7 +40,7 @@ func (c *Character) AddMacros(macro Macro) {
 }
 
 //Удаление макроса
-//Временное положение дел, необходимо будет НЕ удалять, а изменять, но пока и так сгодиться.
+//todo Временное положение дел, необходимо будет НЕ удалять, а изменять, но пока и так сгодиться.
 func removeMacros(id int32) {
 	sqlMacros := `DELETE FROM "macros" WHERE "id" = $1`
 	sqlCommands := `DELETE FROM "macros_commands" WHERE "command_id" = $1`
@@ -50,8 +50,14 @@ func removeMacros(id int32) {
 	}
 	defer dbConn.Release()
 
-	dbConn.Exec(context.Background(), sqlMacros, id)
-	dbConn.Exec(context.Background(), sqlCommands, id)
+	_, err = dbConn.Exec(context.Background(), sqlMacros, id)
+	if err != nil {
+		panic(err)
+	}
+	_, err = dbConn.Exec(context.Background(), sqlCommands, id)
+	if err != nil {
+		panic(err)
+	}
 }
 
 //Сохранение макроса

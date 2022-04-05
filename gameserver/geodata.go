@@ -146,7 +146,6 @@ func getGeoX(worldX int32) int32 {
 		return (worldX - -655360) / 16
 	}
 	panic("Illegal world X in getGeoX")
-	return 0
 }
 
 func getGeoY(worldY int32) int32 {
@@ -154,7 +153,6 @@ func getGeoY(worldY int32) int32 {
 		return (worldY - -589824) / 16
 	}
 	panic("Illegal world X in getGeoX")
-	return 0
 }
 
 func FindPath(x, y, z, tx, ty, tz int) {
@@ -228,10 +226,7 @@ func cellNodeFindPath(x, y, z, tx, ty, tz int32) {
 
 	current = cellNodeGetNode(x, y, z)
 }
-func newC() CellNode {
 
-	return CellNode{}
-}
 func cellNodeGetNode(x, y, z int32) CellNode {
 	aX := int(x) - baseX
 
