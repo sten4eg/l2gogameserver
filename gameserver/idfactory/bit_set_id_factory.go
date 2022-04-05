@@ -29,6 +29,7 @@ const FreeObjectIdSize = LastOid - FirstOid
 
 var mu sync.Mutex
 
+//Load загрузка из бд всех занятих objectId
 func Load() {
 	primeInit()
 	FreeIds = *bitset.New(uint(NextPrime(100000)))
@@ -54,6 +55,7 @@ func Load() {
 }
 
 // GetNext получение свободного идентификатора objectId
+// Возвращает по порядку с FreeObjectIdSize исклучая уже занятые
 func GetNext() int32 {
 	mu.Lock()
 	newID := atomic.LoadUint64(&NextFreeId)
@@ -76,6 +78,20 @@ func GetNext() int32 {
 
 	mu.Unlock()
 	return int32(newID + FirstOid)
+}
+
+// Release todo не работает как надо
+func Release(objectId int32) {
+	mu.Lock()
+	id := objectId - FirstOid
+	if id > -1 {
+		FreeIds.Clear(uint(id))
+
+		atomic.AddInt32(&FreeIdCount, 1)
+	} else {
+		panic("Попытка release objectId")
+	}
+	mu.Unlock()
 }
 
 // extractUsedObjectIDTable чтение из БД всех objectId
@@ -109,19 +125,6 @@ func extractUsedObjectIDTable() []int {
 
 	sort.Ints(tmp)
 	return tmp
-}
-
-// Release если objectId уже не используется его можно вернуть в пулл
-// Чтобы в дальнейшем использовать снова
-func Release(objectId int32) {
-	mu.Lock()
-	id := objectId - FirstOid
-	if id > -1 {
-		FreeIds.Clear(uint(id))
-		atomic.AddInt32(&FreeIdCount, 1)
-	} else {
-		panic("Попытка release objectId")
-	}
 }
 
 // usedIdCount количество использованных идентификаторов

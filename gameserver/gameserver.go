@@ -57,7 +57,7 @@ func (g *GameServer) Start() {
 }
 
 func (g *GameServer) ChannelListener(client *models.Client) {
-	for q := range client.CurrentChar.F {
+	for q := range client.CurrentChar.ChannelUpdateShadowItem {
 		pkg := serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
 		i := client.CryptAndReturnPackageReadyToShip(pkg)
 		client.SSend(i)
@@ -110,7 +110,7 @@ func (g *GameServer) charOffline(client *models.Client) {
 	g.OnlineCharacters.Mu.Unlock()
 	client.CurrentChar.CurrentRegion.DeleteVisibleChar(client.CurrentChar)
 
-	client.CurrentChar.F = nil
+	client.CurrentChar.ChannelUpdateShadowItem = nil
 	client.CurrentChar.NpcInfo = nil
 	client.CurrentChar.CharInfoTo = nil
 	client.CurrentChar.DeleteObjectTo = nil

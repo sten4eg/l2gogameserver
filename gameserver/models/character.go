@@ -12,64 +12,95 @@ import (
 	"time"
 )
 
-type Character struct {
-	Login         string
-	ObjectId      int32
-	Level         int32
-	MaxHp         int32
-	CurHp         int32
-	MaxMp         int32
-	CurMp         int32
-	Face          int32
-	HairStyle     int32
-	HairColor     int32
-	Sex           int32
-	Coordinates   *Coordinates
-	Exp           int32
-	Sp            int32
-	Karma         int32
-	PvpKills      int32
-	PkKills       int32
-	ClanId        int32
-	Race          race.Race
-	ClassId       int32
-	BaseClass     int32
-	Title         string
-	OnlineTime    int32
-	Nobless       int32
-	Vitality      int32
-	CharName      string
-	CurrentRegion *WorldRegion
-	Conn          *Client
-	AttackEndTime int64
-	// Paperdoll - массив всех слотов которые можно одеть
-	Paperdoll       [26]MyItem
-	Stats           StaticData
-	pvpFlag         bool
-	ShortCut        map[int32]dto.ShortCutDTO
-	ActiveSoulShots []int32
-	IsDead          bool
-	IsFakeDeath     bool
-	// Skills todo: проверить слайс или мапа лучше для скилов
-	Skills                 map[int]Skill
-	IsCastingNow           bool
-	SkillQueue             chan SkillHolder
-	CurrentSkill           *SkillHolder // todo А может быть без * попробовать?
-	Inventory              Inventory
-	CursedWeaponEquippedId int
-	BonusStats             []items.ItemBonusStat
-	F                      chan IUP
-	InGame                 bool
-	Target                 int32
-	Macros                 []Macro
-	CharInfoTo             chan []int32
-	DeleteObjectTo         chan []int32
-	NpcInfo                chan []Npc
-	IsMoving               bool
-	Sit                    bool
+type (
+	Character struct {
+		Login         string
+		ObjectId      int32
+		Level         int32
+		MaxHp         int32
+		CurHp         int32
+		MaxMp         int32
+		CurMp         int32
+		Face          int32
+		HairStyle     int32
+		HairColor     int32
+		Sex           int32
+		Coordinates   *Coordinates
+		Exp           int32
+		Sp            int32
+		Karma         int32
+		PvpKills      int32
+		PkKills       int32
+		ClanId        int32
+		Race          race.Race
+		ClassId       int32
+		BaseClass     int32
+		Title         string
+		OnlineTime    int32
+		Nobless       int32
+		Vitality      int32
+		CharName      string
+		CurrentRegion *WorldRegion
+		Conn          *Client
+		AttackEndTime int64
+		// Paperdoll - массив всех слотов которые можно одеть
+		Paperdoll       [26]MyItem
+		Stats           StaticData
+		pvpFlag         bool
+		ShortCut        map[int32]dto.ShortCutDTO
+		ActiveSoulShots []int32
+		IsDead          bool
+		IsFakeDeath     bool
+		// Skills todo: проверить слайс или мапа лучше для скилов
+		Skills                  map[int]Skill
+		IsCastingNow            bool
+		SkillQueue              chan SkillHolder
+		CurrentSkill            *SkillHolder // todo А может быть без * попробовать?
+		Inventory               Inventory
+		CursedWeaponEquippedId  int
+		BonusStats              []items.ItemBonusStat
+		ChannelUpdateShadowItem chan IUP
+		InGame                  bool
+		Target                  int32
+		Macros                  []Macro
+		CharInfoTo              chan []int32
+		DeleteObjectTo          chan []int32
+		NpcInfo                 chan []Npc
+		IsMoving                bool
+		Sit                     bool
+	}
+	SkillHolder struct {
+		Skill        Skill
+		CtrlPressed  bool
+		ShiftPressed bool
+	}
+	Coordinates struct {
+		mu sync.Mutex
+		X  int32
+		Y  int32
+		Z  int32
+	}
+	ToSendInfo struct {
+		To   []int32
+		Info utils.PacketByte
+	}
+
+	IUP struct {
+		ObjId      int32
+		UpdateType int16
+	}
+)
+
+func GetNewCharacterModel() *Character {
+	character := new(Character)
+	sk := make(map[int]Skill)
+	character.Skills = sk
+	character.ChannelUpdateShadowItem = make(chan IUP, 10)
+	character.InGame = false
+	return character
 }
 
-//Меняет положение персонажа от сидячего к стоячему и на оборот
+// SetSitStandPose Меняет положение персонажа от сидячего к стоячему и на оборот
 //Возращает значение нового положения
 func (c *Character) SetSitStandPose() int32 {
 	if c.Sit == false {
@@ -80,20 +111,6 @@ func (c *Character) SetSitStandPose() int32 {
 	return 1
 }
 
-type ToSendInfo struct {
-	To   []int32
-	Info utils.PacketByte
-}
-
-func GetNewCharacterModel() *Character {
-	character := new(Character)
-	sk := make(map[int]Skill)
-	character.Skills = sk
-	character.F = make(chan IUP, 10)
-	character.InGame = false
-	return character
-}
-
 func (c *Character) ListenSkillQueue() {
 	for {
 		select {
@@ -102,18 +119,6 @@ func (c *Character) ListenSkillQueue() {
 			fmt.Println(res)
 		}
 	}
-}
-
-type SkillHolder struct {
-	Skill        Skill
-	CtrlPressed  bool
-	ShiftPressed bool
-}
-type Coordinates struct {
-	mu sync.Mutex
-	X  int32
-	Y  int32
-	Z  int32
 }
 
 func (c *Character) SetSkillToQueue(skill Skill, ctrlPressed, shiftPressed bool) {
@@ -179,13 +184,8 @@ func (c *Character) Load() {
 
 	go c.Shadow()
 	go c.ListenSkillQueue()
-	go c.CheckRegion()
+	go c.checkRegion()
 
-}
-
-type IUP struct {
-	ObjId      int32
-	UpdateType int16
 }
 
 func (c *Character) Shadow() {
@@ -198,12 +198,12 @@ func (c *Character) Shadow() {
 
 				case 0:
 					iup.UpdateType = UpdateTypeRemove
-					c.F <- iup
+					c.ChannelUpdateShadowItem <- iup
 					DeleteItem(v, c)
 				default:
 					c.Inventory.Items[i].Mana -= 1
 					iup.UpdateType = UpdateTypeModify
-					c.F <- iup
+					c.ChannelUpdateShadowItem <- iup
 				}
 
 			}
@@ -357,7 +357,7 @@ func (c *Character) setWorldRegion(newRegion *WorldRegion) {
 
 }
 
-func (c *Character) CheckRegion() {
+func (c *Character) checkRegion() {
 	for {
 		time.Sleep(time.Second)
 		if c.CurrentRegion != nil {
