@@ -8,92 +8,100 @@ import (
 	"strconv"
 )
 
+type (
+	Stats struct {
+		ClassId        int
+		StaticData     StaticData
+		CreationPoints []CreationPoint
+		LvlUpgainData  []LvlUpgainData
+		ClassTree      *ClassTree
+	}
+
+	StaticData struct {
+		INT              int
+		STR              int
+		CON              int
+		MEN              int
+		DEX              int
+		WIT              int
+		BasePAtk         int
+		BaseCritRate     int
+		BaseAtkType      string
+		BasePAtkSpd      int
+		BasePDef         BasePDef
+		BaseMAtk         int
+		BaseMDef         BaseMDef
+		BaseCanPenetrate int
+		BaseAtkRange     int
+		BaseDamRange     BaseDamRange
+		BaseRndDam       int
+		BaseMoveSpd      BaseMoveSpd
+		BaseBreath       int
+		BaseSafeFall     int
+		CollisionMale    Collision
+		CollisionFemale  Collision
+	}
+	Collision struct {
+		Radius int
+		Height int
+	}
+	BaseMoveSpd struct {
+		Walk     int
+		Run      int
+		SlowSwim int
+		FastSwim int
+	}
+	BaseDamRange struct {
+		VerticalDirection   int
+		HorizontalDirection int
+		Distance            int
+		Width               int
+	}
+	BaseMDef struct {
+		Rear    int
+		Lear    int
+		Rfinger int
+		Lfinger int
+		Neck    int
+	}
+	BasePDef struct {
+		Chest     int
+		Legs      int
+		Head      int
+		Feet      int
+		Gloves    int
+		Underwear int
+		Cloak     int
+	}
+	CreationPoint struct {
+		X int
+		Y int
+		Z int
+	}
+	LvlUpgainData struct {
+		Level   int
+		Hp      float32
+		Mp      float32
+		Cp      float32
+		HpRegen float32
+		MpRegen float32
+		CpRegen float32
+	}
+	Class struct {
+		ClassId       int
+		Name          string
+		ServerName    string
+		ParentClassId int
+	}
+	ClassTree struct {
+		ClassId    int
+		Name       string
+		ServerName string
+		Child      *ClassTree
+	}
+)
+
 var AllStats map[int]Stats
-
-type Stats struct {
-	ClassId        int
-	StaticData     StaticData
-	CreationPoints []CreationPoint
-	LvlUpgainData  []LvlUpgainData
-	ClassTree      *ClassTree
-}
-type StaticData struct {
-	INT              int
-	STR              int
-	CON              int
-	MEN              int
-	DEX              int
-	WIT              int
-	BasePAtk         int
-	BaseCritRate     int
-	BaseAtkType      string
-	BasePAtkSpd      int
-	BasePDef         BasePDef
-	BaseMAtk         int
-	BaseMDef         BaseMDef
-	BaseCanPenetrate int
-	BaseAtkRange     int
-	BaseDamRange     BaseDamRange
-	BaseRndDam       int
-	BaseMoveSpd      BaseMoveSpd
-	BaseBreath       int
-	BaseSafeFall     int
-	CollisionMale    Collision
-	CollisionFemale  Collision
-}
-type Collision struct {
-	Radius int
-	Height int
-}
-type BaseMoveSpd struct {
-	Walk     int
-	Run      int
-	SlowSwim int
-	FastSwim int
-}
-type BaseDamRange struct {
-	VerticalDirection   int
-	HorizontalDirection int
-	Distance            int
-	Width               int
-}
-type BaseMDef struct {
-	Rear    int
-	Lear    int
-	Rfinger int
-	Lfinger int
-	Neck    int
-}
-type BasePDef struct {
-	Chest     int
-	Legs      int
-	Head      int
-	Feet      int
-	Gloves    int
-	Underwear int
-	Cloak     int
-}
-type CreationPoint struct {
-	X int
-	Y int
-	Z int
-}
-type LvlUpgainData struct {
-	Level   int
-	Hp      float32
-	Mp      float32
-	Cp      float32
-	HpRegen float32
-	MpRegen float32
-	CpRegen float32
-}
-
-type Class struct {
-	ClassId       int
-	Name          string
-	ServerName    string
-	ParentClassId int
-}
 
 func LoadStats() {
 	file, err := os.Open("./data/stats/char/classList.json")
@@ -137,13 +145,6 @@ func loadStat(entry fs.DirEntry, classes []Class) {
 	AllStats[stats[0].ClassId] = stats[0]
 }
 
-type ClassTree struct {
-	ClassId    int
-	Name       string
-	ServerName string
-	Child      *ClassTree
-}
-
 func findClassTree(classId int, classes []Class) *ClassTree {
 	var ct ClassTree
 
@@ -159,7 +160,6 @@ func findClassTree(classId int, classes []Class) *ClassTree {
 
 			return &ct
 		}
-
 	}
 
 	return nil
@@ -174,6 +174,7 @@ func GetCreationCoordinates(classId int32) (int, int, int) {
 		panic("не найдена информация в AllStats по classId: " + strconv.Itoa(int(classId)))
 	}
 
+	/* #nosec */
 	rnd := rand.Intn(len(e.CreationPoints))
 
 	x := e.CreationPoints[rnd].X

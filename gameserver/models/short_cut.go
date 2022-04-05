@@ -4,7 +4,6 @@ import (
 	"context"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/dto"
-	"strconv"
 )
 
 const MaxShortcutsPerBar = 12
@@ -34,7 +33,7 @@ func registerShortCutInDb(shortCut dto.ShortCutDTO, charId, classId int32) {
 		shortCut.Page,
 		dto.IndexOfShortTypes(shortCut.ShortcutType),
 		shortCut.Id,
-		strconv.Itoa(int(shortCut.Level)),
+		shortCut.Level,
 		classId)
 	if err != nil {
 		panic(err)
@@ -57,17 +56,11 @@ func restoreMe(charId, classId int32) map[int32]dto.ShortCutDTO {
 	for rows.Next() {
 		var t dto.ShortCutDTO
 		var shortType int
-		var lvl string
-		err = rows.Scan(&t.Slot, &t.Page, &shortType, &t.Id, &lvl)
+		err = rows.Scan(&t.Slot, &t.Page, &shortType, &t.Id, &t.Level)
 		if err != nil {
 			panic(err)
 		}
 		t.ShortcutType = dto.ShortTypes[shortType]
-		i, err := strconv.Atoi(lvl)
-		if err != nil {
-			panic(err)
-		}
-		t.Level = int32(i)
 		shorts[t.Slot+(t.Page*MaxShortcutsPerBar)] = t
 	}
 
@@ -92,16 +85,10 @@ func GetAllShortCuts(charId, classId int32) []dto.ShortCutSimpleDTO {
 	var shortCuts []dto.ShortCutSimpleDTO
 	for rows.Next() {
 		var t dto.ShortCutSimpleDTO
-		var lvl string
-		err = rows.Scan(&t.ShortcutType, &t.Slot, &t.Page, &t.Id, &lvl)
+		err = rows.Scan(&t.ShortcutType, &t.Slot, &t.Page, &t.Id, &t.Level)
 		if err != nil {
 			panic(err)
 		}
-		ilvl, err := strconv.Atoi(lvl)
-		if err != nil {
-			panic(err)
-		}
-		t.Level = int32(ilvl)
 		shortCuts = append(shortCuts, t)
 	}
 	return shortCuts
@@ -117,6 +104,7 @@ func DeleteShortCut(slot, page int32, client *Client) {
 	// todo Проверка на соски
 
 }
+
 func deleteShortCutFromDb(shortCut dto.ShortCutDTO, charId int32, classId int32) {
 	dbConn, err := db.GetConn()
 	if err != nil {

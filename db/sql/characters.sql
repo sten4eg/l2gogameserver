@@ -30,7 +30,8 @@ create table characters
     online_time integer  default 0     not null,
     nobless     integer  default 0     not null,
     vitality    integer  default 20000 not null,
-    char_name   varchar(16)            not null
+    char_name   varchar(16)            not null,
+    first_enter_game boolean  default false
 );
 
 alter table characters
