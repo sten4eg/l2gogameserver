@@ -102,11 +102,6 @@ func (r *Reader) ReadInt16() int16 {
 	return int16(binary.LittleEndian.Uint16(buffer))
 }
 
-//todo unused?
-func (r *Reader) ReadUInt8() uint8 {
-	return r.ReadSingleByte()
-}
-
 func (r *Reader) ReadInt8() int8 {
 	return int8(r.ReadSingleByte())
 }

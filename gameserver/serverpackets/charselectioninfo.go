@@ -16,7 +16,7 @@ func CharSelectionInfo(client *models.Client) []byte {
 	}
 	defer dbConn.Release()
 	//todo допистаь sql , убрать *
-	rows, err := dbConn.Query(context.Background(), "SELECT * FROM characters WHERE Login = $1", client.Account.Login)
+	rows, err := dbConn.Query(context.Background(), `SELECT * FROM characters WHERE Login = $1`, client.Account.Login)
 	if err != nil {
 		panic(err)
 	}

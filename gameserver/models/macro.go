@@ -49,6 +49,7 @@ func removeMacros(id int32) {
 		panic(err)
 	}
 	defer dbConn.Release()
+
 	dbConn.Exec(context.Background(), sqlMacros, id)
 	dbConn.Exec(context.Background(), sqlCommands, id)
 }
@@ -61,6 +62,7 @@ func (c *Character) saveMacros(macro Macro) {
 		panic(err)
 	}
 	defer dbConn.Release()
+
 	lastInsertId := 0
 	sql := `INSERT INTO "macros" ("char_id", "icon", "name", "description", "acronym")
 			VALUES ($1, $2, $3, $4, $5) RETURNING id`

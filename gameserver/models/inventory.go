@@ -523,6 +523,7 @@ func DeleteItem(selectedItem MyItem, character *Character) {
 	if err != nil {
 		panic(err)
 	}
+	defer dbConn.Release()
 
 	if selectedItem.Loc == PaperdollLoc {
 		character.Paperdoll[selectedItem.LocData] = MyItem{}
@@ -602,7 +603,7 @@ func AddItem(selectedItem MyItem, character *Character) Inventory {
 	}
 	character.Inventory.Items = append(character.Inventory.Items, nitem)
 
-	_, err = dbConn.Exec(context.Background(), "INSERT INTO \"items\" (\"owner_id\", \"object_id\", \"item\", \"count\", \"enchant_level\", \"loc\", \"loc_data\", \"time_of_use\", \"custom_type1\", \"custom_type2\", \"mana_left\", \"time\", \"agathion_energy\") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', 0, 0, 0, 0, '-1', 0, 0)", character.ObjectId, selectedItem.ObjId, selectedItem.Item.Id, selectedItem.Count)
+	_, err = dbConn.Exec(context.Background(), `INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', 0, 0, 0, 0, '-1', 0, 0)`, character.ObjectId, selectedItem.ObjId, selectedItem.Item.Id, selectedItem.Count)
 	if err != nil {
 		log.Println(err.Error())
 	}
@@ -613,6 +614,12 @@ func AddItem(selectedItem MyItem, character *Character) Inventory {
 //Удаление предмета из инвентаря персонажа
 func RemoveItemCharacter(character *Character, removeItemId int32, count int64) {
 	log.Println("Удаление предмета из инвентаря")
+	dbConn, err := db.GetConn()
+	if err != nil {
+		panic(err)
+	}
+	defer dbConn.Release()
+
 	for i, item := range character.Inventory.Items {
 		log.Println(item.ObjId, removeItemId)
 		if item.ObjId == removeItemId {
@@ -624,13 +631,7 @@ func RemoveItemCharacter(character *Character, removeItemId int32, count int64) 
 			} else {
 				//Если часть предметов осталась, удаляем только N количество
 				character.Inventory.Items[i].Count = item.Count - count
-
-				dbConn, err := db.GetConn()
-				if err != nil {
-					panic(err)
-				}
-				_, _ = dbConn.Exec(context.Background(), "UPDATE \"items\" SET \"count\" = $1 WHERE \"owner_id\" = $2 AND \"object_id\" = $3 AND \"item\" = $4", rCount, character.ObjectId, item.ObjId, item.Id)
-
+				_, _ = dbConn.Exec(context.Background(), `UPDATE "items" SET "count" = $1 WHERE "owner_id" = $2 AND "object_id" = $3 AND "item" = $4`, rCount, character.ObjectId, item.ObjId, item.Id)
 			}
 		}
 	}
