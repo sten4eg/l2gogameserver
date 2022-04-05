@@ -23,7 +23,7 @@ var FreeIds bitset.BitSet
 var FreeIdCount int32
 var NextFreeId uint64
 
-const FirstOid = 0x10000000
+const FirstOid = 0x1
 const LastOid = 0x7FFFFFFF
 const FreeObjectIdSize = LastOid - FirstOid
 

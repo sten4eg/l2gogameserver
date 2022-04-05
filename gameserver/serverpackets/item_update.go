@@ -24,7 +24,7 @@ func ItemUpdate(client *models.Client, updateType int16, objId int32) []byte {
 	buffer.WriteSingleByte(0x21)
 	buffer.WriteH(1)
 
-	buffer.WriteH(updateType)              // Update type : 01-add, 02-modify, 03-remove
+	buffer.WriteH(int16(updateType))       // Update type : 01-add, 02-modify, 03-remove
 	buffer.WriteD(item.ObjId)              //idItemInDB
 	buffer.WriteD(int32(item.Id))          //getDisplayId idItemsInLineage
 	buffer.WriteD(item.LocData)            //Location
