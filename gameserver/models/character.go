@@ -106,7 +106,7 @@ func GetNewCharacterModel() *Character {
 // SetSitStandPose Меняет положение персонажа от сидячего к стоячему и на оборот
 //Возращает значение нового положения
 func (c *Character) SetSitStandPose() int32 {
-	if c.Sit == false {
+	if !c.Sit {
 		c.Sit = true
 		return 0
 	}
@@ -375,7 +375,7 @@ func (c *Character) checkRegion() {
 
 }
 
-//Сохранение отметки что юзер зашел в игру впервый раз с момента создания игрока
+//SaveFirstInGamePlayer Сохранение отметки что юзер зашел в игру впервый раз с момента создания игрока
 func (c *Character) SaveFirstInGamePlayer() {
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -383,10 +383,10 @@ func (c *Character) SaveFirstInGamePlayer() {
 	}
 	defer dbConn.Release()
 
-	sql := `UPDATE "characters" SET "first_enter_game" = 't' WHERE "object_id" = $1`
+	sql := `UPDATE "characters" SET "first_enter_game" = true WHERE "object_id" = $1`
 	_, err = dbConn.Exec(context.Background(), sql, c.ObjectId)
 	if err != nil {
 		panic(err)
 	}
-	c.FirstEnterGame = true
+	c.FirstEnterGame = false
 }

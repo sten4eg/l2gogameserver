@@ -116,7 +116,7 @@ func (g *GameServer) handler(client *models.Client) {
 				client.SSend(NpcHtmlMessage)
 			}
 			//Если повторный клик по нпц
-			if reAppeal == true {
+			if reAppeal {
 				//npc, npcx, npcy, npcz, err := models.GetNpcObject(objectId)
 				//if err != nil {
 				//	log.Println(err)

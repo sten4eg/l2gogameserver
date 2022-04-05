@@ -21,7 +21,7 @@ func RequestEnterWorld(client *models.Client, data []byte) []byte {
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
 	//Если персонажа никогда не заходил в игру, выдадим ему какие-то стартовые предметы
-	if client.CurrentChar.FirstEnterGame == false {
+	if client.CurrentChar.FirstEnterGame {
 		client.CurrentChar.SaveFirstInGamePlayer()
 		log.Println("Выдача предметов новому персонажу: ", client.CurrentChar.CharName)
 

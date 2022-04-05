@@ -626,7 +626,7 @@ func RemoveItemCharacter(character *Character, removeItemId int32, count int64) 
 			rCount := item.Count - count
 			log.Println(rCount)
 			//Если число отрицательное, либо ноль, удаляем все предметы стака
-			if math.Signbit(float64(rCount)) == true || rCount == 0 {
+			if math.Signbit(float64(rCount)) || rCount == 0 {
 				DeleteItem(character.Inventory.Items[i], character)
 			} else {
 				//Если часть предметов осталась, удаляем только N количество
