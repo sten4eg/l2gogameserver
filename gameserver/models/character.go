@@ -1,8 +1,10 @@
 package models
 
 import (
+	"context"
 	"fmt"
 	"l2gogameserver/data"
+	"l2gogameserver/db"
 	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/race"
@@ -68,6 +70,7 @@ type (
 		NpcInfo                 chan []Npc
 		IsMoving                bool
 		Sit                     bool
+		FirstEnterGame          bool
 	}
 	SkillHolder struct {
 		Skill        Skill
@@ -370,4 +373,20 @@ func (c *Character) checkRegion() {
 		}
 	}
 
+}
+
+//Сохранение отметки что юзер зашел в игру впервый раз с момента создания игрока
+func (c *Character) SaveFirstInGamePlayer() {
+	dbConn, err := db.GetConn()
+	if err != nil {
+		panic(err)
+	}
+
+	defer dbConn.Release()
+	sql := `UPDATE "characters" SET "first_enter_game" = 't' WHERE "object_id" = $1`
+	_, err = dbConn.Exec(context.Background(), sql, c.ObjectId)
+	if err != nil {
+		panic(err)
+	}
+	c.FirstEnterGame = true
 }

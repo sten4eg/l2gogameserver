@@ -55,6 +55,7 @@ func CharSelectionInfo(client *models.Client) []byte {
 			&character.Nobless,
 			&character.Vitality,
 			&character.CharName,
+			&character.FirstEnterGame,
 		)
 		if err != nil {
 			panic(err)
