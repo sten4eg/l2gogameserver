@@ -58,18 +58,3 @@ func read() Data {
 func LoadAllConfig() {
 	read()
 }
-
-//func LoadDebug() Data {
-//	var config Data
-//	file, err := os.Open("./config/debug.json")
-//	if err != nil {
-//		panic("Failed to load config file")
-//	}
-//
-//	decoder := json.NewDecoder(file)
-//	err = decoder.Decode(&config)
-//	if err != nil {
-//		panic("Failed to decode config file")
-//	}
-//	return config
-//}
