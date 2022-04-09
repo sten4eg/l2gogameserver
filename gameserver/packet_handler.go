@@ -23,6 +23,12 @@ func (g *GameServer) handler(client *models.Client) {
 		case 0: //logout
 			pkg := clientpackets.Logout(data, client)
 			client.SSend(pkg)
+		case 13: // CharacterDelete
+
+		case 96: //RequestDestroyItem
+			pkg := clientpackets.DestroyItem(data, client)
+			client.SSend(pkg)
+
 		case 14:
 			pkg := clientpackets.ProtocolVersion(data, client)
 			client.SSend(pkg)
