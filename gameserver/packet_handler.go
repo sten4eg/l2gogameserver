@@ -2,6 +2,7 @@ package gameserver
 
 import (
 	"fmt"
+	"l2gogameserver/config"
 	"l2gogameserver/gameserver/clientpackets"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
@@ -18,7 +19,9 @@ func (g *GameServer) handler(client *models.Client) {
 			g.charOffline(client)
 			break // todo  return ?
 		}
-		log.Println("Client->Server: #", opcode, packets.GetNamePacket(opcode))
+		if config.Get().Debug.ShowPackets == true {
+			log.Println("Client->Server: #", opcode, packets.GetNamePacket(opcode))
+		}
 		switch opcode {
 		case 14:
 			pkg := clientpackets.ProtocolVersion(data, client)
@@ -51,7 +54,9 @@ func (g *GameServer) handler(client *models.Client) {
 				case 36:
 					clientpackets.RequestSaveInventoryOrder(client, data)
 				default:
-					log.Println("Не реализованный пакет: ", data[0], packets.GetNamePacket(data[0]))
+					if config.Get().Debug.ShowPackets == true {
+						log.Println("Не реализованный пакет: ", data[0], packets.GetNamePacket(data[0]))
+					}
 				}
 			}
 
@@ -180,7 +185,9 @@ func (g *GameServer) handler(client *models.Client) {
 			pkg := clientpackets.RequestMakeMacro(client, data)
 			client.SSend(pkg)
 		default:
-			log.Println("Not Found case with opcode: ", opcode)
+			if config.Get().Debug.ShowPackets == true {
+				log.Println("Not Found case with opcode: ", opcode, packets.GetNamePacket(opcode))
+			}
 		}
 
 	}
