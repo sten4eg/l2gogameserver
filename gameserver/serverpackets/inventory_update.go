@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func InventoryUpdate(client *models.Client, item models.MyItem, updateType int16) []byte {
+func InventoryUpdate(client *models.Client, item *models.MyItem, updateType int16) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 

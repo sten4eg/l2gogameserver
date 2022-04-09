@@ -31,7 +31,7 @@ func DestroyItem(data []byte, client *models.Client) []byte {
 
 	buff := packets.Get()
 	defer packets.Put(buff)
-	pkg := serverpackets.InventoryUpdate(client, item, models.UpdateTypeRemove)
+	pkg := serverpackets.InventoryUpdate(client, &item, models.UpdateTypeRemove)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
 	//Удаляем из инвентаря предмет

@@ -19,12 +19,13 @@ func UseItem(client *models.Client, data []byte) []byte {
 	ctrlPressed := packet.ReadInt32() != 0
 	_ = ctrlPressed
 
-	var selectedItem models.MyItem
+	var selectedItem *models.MyItem
 
 	find := false
-	for _, v := range client.CurrentChar.Inventory.Items {
-		if v.ObjId == objId {
-			selectedItem = v
+	for i := range client.CurrentChar.Inventory.Items {
+		item := &client.CurrentChar.Inventory.Items[i]
+		if item.ObjId == objId {
+			selectedItem = item
 			find = true
 			break
 		}
