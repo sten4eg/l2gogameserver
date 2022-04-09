@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"l2gogameserver/config"
 	"l2gogameserver/gameserver/models/items/armorType"
+	"l2gogameserver/gameserver/models/items/consumeType"
 	"l2gogameserver/gameserver/models/items/crystalType"
 	"l2gogameserver/gameserver/models/items/etcItemType"
 	"l2gogameserver/gameserver/models/items/materialType"
@@ -23,7 +24,7 @@ type Item struct {
 	ItemMultiSkillList     []string                  `json:"item_multi_skill_list"`
 	RecipeId               int                       `json:"recipe_id"`
 	Weight                 int                       `json:"weight"`
-	ConsumeType            string                    `json:"consume_type"`
+	ConsumeType            consumeType.ConsumeType   `json:"consume_type"`
 	SoulShotCount          int                       `json:"soulshot_count"`
 	SpiritShotCount        int                       `json:"spiritshot_count"`
 	DropPeriod             int                       `json:"drop_period"`
@@ -121,7 +122,9 @@ func (i *Item) removeEmptyStats() {
 	}
 	i.BonusStats = bStat
 }
-
+func (i *Item) IsStackable() bool {
+	return i.ConsumeType == 0
+}
 func GetItemFromStorage(itemId int) (item Item, ok bool) {
 	item, ok = AllItems[itemId]
 	return

@@ -170,7 +170,7 @@ func (c *Character) Load() {
 	c.Inventory = GetMyItems(c.ObjectId)
 	c.Paperdoll = RestoreVisibleInventory(c.ObjectId)
 	c.LoadCharactersMacros()
-	for _, v := range c.Paperdoll {
+	for _, v := range &c.Paperdoll {
 		if v.ObjId != 0 {
 			c.AddBonusStat(v.BonusStats)
 		}
@@ -193,7 +193,8 @@ func (c *Character) Load() {
 
 func (c *Character) Shadow() {
 	for {
-		for i, v := range c.Inventory.Items {
+		for i := range c.Inventory.Items {
+			v := &c.Inventory.Items[i]
 			if v.Item.Durability > 0 && v.Loc == PaperdollLoc {
 				var iup IUP
 				iup.ObjId = v.ObjId
@@ -389,4 +390,15 @@ func (c *Character) SaveFirstInGamePlayer() {
 		panic(err)
 	}
 	c.FirstEnterGame = false
+}
+
+//ExistItemInInventory Возвращает ссылку на Item если он есть в инвентаре
+func (c *Character) ExistItemInInventory(objectItemId int32) *MyItem {
+	for i := range c.Inventory.Items {
+		item := &c.Inventory.Items[i]
+		if item.ObjId == objectItemId {
+			return item
+		}
+	}
+	return nil
 }

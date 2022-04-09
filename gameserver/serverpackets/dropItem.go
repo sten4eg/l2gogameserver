@@ -15,18 +15,16 @@ func DropItem(client *models.Client, objectId int32, count int64, x, y, z int32)
 		return []byte{}
 	}
 
-	itemId := 0                 // ID предмета
-	var inCount int64 = 0       //Кол-во
-	var remainder int64 = 0     //Кол-во которое осталось после выброса у персонажа
-	var isStackable byte = 0x01 //0 стыкуется, 1 не стыкуется
+	itemId := 0             // ID предмета
+	var inCount int64 = 0   //Кол-во
+	var remainder int64 = 0 //Кол-во которое осталось после выброса у персонажа
+	var isStackable int32   //0 стыкуется, 1 не стыкуется
 	for _, e := range client.CurrentChar.Inventory.Items {
 		if e.ObjId == objectId {
 			itemId = e.Id
 			inCount = e.Count
 			remainder = e.Count - count
-			if e.ConsumeType == "consume_type_stackable" {
-				isStackable = 0x00
-			}
+			isStackable = int32(e.ConsumeType)
 			break
 		}
 	}
@@ -48,7 +46,7 @@ func DropItem(client *models.Client, objectId int32, count int64, x, y, z int32)
 		buffer.WriteD(x)
 		buffer.WriteD(y)
 		buffer.WriteD(z)
-		buffer.WriteD(int32(isStackable))
+		buffer.WriteD(isStackable)
 		buffer.WriteQ(count)
 		buffer.WriteD(0x01)
 

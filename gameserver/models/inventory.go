@@ -2,8 +2,6 @@ package models
 
 import (
 	"context"
-	"math"
-
 	"github.com/jackc/pgx/v4"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/models/items"
@@ -13,6 +11,7 @@ import (
 	"l2gogameserver/gameserver/models/items/weaponType"
 	"log"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -233,26 +232,41 @@ func (i *MyItem) IsEquipped() int16 {
 }
 
 func SaveInventoryInDB(inventory []MyItem) {
+	if len(inventory) == 0 {
+		return
+	}
+
 	dbConn, err := db.GetConn()
 	if err != nil {
 		panic(err)
 	}
 	defer dbConn.Release()
 
-	for _, v := range inventory {
-		//TODO sql в цикле надо переделать
-		_, err = dbConn.Exec(context.Background(), "UPDATE items SET loc_data = $1, loc = $2 WHERE object_id = $3", v.LocData, v.Loc, v.ObjId)
-		if err != nil {
-			log.Println(err.Error())
+	var sb strings.Builder
+	sb.WriteString("UPDATE items SET loc_data = mylocdata, loc = myloc FROM ( VALUES ")
+
+	for i := range inventory {
+		v := &inventory[i]
+
+		sb.WriteString("(" + strconv.Itoa(int(v.LocData)) + ",'" + v.Loc + "'," + strconv.Itoa(int(v.ObjId)) + ")")
+
+		if len(inventory)-1 != i {
+			sb.WriteString(",")
 		}
+	}
+	sb.WriteString(") as myval (mylocdata,myloc,myobjid) WHERE items.object_id = myval.myobjid")
+	_, err = dbConn.Exec(context.Background(), sb.String())
+	if err != nil {
+		log.Println(err.Error())
 	}
 }
 
 func GetActiveWeapon(inventory []MyItem, paperdoll [26]MyItem) *MyItem {
 	q := paperdoll[PAPERDOLL_RHAND]
-	for _, v := range inventory {
+	for i := range inventory {
+		v := &inventory[i]
 		if v.ObjId == q.ObjId {
-			return &v
+			return v
 		}
 	}
 	return nil
@@ -432,11 +446,12 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 	// eсли selectedItem nil, то ищем предмет которых находиться в slot
 	// переносим его в инвентарь, убираем бонусы этого итема у персонажа
 	if selectedItem == nil {
-		for i, itemInInventory := range character.Inventory.Items {
+		for i := range character.Inventory.Items {
+			itemInInventory := &character.Inventory.Items[i]
 			if itemInInventory.LocData == int32(slot) && itemInInventory.Loc == PaperdollLoc {
 				itemInInventory.LocData = getFirstEmptySlot(character.Inventory.Items)
 				itemInInventory.Loc = InventoryLoc
-				character.Inventory.Items[i] = itemInInventory
+				character.Inventory.Items[i] = *itemInInventory
 				log.Println(itemInInventory.Loc, itemInInventory.LocData)
 				character.RemoveBonusStat(itemInInventory.BonusStats)
 				break
@@ -445,11 +460,12 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 		return
 	}
 	log.Println("не должен дойти")
-	var oldItemInSelectedSlot MyItem
+	var oldItemInSelectedSlot *MyItem
 	var inventoryKeyOldItemInSelectedSlot int
 	var keyCurrentItem int
 
-	for i, v := range character.Inventory.Items {
+	for i := range character.Inventory.Items {
+		v := &character.Inventory.Items[i]
 		// находим предмет, который стоял на нужном слоте раннее
 		// его необходимо переместить в инвентарь
 		if v.LocData == int32(slot) && v.Loc == PaperdollLoc {
@@ -467,7 +483,7 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 	if oldItemInSelectedSlot.Id != 0 {
 		oldItemInSelectedSlot.Loc = InventoryLoc
 		oldItemInSelectedSlot.LocData = selectedItem.LocData
-		character.Inventory.Items[inventoryKeyOldItemInSelectedSlot] = oldItemInSelectedSlot
+		character.Inventory.Items[inventoryKeyOldItemInSelectedSlot] = *oldItemInSelectedSlot
 		selectedItem.LocData = int32(slot)
 		selectedItem.Loc = PaperdollLoc
 
@@ -487,7 +503,8 @@ func getFirstEmptySlot(myItems []MyItem) int32 {
 
 	for i := int32(0); i < limit; i++ {
 		flag := false
-		for _, v := range myItems {
+		for j := range myItems {
+			v := &myItems[j]
 			if v.Loc == InventoryLoc && v.LocData == i {
 				flag = true
 				break
@@ -519,7 +536,8 @@ func (i *MyItem) GetAttackElement() attribute.Attribute {
 func (i *MyItem) getBaseAttributeElement() attribute.Attribute {
 	return i.BaseAttributeAttack.Type
 }
-func DeleteItem(selectedItem MyItem, character *Character) {
+func DeleteItem(selectedItem *MyItem, character *Character) {
+	//TODO переделать, не надо создавать новый inventiry
 	dbConn, err := db.GetConn()
 	if err != nil {
 		panic(err)
@@ -537,7 +555,10 @@ func DeleteItem(selectedItem MyItem, character *Character) {
 	}
 	character.Inventory = inventory
 
-	_, _ = dbConn.Exec(context.Background(), "DELETE FROM items WHERE object_id = $1", selectedItem.ObjId)
+	_, err = dbConn.Exec(context.Background(), "DELETE FROM items WHERE object_id = $1", selectedItem.ObjId)
+	if err != nil {
+		panic(err)
+	}
 }
 func GetPaperdollOrder() []uint8 {
 	return []uint8{
@@ -576,7 +597,8 @@ func AddItem(selectedItem MyItem, character *Character) Inventory {
 	//Если он есть, тогда просто добавим к имеющимся предмету.
 	//TODO: Однако, есть предметы (кроме оружия, брони, бижи), которые не стакуются, к примеру 7832
 	//TODO: потом нужно определить тип предметов которые не стыкуются.
-	for i, itemInventory := range character.Inventory.Items {
+	for i := range character.Inventory.Items {
+		itemInventory := &character.Inventory.Items[i]
 		if selectedItem.Item.Id == itemInventory.Item.Id {
 			character.Inventory.Items[i].Count = itemInventory.Count + character.Inventory.Items[i].Count
 			return character.Inventory
@@ -606,14 +628,15 @@ func AddItem(selectedItem MyItem, character *Character) Inventory {
 
 	_, err = dbConn.Exec(context.Background(), `INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', 0, 0, 0, 0, '-1', 0, 0)`, character.ObjectId, selectedItem.ObjId, selectedItem.Item.Id, selectedItem.Count)
 	if err != nil {
-		log.Println(err.Error())
+		panic(err)
 	}
 
 	return character.Inventory
 }
 
-//Удаление предмета из инвентаря персонажа
-func RemoveItemCharacter(character *Character, itemId int32, count int64) (bool, MyItem) {
+//RemoveItemCharacter Удаление предмета из инвентаря персонажа
+// count - сколько надо удалить
+func RemoveItemCharacter(character *Character, item *MyItem, count int64) {
 	log.Println("Удаление предмета из инвентаря")
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -621,29 +644,21 @@ func RemoveItemCharacter(character *Character, itemId int32, count int64) (bool,
 	}
 	defer dbConn.Release()
 
-	for i, item := range character.Inventory.Items {
-		if item.ObjId == itemId {
-			rCount := item.Count - count
-			//Если число отрицательное, либо ноль, удаляем все предметы стака
-			if math.Signbit(float64(rCount)) || rCount == 0 {
-				DeleteItem(character.Inventory.Items[i], character)
-			} else {
-				//Если часть предметов осталась, удаляем только N количество
-				character.Inventory.Items[i].Count = item.Count - count
-				_, _ = dbConn.Exec(context.Background(), `UPDATE "items" SET "count" = $1 WHERE "owner_id" = $2 AND "object_id" = $3 AND "item" = $4`, rCount, character.ObjectId, item.ObjId, item.Id)
-			}
-			return true, item
-		}
+	if item.Count < count || item.Count == 0 || count == 0 {
+		log.Println("Неверное количество предметов для удаления")
 	}
-	return false, MyItem{}
-}
 
-//Удаление предмета из инвентаря персонажа
-func CheckIsItemCharacter(character *Character, object_item_id int32) (MyItem, bool) {
-	for _, item := range character.Inventory.Items {
-		if item.ObjId == object_item_id {
-			return item, true
+	if item.Count == count {
+		DeleteItem(item, character)
+		item = nil
+	} else {
+		newCount := item.Count - count
+		_, err = dbConn.Exec(context.Background(),
+			`UPDATE "items" SET "count" = $1 WHERE "owner_id" = $2 AND "object_id" = $3 AND "item" = $4`,
+			newCount, character.ObjectId, item.ObjId, item.Id)
+		if err != nil {
+			panic(err)
 		}
+		item.Count = newCount
 	}
-	return MyItem{}, false
 }

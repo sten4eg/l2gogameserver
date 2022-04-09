@@ -19,28 +19,20 @@ func DestroyItem(data []byte, client *models.Client) []byte {
 		return []byte{}
 	}
 
-	item, ok := models.CheckIsItemCharacter(client.CurrentChar, objectId)
-	if ok == false {
+	item := client.CurrentChar.ExistItemInInventory(objectId)
+	if item == nil {
 		log.Println("Не найден предмет")
 		return []byte{}
 	}
-	if int32(item.Count) >= count && int32(item.Count) <= count {
-		log.Println("Неверное количество предметов для удаления")
-		return []byte{}
-	}
+
+	//Удаляем из инвентаря предмет
+	models.RemoveItemCharacter(client.CurrentChar, item, int64(count))
+	log.Println("Предмет был удален!")
 
 	buff := packets.Get()
 	defer packets.Put(buff)
-	pkg := serverpackets.InventoryUpdate(client, &item, models.UpdateTypeRemove)
+	pkg := serverpackets.InventoryUpdate(client, item, models.UpdateTypeRemove)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-
-	//Удаляем из инвентаря предмет
-	ok, _ = models.RemoveItemCharacter(client.CurrentChar, objectId, item.Count)
-	if !ok {
-		log.Println("Удаление не произошло, значит какая-то фигня")
-		return []byte{}
-	}
-	log.Println("Предмет был удален!")
 
 	return buff.Bytes()
 }

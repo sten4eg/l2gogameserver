@@ -75,11 +75,11 @@ func (g *GameServer) handler(client *models.Client) {
 			}
 
 		case 23:
-			pkg, item := clientpackets.DropItem(client, data)
-			client.SSend(pkg)
-
-			pkgInventoryUpdate := clientpackets.InventoryUpdate(client, &item, models.UpdateTypeRemove)
-			client.SSend(pkgInventoryUpdate)
+			//pkg, item := clientpackets.DropItem(client, data)
+			//client.SSend(pkg)
+			//
+			//pkgInventoryUpdate := clientpackets.InventoryUpdate(client, &item, models.UpdateTypeRemove)
+			//client.SSend(pkgInventoryUpdate)
 
 		case 193:
 			pkg := clientpackets.RequestObserverEnd(client, data)
