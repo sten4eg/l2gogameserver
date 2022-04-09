@@ -2,6 +2,7 @@ package clientpackets
 
 import (
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"log"
 )
@@ -28,15 +29,18 @@ func DestroyItem(data []byte, client *models.Client) []byte {
 		return []byte{}
 	}
 
+	buff := packets.Get()
+	defer packets.Put(buff)
+	pkg := serverpackets.InventoryUpdate(client, item, models.UpdateTypeRemove)
+	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+
 	//Удаляем из инвентаря предмет
-	if models.RemoveItemCharacter(client.CurrentChar, objectId, item.Count) == false {
+	ok, _ = models.RemoveItemCharacter(client.CurrentChar, objectId, item.Count)
+	if !ok {
 		log.Println("Удаление не произошло, значит какая-то фигня")
 		return []byte{}
 	}
-
-	pkgInventoryUpdate := InventoryUpdate(client, client.CurrentChar.ObjectId, models.UpdateTypeRemove)
-	client.SSend(pkgInventoryUpdate)
-
 	log.Println("Предмет был удален!")
-	return []byte{}
+
+	return buff.Bytes()
 }

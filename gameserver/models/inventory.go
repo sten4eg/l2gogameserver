@@ -46,9 +46,10 @@ const (
 	PaperdollLoc string = "PAPERDOLL"
 	InventoryLoc string = "INVENTORY"
 
-	UpdateTypeAdd    int16 = 1
-	UpdateTypeModify int16 = 2
-	UpdateTypeRemove int16 = 3
+	UpdateTypeUnchanged int16 = 0
+	UpdateTypeAdd       int16 = 1
+	UpdateTypeModify    int16 = 2
+	UpdateTypeRemove    int16 = 3
 )
 
 type MyItem struct {
@@ -612,7 +613,7 @@ func AddItem(selectedItem MyItem, character *Character) Inventory {
 }
 
 //Удаление предмета из инвентаря персонажа
-func RemoveItemCharacter(character *Character, itemId int32, count int64) bool {
+func RemoveItemCharacter(character *Character, itemId int32, count int64) (bool, MyItem) {
 	log.Println("Удаление предмета из инвентаря")
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -631,10 +632,10 @@ func RemoveItemCharacter(character *Character, itemId int32, count int64) bool {
 				character.Inventory.Items[i].Count = item.Count - count
 				_, _ = dbConn.Exec(context.Background(), `UPDATE "items" SET "count" = $1 WHERE "owner_id" = $2 AND "object_id" = $3 AND "item" = $4`, rCount, character.ObjectId, item.ObjId, item.Id)
 			}
-			return true
+			return true, item
 		}
 	}
-	return false
+	return false, MyItem{}
 }
 
 //Удаление предмета из инвентаря персонажа
