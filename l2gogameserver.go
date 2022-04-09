@@ -1,6 +1,7 @@
 package main
 
 import (
+	"l2gogameserver/config"
 	"l2gogameserver/data"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver"
@@ -23,6 +24,7 @@ func main() {
 }
 
 func setup() {
+	config.LoadAllConfig()
 	db.ConfigureDB()
 	idfactory.Load()
 	models.LoadStats()

@@ -3,29 +3,12 @@ package serverpackets
 import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
-	"log"
 )
 
-func InventoryUpdate(client *models.Client, objId int32, updateType int16) []byte {
+func InventoryUpdate(client *models.Client, item models.MyItem, updateType int16) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
-	var item models.MyItem
-
-	find := false
-	for _, v := range client.CurrentChar.Inventory.Items {
-		if v.ObjId == objId {
-			item = v
-			find = true
-			break
-		}
-	}
-
-	// если предмет не найден в инвентаре, то выходим
-	if !find {
-		return []byte{}
-	}
-	log.Println("я в пакете ", item.ObjId, "++", item.Loc, "++", item.IsEquipped())
 	buffer.WriteSingleByte(0x21)
 	buffer.WriteH(1)
 

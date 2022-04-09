@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"l2gogameserver/config"
 	"l2gogameserver/gameserver/idfactory"
 	"log"
 	"os"
@@ -133,6 +134,9 @@ var NpcObject map[int32]Locations
 
 //Временное функция подгрузки листа с спаунами NPC
 func LoadNpc() {
+	if config.Get().Debug.EnableNPC == false {
+		return
+	}
 	Npcs = make(map[int32]map[int32]Npc)
 	NpcObject = make(map[int32]Locations)
 
@@ -179,6 +183,10 @@ func LoadNpc() {
 
 	log.Printf("Загружено %d Npc", len(Npcs))
 	log.Printf("Загружено %d Npc Object", len(NpcObject))
+
+	if config.Get().Debug.EnabledSpawnlist == false {
+		return
+	}
 	file, err = os.Open("./data/stats/npcdata/spawnlist.json")
 	if err != nil {
 		panic("Failed to load config file " + err.Error())

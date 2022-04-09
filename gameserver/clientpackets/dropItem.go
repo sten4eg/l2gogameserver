@@ -7,7 +7,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func DropItem(client *models.Client, data []byte) []byte {
+func DropItem(client *models.Client, data []byte) ([]byte, models.MyItem) {
 	var read = packets.NewReader(data)
 	objectId := read.ReadInt32()
 	count := int64(read.ReadInt32())
@@ -16,7 +16,7 @@ func DropItem(client *models.Client, data []byte) []byte {
 	y := read.ReadInt32()
 	z := read.ReadInt32()
 
-	drops.DropItemCharacter(client, objectId, count, x, y, z)
+	item := drops.DropItemCharacter(client, objectId, count, x, y, z)
 
 	buffer := packets.Get()
 	defer packets.Put(buffer)
@@ -24,5 +24,5 @@ func DropItem(client *models.Client, data []byte) []byte {
 	pkg := serverpackets.DropItem(client, objectId, count, x, y, z)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
-	return buffer.Bytes()
+	return buffer.Bytes(), item
 }

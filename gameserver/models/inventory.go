@@ -46,9 +46,10 @@ const (
 	PaperdollLoc string = "PAPERDOLL"
 	InventoryLoc string = "INVENTORY"
 
-	UpdateTypeAdd    int16 = 1
-	UpdateTypeModify int16 = 2
-	UpdateTypeRemove int16 = 3
+	UpdateTypeUnchanged int16 = 0
+	UpdateTypeAdd       int16 = 1
+	UpdateTypeModify    int16 = 2
+	UpdateTypeRemove    int16 = 3
 )
 
 type MyItem struct {
@@ -612,7 +613,7 @@ func AddItem(selectedItem MyItem, character *Character) Inventory {
 }
 
 //Удаление предмета из инвентаря персонажа
-func RemoveItemCharacter(character *Character, removeItemId int32, count int64) {
+func RemoveItemCharacter(character *Character, itemId int32, count int64) (bool, MyItem) {
 	log.Println("Удаление предмета из инвентаря")
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -621,10 +622,8 @@ func RemoveItemCharacter(character *Character, removeItemId int32, count int64) 
 	defer dbConn.Release()
 
 	for i, item := range character.Inventory.Items {
-		log.Println(item.ObjId, removeItemId)
-		if item.ObjId == removeItemId {
+		if item.ObjId == itemId {
 			rCount := item.Count - count
-			log.Println(rCount)
 			//Если число отрицательное, либо ноль, удаляем все предметы стака
 			if math.Signbit(float64(rCount)) || rCount == 0 {
 				DeleteItem(character.Inventory.Items[i], character)
@@ -633,6 +632,18 @@ func RemoveItemCharacter(character *Character, removeItemId int32, count int64) 
 				character.Inventory.Items[i].Count = item.Count - count
 				_, _ = dbConn.Exec(context.Background(), `UPDATE "items" SET "count" = $1 WHERE "owner_id" = $2 AND "object_id" = $3 AND "item" = $4`, rCount, character.ObjectId, item.ObjId, item.Id)
 			}
+			return true, item
 		}
 	}
+	return false, MyItem{}
+}
+
+//Удаление предмета из инвентаря персонажа
+func CheckIsItemCharacter(character *Character, object_item_id int32) (MyItem, bool) {
+	for _, item := range character.Inventory.Items {
+		if item.ObjId == object_item_id {
+			return item, true
+		}
+	}
+	return MyItem{}, false
 }

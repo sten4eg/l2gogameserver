@@ -8,16 +8,16 @@ import (
 
 var db *pgxpool.Pool
 
+//Connect to DB (postgres)
 func ConfigureDB() {
-	conf := config.Read()
-
-	dsnString := "user=" + conf.GameServer.Database.User
-	dsnString += " password=" + conf.GameServer.Database.Password
-	dsnString += " host=" + conf.GameServer.Database.Host
-	dsnString += " port=" + conf.GameServer.Database.Port
-	dsnString += " dbname=" + conf.GameServer.Database.Name
-	dsnString += " sslmode=" + conf.GameServer.Database.SSLMode
-	dsnString += " pool_max_conns=" + conf.GameServer.Database.PoolMaxConns
+	conf := config.Get().Database
+	dsnString := "user=" + conf.User
+	dsnString += " password=" + conf.Password
+	dsnString += " host=" + conf.Host
+	dsnString += " port=" + conf.Port
+	dsnString += " dbname=" + conf.Name
+	dsnString += " sslmode=" + conf.SSLMode
+	dsnString += " pool_max_conns=" + conf.PoolMaxConns
 
 	pool, err := pgxpool.Connect(context.Background(), dsnString)
 	if err != nil {

@@ -88,6 +88,7 @@ func (c *Client) Send(data []byte, need bool) {
 }
 func (c *Client) SSend(d []byte) {
 	if len(d) == 0 {
+		log.Println("Пакет пуст")
 		return
 	}
 	err := c.sendDataToSocket(d)

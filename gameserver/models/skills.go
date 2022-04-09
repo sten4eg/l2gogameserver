@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"l2gogameserver/config"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/models/skills"
 	"l2gogameserver/gameserver/models/skills/targets"
@@ -55,6 +56,10 @@ type Tuple struct {
 }
 
 func LoadSkills() {
+	if config.Get().Debug.EnabledSkills == false {
+		return
+	}
+	log.Println("Загрузка скиллов")
 	file, err := os.Open("./data/stats/skills/0-100.json")
 	if err != nil {
 		panic("Failed to load config file " + err.Error())

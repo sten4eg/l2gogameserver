@@ -2,11 +2,13 @@ package items
 
 import (
 	"encoding/json"
+	"l2gogameserver/config"
 	"l2gogameserver/gameserver/models/items/armorType"
 	"l2gogameserver/gameserver/models/items/crystalType"
 	"l2gogameserver/gameserver/models/items/etcItemType"
 	"l2gogameserver/gameserver/models/items/materialType"
 	"l2gogameserver/gameserver/models/items/weaponType"
+	"log"
 	"os"
 )
 
@@ -87,6 +89,10 @@ func LoadItems() {
 }
 
 func loadItems() {
+	if config.Get().Debug.EnabledItems == false {
+		return
+	}
+	log.Println("Загрузка предметов")
 	file, err := os.Open("./data/stats/items/items.json")
 	if err != nil {
 		panic("Failed to load config file")
