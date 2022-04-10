@@ -3,6 +3,7 @@ package packets
 import (
 	"bytes"
 	"encoding/binary"
+	"unicode/utf16"
 )
 
 type Reader struct {
@@ -106,25 +107,20 @@ func (r *Reader) ReadInt8() int8 {
 	return int8(r.ReadSingleByte())
 }
 func (r *Reader) ReadString() string {
-	var result []byte
-	var secondByte byte
+	var result []uint16
+	buf := make([]byte, 2)
 	for {
-		firstByte, err := r.r.ReadByte()
+		_, err := r.r.Read(buf)
 		if err != nil {
 			panic(err)
 		}
-		secondByte, err = r.r.ReadByte()
-		if err != nil {
-			panic(err)
-		}
+		q := binary.LittleEndian.Uint16(buf)
 
-		if firstByte == 0x00 && secondByte == 0x00 {
+		if q == 0 {
 			break
 		}
-
-		result = append(result, firstByte)
+		result = append(result, q)
 
 	}
-
-	return string(result)
+	return string(utf16.Decode(result))
 }

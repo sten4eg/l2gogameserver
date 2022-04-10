@@ -3,6 +3,7 @@ package packets
 import (
 	"encoding/binary"
 	"math"
+	"unicode/utf16"
 )
 
 type Buffer struct {
@@ -64,16 +65,19 @@ func (b *Buffer) WriteSingleByte(value byte) {
 const EmptyByte byte = 0
 
 func (b *Buffer) WriteS(value string) {
+	utf16Slice := utf16.Encode([]rune(value))
 
-	buf := make([]byte, 0, len(value)*2+2)
-	if len(value) != 0 {
-		for _, v := range []byte(value) {
-			buf = append(buf, v, EmptyByte)
+	var buf []byte
+	for _, v := range utf16Slice {
+		if v < math.MaxInt8 {
+			buf = append(buf, byte(v), 0)
+		} else {
+			f, s := uint8(v&0xff), uint8(v>>8)
+			buf = append(buf, f, s)
 		}
 	}
 
 	buf = append(buf, EmptyByte, EmptyByte)
 
 	b.B = append(b.B, buf...)
-
 }

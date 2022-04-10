@@ -13,6 +13,7 @@ func Say(client *models.Client, data []byte) models.Say {
 
 	say.Text = packet.ReadString()
 	say.Type = packet.ReadInt32()
+	//todo say.Target = реализовать
 
 	buffer := packets.Get()
 	if strings.HasPrefix(say.Text, ".") {
