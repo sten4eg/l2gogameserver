@@ -91,7 +91,7 @@ func (g *GameServer) handler(client *models.Client) {
 			pkg := clientpackets.RequestEnterWorld(client, data)
 			client.SSend(pkg)
 			//g.BroadCastUserInfoInRadius(client, 2000)
-			g.GetCharInfoAboutCharactersInRadius(client, 2000)
+			g.SendCharInfoAboutCharactersInRadius(client, 2000)
 			go g.ChannelListener(client)
 			go g.MoveListener(client)
 			go g.NpcListener(client)

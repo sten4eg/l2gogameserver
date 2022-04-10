@@ -13,14 +13,14 @@ import (
 func (g *GameServer) BroadCastToAroundPlayersInRadius(my *models.Client, pkg *utils.PacketByte, radius int32) {
 	charsIds := models.GetAroundPlayersInRadius(my.CurrentChar, radius)
 	for i := range charsIds {
-		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.Send(pkg.GetData(), true)
+		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(pkg.GetData())
 	}
 }
 
 func (g *GameServer) BroadCastToAroundPlayers(my *models.Client, pkg *utils.PacketByte) {
 	charsIds := models.GetAroundPlayer(my.CurrentChar)
 	for i := range charsIds {
-		charsIds[i].Conn.Send(pkg.GetData(), true)
+		charsIds[i].Conn.EncryptAndSend(pkg.GetData())
 	}
 }
 
@@ -28,7 +28,7 @@ func (g *GameServer) BroadCastToAroundPlayers(my *models.Client, pkg *utils.Pack
 // информацию о персонаже, Самому персонажу отправляет полный UserInfo
 func (g *GameServer) BroadCastUserInfoInRadius(me *models.Client, radius int32) {
 	ui := serverpackets.UserInfo(me)
-	me.Send(ui, true)
+	me.EncryptAndSend(ui)
 
 	charsIds := models.GetAroundPlayersInRadius(me.CurrentChar, radius)
 	if len(charsIds) == 0 {
@@ -46,8 +46,8 @@ func (g *GameServer) BroadCastUserInfoInRadius(me *models.Client, radius int32) 
 
 	g.OnlineCharacters.Mu.Lock()
 	for i := range charsIds {
-		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.Send(ci.GetData(), true)
-		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.Send(exUi.GetData(), true)
+		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(ci.GetData())
+		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(exUi.GetData())
 	}
 	g.OnlineCharacters.Mu.Unlock()
 }
@@ -99,24 +99,24 @@ func (g *GameServer) BroadCastToCharacterByName(pkg *utils.PacketByte, to string
 	defer g.OnlineCharacters.Mu.Unlock()
 	for i := range g.OnlineCharacters.Char {
 		if g.OnlineCharacters.Char[i].CharName == to {
-			g.OnlineCharacters.Char[i].Conn.Send(pkg.GetData(), true)
+			g.OnlineCharacters.Char[i].Conn.EncryptAndSend(pkg.GetData())
 			return true
 		}
 	}
 	return false
 }
 
-// GetCharInfoAboutCharactersInRadius отправляет me CharInfo персонажей
+// SendCharInfoAboutCharactersInRadius отправляет me CharInfo персонажей
 // в радиусе radius
-func (g *GameServer) GetCharInfoAboutCharactersInRadius(me *models.Client, radius int32) {
+func (g *GameServer) SendCharInfoAboutCharactersInRadius(me *models.Client, radius int32) {
 	charsIds := models.GetAroundPlayersInRadius(me.CurrentChar, radius)
 	for i := range charsIds {
 		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(charsIds[i])))
 	}
 }
 
-// GetCharInfoAboutCharacters отправляет me CharInfo персонажей
-func (g *GameServer) GetCharInfoAboutCharacters(me *models.Client) {
+// SendCharInfoAboutCharactersAround отправляет me CharInfo персонажей
+func (g *GameServer) SendCharInfoAboutCharactersAround(me *models.Client) {
 	charsIds := models.GetAroundPlayer(me.CurrentChar)
 	for i := range charsIds {
 		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(charsIds[i])))

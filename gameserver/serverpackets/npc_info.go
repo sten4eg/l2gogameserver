@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NpcInfo(npc models.Npc) []byte {
+func NpcInfo(npc *models.Npc) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 

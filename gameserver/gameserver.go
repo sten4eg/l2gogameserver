@@ -49,10 +49,11 @@ func (g *GameServer) Start() {
 		if err != nil {
 			fmt.Println("Couldn't accept the incoming connection.", err)
 			continue
-		} else {
-			g.AddClient(client)
-			go g.handler(client)
 		}
+
+		g.AddClient(client)
+		go g.handler(client)
+
 	}
 }
 
@@ -70,7 +71,8 @@ func (g *GameServer) ChannelListener(client *models.Client) {
 func (g *GameServer) NpcListener(client *models.Client) {
 	for q := range client.CurrentChar.NpcInfo {
 		buff := packets.Get()
-		for _, v := range q {
+		for i := range q {
+			v := &q[i]
 			pkg := serverpackets.NpcInfo(v)
 			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 		}
@@ -86,7 +88,7 @@ func (g *GameServer) MoveListener(client *models.Client) {
 		pkg.SetData(serverpackets.CharInfo(client.CurrentChar))
 		for _, v := range q {
 			g.OnlineCharacters.Mu.Lock()
-			g.OnlineCharacters.Char[v].Conn.Send(pkg.GetData(), true)
+			g.OnlineCharacters.Char[v].Conn.EncryptAndSend(pkg.GetData())
 			g.OnlineCharacters.Mu.Unlock()
 		}
 	}
@@ -97,7 +99,7 @@ func (g *GameServer) MoveListener(client *models.Client) {
 		pkg.SetData(serverpackets.DeleteObject(client.CurrentChar))
 		for _, v := range q {
 			g.OnlineCharacters.Mu.Lock()
-			g.OnlineCharacters.Char[v].Conn.Send(pkg.GetData(), true)
+			g.OnlineCharacters.Char[v].Conn.EncryptAndSend(pkg.GetData())
 			g.OnlineCharacters.Mu.Unlock()
 		}
 	}
@@ -128,7 +130,7 @@ func (g *GameServer) addOnlineChar(character *models.Character) {
 func (g *GameServer) brdsct(me *models.Client, pkg utils.PacketByte) {
 	charsIds := models.GetAroundPlayer(me.CurrentChar)
 	for _, v := range charsIds {
-		v.Conn.Send(pkg.GetData(), true)
+		v.Conn.EncryptAndSend(pkg.GetData())
 		//me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(v)))
 	}
 }

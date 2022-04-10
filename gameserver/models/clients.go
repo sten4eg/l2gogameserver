@@ -70,10 +70,21 @@ func NewClient() *Client {
 
 // Send отправка массив data персонажу
 // need - флаг, указывает надо ли шифровать данные
-func (c *Client) Send(data []byte, need bool) {
-	if need {
-		data = crypt.Encrypt(data, c.OutKey)
+func (c *Client) Send(data []byte) {
+	// вычисление длинны пакета, 2 первых байта - размер пакета
+	length := int16(len(data) + 2)
+
+	s, f := byte(length>>8), byte(length&0xff)
+
+	data = append([]byte{f, s}, data...)
+
+	err := c.sendDataToSocket(data)
+	if err != nil {
+		panic("Пакет не отправлен, ошибка: " + err.Error())
 	}
+}
+func (c *Client) EncryptAndSend(data []byte) {
+	data = crypt.Encrypt(data, c.OutKey)
 	// вычисление длинны пакета, 2 первых байта - размер пакета
 	length := int16(len(data) + 2)
 

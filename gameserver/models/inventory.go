@@ -480,7 +480,7 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 	}
 	// если на нужном слоте был итем его нужно снять и положить в инвентарь
 	// и убрать у персонажа бонусы которые он давал
-	if oldItemInSelectedSlot.Id != 0 {
+	if oldItemInSelectedSlot != nil && oldItemInSelectedSlot.Id != 0 {
 		oldItemInSelectedSlot.Loc = InventoryLoc
 		oldItemInSelectedSlot.LocData = selectedItem.LocData
 		character.Inventory.Items[inventoryKeyOldItemInSelectedSlot] = *oldItemInSelectedSlot

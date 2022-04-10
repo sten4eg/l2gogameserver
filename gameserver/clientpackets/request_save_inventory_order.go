@@ -28,8 +28,10 @@ func RequestSaveInventoryOrder(client *models.Client, data []byte) {
 
 	items := client.CurrentChar.Inventory.Items
 
+	//todo переделать без n^2
 	for _, io := range newOrder {
-		for i, item := range items {
+		for i := range items {
+			item := &items[i]
 			if io.ObjId == item.ObjId && item.Loc == models.InventoryLoc {
 				items[i].LocData = io.Order
 			}

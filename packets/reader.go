@@ -120,9 +120,10 @@ func (r *Reader) ReadString() string {
 
 		if firstByte == 0x00 && secondByte == 0x00 {
 			break
-		} else {
-			result = append(result, firstByte)
 		}
+
+		result = append(result, firstByte)
+
 	}
 
 	return string(result)
