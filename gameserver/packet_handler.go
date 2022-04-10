@@ -25,6 +25,8 @@ func (g *GameServer) handler(client *models.Client) {
 			client.SSend(pkg)
 		case 13: // CharacterDelete
 
+		case 35: // ReqBypassToServer (коммьюнити)
+			clientpackets.BypassToServer(data, client)
 		case 96: //RequestDestroyItem
 			pkg := clientpackets.DestroyItem(data, client)
 			client.SSend(pkg)
