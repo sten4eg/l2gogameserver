@@ -5,8 +5,6 @@ import (
 	"l2gogameserver/gameserver/models/htm"
 	"l2gogameserver/packets"
 	"log"
-	"math"
-	"strconv"
 )
 
 var bbslist = [8]string{
@@ -29,28 +27,22 @@ func BypassToServer(data []byte, client *models.Client) {
 		log.Println(err)
 		return
 	}
-	numberOfSplits := int(math.Ceil(float64(len(htmlDialog)) / 8180))
-	for i := 1; i < numberOfSplits+1; i++ {
-		bufferDialog := packets.Get()
-		bufferDialog.WriteSingleByte(0x7b)
-		bufferDialog.WriteSingleByte(0x01)
-		for _, s := range bbslist {
-			bufferDialog.WriteS(s)
-		}
-		bufferDialog.WriteS("10" + strconv.Itoa(i) + "\u0008")
-		if i == 1 {
-			bufferDialog.WriteS(htmlDialog + "\u0008")
-		} else if i == 2 {
-			bufferDialog.WriteS(htmlDialog[8180:] + "\u0008")
-		} else if i == 3 {
-			bufferDialog.WriteS(htmlDialog[8180*2:] + "\u0008")
-		} else {
-			log.Println("Html is too long!")
-			return
-		}
-		buffer := packets.Get()
-		buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(bufferDialog.Bytes()))
-		client.SSend(buffer.Bytes())
-	}
+	bufferDialog := packets.Get()
+	defer packets.Put(bufferDialog)
+	bufferDialog1 := packets.Get()
+	defer packets.Put(bufferDialog1)
+	bufferDialog2 := packets.Get()
+	defer packets.Put(bufferDialog2)
 
+	if len(htmlDialog) < 16250 {
+		bufferDialog.WriteSlice(models.QWERT(htmlDialog, "101"))
+		bufferDialog1.WriteSlice(models.QWERT("", "102"))
+		bufferDialog2.WriteSlice(models.QWERT("", "103"))
+	}
+	buffer := packets.Get()
+
+	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(bufferDialog.Bytes()))
+	//	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(bufferDialog1.Bytes()))
+	//	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(bufferDialog2.Bytes()))
+	client.SSend(buffer.Bytes())
 }
