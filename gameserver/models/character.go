@@ -384,7 +384,7 @@ func (c *Character) SaveFirstInGamePlayer() {
 	}
 	defer dbConn.Release()
 
-	sql := `UPDATE "characters" SET "first_enter_game" = true WHERE "object_id" = $1`
+	sql := `UPDATE "characters" SET "first_enter_game" = false WHERE "object_id" = $1`
 	_, err = dbConn.Exec(context.Background(), sql, c.ObjectId)
 	if err != nil {
 		panic(err)
