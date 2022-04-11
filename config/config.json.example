@@ -15,6 +15,7 @@
       "enabled_spawnlist": true,
       "enabled_load_skills": true,
       "enabled_items": true
+      "enabled_cache_html": false
     }
   }
 }

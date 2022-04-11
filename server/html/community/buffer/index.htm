@@ -1,0 +1,199 @@
+<html noscrollbar>
+<!--Заголовок окна-->
+<title>TheBattle.Club</title>
+<body><br>
+<table width=755>
+	<tr>
+		<center><td>
+			<!--Основной блок с задним фоном-->
+			<table border=0 cellpadding=0 cellspacing=0 width=776 height=535>
+				<tr>
+					<td valign="top" align="center"><br>
+						<table width=755 height=459>
+							<tr>
+								<td width=760>
+									<!--Блок заголовок-->
+									<table width=750>
+										<tr>
+											<td></td>
+											<td><center>Цель<font color="32cd32">*</font></center></td>
+											<td width=450>
+												<center>Введите название профиля <font color="FF0000">*</font></center>
+											</td>
+										</tr>
+										<tr>
+											<td valign="top" align="center" width=150>
+												<button value="На главную" action="bypass -h _bbshome" width=150 height=20 back="L2UI_CT1.button_df_Down" fore="L2UI_CT1.button_df">
+											</td>
+											<td valign="top" align="center" width=60>
+												<combobox width=60 height=10 var="Who" list="Player;Pet">
+											</td>
+											<td valign="top" align="center" width=450>
+												<edit var="GrpNameAdd" type="text" width=450 length=25 height=12>
+											</td>
+											<td valign="top" align="left">
+												<button value="Создать" action="bypass -h _bbsbuffersave $GrpNameAdd $Who" width=75 height=15 back="L2UI_CT1.button_df_Down" fore="L2UI_CT1.button_df">
+											</td>
+										</tr>
+									</table>
+									<table width=720 height=15 >
+										<tr>
+											<td width=575>
+											<br>
+											<table border=0 cellspacing=0 cellpadding=2 width=550>
+												<tr>
+													<td FIXWIDTH=500 align=left valign=top>
+														<font color="FFFF00">Описание баффера:</font>&nbsp;›&nbsp; Цена за 1 Бафф:&nbsp;50000&nbsp;&#57;.&nbsp;›&nbsp;Время:&nbsp;60&nbsp;мин.&nbsp;›&nbsp;Бесплатный до 80.<br1>														
+													</td>
+												</tr>
+											</table><br>
+											<table border=0 cellspacing=0 cellpadding=2 width=385>
+												<tr>
+													<td FIXWIDTH=500 align=left valign=top></td>
+												</tr>
+											</table>
+											<center>
+
+											<table width=500 height=55 background="L2UI_CT1.Windows_DF_Drawer_Bg">
+												<tr>
+													<td WIDTH=500 align=center valign=top>
+														<table border=0 cellspacing=4 cellpadding=3>
+															<tr>
+																<td FIXWIDTH=40 align=right valign=top>
+																	<img src="icon.skill6288" width=32 height=32>
+																</td>
+																<td FIXWIDTH=270 align=left valign=top>
+																	<font color="CCFF33">Стандартные баффы для персонажа.</font><br1>
+																	<font color="AAAAAA">Позволит вам создать перс. схемы.</font>
+																</td>
+																<td FIXWIDTH=90 align=center valign=top>
+																<table>
+																		<tr>
+																			<td><button value="Открыть" action="bypass -h _bbsplayerbuffer:0" width=75 height=25 back="L2UI_CT1.button_df_down" fore="L2UI_CT1.button_df"></td>
+																			<td><button value="Премиум" action="bypass -h _bbsplayerprbuffer:0" width=75 height=25 back="L2UI_CT1.button_df_down" fore="L2UI_CT1.button_df"></td>
+																		</tr>
+																	</table>
+																</td>
+															</tr>
+														</table>
+													</td>
+												</tr>
+											</table>
+											<table width=500 height=55 background="L2UI_CT1.Windows_DF_Drawer_Bg">
+												<tr>
+													<td WIDTH=500 align=center valign=top>
+														<table border=0 cellspacing=4 cellpadding=3>
+															<tr>
+																<td FIXWIDTH=40 align=right valign=top>
+																	<img src="icon.skill8364" width=32 height=32>
+																</td>
+																<td FIXWIDTH=340 align=left valign=top>
+																	<font color="339966">Стандартные баффы для питомца.</font><br1>
+																	<font color="AAAAAA">Позволит вам создать перс. схемы.</font>
+																</td>
+																<td FIXWIDTH=90 align=center valign=top><button value="Открыть" action="bypass -h _bbspetbuffer:0" width=75 height=25 back="L2UI_CT1.button_df_down" fore="L2UI_CT1.button_df"></td>
+															</tr>
+														</table>
+													</td>
+												</tr>
+											</table>
+											<table width=500  height=55 background="L2UI_CT1.Windows_DF_Drawer_Bg">
+												<tr>
+													<td WIDTH=500 align=center valign=top>
+														<table border=0 cellspacing=4 cellpadding=3>
+															<tr>
+																<td FIXWIDTH=40 align=right valign=top>
+																	<img src="icon.skill6885" width=32 height=32>
+																</td>
+																<td FIXWIDTH=290 align=left valign=top>
+																	<font color="FF6600">Восстановить HP/MP/CP.</font> <font color="AAAAAA">*</font><br1>
+																	<font color="AAAAAA">Функция регенерации всех параметров.</font><font color="32cd32">*</font>
+																</td>
+																<td FIXWIDTH=40 align=center valign=top>
+																	<button value="CP" action="bypass -h _bbsbufferheal CP $Who" width=35 height=20 width=35 height=20 back="L2UI_CT1.button_df_down" fore="L2UI_CT1.button_df">
+																</td>
+																<td FIXWIDTH=40 align=center valign=top>
+																	<button value="HP" action="bypass -h _bbsbufferheal HP $Who" width=35 height=20 width=35 height=20 back="L2UI_CT1.button_df_down" fore="L2UI_CT1.button_df">
+																</td>
+																<td FIXWIDTH=40 align=center valign=top>
+																	<button value="MP" action="bypass -h _bbsbufferheal MP $Who" width=35 height=20 width=35 height=20 back="L2UI_CT1.button_df_down" fore="L2UI_CT1.button_df">
+																</td>
+															</tr>
+															<tr>
+															 
+															</tr>
+														</table>
+													</td>
+												</tr>
+											</table>
+											<table width=500 height=55 background="L2UI_CT1.Windows_DF_Drawer_Bg">
+												<tr>
+													<td WIDTH=500 align=center valign=top>
+														<table border=0 cellspacing=4 cellpadding=3>
+															<tr>
+																<td FIXWIDTH=40 align=right valign=top>
+																	<img src="icon.skill1056" width=32 height=32>
+																</td>
+																<td FIXWIDTH=340 align=left valign=top>
+																	<font color="0099FF">Снять все бафы.</font> <font color="AAAAAA">*</font><br1>
+																	<font color="AAAAAA">Функция отмены всех наложенных эффектов.</font><font color="32cd32">*</font>
+																</td>
+																<td FIXWIDTH=90 align=center valign=top><button value="Снять" action="bypass -h _bbsbufferremovebuffs $Who" width=75 height=25 back="L2UI_CT1.button_df_Down" fore="L2UI_CT1.button_df"></td>
+															</tr>
+																<tr>
+																 
+																</tr>
+														</table>
+													</td>
+												</tr>
+
+											</table>
+											</center>
+											<br><br>
+												<table width=500 height=60>
+													<tr>
+														<td width=500>
+														</td>
+													</tr>
+													<tr>
+														<td width=500>
+															<font color="32cd32">*</font> » Цель действия! Player = Игрок; Pet = Питомец\Саммон!<br1>
+															<font color="FF0000">*</font> » Название для вашей схемы бафов.<br1>
+															<font color="AAAAAA">*</font> » Бесплатные функции.<br1>
+														</td>
+													</tr>
+												</table>
+											</td>
+											<td width=200 background="L2UI_CH3.refinewnd_back_Pattern">
+												<br>
+												<table width=180>
+													<tr>
+														<td width=200><center><font color="CCFF33">«</font> Стандартные схемы <font color="CCFF33">»</font></center></td>
+													</tr>
+													<tr>
+														<td width=200 align=center valign=top>
+															<center>%scheme%</center>
+														</td>
+													</tr>
+												</table>
+												<table width=180>
+													<tr>
+														<td width=200><center><font color="CCFF33">«</font> Ваши схемы <font color="CCFF33">»</font></center></td>
+													</tr>
+													<tr>
+														<td width=200><center>%buffgrps%</center></td>
+													</tr>
+												</table>
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</td></center>
+	</tr>
+</table>
+</body></html>

@@ -1,0 +1,253 @@
+<html noscrollbar>
+<title>Community Board</title>
+<body><br>
+<table width=755>
+	<tr>
+		<center><td>
+			<table border=0 cellpadding=0 cellspacing=0 width=769 height=492 background="l2ui_ct1.Windows_DF_TooltipBG">
+				<tr>
+					<td valign="top" align="center">
+						<table width=755 height=468>
+							<tr>
+								<td width=755><br>
+									<table border=0 cellspacing=0 cellpadding=0 width=755>
+										<tr>
+											<td WIDTH=755 align=center valign=top>
+												<font name="hs12">ГвГ 9х9</font>
+											</td>
+										</tr>
+									</table>
+									<br><br>
+									<table width=755>
+										<tr>
+											<td width=90 align=right valign=top>
+												<font color=AAFF33>Информация: </font>
+											</td>
+											<td width=680 align=left valign=top>
+												Это автоматический GvG 9x9. Для подачи заявки вам необходимо иметь как минимум 2 человека (ПЛ + 1)<br1>
+												<font color=FF0000>Минимальная ставка 500кк адены или 1000 Battle Coin</font><br1>
+												После принятия заявки, телепортирует пати с проверкой за 3 сек до телепортации.<br1>
+												Телепортирует ровно такое количество игроков , которое есть в <br1>
+												группе на тот момент, пати сами должны быть заинтересованы в том что бы их количество было максимальным.<br1>
+												С пати лидера после приема заявки взимает сумму заявки
+											</td>
+										</tr>
+									</table><br>
+									<table width=755>
+										<tr>
+											<td width=90 align=right valign=top>
+												*Время: *
+											</td>
+											<td width=680 align=left valign=top>
+												<font color=6bffd7>Постоянное</font>
+											</td>
+										</tr>
+									</table>
+									<br>
+									<table width=755>
+										<tr>
+											<td width=90 align=right valign=top>
+												<font color=FF0000>Особености:</font> 
+											</td>
+											<td width=680 align=left valign=top>
+											На баф и прочее выдается 60 секунд. В это время противинки могут передвигаться, но атаковать не могут друг друга не могут.<br1>
+											Запрещено для использования скилы party recall , аугментации Party recall, summoн (всех видов), телепорт.<br1>
+											Время перебывания в инстанс зоне не ограничено, <br1>
+											Чтобы вылететь из зоны достаточно выйти из пати, он вылитает из зоны, попасть обратно уже не может.<br1>
+											</td>
+										</tr>
+									</table>
+										<br>
+										<center>
+									<table border=0 cellspacing=0 cellpadding=0 width=350>
+										<tr>
+											<td valign="left" align="center" width=75>Сумма заявки<edit var="set_hp_t" type=number length=8 width=130 height=20></td>
+										</tr>
+									</table>
+									<br><br>
+									<table border=0 cellspacing=0 cellpadding=0 width=350>
+										<tr>
+											<td valign="left" align="center" width=75>Название команды<edit var="set_hp_t" length=60 width=130 height=20></td>
+										</tr>
+									</table>
+									<br><br>
+										<table border=0 cellspacing=0 cellpadding=0 width=350>
+										<tr>
+											<td align="center" valign="top">
+												<center><button value="Подать заявку" action="bypass -h _bbsscripts;index;events.GvG_9x9.GvG_9x9:addPlayer" width=150 height=20 back="tbc_buttons.150x20_down" fore="tbc_buttons.150x20"></center>
+											</td>
+											
+											<td align="center" valign="top">
+												<center><button value="Снять заявку" action="bypass -h _bbsscripts; ;events.here button gvg" width=150 height=20 back="tbc_buttons.150x20_down" fore="tbc_buttons.150x20"></center>
+											</td>
+										</tr>
+									</table>
+									</center>
+									<br><br>
+									<center>
+								<table width=755 height=25>
+                                      <tr>
+                                           <td align=center width=130>
+                                               <font name="hs12">Группы которые подали заявку</font>
+                                           </td>
+                                      </tr>
+								</table>
+                                   <table width=755 height=25 bgcolor=b73519>
+                                        <tr>
+                                          <td>
+                                            <table>
+                                              <tr>
+                                                <td width=25>
+                                                  #
+                                                </td>
+                                                <td width=250>
+                                                  Имя лидера группы
+                                                </td>
+                                                <td width=180 align=center>
+                                                  Название группы
+                                                </td>
+                                              </tr>
+                                            </table>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                      <table width=755 height=25 bgcolor=303030>
+                                        <tr>
+                                          <td>
+                                            <table>
+                                              <tr>
+                                                <td width=25>
+                                                  1
+                                                </td>
+                                                <td width=200>
+												JokerParty
+                                                </td>
+                                                <td width=292 align=center>
+												Joker
+                                                </td>
+                                                <td width=140 align=center valign=top>
+												Принять заявку
+                                                </td>
+                                              </tr>
+                                            </table>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                      <table width=755 height=25 bgcolor=444444>
+                                        <tr>
+                                          <td>
+                                            <table>
+                                              <tr>
+                                                <td width=25>
+                                                  2
+                                                </td>
+                                                <td width=200>
+                                                </td>
+                                                <td width=292 align=center>
+                                                </td>
+                                                <td width=140 align=center valign=top>
+                                                </td>
+                                              </tr>
+                                            </table>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                      <table width=755 height=25 bgcolor=303030>
+                                        <tr>
+                                          <td>
+                                            <table>
+                                              <tr>
+                                                <td width=25>
+                                                  3
+                                                </td>
+                                                <td width=200>
+                                                </td>
+                                                <td width=292 align=center>
+                                                </td>
+                                                <td width=140 align=center valign=top>
+                                                </td>
+                                              </tr>
+                                            </table>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                      <table width=755 height=25 bgcolor=444444>
+                                        <tr>
+                                          <td>
+                                            <table>
+                                              <tr>
+                                                <td width=25>
+                                                  4
+                                                </td>
+                                                <td width=200>
+                                                </td>
+                                                <td width=292 align=center>
+                                                </td>
+                                                <td width=140 align=center valign=top>
+                                                </td>
+                                              </tr>
+                                            </table>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                      <table width=755 height=25 bgcolor=303030>
+                                        <tr>
+                                          <td>
+                                            <table>
+                                              <tr>
+                                                <td width=25>
+                                                  5
+                                                </td>
+                                                <td width=200>
+                                                </td>
+                                                <td width=292 align=center>
+                                                </td>
+                                                <td width=140 align=center valign=top>
+                                                </td>
+                                              </tr>
+                                            </table>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                      <table width=755 height=25 bgcolor=444444>
+                                        <tr>
+                                          <td>
+                                            <table>
+                                              <tr>
+                                                <td width=25>
+                                                  <font color="ffa500">-</font>
+                                                </td>
+                                                <td width=200>
+                                                  <font color="ffa500">-</font>
+                                                </td>
+                                                <td width=292 align=center>
+                                                  <font color="ffa500">-</font>
+                                                </td>
+                                                <td width=140 align=center valign=top>
+                                                  <font color="ffa500">-</font>
+                                                </td>
+                                              </tr>
+                                            </table>
+                                          </td>
+                                        </tr>
+                                      </table>
+									
+
+								
+									<table border=0 cellspacing=0 cellpadding=0 height=100 width=755>
+										<tr>
+											<td valign="top" align="center">
+												<br><br><button value="Back" action="bypass -h _bbsevents:page:index" width=200 height=32 back="tbc_buttons.back_down" fore="tbc_buttons.back">
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</td></center>
+	</tr>
+</table>
+</body></html>

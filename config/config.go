@@ -27,6 +27,9 @@ type Debug struct {
 	EnabledSkills    bool `json:"enabled_load_skills"`
 	EnabledItems     bool `json:"enabled_items"`
 	EnabledSpawnlist bool `json:"enabled_spawnlist"`
+	// EnabledCacheHTML - если false, тогда не будет записываться в кэш, удобно для
+	// редактирования HTML диалогов и просмотра в игре при каждом обращении.
+	EnabledCacheHTML bool `json:"enabled_cache_html"`
 }
 
 var config Data
