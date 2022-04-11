@@ -4,6 +4,8 @@ import (
 	"l2gogameserver/gameserver/community"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/htm"
+	"l2gogameserver/gameserver/models/multisell"
+	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"log"
 	"strconv"
@@ -66,9 +68,15 @@ func BypassToServer(data []byte, client *models.Client) {
 
 		case "gmshop":
 			switch bypassInfo[2] {
-			case "multisell":
-				//Open multisell
-				log.Println("Открыть мультиселл с ID", bypassInfo[3])
+			case "multisell": //Open multisell
+				id, err := strconv.Atoi(bypassInfo[3])
+				if err != nil {
+					log.Println(err)
+					return
+				}
+				log.Println("Открыть мультиселл с ID", id)
+				item := multisell.Get(client, id)
+				serverpackets.MultisellShow(client, item)
 			}
 
 		}

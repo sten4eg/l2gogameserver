@@ -89,6 +89,15 @@ func LoadItems() {
 	loadItems()
 }
 
+func GetItemInfo(id int) (Item, bool) {
+	for _, item := range AllItems {
+		if item.Id == id {
+			return item, true
+		}
+	}
+	return Item{}, false
+}
+
 func loadItems() {
 	if config.Get().Debug.EnabledItems == false {
 		return

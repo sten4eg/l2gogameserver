@@ -8,6 +8,7 @@ import (
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
+	"l2gogameserver/gameserver/models/multisell"
 	"l2gogameserver/gameserver/models/teleport"
 	"log"
 )
@@ -35,5 +36,5 @@ func setup() {
 	models.NewWorld()
 	data.Load()
 	models.LoadNpc()
-
+	multisell.LoadMultisell()
 }
