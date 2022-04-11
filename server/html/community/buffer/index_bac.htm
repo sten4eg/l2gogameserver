@@ -1,0 +1,192 @@
+<html noscrollbar>
+<!--Заголовок окна-->
+<title>TheBattle.Club</title>
+<body><br>
+<table width=755>
+	<tr>
+		<center><td>
+			<!--Основной блок с задним фоном-->
+			<table border=0 cellpadding=0 cellspacing=0 width=776 height=535>
+				<tr>
+					<td valign="top" align="center"><br>
+						<table width=755 height=459>
+							<tr>
+								<td width=760>
+									<!--Блок заголовок-->
+									<table width=750>
+										<tr>
+											<td></td>
+											<td><center>Target<font color="32cd32">*</font></center></td>
+											<td width=450>
+												<center>Enter profile name <font color="FF0000">*</font></center>
+											</td>
+										</tr>
+										<tr>
+											<td valign="top" align="center" width=150>
+												<button value="Home" action="bypass -h _bbshome" width=150 height=20 back="L2UI_CT1.button_df_Down" fore="L2UI_CT1.button_df">
+											</td>
+											<td valign="top" align="center" width=60>
+												<combobox width=60 height=10 var="Who" list="Player;Pet">
+											</td>
+											<td valign="top" align="center" width=450>
+												<edit var="GrpNameAdd" type="text" width=450 length=25 height=12>
+											</td>
+											<td valign="top" align="left">
+												<button value="Create" action="bypass -h _bbsbuffersave $GrpNameAdd $Who" width=75 height=15 back="L2UI_CT1.button_df_Down" fore="L2UI_CT1.button_df">
+											</td>
+										</tr>
+									</table>
+									<table width=720 height=15 >
+										<tr>
+											<td width=575>
+											<br>
+											<table border=0 cellspacing=0 cellpadding=2 width=550>
+												<tr>
+													<td FIXWIDTH=500 align=left valign=top>
+														<font color="FFFF00">Buffer description:</font>&nbsp;›&nbsp; Price for single bufff:&nbsp;50000&nbsp;&#57;.&nbsp;›&nbsp;Duration:&nbsp;60&nbsp;min.&nbsp;›&nbsp;Free till lvl 82.<br1>														
+													</td>
+												</tr>
+											</table><br>
+											<table border=0 cellspacing=0 cellpadding=2 width=385>
+												<tr>
+													<td FIXWIDTH=500 align=left valign=top></td>
+												</tr>
+											</table>
+											<center>
+
+											<table width=500 height=55 background="L2UI_CT1.Windows_DF_Drawer_Bg">
+												<tr>
+													<td WIDTH=500 align=center valign=top>
+														<table border=0 cellspacing=4 cellpadding=3>
+															<tr>
+																<td FIXWIDTH=40 align=right valign=top>
+																	<img src="icon.skill6288" width=32 height=32>
+																</td>
+																<td FIXWIDTH=340 align=left valign=top>
+																	<font color="CCFF33">Default character buffs.</font><br1>
+																	<font color="AAAAAA">Skill list allows you to create own profiles.</font>
+																</td>
+																<td FIXWIDTH=90 align=center valign=top><button value="Open" action="bypass -h _bbsplayerbuffer:0" width=75 height=25 back="L2UI_CT1.button_df_down" fore="L2UI_CT1.button_df"></td>
+															</tr>
+														</table>
+													</td>
+												</tr>
+											</table>
+											<table width=500 height=55 background="L2UI_CT1.Windows_DF_Drawer_Bg">
+												<tr>
+													<td WIDTH=500 align=center valign=top>
+														<table border=0 cellspacing=4 cellpadding=3>
+															<tr>
+																<td FIXWIDTH=40 align=right valign=top>
+																	<img src="icon.skill8364" width=32 height=32>
+																</td>
+																<td FIXWIDTH=340 align=left valign=top>
+																	<font color="339966">Default pet buffs.</font><br1>
+																	<font color="AAAAAA">Skill list allows you to create own profiles.</font>
+																</td>
+																<td FIXWIDTH=90 align=center valign=top><button value="Open" action="bypass -h _bbspetbuffer:0" width=75 height=25 back="L2UI_CT1.button_df_down" fore="L2UI_CT1.button_df"></td>
+															</tr>
+														</table>
+													</td>
+												</tr>
+											</table>
+											<table width=500  height=55 background="L2UI_CT1.Windows_DF_Drawer_Bg">
+												<tr>
+													<td WIDTH=500 align=center valign=top>
+														<table border=0 cellspacing=4 cellpadding=3>
+															<tr>
+																<td FIXWIDTH=40 align=right valign=top>
+																	<img src="icon.skill6885" width=32 height=32>
+																</td>
+																<td FIXWIDTH=290 align=left valign=top>
+																	<font color="FF6600">Restore HP/MP/CP.</font> <font color="AAAAAA">*</font><br1>
+																	<font color="AAAAAA">Regeneration functions.</font><font color="32cd32">*</font>
+																</td>
+																<td FIXWIDTH=40 align=center valign=top>
+																	<button value="CP" action="bypass -h _bbsbufferheal CP $Who" width=35 height=20 back="L2UI_CT1.button_df_down" fore="L2UI_CT1.button_df">
+																</td>
+																<td FIXWIDTH=40 align=center valign=top>
+																	<button value="HP" action="bypass -h _bbsbufferheal HP $Who" width=35 height=20 back="L2UI_CT1.button_df_down" fore="L2UI_CT1.button_df">
+																</td>
+																<td FIXWIDTH=40 align=center valign=top>
+																	<button value="MP" action="bypass -h _bbsbufferheal MP $Who" width=35 height=20 back="L2UI_CT1.button_df_down" fore="L2UI_CT1.button_df">
+																</td>
+															</tr>
+															<tr>
+															 
+															</tr>
+														</table>
+													</td>
+												</tr>
+											</table>
+											<table width=500 height=55 background="L2UI_CT1.Windows_DF_Drawer_Bg">
+												<tr>
+													<td WIDTH=500 align=center valign=top>
+														<table border=0 cellspacing=4 cellpadding=3>
+															<tr>
+																<td FIXWIDTH=40 align=right valign=top>
+																	<img src="icon.skill1056" width=32 height=32>
+																</td>
+																<td FIXWIDTH=340 align=left valign=top>
+																	<font color="0099FF">Cancel all buffs.</font> <font color="AAAAAA">*</font><br1>
+																	<font color="AAAAAA">Negates all applied effects.</font><font color="32cd32">*</font>
+																</td>
+																<td FIXWIDTH=90 align=center valign=top><button value="Cancel" action="bypass -h _bbsbufferremovebuffs $Who" width=75 height=25 back="L2UI_CT1.button_df_Down" fore="L2UI_CT1.button_df"></td>
+															</tr>
+																<tr>
+																 
+																</tr>
+														</table>
+													</td>
+												</tr>
+
+											</table>
+											</center>
+											<br><br>
+												<table width=500 height=60>
+													<tr>
+														<td width=500>
+														</td>
+													</tr>
+													<tr>
+														<td width=500>
+															<font color="32cd32">*</font> » Action target! Player or Pet !<br1>
+															<font color="FF0000">*</font> » Profile name.<br1>
+															<font color="AAAAAA">*</font> » Free functions.<br1>
+														</td>
+													</tr>
+												</table>
+											</td>
+											<td width=200 background="L2UI_CH3.refinewnd_back_Pattern">
+												<br>
+												<table width=180>
+													<tr>
+														<td width=200><center><font color="CCFF33">«</font> Default profiles <font color="CCFF33">»</font></center></td>
+													</tr>
+													<tr>
+														<td width=200 align=center valign=top>
+															<center>%scheme%</center>
+														</td>
+													</tr>
+												</table>
+												<table width=180>
+													<tr>
+														<td width=200><center><font color="CCFF33">«</font> Your profiles <font color="CCFF33">»</font></center></td>
+													</tr>
+													<tr>
+														<td width=200><center>%buffgrps%</center></td>
+													</tr>
+												</table>
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</td></center>
+	</tr>
+</table>
+</body></html>

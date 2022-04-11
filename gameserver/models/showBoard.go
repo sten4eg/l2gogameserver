@@ -2,7 +2,7 @@ package models
 
 import "l2gogameserver/packets"
 
-func QWERT(htmlCode, id string) []byte {
+func ShowBoard(htmlCode, id string) []byte {
 	content := id + "\u0008" + htmlCode
 	buf := packets.Get()
 	defer packets.Put(buf)

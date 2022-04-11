@@ -1,0 +1,277 @@
+<html noscrollbar>
+<!--Заголовок окна-->
+<title>TheBattle.club</title>
+<body>
+<table width=780 height=558 background="L2UI_CT1.EditBox_DF_bg">
+<tr>
+<td align=center>
+<br>
+<table width=785 height=25>
+<tr>
+<td width=780 align=center valign=top>
+<font name="hs12">Сервисы</font><br1><font color="787878">Сервисы специально для тебя</font>
+</td>
+</tr>
+</table>
+<br>
+<table width=785>
+<tr>
+<td align=center width=785> 
+<table width=556>
+<tr>
+<td align=center><button value="Сервисы для игрока" action="bypass -h _bbscabinet:show" width=162 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF"></td>
+<td align=center><button value="< Клановые сервисы >" action="bypass -h _bbscabinet:clan" width=162 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF"></td>
+<td align=center><button value="Премиум сервисы" action="bypass -h _bbscabinet:visual" width=162 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF"></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+<br>
+<table width=785 cellspacing=0 cellpadding=0>
+<tr>
+<td width=785 align=center valign=top>
+<table width=555 height=176 bgcolor=262626>
+<tr>
+<td align=left>
+<table width=260 height=32 bgcolor=0c0c0c>
+<tr>
+<td align=left>
+<table border=0 cellspacing=0 cellpadding=0 width=32 height=32>
+<tr>
+<td width=32 align=center valign=top>
+<img src="icon.etc_dualchange" width=32 height=32>
+</td>
+</tr>
+</table>
+</td>
+<td width=175 align=left>
+<font color="c99a59">Смена кланового имени</font>
+<br1>
+<font color="787878">›&nbsp;1 000 Battle Coin</font>
+</td>
+<td>
+<button value="Открыть" action="bypass -h _bbsscripts; ;services.Rename:rename_clan_page;_bbscabinet:clan" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="70" height="32">
+</td>
+</tr>
+</table>
+<table width="265"><tr><td align=left valign=top><img src="l2ui.squaregray" width="265" height="1"></td></tr></table>
+<table width=260 height=32 bgcolor=0c0c0c>
+<tr>
+<td align=left>
+<table border=0 cellspacing=0 cellpadding=0 width=32 height=32>
+<tr>
+<td width=32 align=center valign=top>
+<img src="icon.Etc_bloodpledge_point_i00" width=32 height=32>
+</td>
+</tr>
+</table>
+</td>
+<td width=175 align=left>
+<font color="c99a59">Клановая репутация</font>
+<br1>
+<font color="787878">›&nbsp;100 Battle Coin</font>
+</td>
+<td>
+<button value="Открыть" action="bypass -h _bbsscripts; ;services.Clan.Clan:show_point;_bbscabinet:clan" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="70" height="32">
+</td>
+</tr>
+</table>
+</td>
+<td align=right>
+<table width=260 height=32 bgcolor=0c0c0c>
+<tr>
+<td align=left>
+<table border=0 cellspacing=0 cellpadding=0 width=32 height=32>
+<tr>
+<td width=32 align=center valign=top>
+<img src="icon.skill0333" width=32 height=32>
+</td>
+</tr>
+</table>
+</td>
+<td width=175 align=left>
+<font color="c99a59">Расширить клановый ВХ</font>
+<br1>
+<font color="787878">›&nbsp;1 Battle Coin</font>
+</td>
+<td>
+<button value="Открыть" action="bypass -h _bbsscripts; ;services.ExpandCWH:show;_bbscabinet:clan" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="70" height="32">
+</td>
+</tr>
+</table>
+<table width="265"><tr><td align=left valign=top><img src="l2ui.squaregray" width="265" height="1"></td></tr></table>
+<table width=260 height=32 bgcolor=0c0c0c>
+<tr>
+<td align=left>
+<table border=0 cellspacing=0 cellpadding=0 width=32 height=32>
+<tr>
+<td width=32 align=center valign=top>
+<img src="icon.skill11864" width=32 height=32>
+</td>
+</tr>
+</table>
+</td>
+<td width=175 align=left>
+<font color="c99a59">Купить КС <?clan_level?> LvL</font>
+<br1>
+<font color="787878">›&nbsp;<?clan_price?> Battle Coins</font>
+</td>
+<td>
+<button value="Открыть" action="bypass -h _bbs_clanskill" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="70" height="32">
+</td>
+</tr>
+</table>
+<table width="265"><tr><td align=left valign=top><img src="l2ui.squaregray" width="265" height="1"></td></tr></table>
+<table width=260 height=32 bgcolor=0c0c0c>
+<tr>
+<td align=left>
+<table border=0 cellspacing=0 cellpadding=0 width=32 height=32>
+<tr>
+<td width=32 align=center valign=top>
+<img src="icon.etc_exp_point_i00" width=32 height=32>
+</td>
+</tr>
+</table>
+</td>
+<td width=175 align=left>
+<font color="c99a59">Купить уровень клана</font>
+<br1>
+<font color="787878">›&nbsp;Максимальный 9 уровень</font>
+</td>
+<td>
+<button value="Открыть" action="bypass -h _bbsscripts; ;services.Clan.Clan:show_level;_bbscabinet:clan" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="70" height="32">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+<table width=265><tr><td align=left valign=top><img src="l2ui.squaregray" width="555" height="1"></td></tr></table>
+<table width=555 height=60 bgcolor=262626>
+<tr>
+<td align=center width=555>
+<br>
+<button value="Купить Battle Coins" action="" back="CBbattle.kap_Small_Down" fore="CBbattle.kap_Small" width="200" height="31">
+</td>
+</tr>
+</table>
+<br><br>
+<table width=785 height=25>
+<tr>
+<td width=780 align=center valign=top>
+<font name="hs12">Премиум аккаунт для быстрой прокачки</font><br1><font color="787878">Не забывайте, премиум дает преимущество в x1.5</font>
+</td>
+</tr>
+</table>
+<br>
+<table width=555 height=87 bgcolor=262626>
+<tr>
+<td align=left>
+<table width=260 height=32>
+<tr>
+<td align=left>
+<table border=0 cellspacing=0 cellpadding=0 width=32 height=32 background="br_cashtex.br_cash_rune_of_exp_i00">
+<tr>
+<td width=32 align=center valign=top>
+<img src="icon.panel_2" width=32 height=32>
+</td>
+</tr>
+</table>
+</td>
+<td width=175 align=left>
+<font color="LEVEL">Премиум аккаунт на 3 день</font>
+<br1>
+<font color="787878">›&nbsp;80 Battle Coin</font>
+</td>
+<td>
+<button value="Купить" action="bypass -h _bbsscripts; ;services.RateBonus:list" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="70" height="32">
+</td>
+</tr>
+</table>
+<table width="265"><tr><td align=left valign=top><img src="l2ui.squaregray" width="265" height="1"></td></tr></table>
+<table width=260 height=32>
+<tr>
+<td align=left>
+<table border=0 cellspacing=0 cellpadding=0 width=32 height=32 background="br_cashtex.br_cash_rune_of_exp_i00">
+<tr>
+<td width=32 align=center valign=top>
+<img src="icon.panel_2" width=32 height=32>
+</td>
+</tr>
+</table>
+</td>
+<td width=175 align=left>
+<font color="LEVEL">Премиум аккаунт на 14 дней</font>
+<br1>
+<font color="787878">›&nbsp;230 Battle Coin</font>
+</td>
+<td>
+<button value="Купить" action="bypass -h _bbsscripts; ;services.RateBonus:list" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="70" height="32">
+</td>
+</tr>
+</table>
+</td>
+<td align=right>
+<table width=260 height=32>
+<tr>
+<td align=left>
+<table border=0 cellspacing=0 cellpadding=0 width=32 height=32 background="br_cashtex.br_cash_rune_of_exp_i00">
+<tr>
+<td width=32 align=center valign=top>
+<img src="icon.panel_2" width=32 height=32>
+</td>
+</tr>
+</table>
+</td>
+<td width=175 align=left>
+<font color="LEVEL">Премиум аккаунт на 30 дней</font>
+<br1>
+<font color="787878">›&nbsp;330 Battle Coin</font>
+</td>
+<td>
+<button value="Купить" action="bypass -h _bbsscripts; ;services.RateBonus:list" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="70" height="32">
+</td>
+</tr>
+</table>
+<table width="265"><tr><td align=left valign=top><img src="l2ui.squaregray" width="265" height="1"></td></tr></table>
+<table width=260 height=32>
+<tr>
+<td align=left>
+<table border=0 cellspacing=0 cellpadding=0 width=32 height=32 background="br_cashtex.br_cash_rune_of_exp_i00">
+<tr>
+<td width=32 align=center valign=top>
+<img src="icon.panel_2" width=32 height=32>
+</td>
+</tr>
+</table>
+</td>
+<td width=175 align=left>
+<font color="LEVEL">Премиум аккаунт на 60 дней</font>
+<br1>
+<font color="787878">›&nbsp;500 Battle Coin</font>
+</td>
+<td>
+<button value="Купить" action="bypass -h _bbsscripts; ;services.RateBonus:list" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="70" height="32">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+<br><br>
+<table width=788>
+<tr>      
+<td width=780 valign=top align=center>
+<button value="Назад" action="bypass -h _bbscabinet:index" width=100 height=25 back="L2UI_ct1.button_df" fore="L2UI_ct1.button_df">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,90 +1,241 @@
-<html>
+<html noscrollbar>
+<!--Заголовок окна-->
+<title>TheBattle.club</title>
 <body>
-<center>
-  <br>
-  <br>
-  <br1>
-    <table border="0" cellspacing="0" cellpadding="0">
-      <tr>
-        <td width="50"></td>
-        <td align="center" width="695" height="30" align="left">
-          <img src="l2ui.bbs_lineage2" width="128" height="16" >
-        </td>
-      </tr>
-    </table>
-    <table border="0" cellspacing="0" cellpadding="2" bgcolor="A7A19A" width="755">
-      <tr>
-        <td WIDTH="100" align="right">&$412;</td>
-        <td WIDTH="540" align="center">&$413;</td>
-        <td WIDTH="115" align="center">&$414;</td>
-      </tr>
-    </table>
-    <br>
-    <table border="0" cellspacing="0" cellpadding="2">
-      <tr>
-        <td fixwidth="100" align="right" valign="top">
-          <img src="l2ui.bbs_folder" width="32" height="32">
-        </td>
-        <td fixwidth="560" align="left" valign="top">
-          <a action="bypass _bbsgetfav">Favorites</a><br1>
-          <font color="AAAAAA">Favorites community</font>
-        </td>
-        <td fixwidth="95" align="center" valign="top">
-          %fav_count%
-        </td>
-      </tr>
-    </table>
-    <table border="0" cellspacing="0" cellpadding="0">
-      <tr>
-        <td width="755">
-          <img src="l2ui.squaregray" width="750" height="1">
-        </td>
-      </tr>
-    </table>
-    <br>
-    <table border="0" cellspacing="0" cellpadding="2">
-      <tr>
-        <td fixwidth="100" align="right" valign="top">
-          <img src="l2ui.bbs_folder" width="32" height="32">
-        </td>
-        <td fixwidth="560" align="left" valign="top">
-          <a action="bypass _bbsloc">Regions</a><br1>
-          <font color="AAAAAA">Private store: Sell, Buy, Manufacture.</font>
-        </td>
-        <td fixwidth="95" align="center" valign="top">%region_count%</td>
-      </tr>
-    </table>
-    <table border="0" cellspacing="0" cellpadding="0">
-      <tr>
-        <td width="755">
-          <img src="l2ui.squaregray" width="750" height="1">
-        </td>
-      </tr>
-    </table>
-    <br>
-    <table border="0" cellspacing="0" cellpadding="2">
-      <tr>
-        <td fixwidth="100" align="right" valign="top">
-          <img src="l2ui.bbs_folder" width="32" height="32">
-        </td>
-        <td fixwidth="560" align="left" valign="top">
-          <a action="bypass _bbsclan">Clan community</a><br1>
-          <font color="AAAAAA">Clan informations.</font>
-        </td>
-        <td fixwidth="95" align="center" valign="top">
-          %clan_count%
-        </td>
-      </tr>
-    </table>
-    <table border="0" cellspacing="0" cellpadding="0">
-      <tr>
-        <td width="755">
-          <img src="l2ui.squaregray" width="750" height="1">
-        </td>
-      </tr>
-    </table>
-    <br>
-    <br>
-</center>
+<table width=780 height=558 background="L2UI_CT1.EditBox_DF_bg">
+  <tr>
+    <td>
+      <table width=780 height=54 align=center>
+        <tr>
+          <td align=center><img src="l2ui.SquareBlank" width="1" height="3">
+            <table bgcolor=262626>
+              <tr>
+                <td><button value="Баффер" action="bypass -h _bbspage:open:buffer" width=107 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF"></td>
+                <td><button value="Магазин" action="bypass -h _bbspage:open:gmshop" width=107 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF"></td>
+                <td><button value="Ивенты" action="bypass -h _bbspage:open:event" width=107 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF"></td>
+                <td><button value="Проф. Мастер" action="bypass -h _bbspage:open:services/classmanager.htm" width=107 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF"></td>
+                <td><button value="Сервисы" action="bypass -h _bbspage:open:cabinet" width=107 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF"></td>
+                <td><button value="Телепорт" action="bypass -h _bbspage:open:teleport/index.htm" width=107 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF"></td>
+                <td><button value="Мамон" action="bypass -h _bbspage:open:forge/index.htm" width=107 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF"></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <table width=780 height=348>
+        <tr>
+          <td width=270>
+            <table width=272>
+              <tr>
+                <td width=272 align=center valign=top>
+                  <img src="CBbattle.logo" width="200" height="128">
+                  <br>
+                  <br>
+                </td>
+              </tr>
+            </table>
+            <img src="l2ui.SquareBlank" width="1" height="3">
+            <table width=272>
+              <tr>
+                <td width=260 align=center valign=top>
+                  <font color="787878">‹ Информация о персонаже ›</font>
+                </td>
+              </tr>
+            </table>
+            <table width=272 height=160 bgcolor=262626>
+              <tr>
+                <td width=272 align=center valign=top>
+                  <table width=266 height=115>
+                    <tr>
+                      <td width=133 align=left valign=top>
+                        <font color="B59A75">Имя:<br1>
+                          Class:<br1>
+                          Nobless:<br1>
+                          Premium:<br1>
+                      </td>
+                      <td width=133 align=right valign=top>
+                        <font color="LEVEL"><?player_name?></font><br1>
+                        <?player_class?><br1>
+                        <?player_noobless?><br1>
+                        <?player_premium?><br1>
+
+                      </td>
+                    </tr>
+                  </table>
+                  <table width=266 height=36 bgcolor=262626>
+                    <tr>
+                      <td width=260 align=center valign=top>
+                        <button value="КУПИТЬ ПРЕМИУМ АККАУНТ" action="bypass -h _bbsscripts; ;services.RateBonus:list" back="CBbattle.kap_Small_Down" fore="CBbattle.kap_Small" width="200" height="31">
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+          <td width=505>
+            <table width=505 height=46 align=center>
+              <tr>
+                <td width=505 align=center valign=top>
+                  <font color="c99a59" name="hs12">Навигация по телпорту</font><br1>
+                  <font color="787878">Выбирите куда вы хотите переместиться</font>
+                </td>
+              </tr>
+            </table>
+            <table width=505 height=120 bgcolor=262626>
+              <tr>
+                <td width=168>
+                  <button value="Зоны по уровню" action="bypass -h _bbspage:open:teleport/bylevels/index.htm" width=162 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF">
+                    <button value="Торговая зона" action="bypass -h _bbsteleport:go_t 82968 148632 -3472" width=162 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF">
+                      <button value="Деревня охотников" action="bypass -h _bbsteleport:go_t 116776 76632 -2736" width=162 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF">
+                </td>
+                <td width=168>
+                  <button value="Закен" action="bypass -h _bbsteleport:go_t 52195 218787 -3231" width=162 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF">
+                    <button value="Фрея" action="bypass -h _bbsteleport:go_t 102605 -124399 -2784" width=162 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF">
+                      <button value="Фринтеза" action="bypass -h _bbsteleport:go_t 181384 -78680 -2728" width=162 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF">
+                </td>
+                <td width=168>
+                  <button value="Долина драконов" action="bypass -h _bbsteleport:go_t 73122 118351 -3704" width=162 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF">
+                    <button value="ЛоА" action="bypass -h _bbsteleport:go_t 131116 114333 -3712" width=162 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF">
+                      <button value="СоА" action="bypass -h _bbsteleport:go_t -175494 154422 2712" width=162 height=33 back="L2UI_CT1.Button_DF_Down" fore="L2UI_CT1.Button_DF">
+                </td>
+              </tr>
+            </table>
+            <img src="l2ui.SquareBlank" width="1" height="4">
+            <table width=503 height=32 bgcolor=323232>
+              <tr>
+                <td align=left>
+                  <table border=0 cellspacing=0 cellpadding=0 width=32 height=32 background="icon.lucky_bag_box_i00">
+                    <tr>
+                      <td width=32 align=center valign=top>
+                        <img src="icon.panel_2" width=32 height=32>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td width=254 align=left>
+                  <font color="LEVEL">Премиум магазин</font><br1>
+                  <font color="787878">Для этого магазина нужны Battle Coin</font>
+                </td>
+                <td>
+                  <button value="Открыть" action="bypass -h _bbsshop:open:350018;_bbshome" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="200" height="32">
+                </td>
+              </tr>
+            </table>
+            <img src="l2ui.SquareBlank" width="1" height="2">
+            <table width=503 height=32 bgcolor=262626>
+              <tr>
+                <td align=left>
+                  <table border=0 cellspacing=0 cellpadding=0 width=32 height=32>
+                    <tr>
+                      <td width=32 align=center valign=top>
+                        <img src="icon.lucky_bag_box_i00" width=32 height=32>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td width=254 align=left>
+                  <font color="c99a59">«Батл» Робот</font><br1>
+                  <font color="787878">Пссс, здесь твои бонусы!</font>
+                </td>
+                <td>
+                  <button value="Открыть" action="url !5290" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="200" height="32">
+                </td>
+              </tr>
+            </table>
+            <img src="l2ui.SquareBlank" width="1" height="2">
+            <table width=503 height=32 bgcolor=323232>
+              <tr>
+                <td align=left>
+                  <table border=0 cellspacing=0 cellpadding=0 width=32 height=32>
+                    <tr>
+                      <td width=32 align=center valign=top>
+                        <img src="icon.lucky_bag_box_i00" width=32 height=32>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td width=254 align=left>
+                  <font color="c99a59">Костюмы</font><br1>
+                  <font color="787878">Сияй на все 100%</font>
+                </td>
+                <td>
+                  <button value="Открыть" action="bypass -h _bbsshop:open:300501;_bbshome" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="200" height="32">
+                </td>
+              </tr>
+            </table>
+            <img src="l2ui.SquareBlank" width="1" height="2">
+            <table width=503 height=32 bgcolor=262626>
+              <tr>
+                <td align=left>
+                  <table border=0 cellspacing=0 cellpadding=0 width=32 height=32>
+                    <tr>
+                      <td width=32 align=center valign=top>
+                        <img src="icon.lucky_bag_box_i00" width=32 height=32>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td width=254 align=left>
+                  <font color="c99a59">Расходники</font><br1>
+                  <font color="787878">Купи все что тебе нужно</font>
+                </td>
+                <td>
+                  <button value="Открыть" action="bypass -h _bbsshop:open:200108;_bbshome" back="l2ui_ct1.button.button_df_small_down" fore="l2ui_ct1.button.button_df_small" width="200" height="32">
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <table width=780 height=42 align=center>
+        <tr>
+          <td width=780 align=center valign=top>
+            <font color="c99a59" name="hs12">Важные событие сервера TheBattle.club</font><br1>
+            <font color="787878">Будь вкурсе всего самый первые</font>
+          </td>
+        </tr>
+      </table>
+      <table width=780 height=75>
+        <tr>
+          <td width=385>
+            <table width=385 height=70 bgcolor=262626>
+              <tr>
+                <td align=right valign=top>
+                  <img src="CBbattle.news1" width=64 height=64>
+                </td>
+                <td align=left valign=top fixwidth=316>
+                  <font color="LEVEL" name="hs12">Server successfully opened!</font>
+                  <br1>›&nbsp;The server is successfully opened, we collected a record online at x100! All locations are filled, fight for every spot!
+                </td>
+              </tr>
+            </table>
+          </td>
+          <td width=385>
+            <table width=385 height=70 bgcolor=262626>
+              <tr>
+                <td align=right valign=top>
+                  <img src="CBbattle.news2" width=64 height=64>
+                </td>
+                <td align=left valign=top fixwidth=316>
+                  <font color="LEVEL" name="hs12">Subscribe on vk.com</font>
+                  <br1>›&nbsp;In the group, we publish promotions and contests that are just for subscribing to our group. Do not miss your chance!
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <img src="l2ui.SquareBlank" width="1" height="5">
+      <table width=780 height=42 align=center>
+        <tr>
+          <td width=780 align=center valign=top>
+            <font color="787878">Серверное время :</font>&nbsp;<font color="c99a59"><?cb_time?></font>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
 </body>
 </html>
