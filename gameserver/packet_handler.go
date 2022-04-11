@@ -99,6 +99,7 @@ func (g *GameServer) handler(client *models.Client) {
 			go g.NpcListener(client)
 		case 166:
 			pkg := clientpackets.RequestSkillCoolTime(client, data)
+
 			client.SSend(pkg)
 		case 15:
 			pkg := clientpackets.MoveBackwardToLocation(client, data)
@@ -112,50 +113,10 @@ func (g *GameServer) handler(client *models.Client) {
 			//g.Checkaem(client, pkg)
 			client.SSend(pkg)
 		case 31:
-			pkg, objectId, actionId, reAppeal := clientpackets.Action(data, client)
-			client.SSend(pkg)
-
-			npc, npcx, npcy, npcz, err := models.GetNpcObject(objectId)
-			if err != nil {
-				log.Println(err)
+			pkg := clientpackets.Action(data, client)
+			if pkg != nil {
+				g.Checkaem(client, *pkg)
 			}
-
-			//Прост тест вызова HTML при клике
-			if actionId == 1 {
-				NpcHtmlMessage := clientpackets.NpcHtmlMessage(client, npc.NpcId)
-				client.SSend(NpcHtmlMessage)
-			}
-			//Если повторный клик по нпц
-			if reAppeal {
-				//npc, npcx, npcy, npcz, err := models.GetNpcObject(objectId)
-				//if err != nil {
-				//	log.Println(err)
-				//}
-				x, y, z := client.CurrentChar.GetXYZ()
-				distance := models.CalculateDistance(npcx, npcy, npcz, x, y, z, false, false)
-				_, _ = distance, npc
-
-				//подбегаем
-				if distance <= 60 {
-					log.Println("Расстояние до NPC подходящее")
-					if models.GetDialogNPC(npc.Type) == 0 {
-						//НПЦ для разговора, открываем диалог
-						//Пускай макс. дистанция разговора будет 60 поинтов
-						//Пока откроем ID нпц
-						NpcHtmlMessage := clientpackets.NpcHtmlMessage(client, npc.NpcId)
-						client.SSend(NpcHtmlMessage)
-					} else {
-						//бьем нпц
-						client.SSend(clientpackets.Attack(data, client))
-					}
-				} else {
-					log.Println("Расстояние до NPC слишком больше, необходимо подбежать")
-					pkg2 := clientpackets.MoveToLocation(client, npcx, npcy, npcz)
-					g.Checkaem(client, pkg2)
-				}
-
-			}
-
 		case 72:
 			pkg := clientpackets.RequestTargetCancel(data, client)
 			client.SSend(pkg)

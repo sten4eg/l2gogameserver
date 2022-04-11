@@ -106,7 +106,7 @@ func UserInfo(client *models.Client) []byte {
 	buffer.WriteD(character.HairColor) //hairColor
 	buffer.WriteD(character.Face)      //face
 
-	buffer.WriteD(0) //IsGM?
+	buffer.WriteD(1) //IsGM?
 
 	buffer.WriteS(character.Title) //title
 

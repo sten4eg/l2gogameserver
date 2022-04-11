@@ -4,9 +4,10 @@ import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
+	"log"
 )
 
-func Action(data []byte, client *models.Client) ([]byte, int32, byte, bool) {
+func Action(data []byte, client *models.Client) *models.BackwardToLocation {
 	reAppeal := false // повторное обращение к объекту
 	var packet = packets.NewReader(data)
 	objectId := packet.ReadInt32() //Target
@@ -26,5 +27,47 @@ func Action(data []byte, client *models.Client) ([]byte, int32, byte, bool) {
 	pkg := serverpackets.TargetSelected(client.CurrentChar.ObjectId, objectId, originX, originY, originZ)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
-	return buffer.Bytes(), objectId, actionId, reAppeal
+	client.SSend(pkg)
+
+	npc, npcx, npcy, npcz, err := models.GetNpcObject(objectId)
+	if err != nil {
+		log.Println(err)
+	}
+
+	//Прост тест вызова HTML при клике
+	if actionId == 1 {
+		NpcHtmlMessage := NpcHtmlMessage(client, npc.NpcId)
+		client.SSend(NpcHtmlMessage)
+	}
+	//Если повторный клик по нпц
+	if reAppeal {
+		//npc, npcx, npcy, npcz, err := models.GetNpcObject(objectId)
+		//if err != nil {
+		//	log.Println(err)
+		//}
+		x, y, z := client.CurrentChar.GetXYZ()
+		distance := models.CalculateDistance(npcx, npcy, npcz, x, y, z, false, false)
+		_, _ = distance, npc
+
+		//подбегаем
+		if distance <= 60 {
+			log.Println("Расстояние до NPC подходящее")
+			if models.GetDialogNPC(npc.Type) == 0 {
+				//НПЦ для разговора, открываем диалог
+				//Пускай макс. дистанция разговора будет 60 поинтов
+				//Пока откроем ID нпц
+				NpcHtmlMessage := NpcHtmlMessage(client, npc.NpcId)
+				client.SSend(NpcHtmlMessage)
+			} else {
+				//бьем нпц
+				client.SSend(Attack(data, client))
+			}
+		} else {
+			log.Println("Расстояние до NPC слишком больше, необходимо подбежать")
+			return MoveToLocation(client, npcx, npcy, npcz)
+
+		}
+
+	}
+	return nil
 }

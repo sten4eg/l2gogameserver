@@ -21,7 +21,7 @@ func MoveBackwardToLocation(client *models.Client, data []byte) models.BackwardT
 
 }
 
-func MoveToLocation(client *models.Client, targetX, targetY, targetZ int32) models.BackwardToLocation {
+func MoveToLocation(client *models.Client, targetX, targetY, targetZ int32) *models.BackwardToLocation {
 	x, y, z := client.CurrentChar.GetXYZ()
 	location := models.BackwardToLocation{
 		TargetX: targetX,
@@ -31,5 +31,5 @@ func MoveToLocation(client *models.Client, targetX, targetY, targetZ int32) mode
 		OriginY: y,
 		OriginZ: z,
 	}
-	return location
+	return &location
 }
