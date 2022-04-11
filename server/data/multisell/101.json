@@ -1,0 +1,50 @@
+[
+ {
+  "id": 1,
+  "taxPercent": 0,
+  "ingredient": [
+   {
+    "id": 57,
+    "count": 100
+   },
+   {
+    "id": 5859,
+    "count": 1
+   }
+  ],
+  "production": [
+   {
+    "id": 5575,
+    "count": 510
+   },
+   {
+    "id": 6036,
+    "count": 14
+   }
+  ]
+ },
+ {
+  "id": 2,
+  "taxPercent": 0,
+  "ingredient": [
+   {
+    "id": 57,
+    "count": 100
+   },
+   {
+    "id": 5859,
+    "count": 1
+   }
+  ],
+  "production": [
+   {
+    "id": 5575,
+    "count": 510
+   },
+   {
+    "id": 6036,
+    "count": 14
+   }
+  ]
+ }
+]
