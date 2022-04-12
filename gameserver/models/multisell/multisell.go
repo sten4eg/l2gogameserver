@@ -2,114 +2,89 @@ package multisell
 
 import (
 	"encoding/json"
+	"l2gogameserver/data"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/serverpackets"
 	"log"
 	"os"
 	"strconv"
 )
 
+type MultiList struct {
+	ID     int    //id мультиселла (название (числом) файла)
+	Config Config `json:"config"`
+	Item   []Item `json:"items"`
+}
+type Config struct {
+	Trader        []int `json:"trader"`        // Массив ID трейдеров продают мультиселлы
+	Showall       bool  `json:"showall"`       //показывать айтемы, которые нельзя купить из-за отсутствия инградиентов
+	Notax         bool  `json:"notax"`         // налогообложение
+	Keepenchanted bool  `json:"keepenchanted"` //Сохраняется ли заточка при обмене
+	Bbsallowed    bool  `json:"bbsallowed"`    // Разрешить вызов мультиселла из комьюнити
+	Disabled      bool  `json:"disabled"`      //Отключить мутильселл
+}
+
 type Item struct {
-	ID                  int          `json:"id"`
-	ApplyTaxes          bool         `json:"applyTaxes,omitempty"`
-	MaintainEnchantment bool         `json:"maintainEnchantment,omitempty"`
-	IsTaxIngredient     bool         `json:"isTaxIngredient,omitempty"`
-	TaxPercent          int          `json:"taxPercent"`
-	Ingredient          []Ingredient `json:"ingredient"`
-	Production          []Production `json:"production"`
+	Ingredient []Ingredient `json:"ingredient"`
+	Production []Production `json:"production"`
 }
 
 type Ingredient struct {
-	Id      int `json:"id"`
-	Count   int `json:"count"`
-	Enchant int `json:"enchant,omitempty"`
-}
-type Production struct {
-	Id      int `json:"id"`
-	Count   int `json:"count"`
-	Enchant int `json:"enchant,omitempty"`
+	Id                int  `json:"id"`
+	Count             int  `json:"count"`
+	Enchant           int  `json:"enchant"`
+	MantainIngredient bool `json:"mantainIngredient"` //Сохранить инградиенты (к примеру рецепт у крафта нпц)
+	FireAttr          int  `json:"fireAttr"`
+	WaterAttr         int  `json:"waterAttr"`
+	EarthAttr         int  `json:"earthAttr"`
+	WindAttr          int  `json:"windAttr"`
+	HolyAttr          int  `json:"holyAttr"`
+	UnholyAttr        int  `json:"unholyAttr"`
 }
 
-//var Multisells []Item
+type Production struct {
+	Id         int `json:"id"`
+	Count      int `json:"count"`
+	Enchant    int `json:"enchant"`
+	FireAttr   int `json:"fireAttr"`
+	WaterAttr  int `json:"waterAttr"`
+	EarthAttr  int `json:"earthAttr"`
+	WindAttr   int `json:"windAttr"`
+	HolyAttr   int `json:"holyAttr"`
+	UnholyAttr int `json:"unholyAttr"`
+}
+
+var Multisells []MultiList
 
 func LoadMultisell() {
-	//log.Println("Загрузка мультиселла")
-	//file, err := os.Open("./server/data/multisell/101.json")
-	//if err != nil {
-	//	panic("Failed to load config file " + err.Error())
-	//}
-	//decoder := json.NewDecoder(file)
-	//err = decoder.Decode(&Multisells)
-	//if err != nil {
-	//	panic("Failed to decode config file " + file.Name() + " " + err.Error())
-	//}
-
-	/**
-	MuL := []Item{{
-		ID:                  1,
-		ApplyTaxes:          false,
-		MaintainEnchantment: false,
-		IsTaxIngredient:     false,
-		TaxPercent:          0,
-		Ingredient: []Ingredient{{
-			Id:    57,
-			Count: 100,
-		}, {
-			Id:    5859,
-			Count: 1,
-		}},
-		Production: []Production{{
-			Id:    5575,
-			Count: 510,
-		}, {
-			Id:    6036,
-			Count: 14,
-		}},
-	},
-		{
-			ID:                  2,
-			ApplyTaxes:          false,
-			MaintainEnchantment: false,
-			IsTaxIngredient:     false,
-			TaxPercent:          0,
-			Ingredient: []Ingredient{{
-				Id:    57,
-				Count: 100,
-			}, {
-				Id:    5859,
-				Count: 1,
-			}},
-			Production: []Production{{
-				Id:    5575,
-				Count: 510,
-			}, {
-				Id:    6036,
-				Count: 14,
-			}},
-		},
+	log.Println("Загрузка мультиселлов")
+	msells := data.Find("./server/data/multisell", ".json")
+	for _, msPath := range msells {
+		var msell MultiList
+		file, err := os.Open(msPath)
+		if err != nil {
+			panic("Failed to load config file " + err.Error())
+		}
+		decoder := json.NewDecoder(file)
+		err = decoder.Decode(&msell)
+		if err != nil {
+			panic("Failed to decode config file " + file.Name() + " " + err.Error())
+		}
+		msell.ID, err = strconv.Atoi(data.FileNameWithoutExtension(msPath))
+		if err != nil {
+			panic(err)
+		}
+		Multisells = append(Multisells, msell)
 	}
-
-	file, _ := json.MarshalIndent(MuL, "", " ")
-
-	_ = ioutil.WriteFile("test.json", file, 0644)
-	log.Println(MuL)
-	*/
 }
 
-func LoadMultisellFile(ms int) []Item {
-	file, err := os.Open("./server/data/multisell/" + strconv.Itoa(ms) + ".json")
-	if err != nil {
-		panic("Failed to load config file " + err.Error())
-	}
-	var Multisells []Item
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&Multisells)
-	if err != nil {
-		panic("Failed to decode config file " + file.Name() + " " + err.Error())
-	}
-	return Multisells
-}
-
-func Get(client *models.Client, id int) []Item {
+func Get(client *models.Client, id int) bool {
 	log.Println("Чтение GMShop", id)
-	return LoadMultisellFile(id)
+	for _, multisell := range Multisells {
+		if multisell.ID == id {
+			serverpackets.MultisellShow(client, multisell)
+			return true
+		}
+	}
+	return false
 }
