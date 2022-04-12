@@ -75,8 +75,11 @@ func BypassToServer(data []byte, client *models.Client) {
 					return
 				}
 				log.Println("Открыть мультиселл с ID", id)
-				item := multisell.Get(client, id)
-				serverpackets.MultisellShow(client, item)
+				multisell, ok := multisell.Get(client, id)
+				if !ok {
+					log.Println("Не найден запрашиваемый мультисел#")
+				}
+				serverpackets.MultisellShow(client, multisell)
 			}
 
 		}

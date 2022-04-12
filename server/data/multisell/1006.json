@@ -1,0 +1,750 @@
+{
+    "config": {
+        "trader": [],
+        "showall": true,
+        "notax": true,
+        "keepenchanted": true,
+        "bbsallowed": true,
+        "disabled": false
+    },
+    "items": [
+        {
+            "product": [
+                {
+                    "id": 933,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 6323,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 855525,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 871,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 6324,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 641644,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 902,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 6325,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 427763,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 924,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 6326,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 853669,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 862,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 6327,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 640251,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 893,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 6328,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 426834,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 11584,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 11581,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 855525,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 11586,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 11583,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 641644,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 11585,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 11582,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 427763,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 11587,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 11590,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 853669,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 11589,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 11592,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 640251,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 11588,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 11591,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 426834,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 12347,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 12344,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 855525,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 12349,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 12345,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 641644,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 12348,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 12346,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 427763,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 12353,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 12350,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 853669,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 12355,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 12352,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 640251,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        },
+        {
+            "product": [
+                {
+                    "id": 12354,
+                    "count": 1,
+                    "enchant": 0,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ],
+            "ingredient": [
+                {
+                    "id": 12351,
+                    "count": 1,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                },
+                {
+                    "id": 57,
+                    "count": 426834,
+                    "enchant": 0,
+                    "mantainIngredient": true,
+                    "fireAttr": 0,
+                    "waterAttr": 0,
+                    "earthAttr": 0,
+                    "windAttr": 0,
+                    "holyAttr": 0,
+                    "unholyAttr": 0
+                }
+            ]
+        }
+    ]
+}

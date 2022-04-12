@@ -29,6 +29,7 @@ func setup() {
 	config.LoadAllConfig()
 	db.ConfigureDB()
 	idfactory.Load()
+	multisell.LoadMultisell()
 	teleport.LoadLocationListTeleport()
 	models.LoadStats()
 	models.LoadSkills()
@@ -36,5 +37,4 @@ func setup() {
 	models.NewWorld()
 	data.Load()
 	models.LoadNpc()
-	multisell.LoadMultisell()
 }
