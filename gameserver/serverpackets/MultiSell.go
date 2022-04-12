@@ -6,6 +6,8 @@ import (
 	"l2gogameserver/packets"
 )
 
+const pageSize = 40
+
 //Отправка пакета на открытие мультиселла
 func MultisellShow(client *models.Client, msdata multisell.MultiList) {
 	buffer := packets.Get()
@@ -21,31 +23,32 @@ func MultiSell(client *models.Client, msdata multisell.MultiList) []byte {
 	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0xD0)
-	buffer.WriteD(int32(msdata.ID))        // list id
-	buffer.WriteD(int32(msdata.ID))        // page started from 1
-	buffer.WriteD(0)                       // finished
-	buffer.WriteD(int32(len(msdata.Item))) // size of pages
-	buffer.WriteD(40)                      // list length
-	for _, items := range msdata.Item {
-		buffer.WriteD(1)
-		buffer.WriteH(0)     //stack
-		buffer.WriteH(0)     // C6
-		buffer.WriteD(0)     // C6
-		buffer.WriteD(0)     // T1
-		buffer.WriteD(65534) // T1
-		buffer.WriteH(0)     // T1
-		buffer.WriteH(0)     // T1
-		buffer.WriteH(0)     // T1
-		buffer.WriteH(0)     // T1
-		buffer.WriteH(0)     // T1
-		buffer.WriteH(0)     // T1
-		buffer.WriteH(0)     // T1
+	buffer.WriteD(int32(305986001))        // msdata.ID list id
+	buffer.WriteD(1)                       // page started from 1
+	buffer.WriteD(1)                       // finished
+	buffer.WriteD(pageSize)                // size of pages
+	buffer.WriteD(int32(len(msdata.Item))) // list length
+	for i, items := range msdata.Item {
+		buffer.WriteD(int32((i + 1) * 100000))
+		buffer.WriteH(0)  //stack
+		buffer.WriteH(0)  // C6
+		buffer.WriteD(0)  // C6
+		buffer.WriteD(0)  // T1
+		buffer.WriteH(-2) // T1
+		buffer.WriteH(0)  // T1
+		buffer.WriteH(0)  // T1
+		buffer.WriteH(0)  // T1
+		buffer.WriteH(0)  // T1
+		buffer.WriteH(0)  // T1
+		buffer.WriteH(0)  // T1
+		buffer.WriteH(0)  // T1
 		buffer.WriteH(int16(len(items.Production)))
-		buffer.WriteH(int16(len(items.Production)))
+		buffer.WriteH(int16(len(items.Ingredient)))
+
 		for _, item := range items.Production {
 			buffer.WriteD(int32(item.Id))
 			buffer.WriteD(0)
-			buffer.WriteD(65535)
+			buffer.WriteH(-1)
 			buffer.WriteQ(int64(item.Count))
 			buffer.WriteH(int16(item.Enchant)) // enchant level
 			buffer.WriteD(0)                   // augment id
@@ -62,9 +65,8 @@ func MultiSell(client *models.Client, msdata multisell.MultiList) []byte {
 		}
 		for _, item := range items.Ingredient {
 			buffer.WriteD(int32(item.Id))
-			buffer.WriteD(65535)
+			buffer.WriteH(-1)
 			buffer.WriteQ(int64(item.Count))
-
 			buffer.WriteH(int16(item.Enchant)) // enchant level
 			buffer.WriteD(0)                   // augment id
 			buffer.WriteD(0)                   // mana
