@@ -5,6 +5,7 @@ import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/htm"
 	"l2gogameserver/gameserver/models/multisell"
+	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"log"
 	"strconv"
@@ -74,9 +75,11 @@ func BypassToServer(data []byte, client *models.Client) {
 					return
 				}
 				log.Println("Открыть мультиселл с ID", id)
-				if ok := multisell.Get(client, id); !ok {
+				multisell, ok := multisell.Get(client, id)
+				if !ok {
 					log.Println("Не найден запрашиваемый мультисел#")
 				}
+				serverpackets.MultisellShow(client, multisell)
 			}
 
 		}

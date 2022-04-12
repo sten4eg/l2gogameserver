@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"l2gogameserver/data"
 	"l2gogameserver/gameserver/models"
-	"l2gogameserver/gameserver/serverpackets"
-	"l2gogameserver/packets"
 	"log"
 	"os"
 	"strconv"
@@ -79,22 +77,12 @@ func LoadMultisell() {
 	}
 }
 
-func Get(client *models.Client, id int) bool {
+func Get(client *models.Client, id int) (MultiList, bool) {
 	log.Println("Чтение GMShop", id)
 	for _, multisell := range Multisells {
 		if multisell.ID == id {
-			multisellShow(client, multisell)
-			return true
+			return multisell, true
 		}
 	}
-	return false
-}
-
-//Отправка пакета на открытие мультиселла
-func multisellShow(client *models.Client, msdata MultiList) {
-	buffer := packets.Get()
-	defer packets.Put(buffer)
-	pkg := serverpackets.MultiSell(client, msdata)
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-	client.SSend(buffer.Bytes())
+	return MultiList{}, false
 }

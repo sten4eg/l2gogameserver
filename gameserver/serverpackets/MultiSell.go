@@ -6,6 +6,15 @@ import (
 	"l2gogameserver/packets"
 )
 
+//Отправка пакета на открытие мультиселла
+func MultisellShow(client *models.Client, msdata multisell.MultiList) {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
+	pkg := MultiSell(client, msdata)
+	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+	client.SSend(buffer.Bytes())
+}
+
 //Отправка пакета
 func MultiSell(client *models.Client, msdata multisell.MultiList) []byte {
 	buffer := packets.Get()
