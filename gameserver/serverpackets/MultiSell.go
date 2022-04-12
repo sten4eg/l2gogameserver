@@ -46,7 +46,7 @@ func MultiSell(client *models.Client, msdata multisell.MultiList) []byte {
 			buffer.WriteD(int32(item.Id))
 			buffer.WriteD(0)
 			buffer.WriteD(65535)
-
+			buffer.WriteQ(int64(item.Count))
 			buffer.WriteH(int16(item.Enchant)) // enchant level
 			buffer.WriteD(0)                   // augment id
 			buffer.WriteD(0)                   // mana
