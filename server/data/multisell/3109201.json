@@ -9,7 +9,7 @@
     },
     "items": [
         {
-            "product": [
+            "production": [
                 {
                     "id": 8618,
                     "count": 1,
@@ -38,7 +38,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9649,
                     "count": 1,
@@ -67,7 +67,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9635,
                     "count": 100,
@@ -96,7 +96,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9636,
                     "count": 100,
@@ -125,7 +125,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9637,
                     "count": 100,

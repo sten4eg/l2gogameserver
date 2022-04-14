@@ -9,7 +9,7 @@
     },
     "items": [
         {
-            "product": [
+            "production": [
                 {
                     "id": 9923,
                     "count": 1,
@@ -25,7 +25,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9966,
                     "count": 1,
@@ -41,7 +41,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 12815,
                     "count": 1,
@@ -57,7 +57,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 12816,
                     "count": 1,
@@ -73,7 +73,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 12817,
                     "count": 1,
@@ -89,7 +89,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 12818,
                     "count": 1,
@@ -105,7 +105,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 12819,
                     "count": 1,
@@ -121,7 +121,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 10149,
                     "count": 1,
@@ -137,7 +137,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 10152,
                     "count": 1,
@@ -153,7 +153,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 10153,
                     "count": 1,
@@ -169,7 +169,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 10154,
                     "count": 1,
@@ -185,7 +185,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 13756,
                     "count": 1,

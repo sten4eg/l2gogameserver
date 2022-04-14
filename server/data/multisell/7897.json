@@ -9,7 +9,7 @@
     },
     "items": [
         {
-            "product": [
+            "production": [
                 {
                     "id": 57,
                     "count": 700,
@@ -38,7 +38,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 1867,
                     "count": 20,
@@ -67,7 +67,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 1872,
                     "count": 20,
@@ -96,7 +96,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 1870,
                     "count": 10,
@@ -125,7 +125,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 1871,
                     "count": 10,
@@ -154,7 +154,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 1882,
                     "count": 10,
@@ -183,7 +183,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 1879,
                     "count": 6,
@@ -212,7 +212,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5220,
                     "count": 1,
@@ -241,7 +241,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 1881,
                     "count": 2,
@@ -270,7 +270,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 1874,
                     "count": 1,
@@ -299,7 +299,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 1875,
                     "count": 1,
@@ -328,7 +328,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 1894,
                     "count": 1,
@@ -368,7 +368,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 1888,
                     "count": 1,
@@ -408,7 +408,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 1887,
                     "count": 1,
