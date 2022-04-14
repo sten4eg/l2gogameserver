@@ -9,7 +9,7 @@
     },
     "items": [
         {
-            "product": [
+            "production": [
                 {
                     "id": 7870,
                     "count": 1,
@@ -25,7 +25,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7871,
                     "count": 1,
@@ -41,7 +41,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7872,
                     "count": 1,
@@ -57,7 +57,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7873,
                     "count": 1,
@@ -73,7 +73,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7874,
                     "count": 1,
@@ -89,7 +89,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7875,
                     "count": 1,
@@ -105,7 +105,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7876,
                     "count": 1,
@@ -121,7 +121,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7877,
                     "count": 1,
@@ -137,7 +137,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7878,
                     "count": 1,
@@ -153,7 +153,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7879,
                     "count": 1,
@@ -169,7 +169,7 @@
             "ingredient": []
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9830,
                     "count": 1,
@@ -198,7 +198,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9831,
                     "count": 1,
@@ -227,7 +227,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9832,
                     "count": 1,
@@ -256,7 +256,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9833,
                     "count": 1,
@@ -285,7 +285,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9834,
                     "count": 1,
@@ -314,7 +314,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9835,
                     "count": 1,
@@ -343,7 +343,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9836,
                     "count": 1,
@@ -372,7 +372,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9837,
                     "count": 1,
@@ -401,7 +401,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9838,
                     "count": 1,
@@ -430,7 +430,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9839,
                     "count": 1,

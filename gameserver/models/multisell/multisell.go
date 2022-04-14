@@ -75,6 +75,8 @@ func LoadMultisell() {
 		}
 		Multisells = append(Multisells, msell)
 	}
+	//log.Println(Multisells)
+	//fmt.Printf("%+v\n", Multisells)
 }
 
 func Get(client *models.Client, id int) (MultiList, bool) {

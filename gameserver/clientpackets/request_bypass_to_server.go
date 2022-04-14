@@ -58,6 +58,7 @@ func BypassToServer(data []byte, client *models.Client) {
 					return
 				}
 				community.UserTeleport(client, teleportID)
+
 			case "save":
 				log.Println("Сохранение позиции игрока")
 			case "to":

@@ -9,7 +9,7 @@
     },
     "items": [
         {
-            "product": [
+            "production": [
                 {
                     "id": 5435,
                     "count": 1,
@@ -74,7 +74,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5465,
                     "count": 1,
@@ -139,7 +139,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5467,
                     "count": 1,
@@ -204,7 +204,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5469,
                     "count": 1,
@@ -269,7 +269,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5471,
                     "count": 1,
@@ -334,7 +334,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5443,
                     "count": 1,
@@ -399,7 +399,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5445,
                     "count": 1,
@@ -464,7 +464,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5447,
                     "count": 1,
@@ -529,7 +529,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5449,
                     "count": 1,
@@ -594,7 +594,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5457,
                     "count": 1,
@@ -659,7 +659,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5459,
                     "count": 1,
@@ -724,7 +724,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5439,
                     "count": 1,
@@ -789,7 +789,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5441,
                     "count": 1,
@@ -854,7 +854,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5461,
                     "count": 1,
@@ -919,7 +919,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5463,
                     "count": 1,
@@ -984,7 +984,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5451,
                     "count": 1,
@@ -1049,7 +1049,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 5453,
                     "count": 1,
@@ -1114,7 +1114,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8317,
                     "count": 1,
@@ -1179,7 +1179,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8327,
                     "count": 1,
@@ -1244,7 +1244,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8301,
                     "count": 1,
@@ -1309,7 +1309,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8488,
                     "count": 1,
@@ -1374,7 +1374,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8315,
                     "count": 1,
@@ -1439,7 +1439,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8691,
                     "count": 1,
@@ -1504,7 +1504,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8693,
                     "count": 1,
@@ -1569,7 +1569,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8695,
                     "count": 1,
@@ -1634,7 +1634,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8697,
                     "count": 1,
@@ -1699,7 +1699,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8699,
                     "count": 1,
@@ -1764,7 +1764,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8701,
                     "count": 1,
@@ -1829,7 +1829,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8703,
                     "count": 1,
@@ -1894,7 +1894,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8705,
                     "count": 1,
@@ -1959,7 +1959,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8707,
                     "count": 1,
@@ -2024,7 +2024,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8709,
                     "count": 1,
@@ -2089,7 +2089,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 8711,
                     "count": 1,

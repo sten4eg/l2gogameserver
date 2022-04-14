@@ -9,7 +9,7 @@
     },
     "items": [
         {
-            "product": [
+            "production": [
                 {
                     "id": 9570,
                     "count": 1,
@@ -50,7 +50,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9572,
                     "count": 1,
@@ -91,7 +91,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 9571,
                     "count": 1,

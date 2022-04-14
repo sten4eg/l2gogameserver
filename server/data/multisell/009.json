@@ -9,7 +9,7 @@
     },
     "items": [
         {
-            "product": [
+            "production": [
                 {
                     "id": 7609,
                     "count": 1,
@@ -38,7 +38,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7609,
                     "count": 5,
@@ -67,7 +67,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7609,
                     "count": 25,
@@ -96,7 +96,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7609,
                     "count": 4,
@@ -125,7 +125,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7609,
                     "count": 6,
@@ -154,7 +154,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7609,
                     "count": 10,
@@ -183,7 +183,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7609,
                     "count": 20,
@@ -212,7 +212,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7609,
                     "count": 6,
@@ -241,7 +241,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7609,
                     "count": 9,
@@ -270,7 +270,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 6924,
                     "count": 1,
@@ -323,7 +323,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 6923,
                     "count": 1,
@@ -376,7 +376,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 6925,
                     "count": 1,
@@ -429,7 +429,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7690,
                     "count": 1,
@@ -482,7 +482,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7691,
                     "count": 1,
@@ -535,7 +535,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7699,
                     "count": 1,
@@ -588,7 +588,7 @@
             ]
         },
         {
-            "product": [
+            "production": [
                 {
                     "id": 7700,
                     "count": 1,
