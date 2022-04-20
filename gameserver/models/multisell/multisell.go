@@ -57,7 +57,7 @@ var Multisells []MultiList
 
 func LoadMultisell() {
 	log.Println("Загрузка мультиселлов")
-	msells := data.Find("./datapack/data/multisell", ".json")
+	msells := data.Find("./datapack/data/multisell", "json")
 	for _, msPath := range msells {
 		var msell MultiList
 		file, err := os.Open(msPath)

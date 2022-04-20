@@ -33,7 +33,18 @@ type CharCreate struct {
 	CurMp     int32
 }
 
-func CharacterCreate(data []byte, client interfaces.ReciverAndSender) []byte {
+var (
+	ReasonCreationFailed      int32 = 0x00
+	ReasonTooManyCharacters   int32 = 0x01
+	ReasonNameAlreadyExists   int32 = 0x02
+	Reason16EngChars          int32 = 0x03
+	ReasonIncorrectName       int32 = 0x04
+	ReasonCreateNotAllowed    int32 = 0x05
+	REASON_CHOOSE_ANOTHER_SVR int32 = 0x06
+	ReasonOk                  int32 = 99
+)
+
+func CharacterCreate(data []byte, client interfaces.ReciverAndSender) {
 	var packet = packets.NewReader(data)
 	var charCreate CharCreate
 
@@ -54,24 +65,9 @@ func CharacterCreate(data []byte, client interfaces.ReciverAndSender) []byte {
 	charCreate.HairColor = byte(packet.ReadInt32())
 	charCreate.Face = byte(packet.ReadInt32())
 
-	buffer := packets.Get()
-	defer packets.Put(buffer)
-
 	pkg := charCreate.validate(client)
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-	return buffer.Bytes()
+	client.EncryptAndSend(pkg)
 }
-
-var (
-	ReasonCreationFailed      int32 = 0x00
-	ReasonTooManyCharacters   int32 = 0x01
-	ReasonNameAlreadyExists   int32 = 0x02
-	Reason16EngChars          int32 = 0x03
-	ReasonIncorrectName       int32 = 0x04
-	ReasonCreateNotAllowed    int32 = 0x05
-	REASON_CHOOSE_ANOTHER_SVR int32 = 0x06
-	ReasonOk                  int32 = 99
-)
 
 func (cc *CharCreate) validate(clientI interfaces.ReciverAndSender) []byte {
 	client, ok := clientI.(*models.Client)

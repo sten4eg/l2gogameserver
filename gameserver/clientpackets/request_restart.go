@@ -7,10 +7,10 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestRestart(data []byte, clientI interfaces.ReciverAndSender) []byte {
+func RequestRestart(data []byte, clientI interfaces.ReciverAndSender) {
 	client, ok := clientI.(*models.Client)
 	if !ok {
-		return []byte{}
+		return
 	}
 
 	client.SaveUser()
@@ -25,7 +25,6 @@ func RequestRestart(data []byte, clientI interfaces.ReciverAndSender) []byte {
 	pkg2 := serverpackets.CharSelectionInfo(client)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
-	defer packets.Put(buffer)
-	return buffer.Bytes()
-
+	client.Send(buffer.Bytes())
+	packets.Put(buffer)
 }

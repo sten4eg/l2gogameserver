@@ -45,10 +45,9 @@ type CharacterI interface {
 }
 type ReciverAndSender interface {
 	Receive() (opcode byte, data []byte, e error)
-	SSend(d []byte)
+	AddLengthAndSand(d []byte)
 	Send(data []byte)
 	EncryptAndSend(data []byte)
 	CryptAndReturnPackageReadyToShip(data []byte) []byte
-	ReturnPackageReadyToShip(data []byte) []byte
 	GetCurrentChar() CharacterI
 }

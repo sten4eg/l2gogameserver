@@ -8,25 +8,18 @@ import (
 	"log"
 )
 
-func ProtocolVersion(data []byte, clientI interfaces.ReciverAndSender) []byte {
+func ProtocolVersion(clientI interfaces.ReciverAndSender, data []byte) {
 	client, ok := clientI.(*models.Client)
 	if !ok {
-		return []byte{}
+		return
 	}
 
 	var packet = packets.NewReader(data)
 	protocolVersion := packet.ReadUInt16()
 	if protocolVersion != 273 && protocolVersion != 268 {
 		log.Println(client.Socket.RemoteAddr(), " хотел подключиться с версией протококла:", protocolVersion)
-		return []byte{}
+		return
 	}
 
-	buffer := packets.Get()
-
-	pkg1 := serverpackets.KeyPacket(client)
-	buffer.WriteSlice(client.ReturnPackageReadyToShip(pkg1))
-
-	defer packets.Put(buffer)
-	return buffer.Bytes()
-
+	client.AddLengthAndSand(serverpackets.KeyPacket(client))
 }

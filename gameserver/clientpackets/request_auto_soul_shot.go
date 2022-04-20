@@ -6,10 +6,10 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestAutoSoulShot(data []byte, clientI interfaces.ReciverAndSender) []byte {
+func RequestAutoSoulShot(data []byte, clientI interfaces.ReciverAndSender) {
 	client, ok := clientI.(*models.Client)
 	if !ok {
-		return []byte{}
+		return
 	}
 
 	var packet = packets.NewReader(data[2:])
@@ -17,7 +17,7 @@ func RequestAutoSoulShot(data []byte, clientI interfaces.ReciverAndSender) []byt
 	typee := packet.ReadInt32()
 
 	client.CurrentChar.ActiveSoulShots = append(client.CurrentChar.ActiveSoulShots, itemId)
-
+	//todo реализцая должна быть в serverPackets
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
@@ -28,7 +28,6 @@ func RequestAutoSoulShot(data []byte, clientI interfaces.ReciverAndSender) []byt
 	buffer.WriteD(typee)
 
 	pkg := buffer.Bytes()
-
-	return client.CryptAndReturnPackageReadyToShip(pkg)
+	client.EncryptAndSend(pkg)
 
 }

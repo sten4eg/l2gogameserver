@@ -7,10 +7,10 @@ import (
 	"l2gogameserver/packets"
 )
 
-func AuthLogin(data []byte, clientI interfaces.ReciverAndSender) []byte {
+func AuthLogin(data []byte, clientI interfaces.ReciverAndSender) {
 	client, ok := clientI.(*models.Client)
 	if !ok {
-		return []byte{}
+		return
 	}
 
 	var packet = packets.NewReader(data)
@@ -23,12 +23,8 @@ func AuthLogin(data []byte, clientI interfaces.ReciverAndSender) []byte {
 	loginKey2 := packet.ReadInt32()
 	_, _, _, _ = playKey1, playKey2, loginKey1, loginKey2
 
-	buffer := packets.Get()
 	pkg := serverpackets.CharSelectionInfo(client)
 	client.Account.Login = login
 
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-
-	defer packets.Put(buffer)
-	return buffer.Bytes()
+	client.EncryptAndSend(pkg)
 }

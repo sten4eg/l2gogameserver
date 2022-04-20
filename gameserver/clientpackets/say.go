@@ -45,7 +45,7 @@ func Say(client interfaces.ReciverAndSender, data []byte) models.Say {
 //	case chat.All:
 //		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
 //		pb.SetData(cs)
-//		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
+//		me.Send(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
 //		q := models.GetAroundPlayersObjIdInRadius(me.CurrentChar, chat.AllChatRange)
 //		broadcast.BBBroadCastToAroundPlayersInRadius(q, pb)
 //	}

@@ -23,44 +23,34 @@ func Handler(client interfaces.ReciverAndSender) {
 		}
 		log.Println("Client->Server: #", opcode, packets.GetNamePacket(opcode))
 		switch opcode {
-		case 0: //logout
-			pkg := clientpackets.Logout(data, client)
-			client.SSend(pkg)
-		case 13: // CharacterDelete
-
+		case 0:
+			clientpackets.Logout(client, data)
+		case 13:
+			// CharacterDelete
 		case 35:
 			clientpackets.BypassToServer(data, client)
 		case 96:
-			pkg := clientpackets.DestroyItem(data, client)
-			client.SSend(pkg)
+			clientpackets.DestroyItem(data, client)
 		case 14:
-			pkg := clientpackets.ProtocolVersion(data, client)
-			client.SSend(pkg)
+			clientpackets.ProtocolVersion(client, data)
 		case 43:
-			pkg := clientpackets.AuthLogin(data, client)
-			client.SSend(pkg)
+			clientpackets.AuthLogin(data, client)
 		case 19:
-			pkg := clientpackets.RequestNewCharacter(client, data)
-			client.SSend(pkg)
+			clientpackets.RequestNewCharacter(client, data)
 		case 12:
-			pkg := clientpackets.CharacterCreate(data, client)
-			client.SSend(pkg)
+			clientpackets.CharacterCreate(data, client)
 		case 18:
-			pkg := clientpackets.CharSelected(data, client)
-			client.SSend(pkg)
+			clientpackets.CharSelected(data, client)
 			gameserver.AddOnlineChar(client.GetCurrentChar())
 		case 208:
 			if len(data) >= 2 {
 				switch data[0] {
 				case 1:
-					pkg := clientpackets.RequestManorList(client, data)
-					client.SSend(pkg)
+					clientpackets.RequestManorList(client, data)
 				case 54:
-					pkg := clientpackets.RequestGoToLobby(client, data)
-					client.SSend(pkg)
+					clientpackets.RequestGoToLobby(client, data)
 				case 13:
-					pkg := clientpackets.RequestAutoSoulShot(data, client)
-					client.SSend(pkg)
+					clientpackets.RequestAutoSoulShot(data, client)
 				case 36:
 					clientpackets.RequestSaveInventoryOrder(client, data)
 				default:
@@ -73,35 +63,30 @@ func Handler(client interfaces.ReciverAndSender) {
 				log.Println(data[0])
 				switch data[0] {
 				case 0: //посадить персонажа на жопу
-					pkg0 := clientpackets.ChangeWaitType(client)
-					client.SSend(pkg0)
+					clientpackets.ChangeWaitType(client)
+
 				}
 
 			}
 
 		case 23:
 			//pkg, item := clientpackets.DropItem(client, data)
-			//client.SSend(pkg)
+			//client.Send(pkg)
 			//
 			//pkgInventoryUpdate := clientpackets.InventoryUpdate(client, &item, models.UpdateTypeRemove)
-			//client.SSend(pkgInventoryUpdate)
+			//client.Send(pkgInventoryUpdate)
 
 		case 193:
-			pkg := clientpackets.RequestObserverEnd(client, data)
-			client.SSend(pkg)
+			clientpackets.RequestObserverEnd(client, data)
 		case 108:
-			pkg := clientpackets.RequestShowMiniMap(client, data)
-			client.SSend(pkg)
+			clientpackets.RequestShowMiniMap(client, data)
 		case 17:
-			pkg := clientpackets.RequestEnterWorld(client, data)
-			client.SSend(pkg)
+			clientpackets.RequestEnterWorld(client, data)
 			broadcast.BroadCastUserInfoInRadius(client, 2000)
 			broadcast.SendCharInfoAboutCharactersInRadius(client, 2000)
 			go listeners.StartClientListener(client)
 		case 166:
-			pkg := clientpackets.RequestSkillCoolTime(client, data)
-
-			client.SSend(pkg)
+			clientpackets.RequestSkillCoolTime(client, data)
 		case 15:
 			pkg := clientpackets.MoveBackwardToLocation(client, data)
 			broadcast.Checkaem(client, pkg)
@@ -110,46 +95,36 @@ func Handler(client interfaces.ReciverAndSender) {
 			say := clientpackets.Say(client, data)
 			broadcast.BroadCastChat(client, say)
 		case 89:
-			pkg := clientpackets.ValidationPosition(data, client.GetCurrentChar())
+			clientpackets.ValidationPosition(data, client.GetCurrentChar())
 			//broadcast.Checkaem(client, pkg)
-			client.SSend(pkg)
+
 		case 31:
 			pkg := clientpackets.Action(data, client)
 			if pkg != nil {
 				broadcast.Checkaem(client, *pkg)
 			}
 		case 72:
-			pkg := clientpackets.RequestTargetCancel(data, client)
-			client.SSend(pkg)
+			clientpackets.RequestTargetCancel(data, client)
 		case 114:
 			clientpackets.MoveToPawn(client, data)
 		case 1:
-			pkg := clientpackets.Attack(data, client)
-			client.SSend(pkg)
+			clientpackets.Attack(data, client)
 		case 25:
-			pkg := clientpackets.UseItem(client, data)
-			client.SSend(pkg)
+			clientpackets.UseItem(client, data)
 		case 87:
-			pkg := clientpackets.RequestRestart(data, client)
-			client.SSend(pkg)
+			clientpackets.RequestRestart(data, client)
 		case 57:
-			pkg := clientpackets.RequestMagicSkillUse(data, client)
-			client.SSend(pkg)
+			clientpackets.RequestMagicSkillUse(data, client)
 		case 61:
-			pkg := clientpackets.RequestShortCutReg(data, client)
-			client.SSend(pkg)
+			clientpackets.RequestShortCutReg(data, client)
 		case 63:
-			pkg := clientpackets.RequestShortCutDel(data, client)
-			client.SSend(pkg)
+			clientpackets.RequestShortCutDel(data, client)
 		case 80:
-			pkg := clientpackets.RequestSkillList(client, data)
-			client.SSend(pkg)
+			clientpackets.RequestSkillList(client, data)
 		case 20:
-			pkg := clientpackets.RequestItemList(client, data)
-			client.SSend(pkg)
+			clientpackets.RequestItemList(client, data)
 		case 205:
-			pkg := clientpackets.RequestMakeMacro(client, data)
-			client.SSend(pkg)
+			clientpackets.RequestMakeMacro(client, data)
 		default:
 			log.Println("Not Found case with opcode: ", opcode)
 		}

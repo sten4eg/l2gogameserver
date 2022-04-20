@@ -8,10 +8,10 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestMagicSkillUse(data []byte, clientI interfaces.ReciverAndSender) []byte {
+func RequestMagicSkillUse(data []byte, clientI interfaces.ReciverAndSender) {
 	client, ok := clientI.(*models.Client)
 	if !ok {
-		return []byte{}
+		return
 	}
 
 	var packet = packets.NewReader(data)
@@ -26,7 +26,8 @@ func RequestMagicSkillUse(data []byte, clientI interfaces.ReciverAndSender) []by
 	if client.CurrentChar.IsDead {
 		pkg := serverpackets.ActionFailed(client)
 		buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-		return buffer.Bytes()
+		client.Send(buffer.Bytes())
+		return
 	}
 
 	if client.CurrentChar.IsFakeDeath {
@@ -34,7 +35,8 @@ func RequestMagicSkillUse(data []byte, clientI interfaces.ReciverAndSender) []by
 		buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 		pkg2 := serverpackets.ActionFailed(client)
 		buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
-		return buffer.Bytes()
+		client.Send(buffer.Bytes())
+		return
 	}
 
 	skill, exist := client.CurrentChar.Skills[int(magicId)]
@@ -42,14 +44,16 @@ func RequestMagicSkillUse(data []byte, clientI interfaces.ReciverAndSender) []by
 		// todo тут еще идут проверки, возможно это кастомный? скилл или скилл трансформы и если нет то фейл
 		pkg := serverpackets.ActionFailed(client)
 		buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-		return buffer.Bytes()
+		client.Send(buffer.Bytes())
+		return
 	}
 	_, _, _ = magicId, ctrlPressed, shiftPressed
 
 	if skill.OperateType.IsPassive() {
 		pkg := serverpackets.ActionFailed(client)
 		buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-		return buffer.Bytes()
+		client.Send(buffer.Bytes())
+		return
 	}
 
 	if client.CurrentChar.IsCastingNow {
@@ -57,13 +61,15 @@ func RequestMagicSkillUse(data []byte, clientI interfaces.ReciverAndSender) []by
 		if currSkill != nil && skill.ID == currSkill.Skill.ID {
 			pkg := serverpackets.ActionFailed(client)
 			buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-			return buffer.Bytes()
+			client.Send(buffer.Bytes())
+			return
 		} //todo тут еще есть elseif isSkillDisabled()
 
 		client.CurrentChar.SetSkillToQueue(skill, ctrlPressed, shiftPressed)
 		pkg := serverpackets.ActionFailed(client)
 		buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-		return buffer.Bytes()
+		client.Send(buffer.Bytes())
+		return
 	}
 
 	pkg2 := serverpackets.NewMagicSkillUse(client, skill, ctrlPressed, shiftPressed)
@@ -71,6 +77,5 @@ func RequestMagicSkillUse(data []byte, clientI interfaces.ReciverAndSender) []by
 
 	pkg := serverpackets.SetupGauge(client)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-
-	return buffer.Bytes()
+	client.Send(buffer.Bytes())
 }

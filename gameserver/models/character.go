@@ -334,9 +334,7 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 				charInfoPkgTo = append(charInfoPkgTo, v.GetObjectId())
 			}
 
-			for _, v := range region.GetNpcInRegion() {
-				npcPkgTo = append(npcPkgTo, v)
-			}
+			npcPkgTo = append(npcPkgTo, region.GetNpcInRegion()...)
 
 		}
 	}

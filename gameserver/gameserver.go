@@ -108,7 +108,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //	for q := range ch.CurrentChar.ChannelUpdateShadowItem {
 //		pkg := serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
 //		i := client.CryptAndReturnPackageReadyToShip(pkg)
-//		client.SSend(i)
+//		client.Send(i)
 //		if q.UpdateType == models.UpdateTypeRemove {
 //			g.BroadCastUserInfoInRadius(client, 2000)
 //		}
@@ -126,7 +126,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //			pkg := serverpackets.NpcInfo(q[i])
 //			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 //		}
-//		client.SSend(buff.Bytes())
+//		client.Send(buff.Bytes())
 //		packets.Put(buff)
 //	}
 //}
@@ -188,6 +188,6 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //	charsIds := models.GetAroundPlayer(me.CurrentChar)
 //	for _, v := range charsIds {
 //		v.EncryptAndSend(pkg.GetData())
-//		//me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(v)))
+//		//me.Send(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(v)))
 //	}
 //}

@@ -8,15 +8,13 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestShortCutReg(data []byte, clientI interfaces.ReciverAndSender) []byte {
+func RequestShortCutReg(data []byte, clientI interfaces.ReciverAndSender) {
 	client, ok := clientI.(*models.Client)
 	if !ok {
-		return []byte{}
+		return
 	}
 
 	var packet = packets.NewReader(data)
-	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	typeId := packet.ReadInt32()
 
@@ -34,14 +32,12 @@ func RequestShortCutReg(data []byte, clientI interfaces.ReciverAndSender) []byte
 	characterType := packet.ReadInt32()
 
 	if page > 10 || page < 0 {
-		return []byte{}
+		return
 	}
 	sc := dto.GetShortCutDTO(slot, page, id, lvl, characterType, shortType)
 
 	models.RegisterShortCut(sc, client)
 
 	pkg := serverpackets.ShortCutRegister(sc, client)
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-
-	return buffer.Bytes()
+	client.EncryptAndSend(pkg)
 }

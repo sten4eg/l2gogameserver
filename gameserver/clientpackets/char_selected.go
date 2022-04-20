@@ -7,10 +7,10 @@ import (
 	"l2gogameserver/packets"
 )
 
-func CharSelected(data []byte, clientI interfaces.ReciverAndSender) []byte {
+func CharSelected(data []byte, clientI interfaces.ReciverAndSender) {
 	client, ok := clientI.(*models.Client)
 	if !ok {
-		return []byte{}
+		return
 	}
 	var read = packets.NewReader(data)
 	charSlot := read.ReadInt32()
@@ -21,14 +21,9 @@ func CharSelected(data []byte, clientI interfaces.ReciverAndSender) []byte {
 
 	client.Account.CharSlot = charSlot
 
-	buffer := packets.Get()
-	defer packets.Put(buffer)
-
 	pkg := serverpackets.SsqInfo(client)
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+	client.EncryptAndSend(pkg)
 
 	pkg2 := serverpackets.CharSelected(client.Account.Char[client.Account.CharSlot], client)
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
-
-	return buffer.Bytes()
+	client.EncryptAndSend(pkg2)
 }

@@ -31,11 +31,11 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 	pkg := serverpackets.TargetSelected(client.CurrentChar.ObjectId, objectId, originX, originY, originZ)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
-	client.SSend(buffer.Bytes())
+	client.Send(buffer.Bytes())
+	_, _ = actionId, reAppeal
 
 	return MoveToLocation(client, originX, originY, originZ)
 
-	_, _ = actionId, reAppeal
 	/*
 		npc, npcx, npcy, npcz, err := models.GetNpcObject(objectId)
 		if err != nil {
@@ -45,7 +45,7 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 		//Прост тест вызова HTML при клике
 		if actionId == 1 {
 			NpcHtmlMessage := NpcHtmlMessage(client, npc.NpcId)
-			client.SSend(NpcHtmlMessage)
+			client.Send(NpcHtmlMessage)
 		}
 		//Если повторный клик по нпц
 		if reAppeal {
@@ -65,10 +65,10 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 					//Пускай макс. дистанция разговора будет 60 поинтов
 					//Пока откроем ID нпц
 					NpcHtmlMessage := NpcHtmlMessage(client, npc.NpcId)
-					client.SSend(NpcHtmlMessage)
+					client.Send(NpcHtmlMessage)
 				} else {
 					//бьем нпц
-					client.SSend(Attack(data, client))
+					client.Send(Attack(data, client))
 				}
 			} else {
 				log.Println("Расстояние до NPC слишком больше, необходимо подбежать")

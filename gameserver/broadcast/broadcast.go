@@ -89,7 +89,7 @@ func BroadCastChat(me interfaces.ReciverAndSender, say models.Say) {
 		//
 		//	cs := serverpackets.CreatureSay(&say, me.CurrentChar)
 		//	pb.SetData(cs)
-		//	me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
+		//	me.Send(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
 		//	ToAroundPlayerInRadius(me, pb, chat.AllChatRange)
 	}
 }
@@ -123,7 +123,7 @@ func SendCharInfoAboutCharactersInRadius(me interfaces.ReciverAndSender, radius 
 func SendCharInfoAboutCharactersAround(me *models.Client) {
 	charsIds := models.GetAroundPlayer(me.CurrentChar)
 	for i := range charsIds {
-		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(charsIds[i])))
+		me.Send(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(charsIds[i])))
 	}
 }
 
@@ -199,6 +199,6 @@ func Checkaem(client interfaces.ReciverAndSender, l models.BackwardToLocation) {
 //	for _, v := range charIds {
 //		var info utils.packetByte
 //		info.B = serverpackets.CharInfo(g.OnlineCharacters.Char[v])
-//		me.Send(info.GetData(), true)
+//		me.AddLenghtAndSand(info.GetData(), true)
 //	}
 //}

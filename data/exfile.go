@@ -6,22 +6,30 @@ import (
 	"strings"
 )
 
-//Возвращает массив файлов с ext расширением
-func Find(root, ext string) []string {
-	var a []string
-	filepath.WalkDir(root, func(s string, d fs.DirEntry, e error) error {
-		if e != nil {
-			return e
+//Find Возвращает массив файлов с ext расширением
+func Find(root, extension string) []string {
+	var res []string
+	if extension[0] != '.' {
+		extension = "." + extension
+	}
+
+	err := filepath.WalkDir(root, func(s string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
 		}
-		if filepath.Ext(d.Name()) == ext {
-			a = append(a, s)
+		if filepath.Ext(d.Name()) == extension {
+			res = append(res, s)
 		}
 		return nil
 	})
-	return a
+
+	if err != nil {
+		panic("data Find panic")
+	}
+	return res
 }
 
-//Возвращает имя файла без расширения и пути
+//FileNameWithoutExtension Возвращает имя файла без расширения и пути
 func FileNameWithoutExtension(fileName string) string {
 	return strings.TrimSuffix(filepath.Base(fileName), filepath.Ext(fileName))
 }

@@ -10,13 +10,12 @@ import (
 	"log"
 )
 
-func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) []byte {
+func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 	client, ok := clientI.(*models.Client)
 	if !ok {
-		return []byte{}
+		return
 	}
 	buff := packets.Get()
-	defer packets.Put(buff)
 
 	pkg := serverpackets.UserInfo(client.GetCurrentChar())
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
@@ -108,6 +107,8 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) []byte 
 	pkg16 := serverpackets.ActionList(client) //todo test
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg16))
 
+	client.Send(buff.Bytes())
+	packets.Put(buff)
 	//NPCdistance := client.CurrentChar.SpawnDistancePoint(5000)
 	//log.Printf("Загружено возле игрока %d npc", len(NPCdistance))
 	//for id, locdata := range NPCdistance {
@@ -121,5 +122,5 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) []byte 
 	//	pkg17 := serverpackets.NpcInfo(client, id, npc, locdata)
 	//	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg17))
 	//}
-	return buff.Bytes()
+
 }

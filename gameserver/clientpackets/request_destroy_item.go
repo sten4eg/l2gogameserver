@@ -8,11 +8,10 @@ import (
 	"log"
 )
 
-//Удаление предмета
-func DestroyItem(data []byte, clientI interfaces.ReciverAndSender) []byte {
+func DestroyItem(data []byte, clientI interfaces.ReciverAndSender) {
 	client, ok := clientI.(*models.Client)
 	if !ok {
-		return []byte{}
+		return
 	}
 	var packet = packets.NewReader(data)
 
@@ -21,23 +20,19 @@ func DestroyItem(data []byte, clientI interfaces.ReciverAndSender) []byte {
 
 	if count == 0 {
 		log.Println("Нельзя удалить ноль предметов")
-		return []byte{}
+		return
 	}
 
 	item := client.CurrentChar.ExistItemInInventory(objectId)
 	if item == nil {
 		log.Println("Не найден предмет")
-		return []byte{}
+		return
 	}
 
 	//Удаляем из инвентаря предмет
 	models.RemoveItemCharacter(client.CurrentChar, item, int64(count))
 	log.Println("Предмет был удален!")
 
-	buff := packets.Get()
-	defer packets.Put(buff)
 	pkg := serverpackets.InventoryUpdate(client, item, models.UpdateTypeRemove)
-	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-
-	return buff.Bytes()
+	client.EncryptAndSend(pkg)
 }

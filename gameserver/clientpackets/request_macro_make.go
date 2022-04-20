@@ -7,10 +7,10 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestMakeMacro(clientI interfaces.ReciverAndSender, data []byte) []byte {
+func RequestMakeMacro(clientI interfaces.ReciverAndSender, data []byte) {
 	client, ok := clientI.(*models.Client)
 	if !ok {
-		return []byte{}
+		return
 	}
 
 	var packet = packets.NewReader(data)
@@ -32,10 +32,9 @@ func RequestMakeMacro(clientI interfaces.ReciverAndSender, data []byte) []byte {
 			Name:       packet.ReadString(),     // command name
 		})
 	}
+
 	client.CurrentChar.AddMacros(macro)
 	count := client.CurrentChar.MacrosesCount()
 	pkg := serverpackets.MacroMake(macro, count)
-	buffer := packets.Get()
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-	return buffer.Bytes()
+	client.EncryptAndSend(pkg)
 }

@@ -1,7 +1,7 @@
 package drops
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 )
 
 //Дроп предмета персонажа
