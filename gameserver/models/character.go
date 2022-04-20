@@ -391,10 +391,6 @@ func (c *Character) ExistItemInInventory(objectItemId int32) *MyItem {
 	return nil
 }
 
-// GetXYZ получить координаты персонажа
-func (c *Character) GetXYZ() (x, y, z int32) {
-	return c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z
-}
 func (c *Character) GetObjectId() int32 {
 	return c.ObjectId
 }
@@ -422,7 +418,9 @@ func (c *Character) SetInstanceId(i int32) {
 	_ = i
 	//TODO release
 }
-
+func (c *Character) GetXYZ() (x, y, z int32) {
+	return c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z
+}
 func (c *Character) GetX() int32 {
 	return c.Coordinates.X
 }
@@ -437,9 +435,7 @@ func (c *Character) EncryptAndSend(data []byte) {
 	c.Conn.EncryptAndSend(data)
 }
 func (c *Character) GetCurrentRegion() interfaces.WorldRegioner {
-	q := c.CurrentRegion
-	return q
-	//return c.CurrentRegion
+	return c.CurrentRegion
 }
 
 func (c *Character) CloseChannels() {

@@ -97,7 +97,6 @@ func Handler(client interfaces.ReciverAndSender) {
 		case 89:
 			clientpackets.ValidationPosition(data, client.GetCurrentChar())
 			//broadcast.Checkaem(client, pkg)
-
 		case 31:
 			pkg := clientpackets.Action(data, client)
 			if pkg != nil {

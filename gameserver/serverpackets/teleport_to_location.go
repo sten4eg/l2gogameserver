@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-//Телепорт к локации
+//TeleportToLocation Телепорт к локации
 //TODO: в будущем можно будет сделать направление персонажа после ТП.
 func TeleportToLocation(client interfaces.ReciverAndSender, x, y, z, h int) []byte {
 	buffer := packets.Get()
