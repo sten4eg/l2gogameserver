@@ -1,11 +1,17 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func CharInfo(user *models.Character) []byte {
+func CharInfo(userI interfaces.CharacterI) []byte {
+
+	user, ok := userI.(*models.Character)
+	if !ok {
+		return []byte{}
+	}
 
 	x, y, z := user.GetXYZ()
 

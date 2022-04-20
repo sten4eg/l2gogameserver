@@ -1,12 +1,12 @@
 package clientpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func ChangeWaitType(client *models.Client) []byte {
+func ChangeWaitType(client interfaces.ReciverAndSender) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 

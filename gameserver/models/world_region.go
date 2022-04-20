@@ -1,6 +1,7 @@
 package models
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"math"
 	"sync"
 )
@@ -21,22 +22,41 @@ func NewWorldRegion(x, y, z int32) *WorldRegion {
 	return &newRegion
 }
 
-func (w *WorldRegion) AddVisibleChar(character *Character) {
-	w.CharsInRegion.Store(character.ObjectId, character)
+func (w *WorldRegion) AddVisibleChar(character interfaces.CharacterI) {
+	w.CharsInRegion.Store(character.GetObjectId(), character)
 }
-func (w *WorldRegion) DeleteVisibleChar(character *Character) {
-	w.CharsInRegion.Delete(character.ObjectId)
+func (w *WorldRegion) DeleteVisibleChar(character interfaces.CharacterI) {
+	w.CharsInRegion.Delete(character.GetObjectId())
 }
 
 func (w *WorldRegion) AddVisibleNpc(npc Npc) {
 	w.NpcInRegion.Store(npc.ObjId, npc)
 }
 
-func (w *WorldRegion) getNeighbors() []*WorldRegion {
+func (w *WorldRegion) GetNeighbors() []interfaces.WorldRegioner {
 	return GetNeighbors(int(w.TileX), int(w.TileY), int(w.TileZ), 1, 1)
 }
 
-func Contains(regions []*WorldRegion, region *WorldRegion) bool {
+func (w *WorldRegion) GetCharsInRegion() []interfaces.CharacterI {
+	result := make([]interfaces.CharacterI, 0, 64)
+	w.CharsInRegion.Range(func(key, value interface{}) bool {
+		result = append(result, value.(*Character))
+		return true
+	})
+
+	return result
+}
+
+func (w *WorldRegion) GetNpcInRegion() []interfaces.Npcer {
+	result := make([]interfaces.Npcer, 0, 64)
+	w.NpcInRegion.Range(func(key, value interface{}) bool {
+		result = append(result, value.(Npc))
+		return true
+	})
+
+	return result
+}
+func Contains(regions []interfaces.WorldRegioner, region interfaces.WorldRegioner) bool {
 	for _, v := range regions {
 		if v == region {
 			return true
@@ -44,24 +64,35 @@ func Contains(regions []*WorldRegion, region *WorldRegion) bool {
 	}
 	return false
 }
-func GetAroundPlayer(c *Character) []*Character {
-	currentRegion := c.CurrentRegion
+func GetAroundPlayer(c interfaces.Positionable) []interfaces.CharacterI {
+	currentRegion := c.GetCurrentRegion()
 	if nil == currentRegion {
 		return nil
 	}
-	result := make([]*Character, 0, 64)
+	result := make([]interfaces.CharacterI, 0, 64)
 
-	for _, v := range currentRegion.getNeighbors() {
-		v.CharsInRegion.Range(func(key, value interface{}) bool {
-			result = append(result, value.(*Character))
-			return true
-		})
+	for _, v := range currentRegion.GetNeighbors() {
+		result = append(result, v.GetCharsInRegion()...)
+	}
+	return result
+}
+func GetAroundPlayerObjId(c *Character) []int32 {
+	currentRegion := c.GetCurrentRegion()
+	if nil == currentRegion {
+		return nil
+	}
+	result := make([]int32, 0, 64)
+
+	for _, v := range currentRegion.GetNeighbors() {
+		for _, vv := range v.GetCharsInRegion() {
+			result = append(result, vv.GetObjectId())
+		}
 	}
 	return result
 }
 
-func GetAroundPlayersInRadius(c *Character, radius int32) []*Character {
-	currentRegion := c.CurrentRegion
+func GetAroundPlayersInRadius(c interfaces.CharacterI, radius int32) []*Character {
+	currentRegion := c.GetCurrentRegion()
 	if nil == currentRegion {
 		return nil
 	}
@@ -69,30 +100,74 @@ func GetAroundPlayersInRadius(c *Character, radius int32) []*Character {
 
 	sqrad := radius * radius
 
-	for _, v := range currentRegion.getNeighbors() {
-		v.CharsInRegion.Range(func(key, value interface{}) bool {
-			char := value.(*Character)
-			if char.ObjectId == c.ObjectId {
-				return true
+	for _, v := range currentRegion.GetNeighbors() {
+		charInRegion := v.GetCharsInRegion()
+		for _, vv := range charInRegion {
+			char, ok := vv.(*Character)
+			if !ok {
+				continue
+			}
+			if char.GetObjectId() == c.GetObjectId() {
+				continue
+			}
+			dx := math.Abs(float64(char.Coordinates.X - c.GetX()))
+			if dx > float64(radius) {
+				continue
 			}
 
+			//toDO тут Y должен быть ? проверить на других сборках
+			dy := math.Abs(float64(char.Coordinates.X - c.GetX()))
+			if dy > float64(radius) {
+				continue
+			}
+
+			if dx*dx+dy*dy > float64(sqrad) {
+				continue
+			}
+
+			result = append(result, char)
+
+		}
+	}
+	return result
+}
+
+func GetAroundPlayersObjIdInRadius(c *Character, radius int32) []int32 {
+	currentRegion := c.CurrentRegion
+	if nil == currentRegion {
+		return nil
+	}
+	result := make([]int32, 0, 64)
+
+	sqrad := radius * radius
+
+	for _, v := range currentRegion.GetNeighbors() {
+		charInRegion := v.GetCharsInRegion()
+		for _, vv := range charInRegion {
+			char, ok := vv.(*Character)
+			if !ok {
+				continue
+			}
+			if char.ObjectId == c.ObjectId {
+				continue
+			}
 			dx := math.Abs(float64(char.Coordinates.X - c.Coordinates.X))
 			if dx > float64(radius) {
-				return true
+				continue
 			}
 
 			dy := math.Abs(float64(char.Coordinates.X - c.Coordinates.X))
 			if dy > float64(radius) {
-				return true
+				continue
 			}
 
 			if dx*dx+dy*dy > float64(sqrad) {
-				return true
+				continue
 			}
 
-			result = append(result, char)
-			return true
-		})
+			result = append(result, char.ObjectId)
+
+		}
 	}
 	return result
 }

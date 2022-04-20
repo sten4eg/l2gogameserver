@@ -60,7 +60,7 @@ func LoadSkills() {
 		return
 	}
 	log.Println("Загрузка скиллов")
-	file, err := os.Open("./server/data/stats/skills/0-100.json")
+	file, err := os.Open("./datapack/data/stats/skills/0-100.json")
 	if err != nil {
 		panic("Failed to load config file " + err.Error())
 	}

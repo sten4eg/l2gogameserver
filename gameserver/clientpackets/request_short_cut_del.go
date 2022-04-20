@@ -1,12 +1,18 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func RequestShortCutDel(data []byte, client *models.Client) []byte {
+func RequestShortCutDel(data []byte, clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	var packet = packets.NewReader(data)
 	id := packet.ReadInt32()
 	slot := id % 12

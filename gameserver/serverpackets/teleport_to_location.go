@@ -1,13 +1,19 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
 //Телепорт к локации
 //TODO: в будущем можно будет сделать направление персонажа после ТП.
-func TeleportToLocation(client *models.Client, x, y, z, h int) []byte {
+func TeleportToLocation(clientI interfaces.ReciverAndSender, x, y, z, h int) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 

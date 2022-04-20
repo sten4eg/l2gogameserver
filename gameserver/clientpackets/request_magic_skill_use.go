@@ -1,13 +1,19 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func RequestMagicSkillUse(data []byte, client *models.Client) []byte {
+func RequestMagicSkillUse(data []byte, clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	var packet = packets.NewReader(data)
 
 	magicId := packet.ReadInt32()                // Identifier of the used skill

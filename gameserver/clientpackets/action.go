@@ -1,12 +1,17 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func Action(data []byte, client *models.Client) *models.BackwardToLocation {
+func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardToLocation {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return nil
+	}
 	reAppeal := false // повторное обращение к объекту
 	var packet = packets.NewReader(data)
 	objectId := packet.ReadInt32() //Target

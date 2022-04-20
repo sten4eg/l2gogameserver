@@ -20,7 +20,7 @@ var Locations []Location
 //Загрузка позиций локаций для телепортации
 func LoadLocationListTeleport() {
 	log.Println("Загрузка позиций к телепортации")
-	file, err := os.Open("./server/data/teleport/locationToTeleport.json")
+	file, err := os.Open("./datapack/data/teleport/locationToTeleport.json")
 	if err != nil {
 		panic("Failed to load config file " + err.Error())
 	}

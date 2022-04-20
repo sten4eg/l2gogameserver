@@ -1,10 +1,11 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 )
 
-func DropItem(client *models.Client, data []byte) ([]byte, models.MyItem) {
+func DropItem(client interfaces.ReciverAndSender, data []byte) ([]byte, models.MyItem) {
 	//var read = packets.NewReader(data)
 	//objectId := read.ReadInt32()
 	//count := int64(read.ReadInt32())

@@ -104,7 +104,7 @@ type (
 var AllStats map[int]Stats
 
 func LoadStats() {
-	file, err := os.Open("./server/data/stats/char/classList.json")
+	file, err := os.Open("./datapack/data/stats/char/classList.json")
 	if err != nil {
 		panic(err)
 	}
@@ -116,7 +116,7 @@ func LoadStats() {
 
 	AllStats = make(map[int]Stats)
 
-	fss := os.DirFS("./server/data/stats/char/baseStats")
+	fss := os.DirFS("./datapack/data/stats/char/baseStats")
 	dir, err := fs.ReadDir(fss, ".")
 	if err != nil {
 		panic(err)
@@ -128,7 +128,7 @@ func LoadStats() {
 }
 
 func loadStat(entry fs.DirEntry, classes []Class) {
-	file, err := os.Open("./server/data/stats/char/baseStats/" + entry.Name())
+	file, err := os.Open("./datapack/data/stats/char/baseStats/" + entry.Name())
 	if err != nil {
 		panic("Failed to load config file " + err.Error())
 	}

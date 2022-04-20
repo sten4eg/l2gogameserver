@@ -2,12 +2,18 @@ package clientpackets
 
 import (
 	"l2gogameserver/gameserver/dto"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func RequestShortCutReg(data []byte, client *models.Client) []byte {
+func RequestShortCutReg(data []byte, clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	var packet = packets.NewReader(data)
 	buffer := packets.Get()
 	defer packets.Put(buffer)

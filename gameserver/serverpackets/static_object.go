@@ -1,11 +1,11 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 )
 
-func StaticObject(client *models.Client) []byte {
+func StaticObject(client interfaces.ReciverAndSender) []byte {
 	buffer := packets.Get()
 
 	buffer.WriteD(0)

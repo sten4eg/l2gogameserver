@@ -6,9 +6,11 @@ import (
 	"l2gogameserver/data"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/dto"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/race"
 	"l2gogameserver/utils"
+	"net"
 
 	"sync"
 	"time"
@@ -28,6 +30,7 @@ type (
 		HairColor     int32
 		Sex           int32
 		Coordinates   *Coordinates
+		Heading       int32
 		Exp           int32
 		Sp            int32
 		Karma         int32
@@ -44,6 +47,7 @@ type (
 		CharName      string
 		CurrentRegion *WorldRegion
 		Conn          *Client
+		SockConn      net.Conn
 		AttackEndTime int64
 		// Paperdoll - массив всех слотов которые можно одеть
 		Paperdoll       [26]MyItem
@@ -67,7 +71,7 @@ type (
 		Macros                  []Macro
 		CharInfoTo              chan []int32
 		DeleteObjectTo          chan []int32
-		NpcInfo                 chan []Npc
+		NpcInfo                 chan []interfaces.Npcer
 		IsMoving                bool
 		Sit                     bool
 		FirstEnterGame          bool
@@ -147,24 +151,10 @@ func (c *Character) GetPercentFromCurrentLevel(exp, level int32) float64 {
 	return float64(int64(exp)-expPerLevel) / float64(expPerLevel2-expPerLevel)
 }
 
-// SetXYZ установить координаты для персонажа
-func (c *Character) SetXYZ(x, y, z int32) {
-	c.Coordinates.mu.Lock()
-	c.Coordinates.X = x
-	c.Coordinates.Y = y
-	c.Coordinates.Z = z
-	c.Coordinates.mu.Unlock()
-}
-
-// GetXYZ получить координаты персонажа
-func (c *Character) GetXYZ() (x, y, z int32) {
-	return c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z
-}
-
 // Load загрузка персонажа
 func (c *Character) Load() {
 	c.InGame = true
-	c.ShortCut = restoreMe(c.ObjectId, c.ClassId)
+	c.ShortCut = RestoreMe(c.ObjectId, c.ClassId)
 	c.LoadSkills()
 	c.SkillQueue = make(chan SkillHolder)
 	c.Inventory = GetMyItems(c.ObjectId)
@@ -180,7 +170,7 @@ func (c *Character) Load() {
 	reg := GetRegion(c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z)
 	c.CharInfoTo = make(chan []int32, 2)
 	c.DeleteObjectTo = make(chan []int32, 2)
-	c.NpcInfo = make(chan []Npc, 2)
+	c.NpcInfo = make(chan []interfaces.Npcer, 2)
 	c.setWorldRegion(reg)
 
 	reg.AddVisibleChar(c)
@@ -300,31 +290,32 @@ func (c *Character) GetInventoryLimit() int16 {
 	return 80
 }
 
-func (c *Character) setWorldRegion(newRegion *WorldRegion) {
-	var oldAreas []*WorldRegion
+func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
+	var oldAreas []interfaces.WorldRegioner
 
-	if c.CurrentRegion != nil {
+	currReg := c.GetCurrentRegion().(*WorldRegion)
+	if currReg != nil {
 		c.CurrentRegion.DeleteVisibleChar(c)
-		oldAreas = c.CurrentRegion.getNeighbors()
+		oldAreas = currReg.GetNeighbors()
 	}
 
-	var newAreas []*WorldRegion
+	var newAreas []interfaces.WorldRegioner
 	if newRegion != nil {
 		newRegion.AddVisibleChar(c)
-		newAreas = newRegion.getNeighbors()
+		newAreas = newRegion.GetNeighbors()
 	}
 
 	// кому отправить charInfo
 	deleteObjectPkgTo := make([]int32, 0, 64)
 	for _, region := range oldAreas {
 		if !Contains(newAreas, region) {
-			region.CharsInRegion.Range(func(objId, char interface{}) bool {
-				if char.(*Character).ObjectId == c.ObjectId {
-					return true
+
+			for _, v := range region.GetCharsInRegion() {
+				if v.GetObjectId() == c.GetObjectId() {
+					continue
 				}
-				deleteObjectPkgTo = append(deleteObjectPkgTo, char.(*Character).ObjectId)
-				return true
-			})
+				deleteObjectPkgTo = append(deleteObjectPkgTo, v.GetObjectId())
+			}
 		}
 	}
 	if len(deleteObjectPkgTo) > 0 {
@@ -333,27 +324,26 @@ func (c *Character) setWorldRegion(newRegion *WorldRegion) {
 
 	// кому отправить charInfo
 	charInfoPkgTo := make([]int32, 0, 64)
-	npcPkgTo := make([]Npc, 0, 64)
+	npcPkgTo := make([]interfaces.Npcer, 0, 64)
 	for _, region := range newAreas {
 		if !Contains(oldAreas, region) {
-			region.CharsInRegion.Range(func(objId, char interface{}) bool {
-				if char.(*Character).ObjectId == c.ObjectId {
-					return true
+			for _, v := range region.GetCharsInRegion() {
+				if v.GetObjectId() == c.GetObjectId() {
+					continue
 				}
-				charInfoPkgTo = append(charInfoPkgTo, char.(*Character).ObjectId)
-				return true
-			})
+				charInfoPkgTo = append(charInfoPkgTo, v.GetObjectId())
+			}
 
-			region.NpcInRegion.Range(func(objId, npc interface{}) bool {
-				npcPkgTo = append(npcPkgTo, npc.(Npc))
-				return true
-			})
+			for _, v := range region.GetNpcInRegion() {
+				npcPkgTo = append(npcPkgTo, v)
+			}
+
 		}
 	}
 	if len(charInfoPkgTo) > 0 {
 		c.CharInfoTo <- charInfoPkgTo
 	}
-	c.CurrentRegion = newRegion
+	c.CurrentRegion = newRegion.(*WorldRegion)
 
 	if len(npcPkgTo) > 0 {
 		c.NpcInfo <- npcPkgTo
@@ -401,4 +391,62 @@ func (c *Character) ExistItemInInventory(objectItemId int32) *MyItem {
 		}
 	}
 	return nil
+}
+
+// GetXYZ получить координаты персонажа
+func (c *Character) GetXYZ() (x, y, z int32) {
+	return c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z
+}
+func (c *Character) GetObjectId() int32 {
+	return c.ObjectId
+}
+func (c *Character) GetName() string {
+	return c.CharName
+}
+func (c *Character) SetX(x int32) {
+	c.Coordinates.X = x
+}
+func (c *Character) SetY(y int32) {
+	c.Coordinates.Y = y
+}
+func (c *Character) SetZ(z int32) {
+	c.Coordinates.Z = z
+}
+func (c *Character) SetXYZ(x, y, z int32) {
+	c.Coordinates.X = x
+	c.Coordinates.Y = y
+	c.Coordinates.Z = z
+}
+func (c *Character) SetHeading(h int32) {
+	c.Heading = h
+}
+func (c *Character) SetInstanceId(i int32) {
+	_ = i
+	//TODO release
+}
+
+func (c *Character) GetX() int32 {
+	return c.Coordinates.X
+}
+func (c *Character) GetY() int32 {
+	return c.Coordinates.Y
+}
+func (c *Character) GetZ() int32 {
+	return c.Coordinates.Z
+}
+
+func (c *Character) EncryptAndSend(data []byte) {
+	c.Conn.EncryptAndSend(data)
+}
+func (c *Character) GetCurrentRegion() interfaces.WorldRegioner {
+	q := c.CurrentRegion
+	return q
+	//return c.CurrentRegion
+}
+
+func (c *Character) CloseChannels() {
+	c.ChannelUpdateShadowItem = nil
+	c.NpcInfo = nil
+	c.CharInfoTo = nil
+	c.DeleteObjectTo = nil
 }

@@ -1,36 +1,37 @@
-package gameserver
+package broadcast
 
 import (
-	"fmt"
+	"l2gogameserver/gameserver"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/chat"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/utils"
 )
 
-// BroadCastToAroundPlayersInRadius отправляет всем персонажам в радиусе radius
+// ToAroundPlayerInRadius отправляет всем персонажам в радиусе radius
 // информацию из пакета pkg
-func (g *GameServer) BroadCastToAroundPlayersInRadius(my *models.Client, pkg *utils.PacketByte, radius int32) {
-	charsIds := models.GetAroundPlayersInRadius(my.CurrentChar, radius)
+func ToAroundPlayerInRadius(my interfaces.ReciverAndSender, pkg *utils.PacketByte, radius int32) {
+	charsIds := models.GetAroundPlayersInRadius(my.GetCurrentChar(), radius)
 	for i := range charsIds {
-		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(pkg.GetData())
+		charsIds[i].EncryptAndSend(pkg.GetData())
 	}
 }
 
-func (g *GameServer) BroadCastToAroundPlayers(my *models.Client, pkg *utils.PacketByte) {
-	charsIds := models.GetAroundPlayer(my.CurrentChar)
+func BroadCastToAroundPlayers(my interfaces.ReciverAndSender, pkg *utils.PacketByte) {
+	charsIds := models.GetAroundPlayer(my.GetCurrentChar())
 	for i := range charsIds {
-		charsIds[i].Conn.EncryptAndSend(pkg.GetData())
+		charsIds[i].EncryptAndSend(pkg.GetData())
 	}
 }
 
 // BroadCastUserInfoInRadius отправляет всем персонажам в радиусе radius
 // информацию о персонаже, Самому персонажу отправляет полный UserInfo
-func (g *GameServer) BroadCastUserInfoInRadius(me *models.Client, radius int32) {
-	ui := serverpackets.UserInfo(me)
+func BroadCastUserInfoInRadius(me interfaces.ReciverAndSender, radius int32) {
+	ui := serverpackets.UserInfo(me.GetCurrentChar())
 	me.EncryptAndSend(ui)
 
-	charsIds := models.GetAroundPlayersInRadius(me.CurrentChar, radius)
+	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius)
 	if len(charsIds) == 0 {
 		return
 	}
@@ -38,96 +39,99 @@ func (g *GameServer) BroadCastUserInfoInRadius(me *models.Client, radius int32) 
 	ci := utils.GetPacketByte()
 	defer ci.Release()
 
-	ci.SetData(serverpackets.CharInfo(me.CurrentChar))
+	ci.SetData(serverpackets.CharInfo(me.GetCurrentChar()))
 
 	exUi := utils.GetPacketByte()
 	defer exUi.Release()
-	exUi.SetData(serverpackets.ExBrExtraUserInfo(me.CurrentChar))
+	exUi.SetData(serverpackets.ExBrExtraUserInfo(me.GetCurrentChar()))
 
-	g.OnlineCharacters.Mu.Lock()
+	//g.OnlineCharacters.Mu.Lock()
 	for i := range charsIds {
-		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(ci.GetData())
-		g.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(exUi.GetData())
+		gameserver.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(ci.GetData())
+		gameserver.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(exUi.GetData())
 	}
-	g.OnlineCharacters.Mu.Unlock()
+	//g.OnlineCharacters.Mu.Unlock()
 }
 
-func (g *GameServer) BroadCastChat(me *models.Client, say models.Say) {
+func BroadCastChat(me interfaces.ReciverAndSender, say models.Say) {
 	pb := utils.GetPacketByte()
 	defer pb.Release()
 
 	switch say.Type {
 	case chat.All:
-		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
+		cs := serverpackets.CreatureSay(&say, me.GetCurrentChar())
 		pb.SetData(cs)
 		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
-		g.BroadCastToAroundPlayersInRadius(me, pb, chat.AllChatRange)
+		ToAroundPlayerInRadius(me, pb, chat.AllChatRange)
 	case chat.Tell:
-		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
+		cs := serverpackets.CreatureSay(&say, me.GetCurrentChar())
 		pb.SetData(cs)
-		ok := g.BroadCastToCharacterByName(pb, say.To)
+		ok := BroadCastToCharacterByName(pb, say.To)
 		if ok {
 			me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
 		} else {
 			// systemMSG что не найден перс
 		}
 	case chat.Shout:
-		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
+		cs := serverpackets.CreatureSay(&say, me.GetCurrentChar())
 		pb.SetData(cs)
 		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
-		g.BroadCastToAroundPlayersInRadius(me, pb, chat.ShoutChatRange)
-	case chat.SpecialCommand:
-		if me.CurrentChar.Target == 0 {
-			return
-		}
-		qwe := g.OnlineCharacters.Char[me.CurrentChar.Target]
-		q := models.CalculateDistance(qwe.Coordinates.X, qwe.Coordinates.Y, qwe.Coordinates.Z, me.CurrentChar.Coordinates.X, me.CurrentChar.Coordinates.Y, me.CurrentChar.Coordinates.Z, false, false)
-		say.Text = fmt.Sprintf("%f", q)
-		say.Type = chat.All
-
-		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
-		pb.SetData(cs)
-		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
-		g.BroadCastToAroundPlayersInRadius(me, pb, chat.AllChatRange)
+		ToAroundPlayerInRadius(me, pb, chat.ShoutChatRange)
+		//todo что за SpecialCommand ?
+		//case chat.SpecialCommand:
+		//	if me.CurrentChar.Target == 0 {
+		//		return
+		//	}
+		//	qwe := g.OnlineCharacters.Char[me.CurrentChar.Target]
+		//	q := models.CalculateDistance(qwe.Coordinates.X, qwe.Coordinates.Y, qwe.Coordinates.Z, me.CurrentChar.Coordinates.X, me.CurrentChar.Coordinates.Y, me.CurrentChar.Coordinates.Z, false, false)
+		//	say.Text = fmt.Sprintf("%f", q)
+		//	say.Type = chat.All
+		//
+		//	cs := serverpackets.CreatureSay(&say, me.CurrentChar)
+		//	pb.SetData(cs)
+		//	me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
+		//	ToAroundPlayerInRadius(me, pb, chat.AllChatRange)
 	}
 }
 
 // BroadCastToCharacterByName отправляет pkg персонажу с ником to
 // true если отправлен, false если персонаж не найден
-func (g *GameServer) BroadCastToCharacterByName(pkg *utils.PacketByte, to string) bool {
-	g.OnlineCharacters.Mu.Lock()
-	defer g.OnlineCharacters.Mu.Unlock()
-	for i := range g.OnlineCharacters.Char {
-		if g.OnlineCharacters.Char[i].CharName == to {
-			g.OnlineCharacters.Char[i].Conn.EncryptAndSend(pkg.GetData())
-			return true
-		}
+func BroadCastToCharacterByName(pkg *utils.PacketByte, to string) bool {
+	gameserver.OnlineCharacters.Mu.Lock()
+	defer gameserver.OnlineCharacters.Mu.Unlock()
+
+	conn := gameserver.GetNetConnByCharacterName(to)
+	if conn != nil {
+		conn.EncryptAndSend(pkg.GetData())
+		return true
 	}
+
 	return false
 }
 
+//
 // SendCharInfoAboutCharactersInRadius отправляет me CharInfo персонажей
 // в радиусе radius
-func (g *GameServer) SendCharInfoAboutCharactersInRadius(me *models.Client, radius int32) {
-	charsIds := models.GetAroundPlayersInRadius(me.CurrentChar, radius)
+func SendCharInfoAboutCharactersInRadius(me interfaces.ReciverAndSender, radius int32) {
+	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius)
 	for i := range charsIds {
 		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(charsIds[i])))
 	}
 }
 
 // SendCharInfoAboutCharactersAround отправляет me CharInfo персонажей
-func (g *GameServer) SendCharInfoAboutCharactersAround(me *models.Client) {
+func SendCharInfoAboutCharactersAround(me *models.Client) {
 	charsIds := models.GetAroundPlayer(me.CurrentChar)
 	for i := range charsIds {
 		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(charsIds[i])))
 	}
 }
 
-func (g *GameServer) Checkaem(client *models.Client, l models.BackwardToLocation) {
+func Checkaem(client interfaces.ReciverAndSender, l models.BackwardToLocation) {
 	ut := utils.GetPacketByte()
 	ut.SetData(serverpackets.MoveToLocation(&l, client))
 	client.SSend(client.CryptAndReturnPackageReadyToShip(ut.GetData()))
-	g.BroadCastToAroundPlayers(client, ut)
+	BroadCastToAroundPlayers(client, ut)
 }
 
 //func (g *GameServer) Tick() {

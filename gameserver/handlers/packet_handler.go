@@ -1,21 +1,24 @@
-package gameserver
+package handlers
 
 import (
 	"fmt"
+	"l2gogameserver/gameserver"
+	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/clientpackets"
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
+	"l2gogameserver/gameserver/listeners"
 	"l2gogameserver/packets"
 	"log"
 )
 
-// loop клиента в ожидании входящих пакетов
-func (g *GameServer) handler(client *models.Client) {
+// Handler loop клиента в ожидании входящих пакетов
+func Handler(client interfaces.ReciverAndSender) {
 	for {
 		opcode, data, err := client.Receive()
 		//defer kickClient(client)
 		if err != nil {
 			fmt.Println(err)
-			g.charOffline(client)
+			gameserver.CharOffline(client)
 			break // todo  return ?
 		}
 		log.Println("Client->Server: #", opcode, packets.GetNamePacket(opcode))
@@ -25,9 +28,9 @@ func (g *GameServer) handler(client *models.Client) {
 			client.SSend(pkg)
 		case 13: // CharacterDelete
 
-		case 35: // ReqBypassToServer (коммьюнити)
+		case 35:
 			clientpackets.BypassToServer(data, client)
-		case 96: //RequestDestroyItem
+		case 96:
 			pkg := clientpackets.DestroyItem(data, client)
 			client.SSend(pkg)
 		case 14:
@@ -45,7 +48,7 @@ func (g *GameServer) handler(client *models.Client) {
 		case 18:
 			pkg := clientpackets.CharSelected(data, client)
 			client.SSend(pkg)
-			g.addOnlineChar(client.CurrentChar)
+			gameserver.AddOnlineChar(client.GetCurrentChar())
 		case 208:
 			if len(data) >= 2 {
 				switch data[0] {
@@ -92,36 +95,33 @@ func (g *GameServer) handler(client *models.Client) {
 		case 17:
 			pkg := clientpackets.RequestEnterWorld(client, data)
 			client.SSend(pkg)
-			//g.BroadCastUserInfoInRadius(client, 2000)
-			g.SendCharInfoAboutCharactersInRadius(client, 2000)
-			go g.ChannelListener(client)
-			go g.MoveListener(client)
-			go g.NpcListener(client)
+			broadcast.BroadCastUserInfoInRadius(client, 2000)
+			broadcast.SendCharInfoAboutCharactersInRadius(client, 2000)
+			go listeners.StartClientListener(client)
 		case 166:
 			pkg := clientpackets.RequestSkillCoolTime(client, data)
 
 			client.SSend(pkg)
 		case 15:
 			pkg := clientpackets.MoveBackwardToLocation(client, data)
-			g.Checkaem(client, pkg)
+			broadcast.Checkaem(client, pkg)
 
 		case 73:
 			say := clientpackets.Say(client, data)
-			g.BroadCastChat(client, say)
+			broadcast.BroadCastChat(client, say)
 		case 89:
-			pkg := clientpackets.ValidationPosition(data, client.CurrentChar)
-			//g.Checkaem(client, pkg)
+			pkg := clientpackets.ValidationPosition(data, client.GetCurrentChar())
+			//broadcast.Checkaem(client, pkg)
 			client.SSend(pkg)
 		case 31:
 			pkg := clientpackets.Action(data, client)
 			if pkg != nil {
-				g.Checkaem(client, *pkg)
+				broadcast.Checkaem(client, *pkg)
 			}
 		case 72:
 			pkg := clientpackets.RequestTargetCancel(data, client)
 			client.SSend(pkg)
 		case 114:
-			log.Println(data)
 			clientpackets.MoveToPawn(client, data)
 		case 1:
 			pkg := clientpackets.Attack(data, client)

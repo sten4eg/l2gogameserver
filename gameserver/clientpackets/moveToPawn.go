@@ -1,12 +1,12 @@
 package clientpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 	"log"
 )
 
-func MoveToPawn(client *models.Client, data []byte) {
+func MoveToPawn(client interfaces.ReciverAndSender, data []byte) {
 	var packet = packets.NewReader(data)
 	charId := packet.ReadInt32()
 	targetId := packet.ReadInt32()

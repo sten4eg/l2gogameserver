@@ -2,11 +2,11 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/dto"
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 )
 
-func ShortCutRegister(shortCut dto.ShortCutDTO, client *models.Client) []byte {
+func ShortCutRegister(shortCut dto.ShortCutDTO, client interfaces.ReciverAndSender) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 

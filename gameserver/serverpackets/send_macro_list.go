@@ -1,11 +1,12 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func SendMacroList(client *models.Client, macro models.Macro, count uint8, index int) []byte {
+func SendMacroList(client interfaces.ReciverAndSender, macro models.Macro, count uint8, index int) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 	buffer.WriteSingleByte(0xE8)

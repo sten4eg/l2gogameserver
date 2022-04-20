@@ -1,6 +1,7 @@
 package models
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"math"
 	"sync"
 )
@@ -68,7 +69,7 @@ func NewWorld() {
 	qw := World
 	_ = qw
 }
-func GetNeighbors(regX, regY, regZ, deepH, deepV int) []*WorldRegion {
+func GetNeighbors(regX, regY, regZ, deepH, deepV int) []interfaces.WorldRegioner {
 	neighbors := make([]*WorldRegion, 0, 9)
 	deepH *= 2
 	deepV *= 2
@@ -116,7 +117,12 @@ func GetNeighbors(regX, regY, regZ, deepH, deepV int) []*WorldRegion {
 			}
 		}
 	}
-	return neighbors
+	ret := make([]interfaces.WorldRegioner, len(neighbors))
+	for i, d := range neighbors {
+		ret[i] = d
+	}
+
+	return ret
 }
 
 func GetRegion(x, y, z int32) *WorldRegion {

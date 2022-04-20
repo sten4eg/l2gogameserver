@@ -1,11 +1,12 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func ValidationPosition(data []byte, client *models.Character) []byte {
+func ValidationPosition(data []byte, client interfaces.CharacterI) []byte {
 	var packet = packets.NewReader(data)
 	var l models.Coordinates
 

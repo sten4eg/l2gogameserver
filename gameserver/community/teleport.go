@@ -1,14 +1,14 @@
 package community
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/teleport"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"log"
 )
 
-func UserTeleport(client *models.Client, teleportID int) {
+func UserTeleport(client interfaces.ReciverAndSender, teleportID int) {
 	log.Println("Телепортация юзера...")
 	locx, ok := teleport.GetTeleportID(teleportID)
 	if !ok {

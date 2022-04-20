@@ -1,13 +1,19 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"log"
 )
 
-func ProtocolVersion(data []byte, client *models.Client) []byte {
+func ProtocolVersion(data []byte, clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	var packet = packets.NewReader(data)
 	protocolVersion := packet.ReadUInt16()
 	if protocolVersion != 273 && protocolVersion != 268 {

@@ -4,12 +4,12 @@ import (
 	"l2gogameserver/config"
 	"l2gogameserver/data"
 	"l2gogameserver/db"
-	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/multisell"
 	"l2gogameserver/gameserver/models/teleport"
+	"l2gogameserver/server"
 	"log"
 )
 
@@ -21,7 +21,7 @@ func main() {
 	setup()
 	//defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
 
-	gameserver.New().Start()
+	server.New().Start()
 
 }
 

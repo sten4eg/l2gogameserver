@@ -1,11 +1,17 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func ItemList(client *models.Client) []byte {
+func ItemList(clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	buffer := packets.Get()
 
 	myItems := client.CurrentChar.Inventory.Items

@@ -4,6 +4,7 @@ import (
 	"context"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/idfactory"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
@@ -32,7 +33,7 @@ type CharCreate struct {
 	CurMp     int32
 }
 
-func CharacterCreate(data []byte, client *models.Client) []byte {
+func CharacterCreate(data []byte, client interfaces.ReciverAndSender) []byte {
 	var packet = packets.NewReader(data)
 	var charCreate CharCreate
 
@@ -72,7 +73,12 @@ var (
 	ReasonOk                  int32 = 99
 )
 
-func (cc *CharCreate) validate(client *models.Client) []byte {
+func (cc *CharCreate) validate(clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 

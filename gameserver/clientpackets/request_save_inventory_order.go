@@ -1,12 +1,18 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
 const limit = 125 // client limit
-func RequestSaveInventoryOrder(client *models.Client, data []byte) {
+func RequestSaveInventoryOrder(clientI interfaces.ReciverAndSender, data []byte) {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return
+	}
+
 	var reader = packets.NewReader(data[2:])
 	size := reader.ReadInt32()
 	if size > limit {

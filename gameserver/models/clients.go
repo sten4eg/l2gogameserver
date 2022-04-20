@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"l2gogameserver/gameserver/crypt"
+	"l2gogameserver/gameserver/interfaces"
 	"log"
 	"net"
 	"sync"
@@ -180,4 +181,8 @@ func (c *Client) sendDataToSocket(data []byte) error {
 	_, err := c.Socket.Write(data)
 	c.m.Unlock()
 	return err
+}
+
+func (c *Client) GetCurrentChar() interfaces.CharacterI {
+	return c.CurrentChar
 }

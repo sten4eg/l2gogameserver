@@ -1,12 +1,12 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/packets"
 )
 
-func SystemMessage(msg sysmsg.SysMsg, client *models.Client) []byte {
+func SystemMessage(msg sysmsg.SysMsg, client interfaces.ReciverAndSender) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 

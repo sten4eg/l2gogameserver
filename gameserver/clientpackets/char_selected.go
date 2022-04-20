@@ -1,13 +1,17 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func CharSelected(data []byte, client *models.Client) []byte {
-
+func CharSelected(data []byte, clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
 	var read = packets.NewReader(data)
 	charSlot := read.ReadInt32()
 	_ = read.ReadUInt16() // unused, remove ?

@@ -1,11 +1,11 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 )
 
-func QuestList(client *models.Client) []byte {
+func QuestList(client interfaces.ReciverAndSender) []byte {
 	buffer := packets.Get()
 
 	buffer.WriteSingleByte(0x86)

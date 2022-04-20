@@ -1,16 +1,18 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func UserInfo(client *models.Client) []byte {
-
+func UserInfo(clientI interfaces.CharacterI) []byte {
+	character, ok := clientI.(*models.Character)
+	if !ok {
+		return []byte{}
+	}
 	buffer := packets.Get()
 	defer packets.Put(buffer)
-
-	character := client.CurrentChar
 
 	x, y, z := character.GetXYZ()
 

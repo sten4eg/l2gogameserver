@@ -1,11 +1,17 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func TargetUnselected(client *models.Client) []byte {
+func TargetUnselected(clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	client.CurrentChar.Target = 0
 	buffer := packets.Get()
 	defer packets.Put(buffer)

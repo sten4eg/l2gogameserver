@@ -1,7 +1,7 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 )
 
@@ -24,7 +24,7 @@ var StaticBlowfish = []byte{
 	151,
 }
 
-func KeyPacket(client *models.Client) []byte {
+func KeyPacket(client interfaces.ReciverAndSender) []byte {
 	//TODO Данные с этого пакета НЕ надо шифровать
 	buffer := packets.Get()
 
@@ -36,7 +36,7 @@ func KeyPacket(client *models.Client) []byte {
 		buffer.WriteSingleByte(sk[i])
 	}
 	buffer.WriteD(0x01)
-	buffer.WriteD(0x01) // server id
+	buffer.WriteD(0x01) // datapack id
 	buffer.WriteSingleByte(0x01)
 	buffer.WriteD(0x00)
 

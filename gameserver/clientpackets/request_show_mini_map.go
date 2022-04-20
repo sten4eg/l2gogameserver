@@ -1,12 +1,12 @@
 package clientpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func RequestShowMiniMap(client *models.Client, data []byte) []byte {
+func RequestShowMiniMap(client interfaces.ReciverAndSender, data []byte) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 

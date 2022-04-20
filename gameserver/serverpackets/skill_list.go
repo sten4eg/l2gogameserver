@@ -1,11 +1,17 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func SkillList(client *models.Client) []byte {
+func SkillList(clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	buffer := packets.Get()
 
 	skills := client.CurrentChar.Skills

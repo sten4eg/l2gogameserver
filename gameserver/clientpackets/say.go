@@ -1,13 +1,14 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/chat"
 	"l2gogameserver/packets"
 	"strings"
 )
 
-func Say(client *models.Client, data []byte) models.Say {
+func Say(client interfaces.ReciverAndSender, data []byte) models.Say {
 	var packet = packets.NewReader(data)
 	var say models.Say
 
@@ -31,6 +32,21 @@ func Say(client *models.Client, data []byte) models.Say {
 	case chat.Shout:
 		return say
 	}
+	//BroadCastChat(client, say)
 
 	return say
 }
+
+//func BroadCastChat(me *models.Client, say models.Say) {
+//	pb := utils.GetPacketByte()
+//	defer pb.Release()
+//
+//	switch say.Type {
+//	case chat.All:
+//		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
+//		pb.SetData(cs)
+//		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
+//		q := models.GetAroundPlayersObjIdInRadius(me.CurrentChar, chat.AllChatRange)
+//		broadcast.BBBroadCastToAroundPlayersInRadius(q, pb)
+//	}
+//}

@@ -1,6 +1,7 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
@@ -10,8 +11,12 @@ import (
 - После структурирования инвентаря, нужно будет доделать удаление предмета из инвентаря
 */
 //Выбрасывание предмета из инвентаря
-func DropItem(client *models.Client, objectId int32, count int64, x, y, z int32) []byte {
+func DropItem(clientI interfaces.ReciverAndSender, objectId int32, count int64, x, y, z int32) []byte {
 	if count == 0 {
+		return []byte{}
+	}
+	client, ok := clientI.(*models.Client)
+	if !ok {
 		return []byte{}
 	}
 

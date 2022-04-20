@@ -1,7 +1,7 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	items2 "l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/multisell"
 	"l2gogameserver/packets"
@@ -10,7 +10,7 @@ import (
 const pageSize = 40
 
 //Отправка пакета на открытие мультиселла
-func MultisellShow(client *models.Client, msdata multisell.MultiList) {
+func MultisellShow(client interfaces.ReciverAndSender, msdata multisell.MultiList) {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 	pkg := MultiSell(client, msdata)
@@ -19,7 +19,7 @@ func MultisellShow(client *models.Client, msdata multisell.MultiList) {
 }
 
 //Отправка пакета
-func MultiSell(client *models.Client, msdata multisell.MultiList) []byte {
+func MultiSell(client interfaces.ReciverAndSender, msdata multisell.MultiList) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 

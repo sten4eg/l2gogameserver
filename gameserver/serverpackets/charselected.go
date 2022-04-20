@@ -1,11 +1,17 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func CharSelected(user *models.Character, client *models.Client) []byte {
+func CharSelected(user *models.Character, clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
@@ -58,7 +64,7 @@ func CharSelected(user *models.Character, client *models.Client) []byte {
 	buffer.WriteD(0) // 221
 
 	client.CurrentChar = client.Account.Char[client.Account.CharSlot]
-
+	client.CurrentChar.SockConn = client.Socket
 	//TODO Load загрузка всех данных выбранного чара
 	client.CurrentChar.Load()
 

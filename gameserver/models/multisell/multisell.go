@@ -3,7 +3,7 @@ package multisell
 import (
 	"encoding/json"
 	"l2gogameserver/data"
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"log"
 	"os"
 	"strconv"
@@ -57,7 +57,7 @@ var Multisells []MultiList
 
 func LoadMultisell() {
 	log.Println("Загрузка мультиселлов")
-	msells := data.Find("./server/data/multisell", ".json")
+	msells := data.Find("./datapack/data/multisell", ".json")
 	for _, msPath := range msells {
 		var msell MultiList
 		file, err := os.Open(msPath)
@@ -79,7 +79,7 @@ func LoadMultisell() {
 	//fmt.Printf("%+v\n", Multisells)
 }
 
-func Get(client *models.Client, id int) (MultiList, bool) {
+func Get(client interfaces.ReciverAndSender, id int) (MultiList, bool) {
 	log.Println("Чтение GMShop", id)
 	for _, multisell := range Multisells {
 		if multisell.ID == id {

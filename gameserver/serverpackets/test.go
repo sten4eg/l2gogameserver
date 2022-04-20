@@ -1,12 +1,18 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
 //MagicSkillLaunched
-func NewTest(client *models.Client) []byte {
+func NewTest(clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 

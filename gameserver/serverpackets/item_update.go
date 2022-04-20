@@ -1,11 +1,16 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func ItemUpdate(client *models.Client, updateType int16, objId int32) []byte {
+func ItemUpdate(clientI interfaces.ReciverAndSender, updateType int16, objId int32) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 

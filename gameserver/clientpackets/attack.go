@@ -1,12 +1,12 @@
 package clientpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func Attack(data []byte, client *models.Client) []byte {
+func Attack(data []byte, client interfaces.ReciverAndSender) []byte {
 	var packet = packets.NewReader(data)
 
 	objId := packet.ReadInt32() // targetObjId

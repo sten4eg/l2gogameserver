@@ -3,11 +3,17 @@ package serverpackets
 import (
 	"context"
 	"l2gogameserver/db"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func CharSelectionInfo(client *models.Client) []byte {
+func CharSelectionInfo(clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	buffer := packets.Get()
 
 	dbConn, err := db.GetConn()

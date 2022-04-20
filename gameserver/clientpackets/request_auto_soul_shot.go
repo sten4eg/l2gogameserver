@@ -1,11 +1,17 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func RequestAutoSoulShot(data []byte, client *models.Client) []byte {
+func RequestAutoSoulShot(data []byte, clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	var packet = packets.NewReader(data[2:])
 	itemId := packet.ReadInt32()
 	typee := packet.ReadInt32()

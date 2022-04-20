@@ -1,11 +1,16 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func MoveToLocation(location *models.BackwardToLocation, client *models.Client) []byte {
+func MoveToLocation(location *models.BackwardToLocation, clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
 
 	buffer := packets.Get()
 	defer packets.Put(buffer)

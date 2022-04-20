@@ -1,11 +1,16 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func ExStorageMaxCount(client *models.Client) []byte {
+func ExStorageMaxCount(clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
 	buffer := packets.Get()
 
 	buffer.WriteSingleByte(0xFE)

@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
@@ -8,7 +9,11 @@ import (
 )
 
 //Удаление предмета
-func DestroyItem(data []byte, client *models.Client) []byte {
+func DestroyItem(data []byte, clientI interfaces.ReciverAndSender) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
 	var packet = packets.NewReader(data)
 
 	objectId := packet.ReadInt32()

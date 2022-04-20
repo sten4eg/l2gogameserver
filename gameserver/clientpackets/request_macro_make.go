@@ -1,12 +1,18 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func RequestMakeMacro(client *models.Client, data []byte) []byte {
+func RequestMakeMacro(clientI interfaces.ReciverAndSender, data []byte) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
+
 	var packet = packets.NewReader(data)
 
 	macro := models.Macro{

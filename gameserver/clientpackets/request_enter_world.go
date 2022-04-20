@@ -2,6 +2,7 @@ package clientpackets
 
 import (
 	"l2gogameserver/gameserver/idfactory"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/serverpackets"
@@ -9,12 +10,15 @@ import (
 	"log"
 )
 
-func RequestEnterWorld(client *models.Client, data []byte) []byte {
-
+func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
 	buff := packets.Get()
 	defer packets.Put(buff)
 
-	pkg := serverpackets.UserInfo(client)
+	pkg := serverpackets.UserInfo(client.GetCurrentChar())
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
 	pkg2 := serverpackets.ExBrExtraUserInfo(client.CurrentChar)

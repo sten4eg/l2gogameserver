@@ -40,7 +40,7 @@ func registerShortCutInDb(shortCut dto.ShortCutDTO, charId, classId int32) {
 	}
 }
 
-func restoreMe(charId, classId int32) map[int32]dto.ShortCutDTO {
+func RestoreMe(charId, classId int32) map[int32]dto.ShortCutDTO {
 	dbConn, err := db.GetConn()
 	if err != nil {
 		panic(err)

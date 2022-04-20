@@ -1,12 +1,12 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 	"strconv"
 )
 
-func NpcHtmlMessage(client *models.Client, npcid int32) []byte {
+func NpcHtmlMessage(client interfaces.ReciverAndSender, npcid int32) []byte {
 
 	buffer := packets.Get()
 	defer packets.Put(buffer)

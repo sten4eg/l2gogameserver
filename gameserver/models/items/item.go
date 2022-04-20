@@ -81,7 +81,7 @@ type Item struct {
 	Price                  int                       `json:"price"`
 }
 
-// AllItems - ONLY READ MAP, set in init server
+// AllItems - ONLY READ MAP, set in init datapack
 var AllItems map[int]Item
 
 func LoadItems() {
@@ -103,7 +103,7 @@ func loadItems() {
 		return
 	}
 	log.Println("Загрузка предметов")
-	file, err := os.Open("./server/data/stats/items/items.json")
+	file, err := os.Open("./datapack/data/stats/items/items.json")
 	if err != nil {
 		panic("Failed to load config file")
 	}

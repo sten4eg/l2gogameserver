@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/race"
@@ -12,7 +13,11 @@ import (
 const formalWearId = 6408
 const fortFlagId = 9819
 
-func UseItem(client *models.Client, data []byte) []byte {
+func UseItem(clientI interfaces.ReciverAndSender, data []byte) []byte {
+	client, ok := clientI.(*models.Client)
+	if !ok {
+		return []byte{}
+	}
 	var packet = packets.NewReader(data)
 
 	objId := packet.ReadInt32() // targetObjId
@@ -107,7 +112,7 @@ func UseItem(client *models.Client, data []byte) []byte {
 	//todo надо бы это сделать в UseEquippableItem
 	client.CurrentChar.Paperdoll = models.RestoreVisibleInventory(client.CurrentChar.ObjectId)
 
-	pkg2 := serverpackets.UserInfo(client)
+	pkg2 := serverpackets.UserInfo(client.GetCurrentChar())
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
 	return buffer.Bytes()
