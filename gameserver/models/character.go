@@ -448,3 +448,7 @@ func (c *Character) CloseChannels() {
 	c.CharInfoTo = nil
 	c.DeleteObjectTo = nil
 }
+
+func (c *Character) GetClassId() int32 {
+	return c.ClassId
+}

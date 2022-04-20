@@ -1,7 +1,6 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/interfaces"
 	items2 "l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/multisell"
 	"l2gogameserver/packets"
@@ -9,27 +8,18 @@ import (
 
 const pageSize = 40
 
-//Отправка пакета на открытие мультиселла
-func MultisellShow(client interfaces.ReciverAndSender, msdata multisell.MultiList) {
-	buffer := packets.Get()
-	defer packets.Put(buffer)
-	pkg := MultiSell(client, msdata)
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-	client.SSend(buffer.Bytes())
-}
-
-//Отправка пакета
-func MultiSell(client interfaces.ReciverAndSender, msdata multisell.MultiList) []byte {
+//MultiSell Отправка пакета
+func MultiSell(msData multisell.MultiList) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0xD0)
-	buffer.WriteD(int32(msdata.ID))        // msdata.ID list id
+	buffer.WriteD(int32(msData.ID))        // msData.ID list id
 	buffer.WriteD(1)                       // page started from 1
 	buffer.WriteD(1)                       // finished
 	buffer.WriteD(pageSize)                // size of pages
-	buffer.WriteD(int32(len(msdata.Item))) // list length
-	for i, items := range msdata.Item {
+	buffer.WriteD(int32(len(msData.Item))) // list length
+	for i, items := range msData.Item {
 		buffer.WriteD(int32((i + 1) * 100000))
 		buffer.WriteSingleByte(0) //stack
 		buffer.WriteH(0)          // C6

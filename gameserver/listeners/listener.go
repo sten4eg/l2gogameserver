@@ -23,8 +23,7 @@ func channelListener(client interfaces.ReciverAndSender) {
 
 	for q := range ch.CurrentChar.ChannelUpdateShadowItem {
 		pkg := serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
-		i := client.CryptAndReturnPackageReadyToShip(pkg)
-		client.SSend(i)
+		client.EncryptAndSend(pkg)
 		if q.UpdateType == models.UpdateTypeRemove {
 			broadcast.BroadCastUserInfoInRadius(client, 2000)
 		}
@@ -42,7 +41,7 @@ func npcListener(client interfaces.ReciverAndSender) {
 			pkg := serverpackets.NpcInfo(q[i])
 			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 		}
-		client.SSend(buff.Bytes())
+		client.Send(buff.Bytes())
 		packets.Put(buff)
 	}
 }

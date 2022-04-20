@@ -41,13 +41,13 @@ func BypassToServer(data []byte, client interfaces.ReciverAndSender) {
 	log.Println(bypassInfo)
 	if bypassInfo[0] == "_bbshome" && bypassRequest == "_bbshome" {
 		//Открытие диалога по умолчанию
-		SendOpenDialogBBS(data, client, "./datapack/html/community/index.htm")
+		SendOpenDialogBBS(client, "./datapack/html/community/index.htm")
 	} else if bypassInfo[0] == "_bbspage" {
 		commandname := bypassInfo[1]
 		switch commandname {
 		//Запрос открытия диалога
 		case "open":
-			SendOpenDialogBBS(data, client, "./datapack/html/community/"+bypassInfo[2])
+			SendOpenDialogBBS(client, "./datapack/html/community/"+bypassInfo[2])
 
 		//Функции телепортации
 		case "teleport":
@@ -58,8 +58,8 @@ func BypassToServer(data []byte, client interfaces.ReciverAndSender) {
 					log.Println(err)
 					return
 				}
-				community.UserTeleport(client, teleportID)
-
+				pkg := community.UserTeleport(client, teleportID)
+				client.EncryptAndSend(pkg)
 			case "save":
 				log.Println("Сохранение позиции игрока")
 			case "to":
@@ -77,11 +77,12 @@ func BypassToServer(data []byte, client interfaces.ReciverAndSender) {
 					return
 				}
 				log.Println("Открыть мультиселл с ID", id)
-				multisell, ok := multisell.Get(client, id)
+				multisellList, ok := multisell.Get(client, id)
 				if !ok {
 					log.Println("Не найден запрашиваемый мультисел#")
 				}
-				serverpackets.MultisellShow(client, multisell)
+				pkg := serverpackets.MultiSell(multisellList)
+				client.EncryptAndSend(pkg)
 			}
 
 		}
@@ -89,8 +90,8 @@ func BypassToServer(data []byte, client interfaces.ReciverAndSender) {
 	}
 }
 
-//Открытие диалога и отправка клиенту диалога
-func SendOpenDialogBBS(data []byte, client interfaces.ReciverAndSender, filename string) {
+//SendOpenDialogBBS Открытие диалога и отправка клиенту диалога
+func SendOpenDialogBBS(client interfaces.ReciverAndSender, filename string) {
 	log.Println(filename)
 	htmlDialog, err := htm.Open(filename)
 	if err != nil {
@@ -119,25 +120,21 @@ func SendOpenDialogBBS(data []byte, client interfaces.ReciverAndSender, filename
 		bufferDialog2.WriteSlice(models.ShowBoard((*htmlDialog)[8180*2:], "103"))
 	}
 	buffer := packets.Get()
-
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(bufferDialog.Bytes()))
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(bufferDialog1.Bytes()))
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(bufferDialog2.Bytes()))
-	client.SSend(buffer.Bytes())
+	client.Send(buffer.Bytes())
+
+	packets.Put(buffer)
 }
 
-//Псевдопеременные из html комьюнити заменяем реальными
-func parseVariableBoard(clientI interfaces.ReciverAndSender, htmlcode *string) *string {
-	client, ok := clientI.(*models.Client)
-	if !ok {
-		return nil
-	}
-
+//parseVariableBoard Псевдопеременные из html комьюнити заменяем реальными
+func parseVariableBoard(client interfaces.ReciverAndSender, html *string) *string {
 	r := strings.NewReplacer(
-		"<?player_name?>", client.CurrentChar.CharName,
-		"<?player_class?>", strconv.Itoa(int(client.CurrentChar.ClassId)),
+		"<?player_name?>", client.GetCurrentChar().GetName(),
+		"<?player_class?>", strconv.Itoa(int(client.GetCurrentChar().GetClassId())),
 		"<?cb_time?>", time.Now().Format(time.RFC850),
 	)
-	result := r.Replace(*htmlcode)
+	result := r.Replace(*html)
 	return &result
 }

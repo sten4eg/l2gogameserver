@@ -61,21 +61,22 @@ func BroadCastChat(me interfaces.ReciverAndSender, say models.Say) {
 	case chat.All:
 		cs := serverpackets.CreatureSay(&say, me.GetCurrentChar())
 		pb.SetData(cs)
-		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
+		me.EncryptAndSend(pb.GetData())
 		ToAroundPlayerInRadius(me, pb, chat.AllChatRange)
 	case chat.Tell:
 		cs := serverpackets.CreatureSay(&say, me.GetCurrentChar())
 		pb.SetData(cs)
 		ok := BroadCastToCharacterByName(pb, say.To)
 		if ok {
-			me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
+			me.EncryptAndSend(pb.GetData())
 		} else {
 			// systemMSG что не найден перс
 		}
 	case chat.Shout:
 		cs := serverpackets.CreatureSay(&say, me.GetCurrentChar())
 		pb.SetData(cs)
-		me.SSend(me.CryptAndReturnPackageReadyToShip(pb.GetData()))
+		me.EncryptAndSend(pb.GetData())
+
 		ToAroundPlayerInRadius(me, pb, chat.ShoutChatRange)
 		//todo что за SpecialCommand ?
 		//case chat.SpecialCommand:
@@ -115,7 +116,7 @@ func BroadCastToCharacterByName(pkg *utils.PacketByte, to string) bool {
 func SendCharInfoAboutCharactersInRadius(me interfaces.ReciverAndSender, radius int32) {
 	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius)
 	for i := range charsIds {
-		me.SSend(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(charsIds[i])))
+		me.EncryptAndSend(serverpackets.CharInfo(charsIds[i]))
 	}
 }
 
@@ -123,14 +124,15 @@ func SendCharInfoAboutCharactersInRadius(me interfaces.ReciverAndSender, radius 
 func SendCharInfoAboutCharactersAround(me *models.Client) {
 	charsIds := models.GetAroundPlayer(me.CurrentChar)
 	for i := range charsIds {
-		me.Send(me.CryptAndReturnPackageReadyToShip(serverpackets.CharInfo(charsIds[i])))
+		me.EncryptAndSend(serverpackets.CharInfo(charsIds[i]))
 	}
 }
 
 func Checkaem(client interfaces.ReciverAndSender, l models.BackwardToLocation) {
 	ut := utils.GetPacketByte()
 	ut.SetData(serverpackets.MoveToLocation(&l, client))
-	client.SSend(client.CryptAndReturnPackageReadyToShip(ut.GetData()))
+
+	client.EncryptAndSend(ut.GetData())
 	BroadCastToAroundPlayers(client, ut)
 }
 

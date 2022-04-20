@@ -42,6 +42,7 @@ type CharacterI interface {
 	UniquerId
 	EncryptAndSend(data []byte)
 	CloseChannels()
+	GetClassId() int32
 }
 type ReciverAndSender interface {
 	Receive() (opcode byte, data []byte, e error)
