@@ -119,4 +119,5 @@ func UseItem(clientI interfaces.ReciverAndSender, data []byte) {
 	pkg2 := serverpackets.UserInfo(client.GetCurrentChar())
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
+	client.Send(buffer.Bytes())
 }
