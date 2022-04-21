@@ -7,7 +7,6 @@ import (
 	"l2gogameserver/gameserver/clientpackets"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/listeners"
-	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"log"
 )
@@ -28,17 +27,11 @@ func Handler(client interfaces.ReciverAndSender) {
 			clientpackets.Logout(client, data)
 
 		case 26: //Запрос другому персонажу на желание торговать
-			userTradeID := clientpackets.TradeRequest(data, client)
-			toUser, ok := g.UserInstanceID(userTradeID)
-			if !ok {
-				log.Println("UserInstanceID NIL")
-			}
-			serverpackets.TradeSendRequest(client, toUser)
+			clientpackets.TradeRequest(data, client)
 		case 85: //AnswerTradeRequest (если пользователь отвечает Да/Нет на предложение торговли)
 			clientpackets.AnswerTradeRequest(data, client)
 		case 27: //AddTradeItem
-			pkg := clientpackets.AddTradeItem(data, client)
-			client.SSend(pkg)
+			clientpackets.AddTradeItem(data, client)
 		case 28: //tradeDone
 			clientpackets.TradeDone(data, client)
 

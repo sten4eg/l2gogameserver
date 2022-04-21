@@ -1,35 +1,29 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
-	"l2gogameserver/gameserver/models/trade"
 	"l2gogameserver/packets"
-	"l2gogameserver/utils"
-	"log"
 )
 
-func TradeSendRequest(client, toUser *models.Client) {
+func TradeSendRequest(target interfaces.CharacterI) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
+
 	buffer.WriteSingleByte(0x70)
-	buffer.WriteD(toUser.CurrentChar.ObjectId)
-	log.Println("Отправлен запрос к", toUser.CurrentChar.CharName)
+	buffer.WriteD(target.GetObjectId())
 
-	ut := utils.GetPacketByte()
-	ut.SetData(buffer.Bytes())
-	toUser.EncryptAndSend(ut.GetData())
-
-	trade.NewRequestTrade(client, toUser)
+	return buffer.Bytes()
 }
 
-func TradeStart(player *models.Client) []byte {
+func TradeStart(player *models.Character) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x14)
-	buffer.WriteD(player.CurrentChar.ObjectId)
-	buffer.WriteH(int16(len(player.CurrentChar.Inventory.Items)))
-	for _, item := range player.CurrentChar.Inventory.Items {
+	buffer.WriteD(player.ObjectId)
+	buffer.WriteH(int16(len(player.Inventory.Items)))
+	for _, item := range player.Inventory.Items {
 		buffer.WriteD(item.ObjId)           // ObjectId
 		buffer.WriteD(int32(item.Id))       // ItemId
 		buffer.WriteD(item.LocData)         // T1

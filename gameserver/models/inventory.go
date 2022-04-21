@@ -4,9 +4,12 @@ import (
 	"context"
 	"github.com/jackc/pgx/v4"
 	"l2gogameserver/db"
+	"l2gogameserver/gameserver/idfactory"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/items/armorType"
 	"l2gogameserver/gameserver/models/items/attribute"
+	"l2gogameserver/gameserver/models/items/consumeType"
 	"l2gogameserver/gameserver/models/items/etcItemType"
 	"l2gogameserver/gameserver/models/items/weaponType"
 	"log"
@@ -661,4 +664,120 @@ func RemoveItemCharacter(character *Character, item *MyItem, count int64) {
 		}
 		item.Count = newCount
 	}
+}
+
+func ExistItemObject(characterI interfaces.CharacterI, objectId int32, count int64) (*MyItem, bool) {
+	character, ok := characterI.(*Character)
+	if !ok {
+		panic("ExistItemObject not character")
+	}
+	for _, item := range character.Inventory.Items {
+		if item.ObjId == objectId && item.Count >= count {
+			return &item, true
+		}
+	}
+	return nil, false
+}
+
+func AddInventoryItem(character *Character, item *MyItem, count int64) (*MyItem, bool) {
+	log.Println("Добавление предмета ", item.Name, "count : ", count)
+
+	dbConn, err := db.GetConn()
+	if err != nil {
+		panic(err)
+	}
+	defer dbConn.Release()
+
+	for _, inv := range character.Inventory.Items {
+		if inv.Item.Id == item.Id {
+			//Если предмет стакуемый, тогда изменим его значение
+			log.Println("Предмет найден в инвентаре у ", character.CharName)
+			if inv.ConsumeType == consumeType.Stackable || inv.ConsumeType == consumeType.Asset {
+				inv.Count += count
+				log.Println("Будет произведено обновление предмета и увеличино", inv.Count)
+				_, err = dbConn.Exec(context.Background(), `UPDATE "items" SET "count" = $1 WHERE "owner_id" = $2 AND "item" = $3`, inv.Count, character.ObjectId, inv.Item.Id)
+				if err != nil {
+					panic(err)
+				}
+				return &inv, true
+			} else { //Если предмет не стакуемый, тогда добавим новое значение
+				log.Println("Предмет не стыкуемый, будем делать новую запись для", character.CharName)
+				item.ObjId = idfactory.GetNext()
+				item.Count = count
+				item.LocData = getFirstEmptySlot(character.Inventory.Items)
+				character.Inventory.Items = append(character.Inventory.Items, *item)
+				_, err = dbConn.Exec(context.Background(), `INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', 0, 0, 0, 0, '-1', 0, 0)`, character.ObjectId, item.ObjId, item.Item.Id, item.Count)
+				if err != nil {
+					panic(err)
+				}
+				return item, true
+			}
+		}
+	}
+
+	log.Println("Предмет не найден, будем добавлять новый предмет для", character.CharName)
+	item.ObjId = idfactory.GetNext()
+	item.Count = count
+	item.LocData = getFirstEmptySlot(character.Inventory.Items)
+	character.Inventory.Items = append(character.Inventory.Items, *item)
+	_, err = dbConn.Exec(context.Background(), `INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', $5, 0, 0, 0, '-1', 0, 0)`, character.ObjectId, item.ObjId, item.Item.Id, item.Count, item.LocData)
+	if err != nil {
+		panic(err)
+	}
+
+	return item, false
+}
+
+func (i *Inventory) RemoveItem(character *Character, item *MyItem, count int64) (*MyItem, int16, bool) {
+	dbConn, err := db.GetConn()
+	if err != nil {
+		panic(err)
+	}
+	defer dbConn.Release()
+
+	for index, itm := range i.Items {
+		if itm.Id == item.Id {
+			log.Println("Удаление найдено", item.Name, count, character.CharName)
+			if itm.ConsumeType == consumeType.Stackable || itm.ConsumeType == consumeType.Asset {
+				itm.Count -= count
+				if itm.Count <= 0 {
+					log.Println("Ожидаюсь тут..2.")
+					_, err = dbConn.Exec(context.Background(), `DELETE FROM "items" WHERE "owner_id" = $1 AND "object_id" = $2 AND "item" = $3`, character.ObjectId, itm.ObjId, itm.Id)
+					if err != nil {
+						panic(err)
+					}
+					i.Items = append(i.Items[:index], i.Items[index+1:]...)
+					return nil, UpdateTypeRemove, true
+				} else {
+					log.Println("Ожидаюсь тут..1.")
+					_, err = dbConn.Exec(context.Background(), `UPDATE "items" SET "count" = $1 WHERE "owner_id" = $2 AND "object_id" = $3 AND "item" = $4`, itm.Count, character.ObjectId, itm.ObjId, itm.Id)
+					if err != nil {
+						panic(err)
+					}
+					i.Items[index].Count = itm.Count
+					log.Println(i.Items[index].Id, i.Items[index].Count)
+					return &i.Items[index], UpdateTypeModify, true
+				}
+			} else {
+				log.Println("Ожидаюсь тут..3.")
+				_, err = dbConn.Exec(context.Background(), `DELETE FROM "items" WHERE "owner_id" = $1 AND "object_id" = $2 AND "item" = $3`, character.ObjectId, itm.ObjId, itm.Item.Id)
+				if err != nil {
+					panic(err)
+				}
+				i.Items = append(i.Items[:index], i.Items[index+1:]...)
+				return nil, UpdateTypeRemove, true
+			}
+		}
+	}
+	log.Println("Удаление не найдено")
+	return &MyItem{}, UpdateTypeModify, false
+}
+
+func (i *Inventory) ExistItemID(id int) (*MyItem, bool) {
+	for _, item := range i.Items {
+		if item.Id == id {
+			return &item, true
+		}
+	}
+	return &MyItem{}, false
 }

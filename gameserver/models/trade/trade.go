@@ -1,6 +1,7 @@
 package trade
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"log"
 	"time"
@@ -17,9 +18,9 @@ const (
 )
 
 type Action struct {
-	UserID    int32 //ID персонажа
+	ObjectId  int32 //objectId персонажа
 	Completed bool  //true подтверждение сделки
-	Client    *models.Client
+	Client    *models.Character
 	Items     []*models.MyItem
 }
 
@@ -33,16 +34,25 @@ type Exchange struct {
 
 var allTrade []*Exchange
 
-//Добавляем в реестр трейдов
-func NewRequestTrade(sender, recipient *models.Client) {
+//NewRequestTrade Добавляем в реестр трейдов
+func NewRequestTrade(senderI, recipientI interfaces.CharacterI) {
+	sender, ok := senderI.(*models.Character)
+	if !ok {
+		panic("NewRequestTrade sender not client")
+	}
+	recipient, ok := recipientI.(*models.Character)
+	if !ok {
+		panic("NewRequestTrade sender not client")
+	}
+
 	u := &Exchange{
 		Sender: Action{
-			UserID: sender.CurrentChar.ObjectId,
-			Client: sender,
+			ObjectId: sender.ObjectId,
+			Client:   sender,
 		},
 		Recipient: Action{
-			UserID: recipient.CurrentChar.ObjectId,
-			Client: recipient,
+			ObjectId: recipient.ObjectId,
+			Client:   recipient,
 		},
 		Status: Wait,
 		Time:   time.Now(),
@@ -50,10 +60,10 @@ func NewRequestTrade(sender, recipient *models.Client) {
 	allTrade = append(allTrade, u)
 }
 
-//Когда пользователь отвечает "Да" или "нет" на предложение торговать
-func TradeAnswer(client *models.Client, response int32) (*Exchange, bool) {
+//Answer Когда пользователь отвечает "Да" или "нет" на предложение торговать
+func Answer(client interfaces.CharacterI) (*Exchange, bool) {
 	for _, exchange := range allTrade {
-		if exchange.Recipient.UserID == client.CurrentChar.ObjectId {
+		if exchange.Recipient.ObjectId == client.GetObjectId() {
 			exchange.ChangeStatusTrade(During)
 			//Теперь отправляем пакет на "открытие" окна обмена
 			return exchange, true
@@ -66,11 +76,11 @@ func (e *Exchange) ChangeStatusTrade(st StatusTrade) {
 	e.Status = st
 }
 
-func AddItemTrade(client *models.Client, objectId int32, count int64) (*models.MyItem, *models.Client, bool) {
+func AddItemTrade(client interfaces.CharacterI, objectId int32, count int64) (*models.MyItem, interfaces.CharacterI, bool) {
 	for _, exchange := range allTrade {
 		//Проверяем, есть ли предмет в инвентаре
-		if exchange.Sender.UserID == client.CurrentChar.ObjectId {
-			if item, ok := models.ExistItemObject(client.CurrentChar, objectId, count); ok {
+		if exchange.Sender.ObjectId == client.GetObjectId() {
+			if item, ok := models.ExistItemObject(client, objectId, count); ok {
 				//Проверяем, уже добавили предмет в трейд на обмене
 				if exchange.ExistItemTradeObject(client, objectId) {
 					log.Println("Вы уже добавили этот предмет в инвентарь")
@@ -82,8 +92,8 @@ func AddItemTrade(client *models.Client, objectId int32, count int64) (*models.M
 			} else {
 				log.Println("Не найден предмет или неверное количество предметов")
 			}
-		} else if exchange.Recipient.UserID == client.CurrentChar.ObjectId {
-			if item, ok := models.ExistItemObject(client.CurrentChar, objectId, count); ok {
+		} else if exchange.Recipient.ObjectId == client.GetObjectId() {
+			if item, ok := models.ExistItemObject(client, objectId, count); ok {
 				if exchange.ExistItemTradeObject(client, objectId) {
 					log.Println("Вы уже добавили этот предмет в инвентарь")
 					return item, exchange.Sender.Client, false
@@ -99,17 +109,17 @@ func AddItemTrade(client *models.Client, objectId int32, count int64) (*models.M
 	return &models.MyItem{}, nil, false
 }
 
-//Проверяет, есть ли в трайде уже добавленный X предмет
-func (e *Exchange) ExistItemTradeObject(client *models.Client, objectid int32) bool {
+//ExistItemTradeObject Проверяет, есть ли в трайде уже добавленный X предмет
+func (e *Exchange) ExistItemTradeObject(client interfaces.CharacterI, objectid int32) bool {
 	for _, exchanges := range allTrade {
-		if exchanges.Sender.UserID == client.CurrentChar.ObjectId {
+		if exchanges.Sender.ObjectId == client.GetObjectId() {
 			for _, exchange := range exchanges.Sender.Items {
 				if exchange.ObjId == objectid {
 					return true
 				}
 			}
 		}
-		if exchanges.Recipient.UserID == client.CurrentChar.ObjectId {
+		if exchanges.Recipient.ObjectId == client.GetObjectId() {
 			for _, exchange := range exchanges.Recipient.Items {
 				if exchange.ObjId == objectid {
 					return true
@@ -120,18 +130,21 @@ func (e *Exchange) ExistItemTradeObject(client *models.Client, objectid int32) b
 	return false
 }
 
-//Пользователь отменил сделку
+//FindTrade Пользователь отменил сделку
 //Возращает ID персонажей, которые участвовали в торговле
-func FindTrade(client *models.Client) (*models.Client, *Exchange, bool) {
-	var playerTo *models.Client
+func FindTrade(client interfaces.CharacterI) (interfaces.CharacterI, *Exchange, bool) {
+	var playerTo interfaces.CharacterI
 	for _, exchange := range allTrade {
-		if exchange.Sender.UserID == client.CurrentChar.ObjectId {
+		if exchange.Sender.ObjectId == client.GetObjectId() {
 			playerTo = exchange.Recipient.Client
-		} else if exchange.Recipient.UserID == client.CurrentChar.ObjectId {
+			exchange.ChangeStatusTrade(Cancel)
+			return playerTo, exchange, true
+		} else if exchange.Recipient.ObjectId == client.GetObjectId() {
 			playerTo = exchange.Sender.Client
+			exchange.ChangeStatusTrade(Cancel)
+			return playerTo, exchange, true
 		}
-		exchange.ChangeStatusTrade(Cancel)
-		return playerTo, exchange, true
+
 	}
 	return nil, nil, false
 }
@@ -142,9 +155,9 @@ func TradeOK(client *models.Client) {
 }
 
 //Очистка информации трейде
-func TradeUserClear(client *models.Client) bool {
+func TradeUserClear(client interfaces.CharacterI) bool {
 	for index, exchange := range allTrade {
-		if exchange.Sender.UserID == client.CurrentChar.ObjectId || exchange.Recipient.UserID == client.CurrentChar.ObjectId {
+		if exchange.Sender.ObjectId == client.GetObjectId() || exchange.Recipient.ObjectId == client.GetObjectId() {
 			allTrade = append(allTrade[:index], allTrade[index+1:]...)
 			return true
 		}
@@ -152,23 +165,31 @@ func TradeUserClear(client *models.Client) bool {
 	return false
 }
 
-//Обмен предметами
-func TradeAddInventory(client, player2 *models.Client, exchange *Exchange) ([]*models.MyItem, []*models.MyItem) {
+//TradeAddInventory Обмен предметами
+func TradeAddInventory(clientI, player2I interfaces.CharacterI, exchange *Exchange) ([]*models.MyItem, []*models.MyItem) {
 	var allItemUpdateClient []*models.MyItem
 	var allItemUpdatePlayer []*models.MyItem
 
+	client, ok := clientI.(*models.Character)
+	if !ok {
+		panic("TradeAddInventory clientI not character")
+	}
+	player2, ok := player2I.(*models.Character)
+	if !ok {
+		panic("TradeAddInventory clientI not character")
+	}
 	for _, itm := range exchange.Sender.Items {
-		if exchange.Sender.UserID == client.CurrentChar.ObjectId {
-			log.Println(itm.Name, itm.Count, player2.CurrentChar.CharName)
-			client.CurrentChar.Inventory.RemoveItem(client, itm, itm.Count)
+		if exchange.Sender.ObjectId == client.GetObjectId() {
+			log.Println(itm.Name, itm.Count, player2.CharName)
+			client.Inventory.RemoveItem(client, itm, itm.Count)
 			mi, ok := models.AddInventoryItem(player2, itm, itm.Count)
 			if !ok {
 				log.Println("НЕ ОК")
 			}
 			allItemUpdateClient = append(allItemUpdateClient, mi)
 		} else {
-			log.Println(itm.Name, itm.Count, client.CurrentChar.CharName)
-			player2.CurrentChar.Inventory.RemoveItem(player2, itm, itm.Count)
+			log.Println(itm.Name, itm.Count, client.CharName)
+			player2.Inventory.RemoveItem(player2, itm, itm.Count)
 			mi, ok := models.AddInventoryItem(client, itm, itm.Count)
 			if !ok {
 				log.Println("НЕ ОК")
@@ -178,17 +199,17 @@ func TradeAddInventory(client, player2 *models.Client, exchange *Exchange) ([]*m
 	}
 
 	for _, itm := range exchange.Recipient.Items {
-		if exchange.Sender.UserID == client.CurrentChar.ObjectId {
-			log.Println(itm.Name, itm.Count, client.CurrentChar.CharName)
-			player2.CurrentChar.Inventory.RemoveItem(player2, itm, itm.Count)
+		if exchange.Sender.ObjectId == client.ObjectId {
+			log.Println(itm.Name, itm.Count, client.CharName)
+			player2.Inventory.RemoveItem(player2, itm, itm.Count)
 			mi, ok := models.AddInventoryItem(client, itm, itm.Count)
 			if !ok {
 				log.Println("НЕ ОК")
 			}
 			allItemUpdateClient = append(allItemUpdateClient, mi)
 		} else {
-			log.Println(itm.Name, itm.Count, player2.CurrentChar.CharName)
-			client.CurrentChar.Inventory.RemoveItem(client, itm, itm.Count)
+			log.Println(itm.Name, itm.Count, player2.CharName)
+			client.Inventory.RemoveItem(client, itm, itm.Count)
 			mi, ok := models.AddInventoryItem(player2, itm, itm.Count)
 			if !ok {
 				log.Println("НЕ ОК")

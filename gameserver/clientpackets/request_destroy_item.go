@@ -33,6 +33,6 @@ func DestroyItem(data []byte, clientI interfaces.ReciverAndSender) {
 	models.RemoveItemCharacter(client.CurrentChar, item, int64(count))
 	log.Println("Предмет был удален!")
 
-	pkg := serverpackets.InventoryUpdate(client, item, models.UpdateTypeRemove)
+	pkg := serverpackets.InventoryUpdate(item, models.UpdateTypeRemove)
 	client.EncryptAndSend(pkg)
 }

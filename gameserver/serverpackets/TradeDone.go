@@ -1,24 +1,24 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
 )
 
 //Отмена торга
-func TradeCancel(client, player2 *models.Client) {
+func TradeCancel(client, player2 interfaces.CharacterI) {
 	tradeSend(client, false)
 	tradeSend(player2, false)
 }
 
 //Пакет обмена
-func TradeOK(client, player2 *models.Client) {
+func TradeOK(client, player2 interfaces.CharacterI) {
 	tradeSend(client, true)
 	tradeSend(player2, true)
 }
 
-func tradeSend(client *models.Client, tradeOK bool) {
+func tradeSend(client interfaces.CharacterI, tradeOK bool) {
 	var trade int32
 	if tradeOK {
 		trade = 1

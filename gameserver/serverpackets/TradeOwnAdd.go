@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func TradeOwnOAdd(client *models.Client, item *models.MyItem, count uint64) []byte {
+func TradeOwnOAdd(item *models.MyItem, count uint64) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 	buffer.WriteSingleByte(0x1A)

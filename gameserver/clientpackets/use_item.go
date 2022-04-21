@@ -109,7 +109,7 @@ func UseItem(clientI interfaces.ReciverAndSender, data []byte) {
 
 	models.SaveInventoryInDB(client.CurrentChar.Inventory.Items)
 
-	pkg := serverpackets.InventoryUpdate(client, selectedItem, models.UpdateTypeModify)
+	pkg := serverpackets.InventoryUpdate(selectedItem, models.UpdateTypeModify)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
 	// После каждого use_item будет запрос в бд на восстановление paperdoll,

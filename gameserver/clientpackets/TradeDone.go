@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/trade"
 	"l2gogameserver/gameserver/serverpackets"
@@ -10,31 +11,31 @@ import (
 )
 
 //Игрок подтвердил сделку
-func TradeDone(data []byte, client *models.Client) {
+func TradeDone(data []byte, client interfaces.ReciverAndSender) {
 	var packet = packets.NewReader(data)
 	response := packet.ReadInt32() // 1 - пользователь нажал ОК, 0 пользователь отменил трейд
 
-	player2, exchange, ok := trade.FindTrade(client)
+	player2, exchange, ok := trade.FindTrade(client.GetCurrentChar())
 	if !ok {
 		log.Println("Обменивающихся не найдено")
 		return
 	}
 	if response == 1 {
-		if exchange.Sender.UserID == client.CurrentChar.ObjectId {
+		if exchange.Sender.ObjectId == client.GetCurrentChar().GetObjectId() {
 			exchange.Sender.Completed = true
-			log.Printf("Игрок %s подтвердил сделку\n", client.CurrentChar.CharName)
+			log.Printf("Игрок %s подтвердил сделку\n", client.GetCurrentChar().GetName())
 			serverpackets.TradeOtherDone(player2)
 		}
-		if exchange.Recipient.UserID == client.CurrentChar.ObjectId {
+		if exchange.Recipient.ObjectId == client.GetCurrentChar().GetObjectId() {
 			exchange.Recipient.Completed = true
-			log.Printf("Игрок %s подтвердил сделку\n", client.CurrentChar.CharName)
-			serverpackets.TradeOtherDone(client)
+			log.Printf("Игрок %s подтвердил сделку\n", client.GetCurrentChar().GetName())
+			serverpackets.TradeOtherDone(client.GetCurrentChar())
 		}
 		if exchange.Recipient.Completed == exchange.Sender.Completed {
 			log.Println("Обмен завершен успешно")
-			serverpackets.TradeOK(client, player2)
+			serverpackets.TradeOK(client.GetCurrentChar(), player2)
 			//Теперь сделаем физическую передачу предметов от персонажа к персонажу
-			cplayer, toplayer := trade.TradeAddInventory(client, player2, exchange)
+			cplayer, toplayer := trade.TradeAddInventory(client.GetCurrentChar(), player2, exchange)
 
 			buffer := packets.Get()
 			defer packets.Put(buffer)
@@ -42,7 +43,7 @@ func TradeDone(data []byte, client *models.Client) {
 			for _, item := range cplayer {
 				log.Println(item)
 				ut1 := utils.GetPacketByte()
-				ut1.SetData(serverpackets.InventoryUpdate(client, item, models.UpdateTypeModify))
+				ut1.SetData(serverpackets.InventoryUpdate(item, models.UpdateTypeModify))
 				client.EncryptAndSend(ut1.GetData())
 			}
 
@@ -50,18 +51,18 @@ func TradeDone(data []byte, client *models.Client) {
 				log.Println(item)
 
 				ut1 := utils.GetPacketByte()
-				ut1.SetData(serverpackets.InventoryUpdate(player2, item, models.UpdateTypeModify))
+				ut1.SetData(serverpackets.InventoryUpdate(item, models.UpdateTypeModify))
 				player2.EncryptAndSend(ut1.GetData())
 			}
 
-			if ok = trade.TradeUserClear(client); !ok {
+			if ok = trade.TradeUserClear(client.GetCurrentChar()); !ok {
 				log.Println("Трейд не найден")
 				return
 			}
 		}
 	} else if response == 0 {
-		serverpackets.TradeCancel(client, player2)
-		if ok = trade.TradeUserClear(client); !ok {
+		serverpackets.TradeCancel(client.GetCurrentChar(), player2)
+		if ok = trade.TradeUserClear(client.GetCurrentChar()); !ok {
 			log.Println("Трейд не найден")
 			return
 		}

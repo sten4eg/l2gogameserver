@@ -136,6 +136,10 @@ func Checkaem(client interfaces.ReciverAndSender, l models.BackwardToLocation) {
 	BroadCastToAroundPlayers(client, ut)
 }
 
+func GetCharacterByObjectId(id int32) interfaces.CharacterI {
+	return gameserver.GetNetConnByCharObjectId(id)
+}
+
 //func (g *GameServer) Tick() {
 //	for {
 //		g.clients.Range(func(k, v interface{}) bool {

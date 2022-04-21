@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/trade"
 	"l2gogameserver/gameserver/serverpackets"
@@ -9,34 +10,31 @@ import (
 	"log"
 )
 
-//Когда игрок добавляет предмет в трейде
-func AddTradeItem(data []byte, client *models.Client) []byte {
+//AddTradeItem Когда игрок добавляет предмет в трейде
+func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
 	var packet = packets.NewReader(data)
 
 	_ = packet.ReadInt32()
-	objectid := packet.ReadInt32()
+	objectId := packet.ReadInt32() // objectId предмета
 	count := packet.ReadUInt64()
 
-	item, toUser, ok := trade.AddItemTrade(client, objectid, int64(count))
+	item, toUser, ok := trade.AddItemTrade(client.GetCurrentChar(), objectId, int64(count))
 	if !ok {
 		log.Println("Не добавлен предмет")
-		return nil
+		return
 	}
-	buff := packets.Get()
-	defer packets.Put(buff)
-	pkg := serverpackets.TradeOwnOAdd(client, item, count)
-	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+
+	pkg := serverpackets.TradeOwnOAdd(item, count)
+	client.EncryptAndSend(pkg)
 
 	TradeOtherAdd(toUser, item, count)
-
-	return buff.Bytes()
 
 }
 
 //Шлется инфа для другого игрока в обмене
-func TradeOtherAdd(toUser *models.Client, item *models.MyItem, count uint64) {
+func TradeOtherAdd(toUser interfaces.CharacterI, item *models.MyItem, count uint64) {
 
-	pkg := serverpackets.TradeOtherAdd(toUser, item, count)
+	pkg := serverpackets.TradeOtherAdd(item, count)
 	ut := utils.GetPacketByte()
 	ut.SetData(pkg)
 	toUser.EncryptAndSend(ut.GetData())

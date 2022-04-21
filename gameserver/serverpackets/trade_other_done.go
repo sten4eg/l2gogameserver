@@ -1,12 +1,12 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
 )
 
-func TradeOtherDone(client *models.Client) {
+func TradeOtherDone(client interfaces.CharacterI) {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 	buffer.WriteSingleByte(0x82)

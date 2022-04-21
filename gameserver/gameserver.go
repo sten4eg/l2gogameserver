@@ -20,6 +20,15 @@ func GetNetConnByCharacterName(name string) interfaces.ReciverAndSender {
 	return nil
 }
 
+func GetNetConnByCharObjectId(id int32) interfaces.CharacterI {
+	for i, v := range OnlineCharacters.Char {
+		if v.GetObjectId() == id {
+			return OnlineCharacters.Char[i]
+		}
+	}
+	return nil
+}
+
 func AddOnlineChar(character interfaces.CharacterI) {
 	ch, ok := character.(*models.Character)
 	if !ok {

@@ -11,7 +11,7 @@ func InventoryUpdate(client interfaces.ReciverAndSender, item *models.MyItem, up
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
-	pkg := serverpackets.InventoryUpdate(client, item, updateType)
+	pkg := serverpackets.InventoryUpdate(item, updateType)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
 	return buffer.Bytes()
