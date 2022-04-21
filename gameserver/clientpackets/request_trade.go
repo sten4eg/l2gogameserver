@@ -14,7 +14,7 @@ func TradeRequest(data []byte, client interfaces.ReciverAndSender) {
 	targetObjectId := packet.ReadInt32()
 
 	target := broadcast.GetCharacterByObjectId(targetObjectId)
-	if target != nil {
+	if target == nil {
 		log.Println("TradeRequest target not found")
 		return
 	}
