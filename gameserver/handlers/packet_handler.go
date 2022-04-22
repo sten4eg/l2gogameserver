@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"fmt"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/clientpackets"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/listeners"
 	"l2gogameserver/packets"
-	"log"
 )
 
 // Handler loop клиента в ожидании входящих пакетов
@@ -21,7 +21,7 @@ func Handler(client interfaces.ReciverAndSender) {
 			gameserver.CharOffline(client)
 			break // todo  return ?
 		}
-		log.Println("Client->Server: #", opcode, packets.GetNamePacket(opcode))
+		logger.Info.Println("Client->Server: #", opcode, packets.GetNamePacket(opcode))
 		switch opcode {
 		case 0:
 			clientpackets.Logout(client, data)
@@ -64,13 +64,13 @@ func Handler(client interfaces.ReciverAndSender) {
 				case 36:
 					clientpackets.RequestSaveInventoryOrder(client, data)
 				default:
-					log.Println("Не реализованный пакет: ", data[0], packets.GetNamePacket(data[0]))
+					logger.Info.Println("Не реализованный пакет: ", data[0], packets.GetNamePacket(data[0]))
 				}
 			}
 
 		case 86:
 			if len(data) >= 2 {
-				log.Println(data[0])
+				logger.Info.Println(data[0])
 				switch data[0] {
 				case 0: //посадить персонажа на жопу
 					clientpackets.ChangeWaitType(client)
@@ -135,7 +135,7 @@ func Handler(client interfaces.ReciverAndSender) {
 		case 205:
 			clientpackets.RequestMakeMacro(client, data)
 		default:
-			log.Println("Not Found case with opcode: ", opcode)
+			logger.Info.Println("Not Found case with opcode: ", opcode)
 		}
 
 	}

@@ -1,6 +1,7 @@
 package serverpackets
 
 import (
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
@@ -10,7 +11,7 @@ func NpcInfo(npcI interfaces.Npcer) []byte {
 
 	npc, ok := npcI.(models.Npc)
 	if !ok {
-		panic("NpcInfo convert to npc panic")
+		logger.Error.Panicln("NpcInfo convert to npc logger.Error.Panicln")
 	}
 	buffer := packets.Get()
 	defer packets.Put(buffer)

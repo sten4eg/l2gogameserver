@@ -107,7 +107,7 @@ var AllStats map[int]Stats
 func LoadStats() {
 	file, err := os.Open("./datapack/data/stats/char/classList.json")
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	classes := make([]Class, 0, 107)
 	err = json.NewDecoder(file).Decode(&classes)

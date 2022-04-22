@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
 )
 
@@ -12,7 +13,7 @@ func (c *Client) SaveUser() {
 func (c *Client) saveLocation() {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 
@@ -20,6 +21,6 @@ func (c *Client) saveLocation() {
 	x, y, z := c.CurrentChar.GetXYZ()
 	_, err = dbConn.Exec(context.Background(), sql, x, y, z, c.CurrentChar.ObjectId)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 }

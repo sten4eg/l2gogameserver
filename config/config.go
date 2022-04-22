@@ -43,9 +43,9 @@ func Get() GameServer {
 }
 
 func read() Data {
-	file, err := os.Open("./config/con1fig.json")
+	file, err := os.Open("./config/config.json")
 	if err != nil {
-		logger.Error.Panicln("Failed to load config file")
+		logger.Error.Panicln("Failed to load /config/config.json file")
 	}
 
 	decoder := json.NewDecoder(file)

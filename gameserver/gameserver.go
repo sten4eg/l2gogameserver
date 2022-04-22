@@ -1,9 +1,9 @@
 package gameserver
 
 import (
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
-	"log"
 )
 
 var OnlineCharacters *models.OnlineCharacters
@@ -32,7 +32,7 @@ func GetNetConnByCharObjectId(id int32) interfaces.CharacterI {
 func AddOnlineChar(character interfaces.CharacterI) {
 	ch, ok := character.(*models.Character)
 	if !ok {
-		panic("addOnlineCharPanic")
+		logger.Error.Panicln("addOnlineCharlogger.Error.Panicln")
 	}
 	OnlineCharacters.Char[character.GetObjectId()] = ch
 }
@@ -46,7 +46,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 	client.GetCurrentChar().CloseChannels()
 
 	//todo close all character goroutine, save info in DB
-	log.Println("Socket Close For: ", client.GetCurrentChar().GetName())
+	logger.Info.Println("Socket Close For: ", client.GetCurrentChar().GetName())
 }
 
 //
@@ -84,7 +84,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //	/* #nosec */
 //	g.clientsListener, err = net.Listen("tcp4", ":7777")
 //	if err != nil {
-//		panic(err.Error())
+//		logger.Error.Panicln(err.Error())
 //	}
 //
 //	var onlineChars broadcast.OnlineCharacters
@@ -111,7 +111,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //func (g *GameServer) ChannelListener(client interfaces.ReciverAndSender) {
 //	ch, ok := client.(*models.Client)
 //	if !ok {
-//		panic("ChannelListenerPanic")
+//		logger.Error.Panicln("ChannelListenerlogger.Error.Panicln")
 //	}
 //
 //	for q := range ch.CurrentChar.ChannelUpdateShadowItem {
@@ -127,7 +127,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //func (g *GameServer) NpcListener(client interfaces.ReciverAndSender) {
 //	ch, ok := client.(*models.Client)
 //	if !ok {
-//		panic("NpcListenerPanic")
+//		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
 //	}
 //	for q := range ch.CurrentChar.NpcInfo {
 //		buff := packets.Get()
@@ -143,7 +143,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //func (g *GameServer) MoveListener(client interfaces.ReciverAndSender) {
 //	ch, ok := client.(*models.Client)
 //	if !ok {
-//		panic("NpcListenerPanic")
+//		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
 //	}
 //
 //	pkg := utils.GetPacketByte()
@@ -180,13 +180,13 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //	client.GetCurrentChar().CloseChannels()
 //
 //	//todo close all character goroutine, save info in DB
-//	log.Println("Socket Close For: ", client.GetCurrentChar().GetName())
+//	logger.Info.Println("Socket Close For: ", client.GetCurrentChar().GetName())
 //}
 //
 //func (g *GameServer) addOnlineChar(character interfaces.CharacterI) {
 //	ch, ok := character.(*models.Character)
 //	if !ok {
-//		panic("addOnlineCharPanic")
+//		logger.Error.Panicln("addOnlineCharlogger.Error.Panicln")
 //	}
 //	g.OnlineCharacters.Mu.Lock()
 //	g.OnlineCharacters.Char[character.GetObjectId()] = ch

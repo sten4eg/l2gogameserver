@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"l2gogameserver/config"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/idfactory"
-	"log"
 	"os"
 )
 
@@ -140,15 +140,15 @@ func LoadNpc() {
 	Npcs = make(map[int32]map[int32]Npc)
 	NpcObject = make(map[int32]Locations)
 
-	log.Println("Загрузка NPC")
+	logger.Info.Println("Загрузка NPC")
 	file, err := os.Open("./datapack/data/stats/npcdata/npcdata.json")
 	if err != nil {
-		panic("Failed to load config file " + err.Error())
+		logger.Error.Panicln("Failed to load config file " + err.Error())
 	}
 	var NpcData []Npc
 	jsonParser := json.NewDecoder(file)
 	if err = jsonParser.Decode(&NpcData); err != nil {
-		panic("parsing config file" + err.Error())
+		logger.Error.Panicln("parsing config file" + err.Error())
 	}
 
 	for _, p := range NpcData {
@@ -181,20 +181,20 @@ func LoadNpc() {
 		Npcs[p.NpcId] = tmp
 	}
 
-	log.Printf("Загружено %d Npc", len(Npcs))
-	log.Printf("Загружено %d Npc Object", len(NpcObject))
+	logger.Info.Printf("Загружено %d Npc", len(Npcs))
+	logger.Info.Printf("Загружено %d Npc Object", len(NpcObject))
 
 	if config.Get().Debug.EnabledSpawnlist == false {
 		return
 	}
 	file, err = os.Open("./datapack/data/stats/npcdata/spawnlist.json")
 	if err != nil {
-		panic("Failed to load config file " + err.Error())
+		logger.Error.Panicln("Failed to load config file " + err.Error())
 	}
 	var npcSpawn []Locations
 	jsonParser = json.NewDecoder(file)
 	if err = jsonParser.Decode(&npcSpawn); err != nil {
-		panic("parsing config file" + err.Error())
+		logger.Error.Panicln("parsing config file" + err.Error())
 	}
 
 	for _, v := range Npcs {
@@ -227,7 +227,7 @@ func GetNpcObject(objectId int32) (Npc, int32, int32, int32, error) {
 		if objectId == npcObjId {
 			npcInfo, err := GetNpc(npc.NpcId, objectId)
 			if err != nil {
-				log.Println(err)
+				logger.Info.Println(err)
 				return Npc{}, 0, 0, 0, err
 			}
 			return npcInfo, npc.Locx, npc.Locy, npc.Locz, nil

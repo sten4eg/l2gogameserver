@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/handlers"
 	"l2gogameserver/gameserver/models"
@@ -23,7 +24,7 @@ func (g *GameServer) Start() {
 	/* #nosec */
 	g.clientsListener, err = net.Listen("tcp4", ":7777")
 	if err != nil {
-		panic(err.Error())
+		logger.Error.Panicln(err.Error())
 	}
 
 	var onlineChars models.OnlineCharacters

@@ -1,9 +1,9 @@
 package trade
 
 import (
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
-	"log"
 	"time"
 )
 
@@ -38,11 +38,11 @@ var allTrade []*Exchange
 func NewRequestTrade(senderI, recipientI interfaces.CharacterI) {
 	sender, ok := senderI.(*models.Character)
 	if !ok {
-		panic("NewRequestTrade sender not client")
+		logger.Error.Panicln("NewRequestTrade sender not client")
 	}
 	recipient, ok := recipientI.(*models.Character)
 	if !ok {
-		panic("NewRequestTrade sender not client")
+		logger.Error.Panicln("NewRequestTrade sender not client")
 	}
 
 	u := &Exchange{
@@ -83,26 +83,26 @@ func AddItemTrade(client interfaces.CharacterI, objectId int32, count int64) (*m
 			if item, ok := models.ExistItemObject(client, objectId, count); ok {
 				//Проверяем, уже добавили предмет в трейд на обмене
 				if exchange.ExistItemTradeObject(client, objectId) {
-					log.Println("Вы уже добавили этот предмет в инвентарь")
+					logger.Info.Println("Вы уже добавили этот предмет в инвентарь")
 					return item, exchange.Recipient.Client, false
 				}
 				item.Count = count
 				exchange.Sender.Items = append(exchange.Sender.Items, item)
 				return item, exchange.Recipient.Client, true
 			} else {
-				log.Println("Не найден предмет или неверное количество предметов")
+				logger.Info.Println("Не найден предмет или неверное количество предметов")
 			}
 		} else if exchange.Recipient.ObjectId == client.GetObjectId() {
 			if item, ok := models.ExistItemObject(client, objectId, count); ok {
 				if exchange.ExistItemTradeObject(client, objectId) {
-					log.Println("Вы уже добавили этот предмет в инвентарь")
+					logger.Info.Println("Вы уже добавили этот предмет в инвентарь")
 					return item, exchange.Sender.Client, false
 				}
 				item.Count = count
 				exchange.Recipient.Items = append(exchange.Recipient.Items, item)
 				return item, exchange.Sender.Client, true
 			} else {
-				log.Println("Не найден предмет или неверное количество предметов")
+				logger.Info.Println("Не найден предмет или неверное количество предметов")
 			}
 		}
 	}
@@ -174,11 +174,11 @@ func TradeAddInventory(clientI, player2I interfaces.CharacterI, exchange *Exchan
 
 	client, ok := clientI.(*models.Character)
 	if !ok {
-		panic("TradeAddInventory clientI not character")
+		logger.Error.Panicln("TradeAddInventory clientI not character")
 	}
 	player2, ok := player2I.(*models.Character)
 	if !ok {
-		panic("TradeAddInventory clientI not character")
+		logger.Error.Panicln("TradeAddInventory clientI not character")
 	}
 	for _, itm := range exchange.Sender.Items {
 		if exchange.Sender.ObjectId == client.GetObjectId() {
@@ -213,7 +213,7 @@ func removeAndAdd(client, player2 *models.Character, itm *models.MyItem, count i
 
 	item, count, updtype, ok = models.AddInventoryItem(player2, *itm, itm.Count)
 	if !ok {
-		log.Println("НЕ ОК")
+		logger.Info.Println("НЕ ОК")
 	}
 	UpdateInfo = append(UpdateInfo, UpdateTradeData{
 		Player:     player2,

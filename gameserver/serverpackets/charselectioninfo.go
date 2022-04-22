@@ -2,6 +2,7 @@ package serverpackets
 
 import (
 	"context"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
@@ -18,13 +19,13 @@ func CharSelectionInfo(clientI interfaces.ReciverAndSender) []byte {
 
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 	//todo допистаь sql , убрать *
 	rows, err := dbConn.Query(context.Background(), `SELECT * FROM characters WHERE Login = $1`, client.Account.Login)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 
 	//
@@ -64,7 +65,7 @@ func CharSelectionInfo(clientI interfaces.ReciverAndSender) []byte {
 			&character.FirstEnterGame,
 		)
 		if err != nil {
-			panic(err)
+			logger.Error.Panicln(err)
 		}
 		character.Coordinates = &coord
 		character.Conn = client

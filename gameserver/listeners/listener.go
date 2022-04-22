@@ -1,6 +1,7 @@
 package listeners
 
 import (
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
@@ -18,7 +19,7 @@ func StartClientListener(client interfaces.ReciverAndSender) {
 func channelListener(client interfaces.ReciverAndSender) {
 	ch, ok := client.(*models.Client)
 	if !ok {
-		panic("ChannelListenerPanic")
+		logger.Error.Panicln("ChannelListenerlogger.Error.Panicln")
 	}
 
 	for q := range ch.CurrentChar.ChannelUpdateShadowItem {
@@ -33,7 +34,7 @@ func channelListener(client interfaces.ReciverAndSender) {
 func npcListener(client interfaces.ReciverAndSender) {
 	ch, ok := client.(*models.Client)
 	if !ok {
-		panic("NpcListenerPanic")
+		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
 	}
 	for q := range ch.CurrentChar.NpcInfo {
 		buff := packets.Get()
@@ -49,7 +50,7 @@ func npcListener(client interfaces.ReciverAndSender) {
 func moveListener(client interfaces.ReciverAndSender) {
 	ch, ok := client.(*models.Client)
 	if !ok {
-		panic("NpcListenerPanic")
+		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
 	}
 
 	pkg := utils.GetPacketByte()

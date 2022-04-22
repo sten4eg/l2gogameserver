@@ -1,5 +1,8 @@
 package logger
 
+//Логирование всех данных
+//TODO: в будущем ERROR сохранять в файл.
+
 import (
 	"log"
 	"os"

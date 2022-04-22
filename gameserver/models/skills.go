@@ -8,7 +8,6 @@ import (
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/models/skills"
 	"l2gogameserver/gameserver/models/skills/targets"
-	"log"
 	"os"
 	"strconv"
 )
@@ -127,7 +126,7 @@ func GetMySkills(charId int32) []Skill {
 
 		err = rows.Scan(&skl.Id, &skl.Lvl)
 		if err != nil {
-			log.Println(err)
+			logger.Info.Println(err)
 		}
 		sk, ok := AllSkills[skl]
 		if !ok {
@@ -148,14 +147,14 @@ func (c *Character) LoadSkills() {
 
 	rows, err := dbConn.Query(context.Background(), "SELECT skill_id,skill_level FROM character_skills WHERE char_id=$1 AND class_id=$2", c.ObjectId, c.ClassId)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 
 	for rows.Next() {
 		var t Tuple
 		err = rows.Scan(&t.Id, &t.Lvl)
 		if err != nil {
-			panic(err)
+			logger.Error.Panicln(err)
 		}
 
 		sk, ok := AllSkills[t]

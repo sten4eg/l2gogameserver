@@ -2,6 +2,7 @@ package data
 
 import (
 	"io/fs"
+	"l2gogameserver/data/logger"
 	"path/filepath"
 	"strings"
 )
@@ -24,7 +25,7 @@ func Find(root, extension string) []string {
 	})
 
 	if err != nil {
-		panic("data Find panic")
+		logger.Error.Panicln("data Find logger.Error.Panicln")
 	}
 	return res
 }

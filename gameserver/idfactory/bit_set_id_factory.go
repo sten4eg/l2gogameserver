@@ -112,7 +112,7 @@ func extractUsedObjectIDTable() []int {
 
 	rows, err := dbConn.Query(context.Background(), sqlQuery)
 	if err != nil {
-		panic(err.Error())
+		logger.Error.Panicln(err.Error())
 	}
 	var tmp []int
 	for rows.Next() {

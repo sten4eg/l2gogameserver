@@ -5,7 +5,6 @@ import (
 	"l2gogameserver/data"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
-	"log"
 	"os"
 	"strconv"
 )
@@ -79,7 +78,7 @@ func LoadMultisell() {
 }
 
 func Get(client interfaces.ReciverAndSender, id int) (MultiList, bool) {
-	log.Println("Чтение GMShop", id)
+	logger.Info.Println("Чтение GMShop", id)
 	for _, multisell := range Multisells {
 		if multisell.ID == id {
 			return multisell, true

@@ -1,13 +1,13 @@
 package clientpackets
 
 import (
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
-	"log"
 )
 
 func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
@@ -26,7 +26,7 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 	//Если персонажа никогда не заходил в игру, выдадим ему какие-то стартовые предметы
 	if client.CurrentChar.FirstEnterGame {
 		client.CurrentChar.SaveFirstInGamePlayer()
-		log.Println("Выдача предметов новому персонажу: ", client.CurrentChar.CharName)
+		logger.Info.Println("Выдача предметов новому персонажу: ", client.CurrentChar.CharName)
 
 		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
 			ObjId: idfactory.GetNext(),
@@ -110,13 +110,13 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 	client.Send(buff.Bytes())
 	packets.Put(buff)
 	//NPCdistance := client.CurrentChar.SpawnDistancePoint(5000)
-	//log.Printf("Загружено возле игрока %d npc", len(NPCdistance))
+	//logger.Info.Printf("Загружено возле игрока %d npc", len(NPCdistance))
 	//for id, locdata := range NPCdistance {
 	//	npc, err := models.GetNpcInfo(locdata.NpcId)
 	//	if err != nil {
 	//		//Вернется ошибка что NPC не найден
 	//		//Крайне маловероятно что такое может случиться, но лучше подстаховаться.
-	//		log.Println(err)
+	//		logger.Info.Println(err)
 	//		continue
 	//	}
 	//	pkg17 := serverpackets.NpcInfo(client, id, npc, locdata)
