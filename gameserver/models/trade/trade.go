@@ -165,10 +165,18 @@ func TradeUserClear(client interfaces.CharacterI) bool {
 	return false
 }
 
+type UpdateTradeData struct {
+	Player     interfaces.CharacterI //Над каким персонажем производятся действия
+	Item       models.MyItem         //Предмет
+	Count      int64                 //Кол-во
+	UpdateType int16
+}
+
 //TradeAddInventory Обмен предметами
-func TradeAddInventory(clientI, player2I interfaces.CharacterI, exchange *Exchange) ([]*models.MyItem, []*models.MyItem) {
-	var allItemUpdateClient []*models.MyItem
-	var allItemUpdatePlayer []*models.MyItem
+func TradeAddInventory(clientI, player2I interfaces.CharacterI, exchange *Exchange) []UpdateTradeData {
+	//var allItemUpdateClient []*models.MyItem
+	//var allItemUpdatePlayer []*models.MyItem
+	var UpdateInfo []UpdateTradeData
 
 	client, ok := clientI.(*models.Character)
 	if !ok {
@@ -180,42 +188,92 @@ func TradeAddInventory(clientI, player2I interfaces.CharacterI, exchange *Exchan
 	}
 	for _, itm := range exchange.Sender.Items {
 		if exchange.Sender.ObjectId == client.GetObjectId() {
-			log.Println(itm.Name, itm.Count, player2.CharName)
-			client.Inventory.RemoveItem(client, itm, itm.Count)
-			mi, ok := models.AddInventoryItem(player2, itm, itm.Count)
+
+			item, count, updtype, ok := models.RemoveItem(client, itm, itm.Count)
+			UpdateInfo = append(UpdateInfo, UpdateTradeData{
+				Player:     client,
+				Item:       item,
+				Count:      count,
+				UpdateType: updtype,
+			})
+
+			item, count, updtype, ok = models.AddInventoryItem(player2, *itm, itm.Count)
 			if !ok {
 				log.Println("НЕ ОК")
 			}
-			allItemUpdateClient = append(allItemUpdateClient, mi)
+			UpdateInfo = append(UpdateInfo, UpdateTradeData{
+				Player:     player2,
+				Item:       item,
+				Count:      count,
+				UpdateType: updtype,
+			})
+
 		} else {
-			log.Println(itm.Name, itm.Count, client.CharName)
-			player2.Inventory.RemoveItem(player2, itm, itm.Count)
-			mi, ok := models.AddInventoryItem(client, itm, itm.Count)
+			item, count, updtype, ok := models.RemoveItem(player2, itm, itm.Count)
+			UpdateInfo = append(UpdateInfo, UpdateTradeData{
+				Player:     player2,
+				Item:       item,
+				Count:      count,
+				UpdateType: updtype,
+			})
+
+			item, count, updtype, ok = models.AddInventoryItem(client, *itm, itm.Count)
 			if !ok {
 				log.Println("НЕ ОК")
 			}
-			allItemUpdatePlayer = append(allItemUpdatePlayer, mi)
+			UpdateInfo = append(UpdateInfo, UpdateTradeData{
+				Player:     client,
+				Item:       item,
+				Count:      count,
+				UpdateType: updtype,
+			})
+			//allItemUpdatePlayer = append(allItemUpdatePlayer, mi)
 		}
 	}
 
 	for _, itm := range exchange.Recipient.Items {
 		if exchange.Sender.ObjectId == client.ObjectId {
-			log.Println(itm.Name, itm.Count, client.CharName)
-			player2.Inventory.RemoveItem(player2, itm, itm.Count)
-			mi, ok := models.AddInventoryItem(client, itm, itm.Count)
+			item, count, updtype, ok := models.RemoveItem(player2, itm, itm.Count)
+			UpdateInfo = append(UpdateInfo, UpdateTradeData{
+				Player:     player2,
+				Item:       item,
+				Count:      count,
+				UpdateType: updtype,
+			})
+
+			item, count, updtype, ok = models.AddInventoryItem(client, *itm, itm.Count)
 			if !ok {
 				log.Println("НЕ ОК")
 			}
-			allItemUpdateClient = append(allItemUpdateClient, mi)
+			UpdateInfo = append(UpdateInfo, UpdateTradeData{
+				Player:     client,
+				Item:       item,
+				Count:      count,
+				UpdateType: updtype,
+			})
+			//allItemUpdateClient = append(allItemUpdateClient, mi)
 		} else {
 			log.Println(itm.Name, itm.Count, player2.CharName)
-			client.Inventory.RemoveItem(client, itm, itm.Count)
-			mi, ok := models.AddInventoryItem(player2, itm, itm.Count)
+			item, count, updtype, ok := models.RemoveItem(client, itm, itm.Count)
+			UpdateInfo = append(UpdateInfo, UpdateTradeData{
+				Player:     client,
+				Item:       item,
+				Count:      count,
+				UpdateType: updtype,
+			})
+			item, count, updtype, ok = models.AddInventoryItem(player2, *itm, itm.Count)
 			if !ok {
 				log.Println("НЕ ОК")
 			}
-			allItemUpdatePlayer = append(allItemUpdatePlayer, mi)
+			UpdateInfo = append(UpdateInfo, UpdateTradeData{
+				Player:     player2,
+				Item:       item,
+				Count:      count,
+				UpdateType: updtype,
+			})
+			//allItemUpdatePlayer = append(allItemUpdatePlayer, mi)
 		}
 	}
-	return allItemUpdateClient, allItemUpdatePlayer
+	return UpdateInfo
+	//return allItemUpdateClient, allItemUpdatePlayer
 }

@@ -31,28 +31,22 @@ func TradeDone(data []byte, client interfaces.ReciverAndSender) {
 			log.Printf("Игрок %s подтвердил сделку\n", client.GetCurrentChar().GetName())
 			serverpackets.TradeOtherDone(client.GetCurrentChar())
 		}
-		if exchange.Recipient.Completed == exchange.Sender.Completed {
-			log.Println("Обмен завершен успешно")
+		if exchange.Recipient.Completed == true && exchange.Sender.Completed == true {
+			log.Println("Обмен завершен успешно", exchange.Recipient.Completed, exchange.Sender.Completed)
 			serverpackets.TradeOK(client.GetCurrentChar(), player2)
 			//Теперь сделаем физическую передачу предметов от персонажа к персонажу
-			cplayer, toplayer := trade.TradeAddInventory(client.GetCurrentChar(), player2, exchange)
+			//cplayer, toplayer := trade.TradeAddInventory(client.GetCurrentChar(), player2, exchange)
+			tradeUserInfo := trade.TradeAddInventory(client.GetCurrentChar(), player2, exchange)
 
-			buffer := packets.Get()
-			defer packets.Put(buffer)
-
-			for _, item := range cplayer {
-				log.Println(item)
+			for _, tradeData := range tradeUserInfo {
+				if tradeData.Item.Id == 57 {
+					log.Println("57===>", tradeData.Count, tradeData.Item.ObjId, tradeData.Player.GetName())
+				}
+				getItem, _ := tradeData.Player.(*models.Character).Inventory.ExistItemID(tradeData.Item.Id)
+				log.Println(getItem.ObjId, getItem.Id, getItem.Count)
 				ut1 := utils.GetPacketByte()
-				ut1.SetData(serverpackets.InventoryUpdate(item, models.UpdateTypeModify))
-				client.EncryptAndSend(ut1.GetData())
-			}
-
-			for _, item := range toplayer {
-				log.Println(item)
-
-				ut1 := utils.GetPacketByte()
-				ut1.SetData(serverpackets.InventoryUpdate(item, models.UpdateTypeModify))
-				player2.EncryptAndSend(ut1.GetData())
+				ut1.SetData(serverpackets.InventoryUpdate(*getItem, tradeData.UpdateType))
+				tradeData.Player.EncryptAndSend(ut1.GetData())
 			}
 
 			if ok = trade.TradeUserClear(client.GetCurrentChar()); !ok {
