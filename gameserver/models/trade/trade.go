@@ -149,13 +149,8 @@ func FindTrade(client interfaces.CharacterI) (interfaces.CharacterI, *Exchange, 
 	return nil, nil, false
 }
 
-//Подтверждение согласия на торг
-func TradeOK(client *models.Client) {
-
-}
-
-//Очистка информации трейде
-func TradeUserClear(client interfaces.CharacterI) bool {
+// UserClear Очистка информации трейде
+func UserClear(client interfaces.CharacterI) bool {
 	for index, exchange := range allTrade {
 		if exchange.Sender.ObjectId == client.GetObjectId() || exchange.Recipient.ObjectId == client.GetObjectId() {
 			allTrade = append(allTrade[:index], allTrade[index+1:]...)
@@ -165,6 +160,7 @@ func TradeUserClear(client interfaces.CharacterI) bool {
 	return false
 }
 
+//Информация о том какие предметы будем удалять из инвентарей, и какие предметы будем добавлять
 type UpdateTradeData struct {
 	Player     interfaces.CharacterI //Над каким персонажем производятся действия
 	Item       models.MyItem         //Предмет
@@ -174,8 +170,6 @@ type UpdateTradeData struct {
 
 //TradeAddInventory Обмен предметами
 func TradeAddInventory(clientI, player2I interfaces.CharacterI, exchange *Exchange) []UpdateTradeData {
-	//var allItemUpdateClient []*models.MyItem
-	//var allItemUpdatePlayer []*models.MyItem
 	var UpdateInfo []UpdateTradeData
 
 	client, ok := clientI.(*models.Character)
@@ -188,92 +182,44 @@ func TradeAddInventory(clientI, player2I interfaces.CharacterI, exchange *Exchan
 	}
 	for _, itm := range exchange.Sender.Items {
 		if exchange.Sender.ObjectId == client.GetObjectId() {
-
-			item, count, updtype, ok := models.RemoveItem(client, itm, itm.Count)
-			UpdateInfo = append(UpdateInfo, UpdateTradeData{
-				Player:     client,
-				Item:       item,
-				Count:      count,
-				UpdateType: updtype,
-			})
-
-			item, count, updtype, ok = models.AddInventoryItem(player2, *itm, itm.Count)
-			if !ok {
-				log.Println("НЕ ОК")
-			}
-			UpdateInfo = append(UpdateInfo, UpdateTradeData{
-				Player:     player2,
-				Item:       item,
-				Count:      count,
-				UpdateType: updtype,
-			})
-
+			UpdateInfo = removeAndAdd(client, player2, itm, itm.Count)
 		} else {
-			item, count, updtype, ok := models.RemoveItem(player2, itm, itm.Count)
-			UpdateInfo = append(UpdateInfo, UpdateTradeData{
-				Player:     player2,
-				Item:       item,
-				Count:      count,
-				UpdateType: updtype,
-			})
-
-			item, count, updtype, ok = models.AddInventoryItem(client, *itm, itm.Count)
-			if !ok {
-				log.Println("НЕ ОК")
-			}
-			UpdateInfo = append(UpdateInfo, UpdateTradeData{
-				Player:     client,
-				Item:       item,
-				Count:      count,
-				UpdateType: updtype,
-			})
-			//allItemUpdatePlayer = append(allItemUpdatePlayer, mi)
+			UpdateInfo = removeAndAdd(player2, client, itm, itm.Count)
 		}
 	}
 
 	for _, itm := range exchange.Recipient.Items {
 		if exchange.Sender.ObjectId == client.ObjectId {
-			item, count, updtype, ok := models.RemoveItem(player2, itm, itm.Count)
-			UpdateInfo = append(UpdateInfo, UpdateTradeData{
-				Player:     player2,
-				Item:       item,
-				Count:      count,
-				UpdateType: updtype,
-			})
-
-			item, count, updtype, ok = models.AddInventoryItem(client, *itm, itm.Count)
-			if !ok {
-				log.Println("НЕ ОК")
-			}
-			UpdateInfo = append(UpdateInfo, UpdateTradeData{
-				Player:     client,
-				Item:       item,
-				Count:      count,
-				UpdateType: updtype,
-			})
-			//allItemUpdateClient = append(allItemUpdateClient, mi)
+			UpdateInfo = removeAndAdd(player2, client, itm, itm.Count)
 		} else {
-			log.Println(itm.Name, itm.Count, player2.CharName)
-			item, count, updtype, ok := models.RemoveItem(client, itm, itm.Count)
-			UpdateInfo = append(UpdateInfo, UpdateTradeData{
-				Player:     client,
-				Item:       item,
-				Count:      count,
-				UpdateType: updtype,
-			})
-			item, count, updtype, ok = models.AddInventoryItem(player2, *itm, itm.Count)
-			if !ok {
-				log.Println("НЕ ОК")
-			}
-			UpdateInfo = append(UpdateInfo, UpdateTradeData{
-				Player:     player2,
-				Item:       item,
-				Count:      count,
-				UpdateType: updtype,
-			})
-			//allItemUpdatePlayer = append(allItemUpdatePlayer, mi)
+			UpdateInfo = removeAndAdd(client, player2, itm, itm.Count)
 		}
 	}
 	return UpdateInfo
-	//return allItemUpdateClient, allItemUpdatePlayer
+}
+
+//Удаление и добавление в массив
+func removeAndAdd(client, player2 *models.Character, itm *models.MyItem, count int64) []UpdateTradeData {
+	var UpdateInfo []UpdateTradeData
+
+	item, count, updtype, ok := models.RemoveItem(client, itm, itm.Count)
+
+	UpdateInfo = append(UpdateInfo, UpdateTradeData{
+		Player:     client,
+		Item:       item,
+		Count:      count,
+		UpdateType: updtype,
+	})
+
+	item, count, updtype, ok = models.AddInventoryItem(player2, *itm, itm.Count)
+	if !ok {
+		log.Println("НЕ ОК")
+	}
+	UpdateInfo = append(UpdateInfo, UpdateTradeData{
+		Player:     player2,
+		Item:       item,
+		Count:      count,
+		UpdateType: updtype,
+	})
+	return UpdateInfo
 }

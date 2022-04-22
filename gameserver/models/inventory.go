@@ -694,6 +694,10 @@ func AddInventoryItem(character *Character, item MyItem, count int64) (MyItem, i
 
 	for index, inv := range character.Inventory.Items {
 		if inv.Item.Id == item.Id {
+			if inv.IsEquipable() {
+				log.Println("Нельзя передавать надетый предмет")
+				return MyItem{}, 0, UpdateTypeUnchanged, false
+			}
 			//Если предмет стакуемый, тогда изменим его значение
 			if inv.ConsumeType == consumeType.Stackable || inv.ConsumeType == consumeType.Asset {
 				inv.Count = inv.Count + count
@@ -701,7 +705,6 @@ func AddInventoryItem(character *Character, item MyItem, count int64) (MyItem, i
 				if err != nil {
 					panic(err)
 				}
-				log.Println("Деньги были обновлены, стало", inv.Count, character.GetName())
 				character.Inventory.Items[index].Count = inv.Count
 				inv.Loc = "INVENTORY"
 				return inv, inv.Count, UpdateTypeModify, true
@@ -743,11 +746,9 @@ func RemoveItem(character *Character, item *MyItem, count int64) (MyItem, int64,
 
 	for index, itm := range character.Inventory.Items {
 		if itm.Id == item.Id {
-			log.Println("Удаление найдено", item.Name, count, character.CharName)
 			if itm.ConsumeType == consumeType.Stackable || itm.ConsumeType == consumeType.Asset {
 				itm.Count -= count
 				if itm.Count <= 0 {
-					log.Println("Ожидаюсь тут..2.")
 					_, err = dbConn.Exec(context.Background(), `DELETE FROM "items" WHERE "owner_id" = $1 AND "object_id" = $2 AND "item" = $3`, character.ObjectId, itm.ObjId, itm.Id)
 					if err != nil {
 						panic(err)
@@ -755,17 +756,14 @@ func RemoveItem(character *Character, item *MyItem, count int64) (MyItem, int64,
 					character.Inventory.Items = append(character.Inventory.Items[:index], character.Inventory.Items[index+1:]...)
 					return MyItem{}, itm.Count, UpdateTypeRemove, true
 				} else {
-					log.Println("Ожидаюсь тут..1.")
 					_, err = dbConn.Exec(context.Background(), `UPDATE "items" SET "count" = $1 WHERE "owner_id" = $2 AND "object_id" = $3 AND "item" = $4`, itm.Count, character.ObjectId, itm.ObjId, itm.Id)
 					if err != nil {
 						panic(err)
 					}
 					character.Inventory.Items[index].Count = itm.Count
-					log.Println(character.Inventory.Items[index].Id, character.Inventory.Items[index].Count)
 					return character.Inventory.Items[index], itm.Count, UpdateTypeModify, true
 				}
 			} else {
-				log.Println("Ожидаюсь тут..3.")
 				_, err = dbConn.Exec(context.Background(), `DELETE FROM "items" WHERE "owner_id" = $1 AND "object_id" = $2 AND "item" = $3`, character.ObjectId, itm.ObjId, itm.Item.Id)
 				if err != nil {
 					panic(err)
@@ -775,7 +773,6 @@ func RemoveItem(character *Character, item *MyItem, count int64) (MyItem, int64,
 			}
 		}
 	}
-	log.Println("Удаление не найдено")
 	return MyItem{}, 0, UpdateTypeModify, false
 }
 
