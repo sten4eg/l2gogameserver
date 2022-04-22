@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"l2gogameserver/data/logger"
 	"os"
 )
 
@@ -44,13 +45,13 @@ func Get() GameServer {
 func read() Data {
 	file, err := os.Open("./config/config.json")
 	if err != nil {
-		panic("Failed to load config file")
+		logger.Error.Panicln("Failed to load /config/config.json file")
 	}
 
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&config)
 	if err != nil {
-		panic("Failed to decode config file")
+		logger.Error.Panicln("Failed to decode config file")
 	}
 	return config
 }

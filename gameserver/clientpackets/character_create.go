@@ -2,6 +2,7 @@ package clientpackets
 
 import (
 	"context"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/interfaces"
@@ -101,7 +102,7 @@ func (cc *CharCreate) validate(clientI interfaces.ReciverAndSender) []byte {
 
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 

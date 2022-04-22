@@ -3,6 +3,7 @@ package packets
 import (
 	"bytes"
 	"encoding/binary"
+	"l2gogameserver/data/logger"
 	"unicode/utf16"
 )
 
@@ -27,7 +28,7 @@ func (r *Reader) UnreadBytes(b int) {
 	for i := 0; i < b; i++ {
 		err := r.r.UnreadByte()
 		if err != nil {
-			panic(err)
+			logger.Error.Panicln(err)
 		}
 	}
 }
@@ -35,10 +36,10 @@ func (r *Reader) ReadBytes(number int) []byte {
 	buffer := make([]byte, number)
 	n, err := r.r.Read(buffer)
 	if err != nil {
-		panic(err.Error())
+		logger.Error.Panicln(err.Error())
 	}
 	if n < number {
-		panic("n<number")
+		logger.Error.Panicln("n<number")
 	}
 
 	return buffer
@@ -55,7 +56,7 @@ func (r *Reader) ReadUInt64() uint64 {
 	buffer := make([]byte, 8)
 	n, err := r.r.Read(buffer)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	if n < 8 {
 		return 0
@@ -68,7 +69,7 @@ func (r *Reader) ReadInt32() int32 {
 	buffer := make([]byte, 4)
 	n, err := r.r.Read(buffer)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	if n < 4 {
 		return 0
@@ -81,7 +82,7 @@ func (r *Reader) ReadUInt16() uint16 {
 	buffer := make([]byte, 2)
 	n, err := r.r.Read(buffer)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	if n < 2 {
 		return 0
@@ -94,7 +95,7 @@ func (r *Reader) ReadInt16() int16 {
 	buffer := make([]byte, 2)
 	n, err := r.r.Read(buffer)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	if n < 2 {
 		return 0
@@ -112,7 +113,7 @@ func (r *Reader) ReadString() string {
 	for {
 		_, err := r.r.Read(buf)
 		if err != nil {
-			panic(err)
+			logger.Error.Panicln(err)
 		}
 		q := binary.LittleEndian.Uint16(buf)
 

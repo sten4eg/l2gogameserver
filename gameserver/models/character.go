@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"l2gogameserver/data"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/interfaces"
@@ -368,14 +369,14 @@ func (c *Character) checkRegion() {
 func (c *Character) SaveFirstInGamePlayer() {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 
 	sql := `UPDATE "characters" SET "first_enter_game" = false WHERE "object_id" = $1`
 	_, err = dbConn.Exec(context.Background(), sql, c.ObjectId)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	c.FirstEnterGame = false
 }

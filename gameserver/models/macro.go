@@ -2,8 +2,8 @@ package models
 
 import (
 	"context"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
-	"log"
 )
 
 type MacroCommand struct {
@@ -46,17 +46,17 @@ func removeMacros(id int32) {
 	sqlCommands := `DELETE FROM "macros_commands" WHERE "command_id" = $1`
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 
 	_, err = dbConn.Exec(context.Background(), sqlMacros, id)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	_, err = dbConn.Exec(context.Background(), sqlCommands, id)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 }
 
@@ -65,7 +65,7 @@ func (c *Character) saveMacros(macro Macro) {
 	//Макроса нет, добавляем в базу
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 
@@ -77,7 +77,7 @@ func (c *Character) saveMacros(macro Macro) {
 	for _, command := range macro.Commands {
 		_, err = dbConn.Exec(context.Background(), sql, lastInsertId, command.Index, command.Type, command.SkillID, command.ShortcutID, command.Name)
 		if err != nil {
-			log.Println(err)
+			logger.Info.Println(err)
 			return
 		}
 	}
@@ -102,21 +102,21 @@ func (c *Character) LoadCharactersMacros() {
 
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 
 	sql := `SELECT id,icon,name,description,acronym FROM "macros" WHERE char_id=$1 `
 	rows, err := dbConn.Query(context.Background(), sql, c.ObjectId)
 	if err != nil {
-		log.Println(err.Error())
+		logger.Info.Println(err.Error())
 		return
 	}
 	for rows.Next() {
 		m := Macro{}
 		err = rows.Scan(&m.Id, &m.Icon, &m.Name, &m.Description, &m.Acronym)
 		if err != nil {
-			log.Println(err)
+			logger.Info.Println(err)
 			return
 		}
 		m.Commands = MacrosesCommands
@@ -127,14 +127,14 @@ func (c *Character) LoadCharactersMacros() {
 		sqlCommand := `SELECT * FROM "macros_commands" WHERE command_id=$1`
 		rowsCommand, err := dbConn.Query(context.Background(), sqlCommand, macros.Id)
 		if err != nil {
-			log.Println(err.Error())
+			logger.Info.Println(err.Error())
 			return
 		}
 		for rowsCommand.Next() {
 			cCom := MacroCommand{}
 			err = rows.Scan(&cCom.Id, &cCom.Index, &cCom.Type, &cCom.SkillID, &cCom.ShortcutID, &cCom.Name)
 			if err != nil {
-				log.Println(err)
+				logger.Info.Println(err.Error())
 				return
 			}
 			MacrosesCommands = append(MacrosesCommands, cCom)

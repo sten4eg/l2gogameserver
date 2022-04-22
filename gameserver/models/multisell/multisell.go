@@ -3,8 +3,8 @@ package multisell
 import (
 	"encoding/json"
 	"l2gogameserver/data"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
-	"log"
 	"os"
 	"strconv"
 )
@@ -56,31 +56,29 @@ type Production struct {
 var Multisells []MultiList
 
 func LoadMultisell() {
-	log.Println("Загрузка мультиселлов")
+	logger.Info.Println("Загрузка мультиселлов")
 	msells := data.Find("./datapack/data/multisell", "json")
 	for _, msPath := range msells {
 		var msell MultiList
 		file, err := os.Open(msPath)
 		if err != nil {
-			panic("Failed to load config file " + err.Error())
+			logger.Error.Panicln("Failed to load config file " + err.Error())
 		}
 		decoder := json.NewDecoder(file)
 		err = decoder.Decode(&msell)
 		if err != nil {
-			panic("Failed to decode config file " + file.Name() + " " + err.Error())
+			logger.Error.Panicln("Failed to decode config file " + file.Name() + " " + err.Error())
 		}
 		msell.ID, err = strconv.Atoi(data.FileNameWithoutExtension(msPath))
 		if err != nil {
-			panic(err)
+			logger.Error.Panicln(err)
 		}
 		Multisells = append(Multisells, msell)
 	}
-	//log.Println(Multisells)
-	//fmt.Printf("%+v\n", Multisells)
 }
 
 func Get(client interfaces.ReciverAndSender, id int) (MultiList, bool) {
-	log.Println("Чтение GMShop", id)
+	logger.Info.Println("Чтение GMShop", id)
 	for _, multisell := range Multisells {
 		if multisell.ID == id {
 			return multisell, true

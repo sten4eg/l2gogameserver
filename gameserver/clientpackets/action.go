@@ -39,7 +39,7 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 	/*
 		npc, npcx, npcy, npcz, err := models.GetNpcObject(objectId)
 		if err != nil {
-			log.Println(err)
+			logger.Info.Println(err)
 		}
 
 		//Прост тест вызова HTML при клике
@@ -51,7 +51,7 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 		if reAppeal {
 			//npc, npcx, npcy, npcz, err := models.GetNpcObject(objectId)
 			//if err != nil {
-			//	log.Println(err)
+			//	logger.Info.Println(err)
 			//}
 			x, y, z := client.CurrentChar.GetXYZ()
 			distance := models.CalculateDistance(npcx, npcy, npcz, x, y, z, false, false)
@@ -59,7 +59,7 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 
 			//подбегаем
 			if distance <= 60 {
-				log.Println("Расстояние до NPC подходящее")
+				logger.Info.Println("Расстояние до NPC подходящее")
 				if models.GetDialogNPC(npc.Type) == 0 {
 					//НПЦ для разговора, открываем диалог
 					//Пускай макс. дистанция разговора будет 60 поинтов
@@ -71,7 +71,7 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 					client.Send(Attack(data, client))
 				}
 			} else {
-				log.Println("Расстояние до NPC слишком больше, необходимо подбежать")
+				logger.Info.Println("Расстояние до NPC слишком больше, необходимо подбежать")
 				return MoveToLocation(client, npcx, npcy, npcz)
 
 			}

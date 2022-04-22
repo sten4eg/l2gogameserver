@@ -3,6 +3,7 @@ package idfactory
 import (
 	"context"
 	"github.com/bits-and-blooms/bitset"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
 	"sort"
 	"strings"
@@ -42,7 +43,7 @@ func Load() {
 	for _, usedObjectId := range extractUsedObjectIDTable() {
 		objectId := usedObjectId - FirstOid
 		if objectId < 0 {
-			panic("objectId меньше нуля")
+			logger.Error.Panicln("objectId меньше нуля")
 		}
 
 		FreeIds.Set(uint(objectId))
@@ -71,7 +72,7 @@ func GetNext() int32 {
 		if FreeIds.Len() < FreeObjectIdSize {
 			increaseBitSetCapacity()
 		} else {
-			panic("Закончились objectId")
+			logger.Error.Panicln("Закончились objectId")
 		}
 	}
 	atomic.StoreUint64(&NextFreeId, uint64(nextFree))
@@ -89,7 +90,7 @@ func Release(objectId int32) {
 
 		atomic.AddInt32(&FreeIdCount, 1)
 	} else {
-		panic("Попытка release objectId")
+		logger.Error.Panicln("Попытка release objectId")
 	}
 	mu.Unlock()
 }
@@ -99,7 +100,7 @@ func Release(objectId int32) {
 func extractUsedObjectIDTable() []int {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err.Error())
+		logger.Error.Panicln(err.Error())
 	}
 	defer dbConn.Release()
 
@@ -111,14 +112,14 @@ func extractUsedObjectIDTable() []int {
 
 	rows, err := dbConn.Query(context.Background(), sqlQuery)
 	if err != nil {
-		panic(err.Error())
+		logger.Error.Panicln(err.Error())
 	}
 	var tmp []int
 	for rows.Next() {
 		var t int
 		err = rows.Scan(&t)
 		if err != nil {
-			panic(err)
+			logger.Error.Panicln(err)
 		}
 		tmp = append(tmp, t)
 	}

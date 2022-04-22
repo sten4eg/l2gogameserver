@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/dto"
 )
@@ -23,7 +24,7 @@ func RegisterShortCut(sc dto.ShortCutDTO, client *Client) {
 func registerShortCutInDb(shortCut dto.ShortCutDTO, charId, classId int32) {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 
@@ -36,21 +37,21 @@ func registerShortCutInDb(shortCut dto.ShortCutDTO, charId, classId int32) {
 		shortCut.Level,
 		classId)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 }
 
 func RestoreMe(charId, classId int32) map[int32]dto.ShortCutDTO {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 
 	shorts := make(map[int32]dto.ShortCutDTO)
 	rows, err := dbConn.Query(context.Background(), "SELECT slot, page, type, shortcut_id, level FROM character_shortcuts WHERE char_id = $1 AND class_index = $2", charId, classId)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 
 	for rows.Next() {
@@ -58,7 +59,7 @@ func RestoreMe(charId, classId int32) map[int32]dto.ShortCutDTO {
 		var shortType int
 		err = rows.Scan(&t.Slot, &t.Page, &shortType, &t.Id, &t.Level)
 		if err != nil {
-			panic(err)
+			logger.Error.Panicln(err)
 		}
 		t.ShortcutType = dto.ShortTypes[shortType]
 		shorts[t.Slot+(t.Page*MaxShortcutsPerBar)] = t
@@ -72,7 +73,7 @@ func RestoreMe(charId, classId int32) map[int32]dto.ShortCutDTO {
 func GetAllShortCuts(charId, classId int32) []dto.ShortCutSimpleDTO {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 
@@ -80,14 +81,14 @@ func GetAllShortCuts(charId, classId int32) []dto.ShortCutSimpleDTO {
 		charId,
 		classId)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	var shortCuts []dto.ShortCutSimpleDTO
 	for rows.Next() {
 		var t dto.ShortCutSimpleDTO
 		err = rows.Scan(&t.ShortcutType, &t.Slot, &t.Page, &t.Id, &t.Level)
 		if err != nil {
-			panic(err)
+			logger.Error.Panicln(err)
 		}
 		shortCuts = append(shortCuts, t)
 	}
@@ -108,7 +109,7 @@ func DeleteShortCut(slot, page int32, client *Client) {
 func deleteShortCutFromDb(shortCut dto.ShortCutDTO, charId int32, classId int32) {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 
@@ -118,6 +119,6 @@ func deleteShortCutFromDb(shortCut dto.ShortCutDTO, charId int32, classId int32)
 		shortCut.Page,
 		classId)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 }

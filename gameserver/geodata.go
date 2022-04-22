@@ -2,6 +2,7 @@ package gameserver
 
 import (
 	_ "embed"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/packets"
 
 	"math"
@@ -59,9 +60,9 @@ func fillMultilayerBlock(r *packets.Reader) []int8 {
 	start := r.CurrentIndex()
 	for i := 0; i < 64; i++ {
 		var kn int
-		nLayer := r.ReadSingleByte() // if layer <=0 || >125 - panic
+		nLayer := r.ReadSingleByte() // if layer <=0 || >125 - logger.Error.Panicln
 		if nLayer > 125 {
-			panic("nLayer > 125 ! Invalid layers count")
+			logger.Error.Panicln("nLayer > 125 ! Invalid layers count")
 		}
 		kn = int(nLayer * 2)
 
@@ -120,7 +121,7 @@ func Load() {
 	//	switch va := v.(type) {
 	//	case ComplexBlock:
 	//		for _, vv := range va.Cell {
-	//			panic(vv.getHeight())
+	//			logger.Error.Panicln(vv.getHeight())
 	//		}
 	//	}
 	//}
@@ -145,14 +146,16 @@ func getGeoX(worldX int32) int32 {
 	if worldX >= -655360 && worldX <= 393215 {
 		return (worldX - -655360) / 16
 	}
-	panic("Illegal world X in getGeoX")
+	logger.Error.Panicln("Illegal world X in getGeoX")
+	return 0
 }
 
 func getGeoY(worldY int32) int32 {
 	if worldY >= -589824 && worldY <= 458751 {
 		return (worldY - -589824) / 16
 	}
-	panic("Illegal world X in getGeoX")
+	logger.Error.Panicln("Illegal world X in getGeoX")
+	return 0
 }
 
 func FindPath(x, y, z, tx, ty, tz int) {

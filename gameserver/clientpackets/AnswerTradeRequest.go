@@ -1,12 +1,12 @@
 package clientpackets
 
 import (
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/trade"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
-	"log"
 )
 
 //AnswerTradeRequest Если пользователь отвечает на запрос трейда
@@ -14,7 +14,7 @@ func AnswerTradeRequest(data []byte, sender interfaces.ReciverAndSender) {
 	var packet = packets.NewReader(data)
 	response := packet.ReadInt32()
 	if response == 0 {
-		log.Println("Пользователь не захотел торговать")
+		logger.Info.Println("Пользователь не захотел торговать")
 		return
 	}
 

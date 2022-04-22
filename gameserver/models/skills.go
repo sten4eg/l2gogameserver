@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"l2gogameserver/config"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/models/skills"
 	"l2gogameserver/gameserver/models/skills/targets"
-	"log"
 	"os"
 	"strconv"
 )
@@ -59,10 +59,10 @@ func LoadSkills() {
 	if config.Get().Debug.EnabledSkills == false {
 		return
 	}
-	log.Println("Загрузка скиллов")
+	logger.Info.Println("Загрузка скиллов")
 	file, err := os.Open("./datapack/data/stats/skills/0-100.json")
 	if err != nil {
-		panic("Failed to load config file " + err.Error())
+		logger.Error.Panicln("Failed to load config file " + err.Error())
 	}
 
 	decoder := json.NewDecoder(file)
@@ -71,7 +71,7 @@ func LoadSkills() {
 
 	err = decoder.Decode(&skillsJson)
 	if err != nil {
-		panic("Failed to decode config file " + file.Name() + " " + err.Error())
+		logger.Error.Panicln("Failed to decode config file " + file.Name() + " " + err.Error())
 	}
 	AllSkills = make(map[Tuple]Skill)
 
@@ -111,13 +111,13 @@ func LoadSkills() {
 func GetMySkills(charId int32) []Skill {
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 
 	rows, err := dbConn.Query(context.Background(), "SELECT skill_id, skill_level FROM character_skills WHERE char_id = $1", charId)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 
 	var skills []Skill
@@ -126,11 +126,11 @@ func GetMySkills(charId int32) []Skill {
 
 		err = rows.Scan(&skl.Id, &skl.Lvl)
 		if err != nil {
-			log.Println(err)
+			logger.Info.Println(err)
 		}
 		sk, ok := AllSkills[skl]
 		if !ok {
-			panic("not found Skill")
+			logger.Error.Panicln("not found Skill")
 		}
 		skills = append(skills, sk)
 	}
@@ -141,25 +141,25 @@ func (c *Character) LoadSkills() {
 	c.Skills = map[int]Skill{}
 	dbConn, err := db.GetConn()
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
 
 	rows, err := dbConn.Query(context.Background(), "SELECT skill_id,skill_level FROM character_skills WHERE char_id=$1 AND class_id=$2", c.ObjectId, c.ClassId)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 
 	for rows.Next() {
 		var t Tuple
 		err = rows.Scan(&t.Id, &t.Lvl)
 		if err != nil {
-			panic(err)
+			logger.Error.Panicln(err)
 		}
 
 		sk, ok := AllSkills[t]
 		if !ok {
-			panic("Скилл персонажа " + c.CharName + " не найден в мапе скиллов id: " + strconv.Itoa(t.Id) + " Level: " + strconv.Itoa(t.Lvl))
+			logger.Error.Panicln("Скилл персонажа " + c.CharName + " не найден в мапе скиллов id: " + strconv.Itoa(t.Id) + " Level: " + strconv.Itoa(t.Lvl))
 		}
 		c.Skills[sk.ID] = sk //= append(c.Skills, sk)
 	}

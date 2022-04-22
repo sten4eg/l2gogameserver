@@ -2,7 +2,7 @@ package teleport
 
 import (
 	"encoding/json"
-	"log"
+	"l2gogameserver/data/logger"
 	"os"
 )
 
@@ -19,17 +19,17 @@ var Locations []Location
 
 //Загрузка позиций локаций для телепортации
 func LoadLocationListTeleport() {
-	log.Println("Загрузка позиций к телепортации")
+	logger.Info.Println("Загрузка позиций к телепортации")
 	file, err := os.Open("./datapack/data/teleport/locationToTeleport.json")
 	if err != nil {
-		panic("Failed to load config file " + err.Error())
+		logger.Error.Panicln("Failed to load config file " + err.Error())
 	}
 
 	decoder := json.NewDecoder(file)
 
 	err = decoder.Decode(&Locations)
 	if err != nil {
-		panic("Failed to decode config file " + file.Name() + " " + err.Error())
+		logger.Error.Panicln("Failed to decode config file " + file.Name() + " " + err.Error())
 	}
 }
 

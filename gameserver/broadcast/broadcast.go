@@ -159,7 +159,7 @@ func GetCharacterByObjectId(id int32) interfaces.CharacterI {
 //				info.B = serverpackets.CharInfo(client.CurrentChar)
 //				g.BroadToAroundPlayers(client, info)
 //				BroadCastToMe(g, client.CurrentChar)
-//				log.Println(client.CurrentChar.ObjectId, " change Region ")
+//				logger.Info.Println(client.CurrentChar.ObjectId, " change Region ")
 //			}
 //
 //			return true // if false, Range stops

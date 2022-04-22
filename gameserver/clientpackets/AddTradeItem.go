@@ -1,13 +1,13 @@
 package clientpackets
 
 import (
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/trade"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
-	"log"
 )
 
 //AddTradeItem Когда игрок добавляет предмет в трейде
@@ -20,7 +20,7 @@ func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
 
 	item, toUser, ok := trade.AddItemTrade(client.GetCurrentChar(), objectId, int64(count))
 	if !ok {
-		log.Println("Не добавлен предмет")
+		logger.Info.Println("Не добавлен предмет")
 		return
 	}
 

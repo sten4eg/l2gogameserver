@@ -2,6 +2,7 @@ package items
 
 import (
 	"encoding/json"
+	"l2gogameserver/data/logger"
 )
 
 // ItemBonusStat возможные значения для Type :
@@ -23,7 +24,7 @@ func (b *ItemBonusStat) UnmarshalJSON(data []byte) error {
 	var s stat
 	err := json.Unmarshal(data, &s)
 	if err != nil {
-		panic("Неверный Stats, stat:" + string(data))
+		logger.Error.Panicln("Неверный Stats, stat:" + string(data))
 	}
 	*b = ItemBonusStat{
 		Val:   s.Val,

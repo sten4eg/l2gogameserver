@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/community"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
@@ -8,7 +9,6 @@ import (
 	"l2gogameserver/gameserver/models/multisell"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -36,9 +36,9 @@ func BypassToServer(data []byte, client interfaces.ReciverAndSender) {
 	var bypassRequest = packets.NewReader(data).ReadString()
 	bypassInfo := strings.Split(bypassRequest, ":")
 	for i, s := range bypassInfo {
-		log.Println("#", i, "->", s)
+		logger.Info.Println("#", i, "->", s)
 	}
-	log.Println(bypassInfo)
+	logger.Info.Println(bypassInfo)
 	if bypassInfo[0] == "_bbshome" && bypassRequest == "_bbshome" {
 		//Открытие диалога по умолчанию
 		SendOpenDialogBBS(client, "./datapack/html/community/index.htm")
@@ -55,17 +55,17 @@ func BypassToServer(data []byte, client interfaces.ReciverAndSender) {
 			case "id":
 				teleportID, err := strconv.Atoi(bypassInfo[3])
 				if err != nil {
-					log.Println(err)
+					logger.Info.Println(err)
 					return
 				}
 				pkg := community.UserTeleport(client, teleportID)
 				client.EncryptAndSend(pkg)
 			case "save":
-				log.Println("Сохранение позиции игрока")
+				logger.Info.Println("Сохранение позиции игрока")
 			case "to":
-				log.Println("Телепорт по сохраненной позиции игрока #", bypassInfo[3])
+				logger.Info.Println("Телепорт по сохраненной позиции игрока #", bypassInfo[3])
 			case "remove":
-				log.Println("Удаление по сохраненной позиции игрока #", bypassInfo[3])
+				logger.Info.Println("Удаление по сохраненной позиции игрока #", bypassInfo[3])
 			}
 
 		case "gmshop":
@@ -73,13 +73,13 @@ func BypassToServer(data []byte, client interfaces.ReciverAndSender) {
 			case "multisell": //Open multisell
 				id, err := strconv.Atoi(bypassInfo[3])
 				if err != nil {
-					log.Println(err)
+					logger.Info.Println(err)
 					return
 				}
-				log.Println("Открыть мультиселл с ID", id)
+				logger.Info.Println("Открыть мультиселл с ID", id)
 				multisellList, ok := multisell.Get(client, id)
 				if !ok {
-					log.Println("Не найден запрашиваемый мультисел#")
+					logger.Info.Println("Не найден запрашиваемый мультисел#")
 				}
 				pkg := serverpackets.MultiSell(multisellList)
 				client.EncryptAndSend(pkg)
@@ -92,10 +92,10 @@ func BypassToServer(data []byte, client interfaces.ReciverAndSender) {
 
 //SendOpenDialogBBS Открытие диалога и отправка клиенту диалога
 func SendOpenDialogBBS(client interfaces.ReciverAndSender, filename string) {
-	log.Println(filename)
+	logger.Info.Println(filename)
 	htmlDialog, err := htm.Open(filename)
 	if err != nil {
-		log.Println(err)
+		logger.Info.Println(err)
 		return
 	}
 	htmlDialog = parseVariableBoard(client, htmlDialog)

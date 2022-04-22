@@ -1,5 +1,7 @@
 package dto
 
+import "l2gogameserver/data/logger"
+
 type ShortCutDTO struct {
 	// Slot from 0 to 11
 	Slot int32
@@ -53,7 +55,8 @@ func IndexOfShortTypes(shortType string) int32 {
 			return int32(k)
 		}
 	}
-	panic("ShortType: " + shortType + " не найден")
+	logger.Error.Panicln("ShortType: " + shortType + " не найден")
+	return 0
 }
 
 var ShortTypes = [7]string{

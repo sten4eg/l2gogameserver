@@ -2,9 +2,9 @@ package models
 
 import (
 	"errors"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/crypt"
 	"l2gogameserver/gameserver/interfaces"
-	"log"
 	"net"
 	"sync"
 )
@@ -91,17 +91,17 @@ func (c *Client) EncryptAndSend(data []byte) {
 
 	err := c.sendDataToSocket(data)
 	if err != nil {
-		panic("Пакет не отправлен, ошибка: " + err.Error())
+		logger.Error.Panicln("Пакет не отправлен, ошибка: " + err.Error())
 	}
 }
 func (c *Client) Send(d []byte) {
 	if len(d) == 0 {
-		log.Println("Пакет пуст")
+		logger.Info.Println("Пакет пуст")
 		return
 	}
 	err := c.sendDataToSocket(d)
 	if err != nil {
-		panic("Пакет не отправлен, ошибка: " + err.Error())
+		logger.Error.Panicln("Пакет не отправлен, ошибка: " + err.Error())
 	}
 }
 
