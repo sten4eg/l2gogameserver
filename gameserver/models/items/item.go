@@ -3,13 +3,13 @@ package items
 import (
 	"encoding/json"
 	"l2gogameserver/config"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/models/items/armorType"
 	"l2gogameserver/gameserver/models/items/consumeType"
 	"l2gogameserver/gameserver/models/items/crystalType"
 	"l2gogameserver/gameserver/models/items/etcItemType"
 	"l2gogameserver/gameserver/models/items/materialType"
 	"l2gogameserver/gameserver/models/items/weaponType"
-	"log"
 	"os"
 )
 
@@ -102,10 +102,10 @@ func loadItems() {
 	if config.Get().Debug.EnabledItems == false {
 		return
 	}
-	log.Println("Загрузка предметов")
+	logger.Info.Println("Загрузка предметов")
 	file, err := os.Open("./datapack/data/stats/items/items.json")
 	if err != nil {
-		panic("Failed to load config file")
+		logger.Error.Panicln("Failed to load config file")
 	}
 
 	var items []Item
@@ -113,7 +113,7 @@ func loadItems() {
 	err = json.NewDecoder(file).Decode(&items)
 
 	if err != nil {
-		panic("Ошибка при чтении с файла items.json. " + err.Error())
+		logger.Error.Panicln("Ошибка при чтении с файла items.json. " + err.Error())
 	}
 
 	for _, v := range items {

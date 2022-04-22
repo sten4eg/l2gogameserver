@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"io/fs"
+	"l2gogameserver/data/logger"
 	"math/rand"
 	"os"
 	"strconv"
@@ -111,7 +112,7 @@ func LoadStats() {
 	classes := make([]Class, 0, 107)
 	err = json.NewDecoder(file).Decode(&classes)
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 
 	AllStats = make(map[int]Stats)
@@ -119,7 +120,7 @@ func LoadStats() {
 	fss := os.DirFS("./datapack/data/stats/char/baseStats")
 	dir, err := fs.ReadDir(fss, ".")
 	if err != nil {
-		panic(err)
+		logger.Error.Panicln(err)
 	}
 
 	for _, entry := range dir {
@@ -130,14 +131,14 @@ func LoadStats() {
 func loadStat(entry fs.DirEntry, classes []Class) {
 	file, err := os.Open("./datapack/data/stats/char/baseStats/" + entry.Name())
 	if err != nil {
-		panic("Failed to load config file " + err.Error())
+		logger.Error.Panicln("Failed to load config file " + err.Error())
 	}
 
 	stats := make([]Stats, 0, 1)
 
 	err = json.NewDecoder(file).Decode(&stats)
 	if err != nil {
-		panic("Failed to decode config file " + file.Name() + " " + err.Error())
+		logger.Error.Panicln("Failed to decode config file " + file.Name() + " " + err.Error())
 	}
 
 	stats[0].ClassTree = findClassTree(stats[0].ClassId, classes)
@@ -171,7 +172,7 @@ func GetCreationCoordinates(classId int32) (int, int, int) {
 
 	e, ok := AllStats[int(classId)]
 	if !ok {
-		panic("не найдена информация в AllStats по classId: " + strconv.Itoa(int(classId)))
+		logger.Error.Panicln("не найдена информация в AllStats по classId: " + strconv.Itoa(int(classId)))
 	}
 
 	/* #nosec */
