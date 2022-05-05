@@ -64,6 +64,9 @@ func (r *Reader) ReadUInt64() uint64 {
 
 	return binary.LittleEndian.Uint64(buffer)
 }
+func (r *Reader) ReadInt64() int64 {
+	return int64(r.ReadUInt64())
+}
 
 func (r *Reader) ReadInt32() int32 {
 	buffer := make([]byte, 4)

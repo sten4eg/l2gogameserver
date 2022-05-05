@@ -35,6 +35,8 @@ type Debug struct {
 
 var config Data
 
+const MaxAdena = 99_900_000_000
+
 func Get() GameServer {
 	if (config == Data{}) {
 		read()

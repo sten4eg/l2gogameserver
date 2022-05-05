@@ -5,7 +5,15 @@ import (
 	"strings"
 )
 
-type ItemType int16
+type ItemType1 int16
+
+const (
+	WeaponRingEarringNecklace = 0
+	ShieldArmor               = 1
+	ITEM_QUESTITEM_ADENA      = 4
+)
+
+type ItemType2 int16
 
 const (
 	Weapon = iota
@@ -16,7 +24,7 @@ const (
 	Other
 )
 
-func (t *ItemType) UnmarshalJSON(data []byte) error {
+func (t *ItemType2) UnmarshalJSON(data []byte) error {
 
 	sData := strings.ReplaceAll(string(data), "\"", "")
 	switch sData {
@@ -33,7 +41,7 @@ func (t *ItemType) UnmarshalJSON(data []byte) error {
 	case "questitem":
 		*t = Quest
 	default:
-		return errors.New("неправильный ItemType: " + sData)
+		return errors.New("неправильный ItemType2: " + sData)
 	}
 	return nil
 }

@@ -61,7 +61,7 @@ func UserInfo(clientI interfaces.CharacterI) []byte {
 	}
 
 	for _, slot := range models.GetPaperdollOrder() {
-		buffer.WriteD(character.Paperdoll[slot].ObjId) //objId
+		buffer.WriteD(character.Paperdoll[slot].ObjectId) //objId
 	}
 	for _, slot := range models.GetPaperdollOrder() {
 		buffer.WriteD(int32(character.Paperdoll[slot].Id)) //itemId

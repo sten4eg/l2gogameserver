@@ -114,14 +114,14 @@ func (e *Exchange) ExistItemTradeObject(client interfaces.CharacterI, objectid i
 	for _, exchanges := range allTrade {
 		if exchanges.Sender.ObjectId == client.GetObjectId() {
 			for _, exchange := range exchanges.Sender.Items {
-				if exchange.ObjId == objectid {
+				if exchange.ObjectId == objectid {
 					return true
 				}
 			}
 		}
 		if exchanges.Recipient.ObjectId == client.GetObjectId() {
 			for _, exchange := range exchanges.Recipient.Items {
-				if exchange.ObjId == objectid {
+				if exchange.ObjectId == objectid {
 					return true
 				}
 			}

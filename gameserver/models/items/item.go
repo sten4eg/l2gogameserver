@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"l2gogameserver/config"
 	"l2gogameserver/data/logger"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/items/armorType"
 	"l2gogameserver/gameserver/models/items/consumeType"
 	"l2gogameserver/gameserver/models/items/crystalType"
@@ -14,8 +15,9 @@ import (
 )
 
 type Item struct {
-	Id                     int                       `json:"id"`
-	ItemType               ItemType                  `json:"itemType"`
+	Id                     int `json:"id"`
+	ItemType1              ItemType1
+	ItemType2              ItemType2                 `json:"itemType"`
 	Name                   string                    `json:"name"`
 	Icon                   string                    `json:"icon"`
 	SlotBitType            SlotBitType               `json:"slot_bit_type"`
@@ -81,6 +83,8 @@ type Item struct {
 	Price                  int                       `json:"price"`
 }
 
+//var _ Item = interfaces.BaseItemInterface{}
+
 // AllItems - ONLY READ MAP, set in init datapack
 var AllItems map[int]Item
 
@@ -131,8 +135,63 @@ func (i *Item) removeEmptyStats() {
 	}
 	i.BonusStats = bStat
 }
+func (i *Item) setItemType1() {
+	if (i.SlotBitType == SlotNeck) || ((i.SlotBitType & SlotLEar) != 0) || ((i.SlotBitType & SlotLFinger) != 0) || ((i.SlotBitType & SlotRBracelet) != 0) {
+		i.ItemType1 = WeaponRingEarringNecklace
+		i.ItemType2 = Accessory
+	} else {
+		if i.ArmorType == armorType.NONE && i.SlotBitType == SlotLHand {
+			i.ArmorType = armorType.SHIELD
+			i.ItemType1 = ShieldArmor
+			i.ItemType2 = ShieldOrArmor
+		}
+
+	}
+
+	if i.IsWeapon() {
+		i.ItemType1 = WeaponRingEarringNecklace
+		i.ItemType2 = Weapon
+	}
+}
 func (i *Item) IsStackable() bool {
 	return i.ConsumeType == 0
+}
+func (i *Item) GetId() int32 {
+	return int32(i.Id)
+}
+func (i *Item) IsEquipable() bool {
+	return !((i.SlotBitType == SlotNone) || (i.EtcItemType == etcItemType.ARROW) || (i.EtcItemType == etcItemType.BOLT) || (i.EtcItemType == etcItemType.LURE))
+}
+func (i *Item) IsHeavyArmor() bool {
+	return i.ArmorType == armorType.HEAVY
+}
+func (i *Item) IsMagicArmor() bool {
+	return i.ArmorType == armorType.MAGIC
+}
+func (i *Item) IsArmor() bool {
+	return i.ItemType2 == ShieldOrArmor
+}
+func (i *Item) IsOnlyKamaelWeapon() bool {
+	return i.WeaponType == weaponType.RAPIER || i.WeaponType == weaponType.CROSSBOW || i.WeaponType == weaponType.ANCIENTSWORD
+}
+func (i *Item) IsWeapon() bool {
+	return i.ItemType2 == Weapon
+}
+func (i *Item) IsWeaponTypeNone() bool {
+	return i.WeaponType == weaponType.NONE
+}
+func (i *Item) GetBaseItem() interfaces.BaseItemInterface {
+	return i
+}
+
+func (i *Item) GetItemType1() int {
+	return int(i.ItemType1)
+}
+func (i *Item) GetItemType2() int {
+	return int(i.ItemType2)
+}
+func (i *Item) GetBodyPart() int32 {
+	return int32(i.SlotBitType)
 }
 func GetItemFromStorage(itemId int) (item Item, ok bool) {
 	item, ok = AllItems[itemId]

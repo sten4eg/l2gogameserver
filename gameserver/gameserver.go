@@ -115,7 +115,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //	}
 //
 //	for q := range ch.CurrentChar.ChannelUpdateShadowItem {
-//		pkg := serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
+//		pkg := serverpackets.ItemUpdate(client, q.UpdateType, q.ObjectId)
 //		i := client.CryptAndReturnPackageReadyToShip(pkg)
 //		client.Send(i)
 //		if q.UpdateType == models.UpdateTypeRemove {

@@ -41,7 +41,7 @@ func Say(client interfaces.ReciverAndSender, data []byte) models.Say {
 //	pb := utils.GetPacketByte()
 //	defer pb.Release()
 //
-//	switch say.Type {
+//	switch say.tType {
 //	case chat.All:
 //		cs := serverpackets.CreatureSay(&say, me.CurrentChar)
 //		pb.SetData(cs)

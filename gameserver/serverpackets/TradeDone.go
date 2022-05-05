@@ -6,6 +6,14 @@ import (
 	"l2gogameserver/utils"
 )
 
+func TradeDone(num int32) []byte {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
+	buffer.WriteSingleByte(0x1C)
+	buffer.WriteD(num)
+	return buffer.Bytes()
+}
+
 //Отмена торга
 func TradeCancel(client, player2 interfaces.CharacterI) {
 	tradeSend(client, false)

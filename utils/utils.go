@@ -1,6 +1,9 @@
 package utils
 
-import "sync"
+import (
+	"golang.org/x/exp/constraints"
+	"sync"
+)
 
 const maxCap = 1 << 11 // 2 kB
 
@@ -44,4 +47,13 @@ func (b *PacketByte) SetData(v []byte) {
 	cl := make([]byte, len(v))
 	b.data = cl
 	copy(b.data, v)
+}
+
+func Contains[T constraints.Integer](slice []T, need T) bool {
+	for i := range slice {
+		if slice[i] == need {
+			return true
+		}
+	}
+	return false
 }

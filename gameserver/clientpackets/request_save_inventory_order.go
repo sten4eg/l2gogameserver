@@ -38,7 +38,7 @@ func RequestSaveInventoryOrder(clientI interfaces.ReciverAndSender, data []byte)
 	for _, io := range newOrder {
 		for i := range items {
 			item := &items[i]
-			if io.ObjId == item.ObjId && item.Loc == models.InventoryLoc {
+			if io.ObjId == item.ObjectId && item.Location == models.InventoryLoc {
 				items[i].LocData = io.Order
 			}
 		}

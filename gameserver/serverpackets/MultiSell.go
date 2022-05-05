@@ -39,7 +39,7 @@ func MultiSell(msData multisell.MultiList) []byte {
 			infoItem, _ := items2.GetItemInfo(item.Id)
 			buffer.WriteD(int32(item.Id))
 			buffer.WriteD(int32(infoItem.SlotBitType))
-			buffer.WriteH(int16(infoItem.ItemType))
+			buffer.WriteH(int16(infoItem.ItemType2))
 			buffer.WriteQ(int64(item.Count))
 			buffer.WriteH(int16(item.Enchant)) // enchant level
 			buffer.WriteD(0)                   // augment id

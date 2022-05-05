@@ -60,7 +60,7 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 			//подбегаем
 			if distance <= 60 {
 				logger.Info.Println("Расстояние до NPC подходящее")
-				if models.GetDialogNPC(npc.Type) == 0 {
+				if models.GetDialogNPC(npc.tType) == 0 {
 					//НПЦ для разговора, открываем диалог
 					//Пускай макс. дистанция разговора будет 60 поинтов
 					//Пока откроем ID нпц

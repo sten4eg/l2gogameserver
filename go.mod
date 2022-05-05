@@ -10,6 +10,8 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 )
 
+require golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
+
 require (
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.11.0 // indirect

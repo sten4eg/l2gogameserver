@@ -76,6 +76,11 @@ type (
 		IsMoving                bool
 		Sit                     bool
 		FirstEnterGame          bool
+		ActiveRequester         interfaces.CharacterI
+		RequestExpireTime       int64
+		ActiveTradeList         *TradeList
+		TradeRefusal            bool
+		ActiveEnchantItemId     int32
 	}
 	SkillHolder struct {
 		Skill        Skill
@@ -99,12 +104,19 @@ type (
 	}
 )
 
+const (
+	RequestTimeout = time.Second * 10
+	IdNone         = -1
+)
+
 func GetNewCharacterModel() *Character {
 	character := new(Character)
 	sk := make(map[int]Skill)
 	character.Skills = sk
 	character.ChannelUpdateShadowItem = make(chan IUP, 10)
 	character.InGame = false
+	character.ActiveEnchantItemId = IdNone
+	character.Inventory = NewInventory()
 	return character
 }
 
@@ -142,7 +154,7 @@ func (c *Character) SetSkillToQueue(skill Skill, ctrlPressed, shiftPressed bool)
 func (c *Character) IsActiveWeapon() bool {
 	x := c.Paperdoll[PAPERDOLL_RHAND]
 	//todo Еще есть кастеты
-	return x.ObjId != 0
+	return x.ObjectId != 0
 	//todo ?
 }
 
@@ -162,7 +174,7 @@ func (c *Character) Load() {
 	c.Paperdoll = RestoreVisibleInventory(c.ObjectId)
 	c.LoadCharactersMacros()
 	for _, v := range &c.Paperdoll {
-		if v.ObjId != 0 {
+		if v.ObjectId != 0 {
 			c.AddBonusStat(v.BonusStats)
 		}
 	}
@@ -186,9 +198,9 @@ func (c *Character) Shadow() {
 	for {
 		for i := range c.Inventory.Items {
 			v := &c.Inventory.Items[i]
-			if v.Item.Durability > 0 && v.Loc == PaperdollLoc {
+			if v.Item.Durability > 0 && v.Location == PaperdollLoc {
 				var iup IUP
-				iup.ObjId = v.ObjId
+				iup.ObjId = v.ObjectId
 				switch c.Inventory.Items[i].Mana {
 
 				case 0:
@@ -252,25 +264,25 @@ func (c *Character) RemoveBonusStat(s []items.ItemBonusStat) {
 
 func (c *Character) GetPDef() int32 {
 	var base float64
-	if c.Paperdoll[PAPERDOLL_FEET].ObjId == 0 {
+	if c.Paperdoll[PAPERDOLL_FEET].ObjectId == 0 {
 		base = float64(c.Stats.BasePDef.Feet)
 	}
-	if c.Paperdoll[PAPERDOLL_CHEST].ObjId == 0 {
+	if c.Paperdoll[PAPERDOLL_CHEST].ObjectId == 0 {
 		base += float64(c.Stats.BasePDef.Chest)
 	}
-	if c.Paperdoll[PAPERDOLL_CLOAK].ObjId == 0 {
+	if c.Paperdoll[PAPERDOLL_CLOAK].ObjectId == 0 {
 		base += float64(c.Stats.BasePDef.Cloak)
 	}
-	if c.Paperdoll[PAPERDOLL_HEAD].ObjId == 0 {
+	if c.Paperdoll[PAPERDOLL_HEAD].ObjectId == 0 {
 		base += float64(c.Stats.BasePDef.Head)
 	}
-	if c.Paperdoll[PAPERDOLL_GLOVES].ObjId == 0 {
+	if c.Paperdoll[PAPERDOLL_GLOVES].ObjectId == 0 {
 		base += float64(c.Stats.BasePDef.Gloves)
 	}
-	if c.Paperdoll[PAPERDOLL_LEGS].ObjId == 0 {
+	if c.Paperdoll[PAPERDOLL_LEGS].ObjectId == 0 {
 		base += float64(c.Stats.BasePDef.Legs)
 	}
-	if c.Paperdoll[PAPERDOLL_UNDER].ObjId == 0 {
+	if c.Paperdoll[PAPERDOLL_UNDER].ObjectId == 0 {
 		base += float64(c.Stats.BasePDef.Underwear)
 	}
 
@@ -385,7 +397,7 @@ func (c *Character) SaveFirstInGamePlayer() {
 func (c *Character) ExistItemInInventory(objectItemId int32) *MyItem {
 	for i := range c.Inventory.Items {
 		item := &c.Inventory.Items[i]
-		if item.ObjId == objectItemId {
+		if item.ObjectId == objectItemId {
 			return item
 		}
 	}
@@ -445,7 +457,103 @@ func (c *Character) CloseChannels() {
 	c.CharInfoTo = nil
 	c.DeleteObjectTo = nil
 }
+func (c *Character) StartTransactionRequest() {
+	c.RequestExpireTime = time.Now().Add(RequestTimeout).Unix()
+}
+func (c *Character) IsProcessingRequest() bool {
+	return c.RequestExpireTime > time.Now().Unix()
+}
+func (c *Character) IsProcessingTransaction() bool {
+	return c.ActiveTradeList != nil || c.RequestExpireTime > time.Now().Unix()
+}
 
 func (c *Character) GetClassId() int32 {
 	return c.ClassId
+}
+func (c *Character) CalculateDistanceTo(p interfaces.Positionable, includeZAxis, squared bool) float64 {
+	return CalculateDistance(c.GetX(), c.GetY(), c.GetZ(), p.GetX(), p.GetY(), p.GetZ(), includeZAxis, squared)
+}
+func (c *Character) GetTradeRefusal() bool {
+	return c.TradeRefusal
+}
+func (c *Character) OnTransactionRequest(p interfaces.CharacterI) {
+	c.StartTransactionRequest()
+	p.SetActiveRequester(c)
+}
+
+func (c *Character) SetActiveRequester(partner interfaces.CharacterI) {
+	c.ActiveRequester = partner
+}
+
+func (c *Character) GetActiveRequester() interfaces.CharacterI {
+	return c.ActiveRequester
+}
+
+func (c *Character) OnTransactionResponse() {
+	c.RequestExpireTime = time.Now().Unix()
+}
+
+func (c *Character) StartTrade(partner interfaces.CharacterI) {
+	c.OnTradeStart(partner)
+	partner.OnTradeStart(c)
+}
+
+func (c *Character) OnTradeStart(partner interfaces.CharacterI) {
+	c.ActiveTradeList = NewTradeList(c)
+	c.ActiveTradeList.SetPartner(partner)
+
+}
+
+func (c *Character) IsRequestExpired() bool {
+	return c.RequestExpireTime < time.Now().Unix()
+}
+
+func (c *Character) GetActiveTradeList() interfaces.TradeListInterface {
+	return c.ActiveTradeList
+}
+
+// CancelActiveTrade
+// возвращает bool,bool. Надо ли отправлять tradeDone(0) и sysMsg для себя и партнёра
+func (c *Character) CancelActiveTrade() (bool, bool) {
+	if c.ActiveTradeList == nil {
+		return false, false
+	}
+	needPartnerSendPacket := false
+	partner := c.ActiveTradeList.GetPartner()
+	if partner != nil {
+		needPartnerSendPacket = partner.OnTradeCancel()
+	}
+
+	return c.OnTradeCancel(), needPartnerSendPacket
+}
+
+func (c *Character) OnTradeCancel() bool {
+	if c.ActiveTradeList == nil {
+		return false
+	}
+	c.ActiveTradeList.Lock()
+	c.ActiveTradeList = nil
+	return true
+}
+
+func (c *Character) ValidateItemManipulation(objectId int32) bool {
+	item := c.Inventory.GetItemByObjectId(objectId)
+	if item == nil {
+		return false
+	}
+	if c.ActiveEnchantItemId == objectId {
+		return false
+	}
+	//todo доделть проверка на хаус оружие
+	// проверка на пета
+	return true
+}
+
+func (c *Character) GetItemByObjectId(objectId int32) interfaces.MyItemInterface {
+	return c.Inventory.GetItemByObjectId(objectId)
+}
+
+func (c *Character) GetInventory() interfaces.InventoryInterface {
+	i := c.Inventory
+	return &i
 }

@@ -86,7 +86,7 @@ func BroadCastChat(me interfaces.ReciverAndSender, say models.Say) {
 		//	qwe := g.OnlineCharacters.Char[me.CurrentChar.Target]
 		//	q := models.CalculateDistance(qwe.Coordinates.X, qwe.Coordinates.Y, qwe.Coordinates.Z, me.CurrentChar.Coordinates.X, me.CurrentChar.Coordinates.Y, me.CurrentChar.Coordinates.Z, false, false)
 		//	say.Text = fmt.Sprintf("%f", q)
-		//	say.Type = chat.All
+		//	say.tType = chat.All
 		//
 		//	cs := serverpackets.CreatureSay(&say, me.CurrentChar)
 		//	pb.SetData(cs)

@@ -29,7 +29,7 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 		logger.Info.Println("Выдача предметов новому персонажу: ", client.CurrentChar.CharName)
 
 		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
-			ObjId: idfactory.GetNext(),
+			ObjectId: idfactory.GetNext(),
 			Item: items.Item{
 				Id: 6379,
 			},
@@ -37,7 +37,7 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 		}, client.CurrentChar)
 
 		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
-			ObjId: idfactory.GetNext(),
+			ObjectId: idfactory.GetNext(),
 			Item: items.Item{
 				Id: 6382,
 			},
@@ -45,7 +45,7 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 		}, client.CurrentChar)
 
 		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
-			ObjId: idfactory.GetNext(),
+			ObjectId: idfactory.GetNext(),
 			Item: items.Item{
 				Id: 6381,
 			},
@@ -53,7 +53,7 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 		}, client.CurrentChar)
 
 		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
-			ObjId: idfactory.GetNext(),
+			ObjectId: idfactory.GetNext(),
 			Item: items.Item{
 				Id: 6380,
 			},

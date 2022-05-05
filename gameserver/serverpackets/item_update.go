@@ -18,11 +18,11 @@ func ItemUpdate(clientI interfaces.ReciverAndSender, updateType int16, objId int
 	var item models.MyItem
 
 	for _, v := range items {
-		if v.ObjId == objId {
+		if v.ObjectId == objId {
 			item = v
 		}
 	}
-	if item.ObjId == 0 {
+	if item.ObjectId == 0 {
 		return []byte{}
 	}
 
@@ -30,11 +30,11 @@ func ItemUpdate(clientI interfaces.ReciverAndSender, updateType int16, objId int
 	buffer.WriteH(1)
 
 	buffer.WriteH(int16(updateType))       // Update type : 01-add, 02-modify, 03-remove
-	buffer.WriteD(item.ObjId)              //idItemInDB
+	buffer.WriteD(item.ObjectId)           //idItemInDB
 	buffer.WriteD(int32(item.Id))          //getDisplayId idItemsInLineage
 	buffer.WriteD(item.LocData)            //Location
 	buffer.WriteQ(item.Count)              //Count
-	buffer.WriteH(int16(item.ItemType))    // Item Type 2 : 00-weapon, 01-shield/armor, 02-ring/earring/necklace, 03-questitem, 04-adena, 05-item
+	buffer.WriteH(int16(item.ItemType2))   // Item tType 2 : 00-weapon, 01-shield/armor, 02-ring/earring/necklace, 03-questitem, 04-adena, 05-item
 	buffer.WriteH(0)                       // Filler (always 0)
 	buffer.WriteH(item.IsEquipped())       //  Equipped : 00-No, 01-yes
 	buffer.WriteD(int32(item.SlotBitType)) // Slot : 0006-lr.ear, 0008-neck, 0030-lr.finger, 0040-head, 0100-l.hand, 0200-gloves, 0400-chest, 0800-pants, 1000-feet, 4000-r.hand, 8000-r.hand
@@ -45,8 +45,8 @@ func ItemUpdate(clientI interfaces.ReciverAndSender, updateType int16, objId int
 	buffer.WriteD(int32(item.Mana)) // mana
 	buffer.WriteD(-9999)            // time
 
-	buffer.WriteH(int16(item.GetAttackElement())) //getAttackElementType
-	buffer.WriteH(int16(item.AttackAttributeVal)) //getAttackElementPower
+	buffer.WriteH(int16(item.GetAttackElementType())) //getAttackElementType
+	buffer.WriteH(int16(item.AttackAttributeVal))     //getAttackElementPower
 
 	// Аттрибут в броне
 	for _, a := range item.AttributeDefend {

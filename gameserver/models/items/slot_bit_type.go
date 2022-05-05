@@ -102,7 +102,7 @@ func (t *SlotBitType) UnmarshalJSON(data []byte) error {
 		*t = SlotBelt
 
 	default:
-		return errors.New("неправильный ItemType: " + sData)
+		return errors.New("неправильный ItemType2: " + sData)
 	}
 	return nil
 }

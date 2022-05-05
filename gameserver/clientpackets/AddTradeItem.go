@@ -2,41 +2,78 @@ package clientpackets
 
 import (
 	"l2gogameserver/data/logger"
+	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
-	"l2gogameserver/gameserver/models/trade"
+	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
-	"l2gogameserver/utils"
+	"strconv"
 )
 
 //AddTradeItem Когда игрок добавляет предмет в трейде
 func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
 	var packet = packets.NewReader(data)
 
-	_ = packet.ReadInt32()
+	tradeId := packet.ReadInt32()
 	objectId := packet.ReadInt32() // objectId предмета
-	count := packet.ReadUInt64()
+	count := packet.ReadInt64()
 
-	item, toUser, ok := trade.AddItemTrade(client.GetCurrentChar(), objectId, int64(count))
-	if !ok {
-		logger.Info.Println("Не добавлен предмет")
+	trade := client.GetCurrentChar().GetActiveTradeList()
+	if trade == nil {
+		logger.Warning.Println("Character: " + client.GetCurrentChar().GetName() + " requested item:" + strconv.Itoa(int(objectId)) + " add without active tradelist:" + strconv.Itoa(int(tradeId)))
+		return
+	}
+	partner := trade.GetPartner()
+	if partner == nil || broadcast.GetCharacterByObjectId(partner.GetObjectId()) == nil || partner.GetActiveTradeList() == nil {
+		if partner == nil {
+			logger.Warning.Println("Character:" + client.GetCurrentChar().GetName() + " requested invalid trade object: " + strconv.Itoa(int(objectId)))
+		}
+		sm := sysmsg.TargetIsNotFoundInTheGame
+		client.EncryptAndSend(serverpackets.SystemMessage(sm))
+
+		canceledTradeForMe, canceledTradeForPartner := client.GetCurrentChar().CancelActiveTrade()
+		if canceledTradeForMe {
+			buff := packets.Get()
+
+			pkg := serverpackets.TradeDone(0)
+			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+
+			smg := sysmsg.C1CanceledTrade
+			smg.AddString(client.GetCurrentChar().GetActiveTradeList().GetPartner().GetName())
+			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(serverpackets.SystemMessage(smg)))
+
+			client.Send(buff.Bytes())
+
+			packets.Put(buff)
+		}
+
+		if canceledTradeForPartner {
+			realPartner := client.GetCurrentChar().GetActiveTradeList().GetPartner()
+
+			pkg := serverpackets.TradeDone(0)
+			realPartner.EncryptAndSend(pkg)
+
+			smg := sysmsg.C1CanceledTrade
+			smg.AddString(realPartner.GetActiveTradeList().GetPartner().GetName())
+
+			realPartner.EncryptAndSend(serverpackets.SystemMessage(smg))
+		}
 		return
 	}
 
-	pkg := serverpackets.TradeOwnOAdd(item, count)
-	client.EncryptAndSend(pkg)
+	if trade.IsConfirmed() || partner.GetActiveTradeList().IsConfirmed() {
+		client.EncryptAndSend(serverpackets.SystemMessage(sysmsg.CannotAdjustItemsAfterTradeConfirmed))
+		return
+	}
+	if !client.GetCurrentChar().ValidateItemManipulation(objectId) {
+		client.EncryptAndSend(serverpackets.SystemMessage(sysmsg.NothingHappened))
+		return
+	}
 
-	TradeOtherAdd(toUser, item, count)
-
-}
-
-//Шлется инфа для другого игрока в обмене
-func TradeOtherAdd(toUser interfaces.CharacterI, item *models.MyItem, count uint64) {
-
-	pkg := serverpackets.TradeOtherAdd(item, count)
-	ut := utils.GetPacketByte()
-	ut.SetData(pkg)
-	toUser.EncryptAndSend(ut.GetData())
+	tItem := trade.AddItem(objectId, count, client.GetCurrentChar(), 0)
+	if tItem != nil {
+		client.EncryptAndSend(serverpackets.TradeOwnOAdd(tItem))
+		trade.GetPartner().EncryptAndSend(serverpackets.TradeOtherAdd(tItem))
+	}
 
 }
