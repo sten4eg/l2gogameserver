@@ -21,14 +21,14 @@ func AnswerTradeRequest(data []byte, sender interfaces.ReciverAndSender) {
 	partner := sender.GetCurrentChar().GetActiveRequester()
 	if partner == nil {
 		sender.EncryptAndSend(serverpackets.TradeDone(0))
-		sender.EncryptAndSend(serverpackets.SystemMessage(sysmsg.TargetIsNotFoundInTheGame))
+		sender.EncryptAndSend(sysmsg.SystemMessage(sysmsg.TargetIsNotFoundInTheGame))
 		sender.GetCurrentChar().SetActiveRequester(nil)
 		return
 	}
 
 	if broadcast.GetCharacterByObjectId(partner.GetObjectId()) == nil {
 		sender.EncryptAndSend(serverpackets.TradeDone(0))
-		sender.EncryptAndSend(serverpackets.SystemMessage(sysmsg.TargetIsNotFoundInTheGame))
+		sender.EncryptAndSend(sysmsg.SystemMessage(sysmsg.TargetIsNotFoundInTheGame))
 		sender.GetCurrentChar().SetActiveRequester(nil)
 		return
 	}
@@ -37,18 +37,18 @@ func AnswerTradeRequest(data []byte, sender interfaces.ReciverAndSender) {
 		sender.GetCurrentChar().StartTrade(partner)
 		msg := sysmsg.BeginTradeWithC1
 		msg.AddString(partner.GetName())
-		sender.EncryptAndSend(serverpackets.SystemMessage(msg))
+		sender.EncryptAndSend(sysmsg.SystemMessage(msg))
 
 		msg1 := sysmsg.BeginTradeWithC1
 		msg1.AddString(sender.GetCurrentChar().GetName())
-		partner.EncryptAndSend(serverpackets.SystemMessage(msg1))
+		partner.EncryptAndSend(sysmsg.SystemMessage(msg1))
 
 		sender.EncryptAndSend(serverpackets.TradeStart(sender.GetCurrentChar()))
 		partner.EncryptAndSend(serverpackets.TradeStart(partner))
 	} else {
 		sm := sysmsg.C1DeniedTradeRequest
 		sm.AddString(sender.GetCurrentChar().GetName())
-		partner.EncryptAndSend(serverpackets.SystemMessage(sm))
+		partner.EncryptAndSend(sysmsg.SystemMessage(sm))
 	}
 
 	sender.GetCurrentChar().SetActiveRequester(nil)

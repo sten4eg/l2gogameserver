@@ -57,7 +57,7 @@ func UseItem(clientI interfaces.ReciverAndSender, data []byte) {
 
 			// если в руке Combat flag
 			if client.CurrentChar.IsActiveWeapon() && models.GetActiveWeapon(client.CurrentChar.Inventory.Items, client.CurrentChar.Paperdoll).Item.Id == fortFlagId {
-				pkg := serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
+				pkg := sysmsg.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
 				buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 				client.Send(buffer.Bytes())
 				return
@@ -75,14 +75,14 @@ func UseItem(clientI interfaces.ReciverAndSender, data []byte) {
 				switch client.CurrentChar.Race {
 				case race.KAMAEL:
 					if selectedItem.IsWeaponTypeNone() {
-						pkg := serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
+						pkg := sysmsg.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
 						buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 						client.Send(buffer.Bytes())
 						return
 					}
 				case race.HUMAN, race.DWARF, race.ELF, race.DARK_ELF, race.ORC:
 					if selectedItem.IsOnlyKamaelWeapon() {
-						pkg := serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
+						pkg := sysmsg.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
 						buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 						client.Send(buffer.Bytes())
 						return
@@ -93,7 +93,7 @@ func UseItem(clientI interfaces.ReciverAndSender, data []byte) {
 		// они могут носить только лайт, может проверять на !LIGHT ?
 		case items.SlotChest, items.SlotBack, items.SlotGloves, items.SlotFeet, items.SlotHead, items.SlotFullArmor, items.SlotLegs:
 			if client.CurrentChar.Race == race.KAMAEL && (selectedItem.IsHeavyArmor() || selectedItem.IsMagicArmor()) {
-				pkg := serverpackets.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
+				pkg := sysmsg.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
 				buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 				client.Send(buffer.Bytes())
 				return

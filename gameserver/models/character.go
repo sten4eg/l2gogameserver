@@ -10,6 +10,7 @@ import (
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/race"
+	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/utils"
 	"net"
 
@@ -513,7 +514,8 @@ func (c *Character) GetActiveTradeList() interfaces.TradeListInterface {
 }
 
 // CancelActiveTrade
-// возвращает bool,bool. Надо ли отправлять tradeDone(0) и sysMsg для себя и партнёра
+// возвращает bool,bool.
+// Надо ли отправлять tradeDone(0) и sysMsg для себя(первый параметр) и партнёра(второй параметр)
 func (c *Character) CancelActiveTrade() (bool, bool) {
 	if c.ActiveTradeList == nil {
 		return false, false
@@ -549,6 +551,15 @@ func (c *Character) ValidateItemManipulation(objectId int32) bool {
 	return true
 }
 
+func (c *Character) CheckItemManipulation(objectId int32, count int64) interfaces.MyItemInterface {
+	// todo куча проверок
+	item := c.Inventory.GetItemByObjectId(objectId)
+	if item == nil {
+		return nil
+	}
+	return item
+
+}
 func (c *Character) GetItemByObjectId(objectId int32) interfaces.MyItemInterface {
 	return c.Inventory.GetItemByObjectId(objectId)
 }
@@ -556,4 +567,18 @@ func (c *Character) GetItemByObjectId(objectId int32) interfaces.MyItemInterface
 func (c *Character) GetInventory() interfaces.InventoryInterface {
 	i := c.Inventory
 	return &i
+}
+
+func (c *Character) ValidateWeight(weight int32) bool {
+	return c.Inventory.TotalWeight+weight <= c.GetMaxLoad()
+}
+
+func (c *Character) GetMaxLoad() int32 {
+	//todo calcStat
+	return 69000 * 3
+}
+
+func (c *Character) SendSysMsg(num int32, options ...string) {
+	sm := sysmsg.RequestC1ForTrade
+	c.EncryptAndSend(sysmsg.SystemMessage(sm))
 }

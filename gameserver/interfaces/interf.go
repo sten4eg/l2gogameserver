@@ -59,7 +59,11 @@ type TradeListInterface interface {
 	IsConfirmed() bool
 	GetOwner() CharacterI
 	InvalidateConfirmation()
-	Confirmed() bool
+	Confirmed() (bool, bool)
+	MuLock()
+	MuUnlock()
+	Validate() bool
+	CalcItemsWeight() int32
 }
 type InventoryInterface interface {
 	GetItemByObjectId(id int32) MyItemInterface
@@ -93,6 +97,7 @@ type BaseItemInterface interface {
 	GetBaseItem() BaseItemInterface
 	GetItemType1() int
 	GetItemType2() int
+	GetWeight() int
 }
 type CharacterI interface {
 	Positionable
@@ -117,6 +122,10 @@ type CharacterI interface {
 	OnTradeCancel() bool
 	ValidateItemManipulation(int32) bool
 	GetInventory() InventoryInterface
+	CheckItemManipulation(int32, int64) MyItemInterface
+	ValidateWeight(int32) bool
+	GetMaxLoad() int32
+	SendSysMsg(num int32, options ...string)
 }
 type ReciverAndSender interface {
 	Receive() (opcode byte, data []byte, e error)

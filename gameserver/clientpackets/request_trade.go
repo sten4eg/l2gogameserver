@@ -16,12 +16,12 @@ func TradeRequest(data []byte, client interfaces.ReciverAndSender) {
 	target := broadcast.GetCharacterByObjectId(targetObjectId)
 
 	if target == nil {
-		pkg := serverpackets.SystemMessage(sysmsg.TargetIsIncorrect)
+		pkg := sysmsg.SystemMessage(sysmsg.TargetIsIncorrect)
 		client.EncryptAndSend(pkg)
 		return
 	}
 	if target.GetObjectId() == client.GetCurrentChar().GetObjectId() {
-		pkg := serverpackets.SystemMessage(sysmsg.TargetIsIncorrect)
+		pkg := sysmsg.SystemMessage(sysmsg.TargetIsIncorrect)
 		client.EncryptAndSend(pkg)
 		return
 	}
@@ -30,31 +30,32 @@ func TradeRequest(data []byte, client interfaces.ReciverAndSender) {
 		sm := sysmsg.C1IsBusyTryLater
 		sm.AddString(target.GetName())
 
-		pkg := serverpackets.SystemMessage(sm)
+		pkg := sysmsg.SystemMessage(sm)
 		client.EncryptAndSend(pkg)
 		return
 	}
 
 	if client.GetCurrentChar().IsProcessingTransaction() {
-		client.EncryptAndSend(serverpackets.SystemMessage(sysmsg.AlreadyTrading))
+		client.EncryptAndSend(sysmsg.SystemMessage(sysmsg.AlreadyTrading))
 		return
 	}
 
 	if target.GetTradeRefusal() {
-		serverpackets.SendCustomSystemMessage("That person is in trade refusal mode.")
+		sysmsg.SendCustomSystemMessage("That person is in trade refusal mode.")
 		return
 	}
 
 	if client.GetCurrentChar().CalculateDistanceTo(target, false, false) > 150 {
-		client.EncryptAndSend(serverpackets.SystemMessage(sysmsg.TargetTooFar))
+		client.EncryptAndSend(sysmsg.SystemMessage(sysmsg.TargetTooFar))
 		return
 	}
 
+	client.GetCurrentChar().OnTransactionRequest(target)
 	pkg := serverpackets.TradeSendRequest(target)
 	target.EncryptAndSend(pkg)
 	sm := sysmsg.RequestC1ForTrade
 	sm.AddString(target.GetName())
-	client.EncryptAndSend(serverpackets.SystemMessage(sm))
+	client.EncryptAndSend(sysmsg.SystemMessage(sm))
 
 	logger.Info.Println("Отправлен запрос на трейд к", target.GetName())
 

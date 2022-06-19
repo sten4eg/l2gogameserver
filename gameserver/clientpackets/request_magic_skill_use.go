@@ -31,7 +31,7 @@ func RequestMagicSkillUse(data []byte, clientI interfaces.ReciverAndSender) {
 	}
 
 	if client.CurrentChar.IsFakeDeath {
-		pkg := serverpackets.SystemMessage(sysmsg.CantMoveSitting)
+		pkg := sysmsg.SystemMessage(sysmsg.CantMoveSitting)
 		buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 		pkg2 := serverpackets.ActionFailed(client)
 		buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))

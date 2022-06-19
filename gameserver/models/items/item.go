@@ -197,3 +197,6 @@ func GetItemFromStorage(itemId int) (item Item, ok bool) {
 	item, ok = AllItems[itemId]
 	return
 }
+func (i *Item) GetWeight() int {
+	return i.Weight
+}

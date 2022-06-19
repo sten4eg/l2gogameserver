@@ -29,7 +29,7 @@ func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
 			logger.Warning.Println("Character:" + client.GetCurrentChar().GetName() + " requested invalid trade object: " + strconv.Itoa(int(objectId)))
 		}
 		sm := sysmsg.TargetIsNotFoundInTheGame
-		client.EncryptAndSend(serverpackets.SystemMessage(sm))
+		client.EncryptAndSend(sysmsg.SystemMessage(sm))
 
 		canceledTradeForMe, canceledTradeForPartner := client.GetCurrentChar().CancelActiveTrade()
 		if canceledTradeForMe {
@@ -40,7 +40,7 @@ func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
 
 			smg := sysmsg.C1CanceledTrade
 			smg.AddString(client.GetCurrentChar().GetActiveTradeList().GetPartner().GetName())
-			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(serverpackets.SystemMessage(smg)))
+			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(sysmsg.SystemMessage(smg)))
 
 			client.Send(buff.Bytes())
 
@@ -56,17 +56,17 @@ func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
 			smg := sysmsg.C1CanceledTrade
 			smg.AddString(realPartner.GetActiveTradeList().GetPartner().GetName())
 
-			realPartner.EncryptAndSend(serverpackets.SystemMessage(smg))
+			realPartner.EncryptAndSend(sysmsg.SystemMessage(smg))
 		}
 		return
 	}
 
 	if trade.IsConfirmed() || partner.GetActiveTradeList().IsConfirmed() {
-		client.EncryptAndSend(serverpackets.SystemMessage(sysmsg.CannotAdjustItemsAfterTradeConfirmed))
+		client.EncryptAndSend(sysmsg.SystemMessage(sysmsg.CannotAdjustItemsAfterTradeConfirmed))
 		return
 	}
 	if !client.GetCurrentChar().ValidateItemManipulation(objectId) {
-		client.EncryptAndSend(serverpackets.SystemMessage(sysmsg.NothingHappened))
+		client.EncryptAndSend(sysmsg.SystemMessage(sysmsg.NothingHappened))
 		return
 	}
 

@@ -95,3 +95,8 @@ var BeginTradeWithC1 = SysMsg{Params: []Params{}, Id: 120}
 var C1CanceledTrade = SysMsg{Params: []Params{}, Id: 124}
 var CannotAdjustItemsAfterTradeConfirmed = SysMsg{Params: []Params{}, Id: 124}
 var NothingHappened = SysMsg{Params: []Params{}, Id: 61}
+var C1ConfirmedTrade = SysMsg{Params: []Params{}, Id: 121}
+
+func FindById() {
+
+}

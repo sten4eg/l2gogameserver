@@ -1,11 +1,10 @@
-package serverpackets
+package sysmsg
 
 import (
-	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/packets"
 )
 
-func SystemMessage(msg sysmsg.SysMsg) []byte {
+func SystemMessage(msg SysMsg) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
@@ -16,17 +15,17 @@ func SystemMessage(msg sysmsg.SysMsg) []byte {
 	for _, v := range msg.Params {
 		buffer.WriteD(int32(v.GetType()))
 		switch v.GetType() {
-		case sysmsg.TypeText, sysmsg.TypePlayerName:
+		case TypeText, TypePlayerName:
 			buffer.WriteS(v.GetValueString())
-		case sysmsg.TypeLongNumber:
+		case TypeLongNumber:
 			buffer.WriteQ(v.GetValueInt64())
-		case sysmsg.TypeItemName, sysmsg.TypeCastleName, sysmsg.TypeIntNumber, sysmsg.TypeNpcName, sysmsg.TypeElementName, sysmsg.TypeSystemString, sysmsg.TypeInstanceName, sysmsg.TypeDoorName:
+		case TypeItemName, TypeCastleName, TypeIntNumber, TypeNpcName, TypeElementName, TypeSystemString, TypeInstanceName, TypeDoorName:
 			buffer.WriteD(v.GetValueInt32())
-		case sysmsg.TypeSkillName:
+		case TypeSkillName:
 			p := v.GetTwoElementSlice()
 			buffer.WriteD(p[0]) // SkillId
 			buffer.WriteD(p[1]) // SkillLevel
-		case sysmsg.TypeZoneName:
+		case TypeZoneName:
 			p := v.GetThreeElementSlice()
 			buffer.WriteD(p[0]) // x
 			buffer.WriteD(p[1]) // y
@@ -44,10 +43,10 @@ func SendCustomSystemMessage(text string) []byte {
 	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x62)
-	buffer.WriteD(sysmsg.S1.Id)
+	buffer.WriteD(S1.Id)
 	buffer.WriteD(1)
 
-	buffer.WriteD(int32(sysmsg.TypeText))
+	buffer.WriteD(int32(TypeText))
 	buffer.WriteS(text)
 	return buffer.Bytes()
 }

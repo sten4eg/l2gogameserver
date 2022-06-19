@@ -57,8 +57,9 @@ const (
 type Inventory struct {
 	Items []MyItem
 	//BlockItems содержит не objectId, а id предметов
-	BlockItems []int32
-	BlockMode  int32
+	BlockItems  []int32
+	BlockMode   int32
+	TotalWeight int32 //todo где заполнять
 }
 
 func NewInventory() Inventory {
