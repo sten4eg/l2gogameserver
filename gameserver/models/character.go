@@ -578,7 +578,8 @@ func (c *Character) GetMaxLoad() int32 {
 	return 69000 * 3
 }
 
-func (c *Character) SendSysMsg(num int32, options ...string) {
-	sm := sysmsg.RequestC1ForTrade
-	c.EncryptAndSend(sysmsg.SystemMessage(sm))
+func (c *Character) SendSysMsg(num interface{}, options ...string) {
+	smsg := num.(sysmsg.SysMsg)
+
+	c.EncryptAndSend(sysmsg.SystemMessage(smsg))
 }
