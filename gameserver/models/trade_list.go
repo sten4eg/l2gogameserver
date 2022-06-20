@@ -102,6 +102,7 @@ func (t *TradeList) Confirmed() (bool, needSendTradeConfirm bool) {
 	}
 	return t.confirmed, needSendTradeConfirm
 }
+
 func (t *TradeList) AddItem(objectId int32, count int64, char interfaces.CharacterI, price int64) interfaces.TradableItemInterface {
 	if t.IsLocked() {
 		return nil
