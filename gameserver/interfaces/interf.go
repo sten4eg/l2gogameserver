@@ -133,7 +133,7 @@ type CharacterI interface {
 	CheckItemManipulation(int32, int64) MyItemInterface
 	ValidateWeight(int32) bool
 	GetMaxLoad() int32
-	SendSysMsg(num int32, options ...string)
+	SendSysMsg(q interface{}, options ...string)
 }
 type ReciverAndSender interface {
 	Receive() (opcode byte, data []byte, e error)
