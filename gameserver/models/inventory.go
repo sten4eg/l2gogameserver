@@ -15,6 +15,7 @@ import (
 	"l2gogameserver/utils"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const (
@@ -52,14 +53,22 @@ const (
 	UpdateTypeAdd       int16 = 1
 	UpdateTypeModify    int16 = 2
 	UpdateTypeRemove    int16 = 3
+
+	NoBlockMode = -1 // no block
+	//TODO остальные типы блокировок не понятно для чего
+	//Block0 - block items from _invItems, allow usage of other items
+	//BlockMode1 - allow usage of items from _invItems, block other items
+
 )
 
+// Inventory реализует InventoryInterface
 type Inventory struct {
 	Items []MyItem
 	//BlockItems содержит не objectId, а id предметов
 	BlockItems  []int32
 	BlockMode   int32
 	TotalWeight int32 //todo где заполнять
+	mu          sync.Mutex
 }
 
 func NewInventory() Inventory {
@@ -76,11 +85,30 @@ func (i *Inventory) GetItemByObjectId(id int32) interfaces.MyItemInterface {
 	}
 	return nil
 }
-
-func (i Inventory) CanManipulateWithItemId(id int32) bool {
+func (i *Inventory) CanManipulateWithItemId(id int32) bool {
 	return (i.BlockMode != 0 || !utils.Contains(i.BlockItems, id)) && i.BlockMode != 1 || utils.Contains(i.BlockItems, id)
 }
+func (i *Inventory) GetItemsWithUpdatedType() []interfaces.MyItemInterface {
+	var res []interfaces.MyItemInterface
+	for key := range i.Items {
+		if i.Items[key].LastChange == UpdateTypeModify {
+			res = append(res, &i.Items[key])
+		}
+	}
+	return res
+}
+func (i *Inventory) Lock() {
+	i.mu.Lock()
+}
+func (i *Inventory) Unlock() {
+	i.mu.Unlock()
+}
 
+func (i *Inventory) SetAllItemsUpdatedTypeNone() {
+	for _, v := range i.Items {
+		v.LastChange = UpdateTypeUnchanged
+	}
+}
 func RestoreVisibleInventory(charId int32) [26]MyItem {
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -98,7 +126,7 @@ func RestoreVisibleInventory(charId int32) [26]MyItem {
 	for rows.Next() {
 		var objId int
 		var itemId int
-		var enchantLevel int
+		var enchantLevel int16
 		var locData int
 		err = rows.Scan(&objId, &itemId, &locData, &enchantLevel)
 		if err != nil {
@@ -121,7 +149,7 @@ func RestoreVisibleInventory(charId int32) [26]MyItem {
 	return mts
 }
 
-func GetMyItems(charId int32) Inventory {
+func GetMyItems(charId int32) []MyItem {
 	dbConn, err := db.GetConn()
 	if err != nil {
 		logger.Error.Panicln(err)
@@ -134,8 +162,7 @@ func GetMyItems(charId int32) Inventory {
 		logger.Error.Panicln(err)
 	}
 
-	var inventory Inventory
-
+	itemsInInventory := make([]MyItem, 0, 80)
 	for rows.Next() {
 		var itm MyItem
 		var id int
@@ -150,40 +177,37 @@ func GetMyItems(charId int32) Inventory {
 			itm.Item = it
 
 			if itm.IsWeapon() {
-
 				itm.AttackAttributeType, itm.AttackAttributeVal = getAttributeForWeapon(itm.ObjectId)
 			} else if itm.IsArmor() {
 				itm.AttributeDefend = getAttributeForArmor(itm.ObjectId)
 			}
 
-			inventory.Items = append(inventory.Items, itm)
+			itemsInInventory = append(itemsInInventory, itm)
 		}
 	}
 
-	return inventory
+	return itemsInInventory
 }
 
-func getAttributeForWeapon(objId int32) (attribute.Attribute, int) {
+func getAttributeForWeapon(objId int32) (attribute.Attribute, int16) {
 	dbConn, err := db.GetConn()
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
-	el := attribute.Attribute(-2) // None
+	elementType := attribute.Attribute(-2) // None
 
-	var elementType, elementValue int
+	var elementValue int16
 	err = dbConn.QueryRow(context.Background(), "SELECT element_type,element_value FROM item_elementals WHERE item_id = $1", objId).
 		Scan(&elementType, &elementValue)
 
 	if err == pgx.ErrNoRows {
-		return el, 0
+		return elementType, 0
 	} else if err != nil {
 		logger.Error.Panicln(err)
 	}
 
-	el = attribute.Attribute(elementType)
-
-	return el, elementValue
+	return elementType, elementValue
 }
 
 func getAttributeForArmor(objId int32) [6]int16 {
@@ -428,6 +452,7 @@ func equipItemAndRecord(selectedItem *MyItem, character *Character) {
 func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 	// eсли selectedItem nil, то ищем предмет которых находиться в slot
 	// переносим его в инвентарь, убираем бонусы этого итема у персонажа
+
 	if selectedItem == nil {
 		for i := range character.Inventory.Items {
 			itemInInventory := &character.Inventory.Items[i]
@@ -435,6 +460,7 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 				itemInInventory.LocData = getFirstEmptySlot(character.Inventory.Items)
 				itemInInventory.Location = InventoryLoc
 				character.Inventory.Items[i] = *itemInInventory
+				itemInInventory.LastChange = UpdateTypeModify
 				logger.Info.Println(itemInInventory.Location, itemInInventory.LocData)
 				character.RemoveBonusStat(itemInInventory.BonusStats)
 				break
@@ -442,7 +468,7 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 		}
 		return
 	}
-	logger.Info.Println("не должен дойти")
+
 	var oldItemInSelectedSlot *MyItem
 	var inventoryKeyOldItemInSelectedSlot int
 	var keyCurrentItem int
@@ -467,6 +493,7 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 		oldItemInSelectedSlot.Location = InventoryLoc
 		oldItemInSelectedSlot.LocData = selectedItem.LocData
 		character.Inventory.Items[inventoryKeyOldItemInSelectedSlot] = *oldItemInSelectedSlot
+		character.Inventory.Items[inventoryKeyOldItemInSelectedSlot].LastChange = UpdateTypeModify
 		selectedItem.LocData = int32(slot)
 		selectedItem.Location = PaperdollLoc
 
@@ -478,13 +505,14 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 	// добавить бонусы предмета персонажу
 	character.AddBonusStat(selectedItem.BonusStats)
 	character.Inventory.Items[keyCurrentItem] = *selectedItem
-
+	character.Inventory.Items[keyCurrentItem].LastChange = UpdateTypeModify
 }
 
 func getFirstEmptySlot(myItems []MyItem) int32 {
 	limit := int32(80) // todo дефолтно 80 , но может быть больше
 
-	for i := int32(0); i < limit; i++ {
+	i := int32(0)
+	for ; i < limit; i++ {
 		flag := false
 		for j := range myItems {
 			v := &myItems[j]

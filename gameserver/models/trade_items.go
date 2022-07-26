@@ -10,14 +10,14 @@ import (
 type TradeItem struct {
 	items.Item
 	ObjectId            int32
-	Enchant             int
+	Enchant             int16
 	LocData             int32
 	Price               int64
 	Location            string
 	Type1               int
-	Type2               int
+	Type2               int16
 	AttackAttributeType attribute.Attribute
-	AttackAttributeVal  int
+	AttackAttributeVal  int16
 	AttributeDefend     [6]int16
 	StoreCount          int64
 	Count               int64
@@ -58,8 +58,8 @@ func (i *TradeItem) GetBodyPart() int32 {
 func (i *TradeItem) GetItemType1() int {
 	return int(i.ItemType1)
 }
-func (i *TradeItem) GetItemType2() int {
-	return int(i.ItemType2)
+func (i *TradeItem) GetItemType2() int16 {
+	return int16(i.ItemType2)
 }
 func (i *TradeItem) GetAttackElementType() attribute.Attribute {
 	el := attribute.Attribute(-2) // none
@@ -78,10 +78,10 @@ func (i *TradeItem) GetAttackElementType() attribute.Attribute {
 func (i *TradeItem) getBaseAttributeElement() attribute.Attribute {
 	return i.BaseAttributeAttack.Type
 }
-func (i *TradeItem) GetEnchant() int {
+func (i *TradeItem) GetEnchant() int16 {
 	return i.Enchant
 }
-func (i *TradeItem) GetAttackElementPower() int {
+func (i *TradeItem) GetAttackElementPower() int16 {
 	return i.AttackAttributeVal
 }
 

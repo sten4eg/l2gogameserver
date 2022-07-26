@@ -6,22 +6,25 @@ import (
 )
 
 type MyItem struct {
+	// встроенный "шаблон" предмета
 	items.Item
 	ObjectId            int32
-	Enchant             int
+	Enchant             int16
 	LocData             int32
 	Count               int64
 	Location            string
 	Time                int
 	AttackAttributeType attribute.Attribute
-	AttackAttributeVal  int
-	Mana                int
+	AttackAttributeVal  int16
+	Mana                int32
 	AttributeDefend     [6]int16
 	EnchantedOption     [3]int32
+
+	//UpdateType для обновления инвентаря
+	LastChange int16
 }
 
 func (i *MyItem) GetObjectId() int32 {
-
 	return i.ObjectId
 }
 func (i *MyItem) IsEquipped() int16 {
@@ -50,10 +53,10 @@ func (i *MyItem) getBaseAttributeElement() attribute.Attribute {
 func (i *MyItem) GetCount() int64 {
 	return i.Count
 }
-func (i *MyItem) GetEnchant() int {
+func (i *MyItem) GetEnchant() int16 {
 	return i.Enchant
 }
-func (i *MyItem) GetAttackElementPower() int {
+func (i *MyItem) GetAttackElementPower() int16 {
 	return i.AttackAttributeVal
 }
 func (i *MyItem) GetElementDefAttr() [6]int16 {
@@ -65,6 +68,13 @@ func (i *MyItem) GetEnchantedOption() [3]int32 {
 func (i *MyItem) GetLocation() string {
 	return i.Location
 }
-func (i *MyItem) GetEnchantLevel() int {
-	return i.Enchant
+
+func (i *MyItem) GetUpdateType() int16 {
+	return i.LastChange
+}
+func (i *MyItem) GetLocData() int32 {
+	return i.LocData
+}
+func (i *MyItem) GetMana() int32 {
+	return i.Mana
 }

@@ -171,7 +171,7 @@ func (c *Character) Load() {
 	c.ShortCut = RestoreMe(c.ObjectId, c.ClassId)
 	c.LoadSkills()
 	c.SkillQueue = make(chan SkillHolder)
-	c.Inventory = GetMyItems(c.ObjectId)
+	c.Inventory.Items = GetMyItems(c.ObjectId)
 	c.Paperdoll = RestoreVisibleInventory(c.ObjectId)
 	c.LoadCharactersMacros()
 	for _, v := range &c.Paperdoll {

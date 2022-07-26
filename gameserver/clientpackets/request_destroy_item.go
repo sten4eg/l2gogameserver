@@ -4,7 +4,6 @@ import (
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
-	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
@@ -33,6 +32,7 @@ func DestroyItem(data []byte, clientI interfaces.ReciverAndSender) {
 	models.RemoveItemCharacter(client.CurrentChar, item, int64(count))
 	logger.Info.Println("Предмет был удален!")
 
-	pkg := serverpackets.InventoryUpdate(*item, models.UpdateTypeRemove)
-	client.EncryptAndSend(pkg)
+	//TODO сделать нормально удаление
+	//pkg := serverpackets.InventoryUpdate(*item)
+	//client.EncryptAndSend(pkg)
 }

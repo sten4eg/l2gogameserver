@@ -1,6 +1,9 @@
 package interfaces
 
-import "l2gogameserver/gameserver/models/items/attribute"
+import (
+	"l2gogameserver/gameserver/models/items/attribute"
+	"sync"
+)
 
 type Identifier interface {
 	GetId() int32
@@ -43,9 +46,9 @@ type TradableItemInterface interface {
 	Identifier
 	BaseItemInterface
 	GetBodyPart() int32
-	GetEnchant() int
+	GetEnchant() int16
 	GetAttackElementType() attribute.Attribute
-	GetAttackElementPower() int
+	GetAttackElementPower() int16
 	GetElementDefAttr() [6]int16
 	GetEnchantedOption() [3]int32
 	GetCount() int64
@@ -68,6 +71,9 @@ type TradeListInterface interface {
 type InventoryInterface interface {
 	GetItemByObjectId(id int32) MyItemInterface
 	CanManipulateWithItemId(id int32) bool
+	GetItemsWithUpdatedType() []MyItemInterface
+	SetAllItemsUpdatedTypeNone()
+	sync.Locker
 }
 type MyItemInterface interface {
 	BaseItemInterface
@@ -76,12 +82,14 @@ type MyItemInterface interface {
 	IsEquipped() int16
 	GetAttackElementType() attribute.Attribute
 	GetCount() int64
-	GetEnchant() int
+	GetEnchant() int16
 	GetLocation() string
-	GetEnchantLevel() int
-	GetAttackElementPower() int
+	GetAttackElementPower() int16
 	GetElementDefAttr() [6]int16
 	GetEnchantedOption() [3]int32
+	GetUpdateType() int16
+	GetLocData() int32
+	GetMana() int32
 }
 
 type BaseItemInterface interface {
@@ -96,7 +104,7 @@ type BaseItemInterface interface {
 	IsStackable() bool
 	GetBaseItem() BaseItemInterface
 	GetItemType1() int
-	GetItemType2() int
+	GetItemType2() int16
 	GetWeight() int
 }
 type CharacterI interface {

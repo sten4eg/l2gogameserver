@@ -187,8 +187,8 @@ func (i *Item) GetBaseItem() interfaces.BaseItemInterface {
 func (i *Item) GetItemType1() int {
 	return int(i.ItemType1)
 }
-func (i *Item) GetItemType2() int {
-	return int(i.ItemType2)
+func (i *Item) GetItemType2() int16 {
+	return int16(i.ItemType2)
 }
 func (i *Item) GetBodyPart() int32 {
 	return int32(i.SlotBitType)
