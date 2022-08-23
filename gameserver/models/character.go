@@ -48,8 +48,8 @@ type (
 		Vitality      int32
 		CharName      string
 		CurrentRegion *WorldRegion
-		Conn          *Client
-		SockConn      net.Conn
+		Conn          *ClientCtx
+		SockConn      *net.TCPConn
 		AttackEndTime int64
 		// Paperdoll - массив всех слотов которые можно одеть
 		Paperdoll       [26]MyItem
@@ -122,7 +122,7 @@ func GetNewCharacterModel() *Character {
 }
 
 // SetSitStandPose Меняет положение персонажа от сидячего к стоячему и на оборот
-//Возращает значение нового положения
+// Возращает значение нового положения
 func (c *Character) SetSitStandPose() int32 {
 	if !c.Sit {
 		c.Sit = true
@@ -378,7 +378,7 @@ func (c *Character) checkRegion() {
 
 }
 
-//SaveFirstInGamePlayer Сохранение отметки что юзер зашел в игру впервый раз с момента создания игрока
+// SaveFirstInGamePlayer Сохранение отметки что юзер зашел в игру впервый раз с момента создания игрока
 func (c *Character) SaveFirstInGamePlayer() {
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -394,7 +394,7 @@ func (c *Character) SaveFirstInGamePlayer() {
 	c.FirstEnterGame = false
 }
 
-//ExistItemInInventory Возвращает ссылку на Item если он есть в инвентаре
+// ExistItemInInventory Возвращает ссылку на Item если он есть в инвентаре
 func (c *Character) ExistItemInInventory(objectItemId int32) *MyItem {
 	for i := range c.Inventory.Items {
 		item := &c.Inventory.Items[i]
@@ -471,8 +471,8 @@ func (c *Character) IsProcessingTransaction() bool {
 func (c *Character) GetClassId() int32 {
 	return c.ClassId
 }
-func (c *Character) CalculateDistanceTo(p interfaces.Positionable, includeZAxis, squared bool) float64 {
-	return CalculateDistance(c.GetX(), c.GetY(), c.GetZ(), p.GetX(), p.GetY(), p.GetZ(), includeZAxis, squared)
+func (c *Character) CalculateDistanceTo(ox, oy, oz int32, includeZAxis, squared bool) float64 {
+	return CalculateDistance(c.GetX(), c.GetY(), c.GetZ(), ox, oy, oz, includeZAxis, squared)
 }
 func (c *Character) GetTradeRefusal() bool {
 	return c.TradeRefusal

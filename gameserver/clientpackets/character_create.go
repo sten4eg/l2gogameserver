@@ -71,7 +71,7 @@ func CharacterCreate(data []byte, client interfaces.ReciverAndSender) {
 }
 
 func (cc *CharCreate) validate(clientI interfaces.ReciverAndSender) []byte {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return []byte{}
 	}

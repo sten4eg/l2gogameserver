@@ -7,7 +7,7 @@ create table accounts
 	access_level smallint default 0 not null,
 	last_ip varchar(15) default null,
 	last_server smallint default 1 not null,
-	pcIp cidr default '0.0.0.0' not null,
+	"pcIp" cidr default '0.0.0.0' not null,
 	hop1 cidr default '0.0.0.0' not null,
     hop2 cidr default '0.0.0.0' not null,
     hop3 cidr default '0.0.0.0' not null,

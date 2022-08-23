@@ -8,7 +8,7 @@ import (
 
 const limit = 125 // client limit
 func RequestSaveInventoryOrder(clientI interfaces.ReciverAndSender, data []byte) {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return
 	}

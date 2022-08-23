@@ -37,7 +37,7 @@ func Say(client interfaces.ReciverAndSender, data []byte) models.Say {
 	return say
 }
 
-//func BroadCastChat(me *models.Client, say models.Say) {
+//func BroadCastChat(me *models.ClientCtx, say models.Say) {
 //	pb := utils.GetPacketByte()
 //	defer pb.Release()
 //

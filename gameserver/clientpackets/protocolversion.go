@@ -9,7 +9,7 @@ import (
 )
 
 func ProtocolVersion(clientI interfaces.ReciverAndSender, data []byte) {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return
 	}
@@ -17,7 +17,7 @@ func ProtocolVersion(clientI interfaces.ReciverAndSender, data []byte) {
 	var packet = packets.NewReader(data)
 	protocolVersion := packet.ReadUInt16()
 	if protocolVersion != 273 && protocolVersion != 268 {
-		logger.Info.Println(client.Socket.RemoteAddr(), " хотел подключиться с версией протококла:", protocolVersion)
+		logger.Info.Println(client.GetRemoteAddr(), " хотел подключиться с версией протококла:", protocolVersion)
 		return
 	}
 

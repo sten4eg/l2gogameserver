@@ -9,7 +9,7 @@ import (
 
 const MaxShortcutsPerBar = 12
 
-func RegisterShortCut(sc dto.ShortCutDTO, client *Client) {
+func RegisterShortCut(sc dto.ShortCutDTO, client *ClientCtx) {
 	shorts := client.CurrentChar.ShortCut
 	//todo пересмотреть, тут есть еще проверки
 	s, exist := shorts[sc.Slot+(sc.Page*MaxShortcutsPerBar)]
@@ -95,7 +95,7 @@ func GetAllShortCuts(charId, classId int32) []dto.ShortCutSimpleDTO {
 	return shortCuts
 }
 
-func DeleteShortCut(slot, page int32, client *Client) {
+func DeleteShortCut(slot, page int32, client *ClientCtx) {
 	all := client.CurrentChar.ShortCut
 	e, ok := all[slot+(page*MaxShortcutsPerBar)]
 	if !ok {

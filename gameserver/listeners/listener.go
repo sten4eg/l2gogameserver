@@ -17,7 +17,7 @@ func StartClientListener(client interfaces.ReciverAndSender) {
 	go moveListener(client)
 }
 func channelListener(client interfaces.ReciverAndSender) {
-	ch, ok := client.(*models.Client)
+	ch, ok := client.(*models.ClientCtx)
 	if !ok {
 		logger.Error.Panicln("ChannelListenerlogger.Error.Panicln")
 	}
@@ -32,7 +32,7 @@ func channelListener(client interfaces.ReciverAndSender) {
 }
 
 func npcListener(client interfaces.ReciverAndSender) {
-	ch, ok := client.(*models.Client)
+	ch, ok := client.(*models.ClientCtx)
 	if !ok {
 		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
 	}
@@ -48,7 +48,7 @@ func npcListener(client interfaces.ReciverAndSender) {
 }
 
 func moveListener(client interfaces.ReciverAndSender) {
-	ch, ok := client.(*models.Client)
+	ch, ok := client.(*models.ClientCtx)
 	if !ok {
 		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
 	}

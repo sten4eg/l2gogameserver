@@ -71,7 +71,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //
 //var GS *GameServer
 //
-////func (g *GameServer) AddClient(c *models.Client) {
+////func (g *GameServer) AddClient(c *models.ClientCtx) {
 ////	g.clients.Store(c.Account.Login, c)
 ////}
 //func New() *GameServer {
@@ -109,7 +109,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //}
 //
 //func (g *GameServer) ChannelListener(client interfaces.ReciverAndSender) {
-//	ch, ok := client.(*models.Client)
+//	ch, ok := client.(*models.ClientCtx)
 //	if !ok {
 //		logger.Error.Panicln("ChannelListenerlogger.Error.Panicln")
 //	}
@@ -125,7 +125,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //}
 //
 //func (g *GameServer) NpcListener(client interfaces.ReciverAndSender) {
-//	ch, ok := client.(*models.Client)
+//	ch, ok := client.(*models.ClientCtx)
 //	if !ok {
 //		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
 //	}
@@ -141,7 +141,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //}
 //
 //func (g *GameServer) MoveListener(client interfaces.ReciverAndSender) {
-//	ch, ok := client.(*models.Client)
+//	ch, ok := client.(*models.ClientCtx)
 //	if !ok {
 //		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
 //	}
@@ -193,7 +193,7 @@ func CharOffline(client interfaces.ReciverAndSender) {
 //	g.OnlineCharacters.Mu.Unlock()
 //}
 //
-//func (g *GameServer) brdsct(me *models.Client, pkg utils.PacketByte) {
+//func (g *GameServer) brdsct(me *models.ClientCtx, pkg utils.PacketByte) {
 //	charsIds := models.GetAroundPlayer(me.CurrentChar)
 //	for _, v := range charsIds {
 //		v.EncryptAndSend(pkg.GetData())

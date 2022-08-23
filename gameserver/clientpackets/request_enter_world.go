@@ -11,7 +11,7 @@ import (
 )
 
 func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return
 	}

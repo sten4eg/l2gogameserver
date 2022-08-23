@@ -7,7 +7,7 @@ import (
 )
 
 func ItemUpdate(clientI interfaces.ReciverAndSender, updateType int16, objId int32) []byte {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return []byte{}
 	}

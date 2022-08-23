@@ -12,7 +12,6 @@ import (
 
 var db *pgxpool.Pool
 
-//Connect to DB (postgres)
 func ConfigureDB() {
 	conf := config.Get().Database
 	dsnString := "user=" + conf.User

@@ -23,7 +23,7 @@ func MoveBackwardToLocation(client interfaces.ReciverAndSender, data []byte) mod
 }
 
 func MoveToLocation(clientI interfaces.ReciverAndSender, targetX, targetY, targetZ int32) *models.BackwardToLocation {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return nil
 	}

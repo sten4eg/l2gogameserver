@@ -9,7 +9,14 @@ import (
 	"l2gogameserver/packets"
 )
 
-func TradeRequest(data []byte, client interfaces.ReciverAndSender) {
+//interfaces.ReciverAndSender
+
+type TradeRequestInterface interface {
+	EncryptAndSend([]byte)
+	GetCurrentChar() interfaces.CharacterI
+}
+
+func TradeRequest(data []byte, client TradeRequestInterface) {
 	var packet = packets.NewReader(data)
 	targetObjectId := packet.ReadInt32()
 
@@ -45,7 +52,7 @@ func TradeRequest(data []byte, client interfaces.ReciverAndSender) {
 		return
 	}
 
-	if client.GetCurrentChar().CalculateDistanceTo(target, false, false) > 150 {
+	if client.GetCurrentChar().CalculateDistanceTo(target.GetX(), target.GetY(), target.GetZ(), false, false) > 150 {
 		client.EncryptAndSend(sysmsg.SystemMessage(sysmsg.TargetTooFar))
 		return
 	}

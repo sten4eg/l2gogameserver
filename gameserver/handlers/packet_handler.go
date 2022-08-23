@@ -13,9 +13,9 @@ import (
 
 // Handler loop клиента в ожидании входящих пакетов
 func Handler(client interfaces.ReciverAndSender) {
+	//defer kickClient(client)
 	for {
 		opcode, data, err := client.Receive()
-		//defer kickClient(client)
 		if err != nil {
 			fmt.Println(err)
 			gameserver.CharOffline(client)

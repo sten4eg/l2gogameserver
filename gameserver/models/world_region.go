@@ -116,7 +116,7 @@ func GetAroundPlayersInRadius(c interfaces.CharacterI, radius int32) []*Characte
 			}
 
 			//toDO тут Y должен быть ? проверить на других сборках
-			dy := math.Abs(float64(char.Coordinates.X - c.GetX()))
+			dy := math.Abs(float64(char.Coordinates.Y - c.GetY()))
 			if dy > float64(radius) {
 				continue
 			}
@@ -156,7 +156,7 @@ func GetAroundPlayersObjIdInRadius(c *Character, radius int32) []int32 {
 				continue
 			}
 
-			dy := math.Abs(float64(char.Coordinates.X - c.Coordinates.X))
+			dy := math.Abs(float64(char.Coordinates.Y - c.Coordinates.Y))
 			if dy > float64(radius) {
 				continue
 			}

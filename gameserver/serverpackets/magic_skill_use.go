@@ -8,7 +8,7 @@ import (
 )
 
 func NewMagicSkillUse(clientI interfaces.ReciverAndSender, skill models.Skill, ctrlPressed, shiftPressed bool) []byte {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return []byte{}
 	}

@@ -1,11 +1,11 @@
 module l2gogameserver
 
-go 1.18
+go 1.19
 
 require (
 	github.com/bits-and-blooms/bitset v1.2.2
 	github.com/jackc/pgx/v4 v4.15.0
-	github.com/pkg/errors v0.9.1 // indirect
+
 	golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )

@@ -8,7 +8,7 @@ import (
 
 // SetupGauge полоска над персонажем во время каста скила
 func SetupGauge(clientI interfaces.ReciverAndSender) []byte {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return []byte{}
 	}

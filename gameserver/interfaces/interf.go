@@ -26,7 +26,7 @@ type Positionable interface {
 	GetZ() int32
 	GetXYZ() (int32, int32, int32)
 	GetCurrentRegion() WorldRegioner
-	CalculateDistanceTo(Positionable, bool, bool) float64
+	CalculateDistanceTo(int32, int32, int32, bool, bool) float64
 	//setLocation(Location)
 	//setXYZByLoc(ILocational)
 }

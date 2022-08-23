@@ -110,7 +110,6 @@ func BroadCastToCharacterByName(pkg *utils.PacketByte, to string) bool {
 	return false
 }
 
-//
 // SendCharInfoAboutCharactersInRadius отправляет me CharInfo персонажей
 // в радиусе radius
 func SendCharInfoAboutCharactersInRadius(me interfaces.ReciverAndSender, radius int32) {
@@ -121,7 +120,7 @@ func SendCharInfoAboutCharactersInRadius(me interfaces.ReciverAndSender, radius 
 }
 
 // SendCharInfoAboutCharactersAround отправляет me CharInfo персонажей
-func SendCharInfoAboutCharactersAround(me *models.Client) {
+func SendCharInfoAboutCharactersAround(me *models.ClientCtx) {
 	charsIds := models.GetAroundPlayer(me.CurrentChar)
 	for i := range charsIds {
 		me.EncryptAndSend(serverpackets.CharInfo(charsIds[i]))
@@ -143,7 +142,7 @@ func GetCharacterByObjectId(id int32) interfaces.CharacterI {
 //func (g *GameServer) Tick() {
 //	for {
 //		g.clients.Range(func(k, v interface{}) bool {
-//			client := v.(*models.Client)
+//			client := v.(*models.ClientCtx)
 //			if client.CurrentChar.Coordinates == nil {
 //				return true
 //			}
@@ -188,10 +187,10 @@ func GetCharacterByObjectId(id int32) interfaces.CharacterI {
 //		return
 //	}
 //
-//	var me *models.Client
+//	var me *models.ClientCtx
 //
 //	g.clients.Range(func(k, v interface{}) bool {
-//		client := v.(*models.Client)
+//		client := v.(*models.ClientCtx)
 //		if client.CurrentChar.ObjectId == my.ObjectId {
 //			me = client
 //			return false

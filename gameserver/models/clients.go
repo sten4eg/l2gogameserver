@@ -9,9 +9,9 @@ import (
 	"sync"
 )
 
-type Client struct {
+type ClientCtx struct {
 	m               sync.RWMutex
-	Socket          net.Conn
+	conn            *net.TCPConn
 	ScrambleModulus []byte
 	// NeedCrypt - флаг, при создании клиента false
 	// указывает первый пакет пришедший от клиента не нужно расшифровывать
@@ -23,8 +23,8 @@ type Client struct {
 	Account     *Account
 }
 
-func NewClient() *Client {
-	c := &Client{
+func NewClient() *ClientCtx {
+	c := &ClientCtx{
 		NeedCrypt: false,
 		OutKey: []int32{
 			0x6b,
@@ -70,7 +70,7 @@ func NewClient() *Client {
 }
 
 // AddLengthAndSand добавляет 2 байта длинны и отправляет клиенту
-func (c *Client) AddLengthAndSand(data []byte) {
+func (c *ClientCtx) AddLengthAndSand(data []byte) {
 	// вычисление длинны пакета, 2 первых байта - размер пакета
 	length := int16(len(data) + 2)
 
@@ -80,7 +80,7 @@ func (c *Client) AddLengthAndSand(data []byte) {
 	c.Send(data)
 }
 
-func (c *Client) EncryptAndSend(data []byte) {
+func (c *ClientCtx) EncryptAndSend(data []byte) {
 	data = crypt.Encrypt(data, c.OutKey)
 	// вычисление длинны пакета, 2 первых байта - размер пакета
 	length := int16(len(data) + 2)
@@ -94,7 +94,7 @@ func (c *Client) EncryptAndSend(data []byte) {
 		logger.Error.Panicln("Пакет не отправлен, ошибка: " + err.Error())
 	}
 }
-func (c *Client) Send(d []byte) {
+func (c *ClientCtx) Send(d []byte) {
 	if len(d) == 0 {
 		logger.Info.Println("Пакет пуст")
 		return
@@ -105,7 +105,7 @@ func (c *Client) Send(d []byte) {
 	}
 }
 
-func (c *Client) CryptAndReturnPackageReadyToShip(data []byte) []byte {
+func (c *ClientCtx) CryptAndReturnPackageReadyToShip(data []byte) []byte {
 	data = crypt.Encrypt(data, c.OutKey)
 	// вычисление длинны пакета, 2 первых байта - размер пакета
 	length := int16(len(data) + 2)
@@ -117,11 +117,11 @@ func (c *Client) CryptAndReturnPackageReadyToShip(data []byte) []byte {
 	return data
 }
 
-func (c *Client) Receive() (opcode byte, data []byte, e error) {
+func (c *ClientCtx) Receive() (opcode byte, data []byte, e error) {
 	// чтение первых 2 байта для определения размера всего пакета
 	header := make([]byte, 2)
 
-	n, err := c.Socket.Read(header)
+	n, err := c.conn.Read(header)
 
 	if err != nil {
 		return 0, nil, err
@@ -137,7 +137,7 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	// аллокация требуемого массива байт для входящего пакета
 	data = make([]byte, dataSize)
 
-	n, err = c.Socket.Read(data)
+	n, err = c.conn.Read(data)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -161,13 +161,25 @@ func (c *Client) Receive() (opcode byte, data []byte, e error) {
 	return
 }
 
-func (c *Client) sendDataToSocket(data []byte) error {
+func (c *ClientCtx) sendDataToSocket(data []byte) error {
 	c.m.Lock()
-	_, err := c.Socket.Write(data)
+	_, err := c.conn.Write(data)
 	c.m.Unlock()
 	return err
 }
 
-func (c *Client) GetCurrentChar() interfaces.CharacterI {
+func (c *ClientCtx) GetCurrentChar() interfaces.CharacterI {
 	return c.CurrentChar
+}
+
+func (c *ClientCtx) SetConn(conn *net.TCPConn) {
+	c.conn = conn
+}
+
+func (c *ClientCtx) GetConn() *net.TCPConn {
+	return c.conn
+}
+
+func (c *ClientCtx) GetRemoteAddr() net.Addr {
+	return c.conn.RemoteAddr()
 }

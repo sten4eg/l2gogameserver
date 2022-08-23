@@ -7,7 +7,7 @@ import (
 )
 
 func CharSelected(user *models.Character, clientI interfaces.ReciverAndSender) []byte {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return []byte{}
 	}
@@ -64,7 +64,7 @@ func CharSelected(user *models.Character, clientI interfaces.ReciverAndSender) [
 	buffer.WriteD(0) // 221
 
 	client.CurrentChar = client.Account.Char[client.Account.CharSlot]
-	client.CurrentChar.SockConn = client.Socket
+	client.CurrentChar.SockConn = client.GetConn()
 	//TODO Load загрузка всех данных выбранного чара
 	client.CurrentChar.Load()
 

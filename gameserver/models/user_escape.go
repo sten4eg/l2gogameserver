@@ -6,11 +6,11 @@ import (
 	"l2gogameserver/db"
 )
 
-func (c *Client) SaveUser() {
+func (c *ClientCtx) SaveUser() {
 	c.saveLocation()
 }
 
-func (c *Client) saveLocation() {
+func (c *ClientCtx) saveLocation() {
 	dbConn, err := db.GetConn()
 	if err != nil {
 		logger.Error.Panicln(err)

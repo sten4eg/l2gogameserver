@@ -7,7 +7,7 @@ import (
 )
 
 func RequestAutoSoulShot(data []byte, clientI interfaces.ReciverAndSender) {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return
 	}

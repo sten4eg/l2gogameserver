@@ -15,7 +15,7 @@ func DropItem(clientI interfaces.ReciverAndSender, objectId int32, count int64, 
 	if count == 0 {
 		return []byte{}
 	}
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return []byte{}
 	}

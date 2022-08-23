@@ -8,7 +8,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-//TradeDone Игрок подтвердил сделку
+// TradeDone Игрок подтвердил сделку
 func TradeDone(data []byte, client interfaces.ReciverAndSender) {
 	var packet = packets.NewReader(data)
 	response := packet.ReadInt32() // 1 - пользователь нажал ОК, 0 пользователь отменил трейд
@@ -34,7 +34,8 @@ func TradeDone(data []byte, client interfaces.ReciverAndSender) {
 
 		//todo тут еще несколько проверок
 
-		if player.CalculateDistanceTo(trade.GetPartner(), true, false) > 150 {
+		partner := trade.GetPartner()
+		if player.CalculateDistanceTo(partner.GetX(), partner.GetY(), partner.GetZ(), true, false) > 150 {
 			endTrade(client)
 			return
 		}

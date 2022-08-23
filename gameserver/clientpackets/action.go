@@ -8,7 +8,7 @@ import (
 )
 
 func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardToLocation {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return nil
 	}

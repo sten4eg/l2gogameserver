@@ -10,7 +10,7 @@ import (
 )
 
 func CharSelectionInfo(clientI interfaces.ReciverAndSender) []byte {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return []byte{}
 	}

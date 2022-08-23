@@ -10,7 +10,7 @@ func Attack(clientI interfaces.ReciverAndSender, targetObjId, targetX, targetY, 
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return []byte{}
 	}

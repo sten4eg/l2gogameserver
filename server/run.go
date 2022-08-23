@@ -10,37 +10,43 @@ import (
 )
 
 type GameServer struct {
-	clientsListener net.Listener
+	clientsListener *net.TCPListener
 	//OnlineCharacters *models.OnlineCharacters
 	//clients          sync.Map
 }
 
 func New() *GameServer {
-	return &GameServer{}
+	return new(GameServer)
 }
 
 func (g *GameServer) Start() {
 	var err error
+
+	addr := new(net.TCPAddr)
+	addr.Port = 7777
+	addr.IP = net.IP{127, 0, 0, 1}
+
 	/* #nosec */
-	g.clientsListener, err = net.Listen("tcp4", ":7777")
+	g.clientsListener, err = net.ListenTCP("tcp4", addr)
 	if err != nil {
 		logger.Error.Panicln(err.Error())
 	}
+	defer g.clientsListener.Close()
 
 	var onlineChars models.OnlineCharacters
 	onlineChars.Char = make(map[int32]*models.Character)
 	gameserver.OnlineCharacters = &onlineChars
 
 	//go g.Tick()
-	defer g.clientsListener.Close()
+
 	for {
 		client := models.NewClient()
-		client.Socket, err = g.clientsListener.Accept()
-
+		conn, err := g.clientsListener.AcceptTCP()
 		if err != nil {
 			fmt.Println("Couldn't accept the incoming connection.", err)
 			continue
 		}
+		client.SetConn(conn)
 
 		//g.AddClient(client) //todo надо ли добавлять клиентов в отдельную мапу или массив?
 		go handlers.Handler(client)

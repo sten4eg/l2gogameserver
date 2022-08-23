@@ -14,7 +14,7 @@ const formalWearId = 6408
 const fortFlagId = 9819
 
 func UseItem(clientI interfaces.ReciverAndSender, data []byte) {
-	client, ok := clientI.(*models.Client)
+	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return
 	}
