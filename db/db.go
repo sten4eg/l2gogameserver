@@ -20,6 +20,7 @@ func ConfigureDB() {
 	dsnString += " port=" + conf.Port
 	dsnString += " dbname=" + conf.Name
 	dsnString += " sslmode=" + conf.SSLMode
+	dsnString += " search_path=" + conf.Schema
 	dsnString += " pool_max_conns=" + conf.PoolMaxConns
 
 	config, err := pgxpool.ParseConfig(dsnString)
