@@ -1,0 +1,22 @@
+{
+  "gameserver": {
+    "database": {
+      "name": "postgres",
+      "host": "127.0.0.1",
+      "schema": "gameserver",
+      "port": "5432",
+      "user": "postgres",
+      "password": "",
+      "sslmode" : "disable",
+      "pool_max_conns" : "100"
+    },
+    "debug": {
+      "show_packets": true,
+      "enable_load_npc": true,
+      "enabled_spawnlist": true,
+      "enabled_load_skills": true,
+      "enabled_items": true
+      "enabled_cache_html": false
+    }
+  }
+}
