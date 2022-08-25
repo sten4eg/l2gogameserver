@@ -1,14 +1,34 @@
 {
   "gameserver": {
+    "serverId": 1,
+    "hexId": [
+      104,
+      179,
+      1,
+      203,
+      176,
+      237,
+      249,
+      109,
+      32,
+      250,
+      254,
+      154,
+      206,
+      166,
+      16,
+      126
+    ],
+    "portForLS": "9014",
     "database": {
       "name": "postgres",
       "host": "127.0.0.1",
       "schema": "gameserver",
       "port": "5432",
       "user": "postgres",
-      "password": "",
-      "sslmode" : "disable",
-      "pool_max_conns" : "100"
+      "password": "postgres",
+      "sslmode": "disable",
+      "pool_max_conns": "100"
     },
     "debug": {
       "show_packets": true,
@@ -16,7 +36,6 @@
       "enabled_spawnlist": true,
       "enabled_load_skills": true,
       "enabled_items": true
-      "enabled_cache_html": false
     }
   }
 }

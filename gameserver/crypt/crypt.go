@@ -76,3 +76,43 @@ func SimpleEncrypt(data []byte, outKey []int32) []byte {
 
 	return data
 }
+
+func AppendCheckSum(raw []byte, size int) []byte {
+	var chksum int64
+	var count = size - 4
+	var i int
+
+	for i = 0; i < count; i += 4 {
+		var ecx = int64(raw[i])
+		ecx |= (int64(raw[i+1]) << 8) & 0xff00
+		ecx |= (int64(raw[i+2]) << 0x10) & 0xff0000
+		ecx |= (int64(raw[i+3]) << 0x18) & 0xff000000
+		chksum ^= ecx
+	}
+
+	raw[i] = (byte)(chksum & 0xff)
+	raw[i+1] = (byte)((chksum >> 0x08) & 0xff)
+	raw[i+2] = (byte)((chksum >> 0x10) & 0xff)
+	raw[i+3] = (byte)((chksum >> 0x18) & 0xff)
+	return raw
+}
+
+func VerifyCheckSum(raw []byte, size int) bool {
+	var checksum int64
+	count := size - 4
+	var i int
+
+	for i = 0; i < count; i += 4 {
+		var ecx = int64(raw[i])
+		ecx |= (int64(raw[i+1]) << 8) & 0xff00
+		ecx |= (int64(raw[i+2]) << 0x10) & 0xff0000
+		ecx |= (int64(raw[i+3]) << 0x18) & 0xff000000
+		checksum ^= ecx
+	}
+
+	var ecx = int64(raw[i])
+	ecx |= (int64(raw[i+1]) << 8) & 0xff00
+	ecx |= (int64(raw[i+2]) << 0x10) & 0xff0000
+	ecx |= (int64(raw[i+3]) << 0x18) & 0xff000000
+	return ecx == checksum
+}

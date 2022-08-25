@@ -6,12 +6,24 @@ import (
 	"os"
 )
 
-type Data struct {
-	GameServer GameServer `json:"gameserver"`
+type Config struct {
+	GameServer   GameServer `json:"gameserver"`
+	isConfigInit bool
 }
 type GameServer struct {
-	Database DatabaseType `json:"database"`
-	Debug    Debug        `json:"debug"`
+	ServerId           int          `json:"serverId"`
+	AcceptAlternateId  bool         `json:"acceptAlternateId"`
+	ReserveHostOnLogin bool         `json:"reserveHostOnLogin"`
+	Port               int16        `json:"port"`
+	ServerListBrackets bool         `json:"serverListBrackets"`
+	GMOnly             bool         `json:"GMOnly"`
+	ServerListAge      byte         `json:"serverListAge"`
+	ServerListType     string       `json:"serverListType"`
+	MaxPlayer          int          `json:"maxPlayer"`
+	HexId              []byte       `json:"hexId"`
+	PortForLS          string       `json:"portForLS"`
+	Database           DatabaseType `json:"database"`
+	Debug              Debug        `json:"debug"`
 }
 type DatabaseType struct {
 	Name         string `json:"name"`
@@ -34,34 +46,75 @@ type Debug struct {
 	EnabledCacheHTML bool `json:"enabled_cache_html"`
 }
 
-var config Data
+var configInstance Config
 
 const MaxAdena = 99_900_000_000
 
 func Get() GameServer {
-	if (config == Data{}) {
+	if !configInstance.isConfigInit {
 		read()
 	}
-	return config.GameServer
+	return configInstance.GameServer
 }
 
-func read() Data {
+// todo сделать так чтобы read не возвращал Config
+func read() Config {
 	file, err := os.Open("./config/config.json")
 	if err != nil {
 		logger.Error.Panicln("Failed to load /config/config.json file")
 	}
 
 	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&config)
+	var conf Config
+	err = decoder.Decode(&conf)
 	if err != nil {
 		logger.Error.Panicln("Failed to decode config file")
 	}
-	return config
-}
+	conf.isConfigInit = true
+	configInstance = conf
 
-/*
-Загрузка конфигурации
-*/
+	return configInstance
+}
 func LoadAllConfig() {
 	read()
+}
+
+func GetHexId() []byte {
+	return configInstance.GameServer.HexId
+}
+func GetLoginServerPort() string {
+	return configInstance.GameServer.PortForLS
+}
+
+func GetServerId() int {
+	return configInstance.GameServer.ServerId
+}
+
+func GetAcceptAlternateId() bool {
+	return configInstance.GameServer.AcceptAlternateId
+}
+
+func GetReserveHostOnLogin() bool {
+	return configInstance.GameServer.ReserveHostOnLogin
+}
+
+func GetPort() int16 {
+	return configInstance.GameServer.Port
+}
+
+func GetMaxPlayer() int {
+	return configInstance.GameServer.MaxPlayer
+}
+
+func GetServerListBrackets() bool {
+	return configInstance.GameServer.ServerListBrackets
+}
+func GetGMOnly() bool {
+	return configInstance.GameServer.GMOnly
+}
+func GetServerListAge() byte {
+	return configInstance.GameServer.ServerListAge
+}
+func GetServerListType() string {
+	return configInstance.GameServer.ServerListType
 }
