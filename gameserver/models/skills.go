@@ -56,7 +56,7 @@ type Tuple struct {
 }
 
 func LoadSkills() {
-	if config.Get().Debug.EnabledSkills == false {
+	if !config.IsEnableSkills() {
 		return
 	}
 	logger.Info.Println("Загрузка скиллов")

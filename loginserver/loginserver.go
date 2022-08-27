@@ -5,21 +5,32 @@ import (
 	"l2gogameserver/config"
 	"l2gogameserver/gameserver/crypt"
 	"l2gogameserver/gameserver/crypt/blowfish"
-	"l2gogameserver/loginserver/network/gs2ls"
-	"l2gogameserver/loginserver/network/ls2gs"
 	"l2gogameserver/packets"
 	"log"
 	"math/rand"
 	"net"
 	"strconv"
+	"time"
 )
 
 type LoginServer struct {
-	conn     *net.TCPConn
-	blowfish *blowfish.Cipher
+	conn       *net.TCPConn
+	blowfish   *blowfish.Cipher
+	gameServer gameServerInterface
 }
 
 var loginServerInstance *LoginServer
+
+type gameServerInterface interface {
+}
+
+func (ls *LoginServer) AttachGs(gs gameServerInterface) {
+	ls.gameServer = gs
+}
+
+func GetLoginServerInstance() *LoginServer {
+	return loginServerInstance
+}
 
 var initBlowfishKey = []byte{95, 59, 118, 46, 93, 48, 53, 45, 51, 49, 33, 124, 43, 45, 37, 120, 84, 33, 94, 91, 36, 0}
 
@@ -34,12 +45,17 @@ func HandlerInit() error {
 
 	addr := new(net.TCPAddr)
 	addr.Port = intPort
-	addr.IP = net.IP{127, 0, 0, 1}
+	addr.IP = net.IP{127, 0, 0, 1} //TODO IP тоже брать из конфига
 
-	conn, err := net.DialTCP("tcp4", nil, addr)
-	if err != nil {
-		return err
+	var conn *net.TCPConn
+	for conn == nil {
+		conn, err = net.DialTCP("tcp4", nil, addr)
+		if err != nil {
+			log.Printf("не удалось подключиться к логин-серверу : %v\n", err.Error())
+		}
+		time.Sleep(howLongNeedSleep())
 	}
+
 	loginServerInstance.conn = conn
 
 	go loginServerInstance.Run()
@@ -91,35 +107,13 @@ func (ls *LoginServer) Run() {
 	}
 }
 
-func (ls *LoginServer) HandlePacket(data []byte) {
-	opCode := data[0]
-	data = data[1:]
-	fmt.Println(opCode)
-
-	switch opCode {
-	default:
-		fmt.Printf("неопознаный опкод от логинсервера: %v\n", opCode)
-	case 0x00:
-		pubKey := ls2gs.InitLs(data)
-		bfk := generateNewBlowFish()
-		buf := gs2ls.BlowFishKey(pubKey, bfk)
-
-		ls.Send(buf)
-		ls.setBlowFish(bfk)
-		buf = gs2ls.AuthRequest()
-		ls.Send(buf)
-	case 0x02:
-		ls2gs.AuthResponse(data)
-		buf := gs2ls.ServerStatus()
-		ls.Send(buf)
-	}
-}
 func generateNewBlowFish() []byte {
 	bfk := make([]byte, 40)
 	_, _ = rand.Read(bfk)
 	bfk[0] = 119 // главное чтобы не 0
 	return bfk
 }
+
 func (ls *LoginServer) setBlowFish(blowfishKey []byte) {
 	c := make([]byte, len(blowfishKey))
 	copy(c, blowfishKey)
@@ -157,4 +151,14 @@ func (ls *LoginServer) Send(buf *packets.Buffer) {
 		log.Println(err)
 	}
 
+}
+
+var attempt int
+
+func howLongNeedSleep() time.Duration {
+	attempt++
+	if attempt < 5 {
+		return time.Duration(attempt) * time.Second
+	}
+	return time.Second * 5
 }

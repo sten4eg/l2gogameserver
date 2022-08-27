@@ -135,6 +135,10 @@ type CharacterI interface {
 	GetMaxLoad() int32
 	SendSysMsg(q interface{}, options ...string)
 }
+type ClientInterface interface {
+	ReciverAndSender
+	SetLogin(string)
+}
 type ReciverAndSender interface {
 	Receive() (opcode byte, data []byte, e error)
 	AddLengthAndSand(d []byte)

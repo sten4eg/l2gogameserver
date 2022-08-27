@@ -7,8 +7,8 @@ gameserver:
   maxPlayer: 500
   serverListBrackets: false
   GMOnly: false
-  serverListAge: 0
-  serverListType: Normal
+  serverListAge: 0 # 0, 15, 18
+  serverListType: Normal #Normal, Relax, Test, NoLabel, Restricted, Event, Free
   hexId:
     - 104
     - 179

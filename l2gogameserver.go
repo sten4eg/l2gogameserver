@@ -2,8 +2,15 @@ package main
 
 import (
 	"l2gogameserver/config"
+	"l2gogameserver/data"
 	"l2gogameserver/db"
+	"l2gogameserver/gameserver/idfactory"
+	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/items"
+	"l2gogameserver/gameserver/models/multisell"
+	"l2gogameserver/gameserver/models/teleport"
 	"l2gogameserver/loginserver"
+	"l2gogameserver/server"
 	"log"
 )
 
@@ -19,22 +26,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	for {
-	}
-	// 	server.New().Start()
+	server.New().Start()
 
 }
 
 func setup() {
 	config.LoadAllConfig()
 	db.ConfigureDB()
-	//idfactory.Load()
-	//multisell.LoadMultisell()
-	//teleport.LoadLocationListTeleport()
-	//models.LoadStats()
-	//models.LoadSkills()
-	//items.LoadItems()
-	//models.NewWorld()
-	//data.Load()
-	//models.LoadNpc()
+	idfactory.Load()
+	multisell.LoadMultisell()
+	teleport.LoadLocationListTeleport()
+	models.LoadStats()
+	models.LoadSkills()
+	items.LoadItems()
+	models.NewWorld()
+	data.Load()
+	models.LoadNpc()
 }

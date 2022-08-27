@@ -8,7 +8,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func ProtocolVersion(clientI interfaces.ReciverAndSender, data []byte) {
+func ProtocolVersion(clientI interfaces.ClientInterface, data []byte) {
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return
@@ -16,10 +16,11 @@ func ProtocolVersion(clientI interfaces.ReciverAndSender, data []byte) {
 
 	var packet = packets.NewReader(data)
 	protocolVersion := packet.ReadUInt16()
-	if protocolVersion != 273 && protocolVersion != 268 {
+	//273 - последний протокол для HF
+	if protocolVersion != 273 {
 		logger.Info.Println(client.GetRemoteAddr(), " хотел подключиться с версией протококла:", protocolVersion)
 		return
 	}
 
-	client.AddLengthAndSand(serverpackets.KeyPacket(client))
+	clientI.AddLengthAndSand(serverpackets.KeyPacket(client))
 }

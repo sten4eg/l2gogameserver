@@ -11,8 +11,11 @@ import (
 	"l2gogameserver/packets"
 )
 
-// Handler loop клиента в ожидании входящих пакетов
-func Handler(client interfaces.ReciverAndSender) {
+type GameServerInterface interface {
+	AddClient(string, interfaces.ClientInterface)
+}
+
+func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 	//defer kickClient(client)
 	for {
 		opcode, data, err := client.Receive()
@@ -44,7 +47,7 @@ func Handler(client interfaces.ReciverAndSender) {
 		case 14:
 			clientpackets.ProtocolVersion(client, data)
 		case 43:
-			clientpackets.AuthLogin(data, client)
+			clientpackets.AuthLogin(data, client, gs)
 		case 19:
 			clientpackets.RequestNewCharacter(client, data)
 		case 12:

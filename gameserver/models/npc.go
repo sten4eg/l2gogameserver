@@ -95,7 +95,8 @@ type Npc struct {
 	Spawn                   Locations
 }
 
-/**
+/*
+*
 Структуры NPC пока пусты ибо не подготовил их реализацию и содержимое в правильном формате
 */
 type BaseDamageRange struct {
@@ -129,12 +130,12 @@ type Locations struct {
 // Npcs Список всех NPC map[NPCID]map[OBJECTID]Npc
 var Npcs map[int32]map[int32]Npc
 
-//	Список объектов, map[OBJECTID]map[Location]
+// Список объектов, map[OBJECTID]map[Location]
 var NpcObject map[int32]Locations
 
-//Временное функция подгрузки листа с спаунами NPC
+// Временное функция подгрузки листа с спаунами NPC
 func LoadNpc() {
-	if config.Get().Debug.EnableNPC == false {
+	if !config.IsEnableNPC() {
 		return
 	}
 	Npcs = make(map[int32]map[int32]Npc)
@@ -184,7 +185,7 @@ func LoadNpc() {
 	logger.Info.Printf("Загружено %d Npc", len(Npcs))
 	logger.Info.Printf("Загружено %d Npc Object", len(NpcObject))
 
-	if config.Get().Debug.EnabledSpawnlist == false {
+	if !config.IsEnableSpawnList() {
 		return
 	}
 	file, err = os.Open("./datapack/data/stats/npcdata/spawnlist.json")
@@ -208,7 +209,7 @@ func LoadNpc() {
 
 // 0 - нпц с диалогом
 // 1 - нпц монстер/рб...
-//Необходимо для того чтоб понимать, это моб, или NPC диалога
+// Необходимо для того чтоб понимать, это моб, или NPC диалога
 func GetDialogNPC(npctype string) int32 {
 	//Список не полный
 	//типы нпц которые при обращении открывают HTML диалоги
@@ -221,7 +222,7 @@ func GetDialogNPC(npctype string) int32 {
 	return 1
 }
 
-//Информация о объекте
+// Информация о объекте
 func GetNpcObject(objectId int32) (Npc, int32, int32, int32, error) {
 	for npcObjId, npc := range NpcObject {
 		if objectId == npcObjId {

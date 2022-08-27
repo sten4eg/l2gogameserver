@@ -103,7 +103,7 @@ func GetItemInfo(id int) (Item, bool) {
 }
 
 func loadItems() {
-	if config.Get().Debug.EnabledItems == false {
+	if !config.IsEnableItems() {
 		return
 	}
 	logger.Info.Println("Загрузка предметов")

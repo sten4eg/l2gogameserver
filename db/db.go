@@ -13,7 +13,7 @@ import (
 var db *pgxpool.Pool
 
 func ConfigureDB() {
-	conf := config.Get().Database
+	conf := config.GetDBConfig()
 	dsnString := "user=" + conf.User
 	dsnString += " password=" + conf.Password
 	dsnString += " host=" + conf.Host
@@ -23,7 +23,7 @@ func ConfigureDB() {
 	dsnString += " search_path=" + conf.Schema
 	dsnString += " pool_max_conns=" + conf.PoolMaxConns
 
-	config, err := pgxpool.ParseConfig(dsnString)
+	dbConfig, err := pgxpool.ParseConfig(dsnString)
 	logrusLogger := &logrus.Logger{
 		Out:          os.Stderr,
 		Formatter:    new(logrus.JSONFormatter),
@@ -32,8 +32,8 @@ func ConfigureDB() {
 		ExitFunc:     os.Exit,
 		ReportCaller: false,
 	}
-	config.ConnConfig.Logger = logrusadapter.NewLogger(logrusLogger)
-	conn, err := pgxpool.ConnectConfig(context.Background(), config)
+	dbConfig.ConnConfig.Logger = logrusadapter.NewLogger(logrusLogger)
+	conn, err := pgxpool.ConnectConfig(context.Background(), dbConfig)
 
 	err = conn.Ping(context.Background())
 	if err != nil {

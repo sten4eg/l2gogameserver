@@ -14,7 +14,7 @@ type ClientCtx struct {
 	conn            *net.TCPConn
 	ScrambleModulus []byte
 	// NeedCrypt - флаг, при создании клиента false
-	// указывает первый пакет пришедший от клиента не нужно расшифровывать
+	// первый пакет пришедший от клиента не нужно расшифровывать, после 1 пакета NeedCrypt = true
 	// костыль
 	NeedCrypt   bool
 	OutKey      []int32
@@ -182,4 +182,8 @@ func (c *ClientCtx) GetConn() *net.TCPConn {
 
 func (c *ClientCtx) GetRemoteAddr() net.Addr {
 	return c.conn.RemoteAddr()
+}
+
+func (c *ClientCtx) SetLogin(login string) {
+	c.Account.Login = login
 }

@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-//Общий массив с файлами
+// Общий массив с файлами
 var htmcodes []htmlcode
 
 type htmlcode struct {
@@ -23,9 +23,9 @@ type htmlcode struct {
 }
 
 /*
-	Чтение файла и возвращаем как текст
-	В htmlcode сразу откинем лишнее.
-	Результат закэшим.
+Чтение файла и возвращаем как текст
+В htmlcode сразу откинем лишнее.
+Результат закэшим.
 */
 func Open(filename string) (*string, error) {
 	if !strings.HasSuffix(filename, ".htm") {
@@ -56,10 +56,10 @@ func Open(filename string) (*string, error) {
 	return c, nil
 }
 
-//Поиск ранее сохраненного в массив html файла
+// Поиск ранее сохраненного в массив html файла
 func getHTMLCache(filename string) (*string, bool) {
 	//Если выкл. сохранение диалогов, тогда пропускаем поиск
-	if config.Get().Debug.EnabledCacheHTML == false {
+	if !config.IsEnableCachedHtml() {
 		return nil, false
 	}
 	for _, htm := range htmcodes {
@@ -70,10 +70,10 @@ func getHTMLCache(filename string) (*string, bool) {
 	return nil, false
 }
 
-//Добавить HTML код в массив
+// Добавить HTML код в массив
 func addHTMLCache(filename string, filecode *string) {
 	//Если выкл. сохранение диалогов, тогда пропускаем сохранение в массиве
-	if config.Get().Debug.EnabledCacheHTML == false {
+	if !config.IsEnableCachedHtml() {
 		return
 	}
 	htmcodes = append(htmcodes, htmlcode{
