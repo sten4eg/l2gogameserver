@@ -125,6 +125,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 			clientpackets.UseItem(client, data)
 		case 87:
 			clientpackets.RequestRestart(data, client)
+			gameserver.CharOffline(client)
 		case 57:
 			clientpackets.RequestMagicSkillUse(data, client)
 		case 61:

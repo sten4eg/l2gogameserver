@@ -63,7 +63,7 @@ func NewClient() *ClientCtx {
 			0x97,
 		},
 		Account:     new(Account),
-		CurrentChar: &Character{},
+		CurrentChar: nil,
 	}
 
 	return c
@@ -169,6 +169,9 @@ func (c *ClientCtx) sendDataToSocket(data []byte) error {
 }
 
 func (c *ClientCtx) GetCurrentChar() interfaces.CharacterI {
+	if c.CurrentChar == nil {
+		return nil
+	}
 	return c.CurrentChar
 }
 
@@ -186,4 +189,8 @@ func (c *ClientCtx) GetRemoteAddr() net.Addr {
 
 func (c *ClientCtx) SetLogin(login string) {
 	c.Account.Login = login
+}
+
+func (c *ClientCtx) RemoveCurrentChar() {
+	c.CurrentChar = nil
 }

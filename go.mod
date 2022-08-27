@@ -12,6 +12,7 @@ require (
 require (
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -25,5 +26,4 @@ require (
 	github.com/jackc/puddle v1.2.1 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

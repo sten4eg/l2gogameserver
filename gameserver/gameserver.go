@@ -37,16 +37,22 @@ func AddOnlineChar(character interfaces.CharacterI) {
 	OnlineCharacters.Char[character.GetObjectId()] = ch
 }
 
-func CharOffline(client interfaces.ReciverAndSender) {
+func CharOffline(client interfaces.ClientInterface) {
 	OnlineCharacters.Mu.Lock()
-	delete(OnlineCharacters.Char, client.GetCurrentChar().GetObjectId())
-	OnlineCharacters.Mu.Unlock()
-	client.GetCurrentChar().GetCurrentRegion().DeleteVisibleChar(client.GetCurrentChar())
+	defer OnlineCharacters.Mu.Unlock()
+	currentChar := client.GetCurrentChar()
+	if currentChar != nil {
+		delete(OnlineCharacters.Char, client.GetCurrentChar().GetObjectId())
+		currentRegion := client.GetCurrentChar().GetCurrentRegion()
+		if currentRegion != nil {
+			currentRegion.DeleteVisibleChar(client.GetCurrentChar())
+		}
+		client.GetCurrentChar().CloseChannels()
+		//todo close all character goroutine, save info in DB
+		logger.Info.Println("Socket Close For: ", client.GetCurrentChar().GetName())
+		client.RemoveCurrentChar()
+	}
 
-	client.GetCurrentChar().CloseChannels()
-
-	//todo close all character goroutine, save info in DB
-	logger.Info.Println("Socket Close For: ", client.GetCurrentChar().GetName())
 }
 
 //

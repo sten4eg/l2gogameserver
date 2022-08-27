@@ -138,6 +138,7 @@ type CharacterI interface {
 type ClientInterface interface {
 	ReciverAndSender
 	SetLogin(string)
+	RemoveCurrentChar()
 }
 type ReciverAndSender interface {
 	Receive() (opcode byte, data []byte, e error)
