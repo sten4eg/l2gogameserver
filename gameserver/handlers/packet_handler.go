@@ -12,7 +12,8 @@ import (
 )
 
 type GameServerInterface interface {
-	AddClient(string, interfaces.ClientInterface)
+	AddClient(string, interfaces.ClientInterface) bool
+	AddWaitClient(string, interfaces.ClientInterface)
 }
 
 func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
@@ -21,10 +22,11 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 		opcode, data, err := client.Receive()
 		if err != nil {
 			fmt.Println(err)
-			gameserver.CharOffline(client)
-			break // todo  return ?
+			gameserver.CharOffline(client) //todo если чар офф то надо менять state
+			return                         // todo  return ?
 		}
 		logger.Info.Println("Client->Server: #", opcode, packets.GetNamePacket(opcode))
+
 		switch opcode {
 		case 0:
 			clientpackets.Logout(client, data)

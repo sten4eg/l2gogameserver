@@ -5,6 +5,7 @@ import (
 	"l2gogameserver/config"
 	"l2gogameserver/gameserver/crypt"
 	"l2gogameserver/gameserver/crypt/blowfish"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 	"log"
 	"math/rand"
@@ -22,6 +23,10 @@ type LoginServer struct {
 var loginServerInstance *LoginServer
 
 type gameServerInterface interface {
+	ExistsWaitClient(login string) bool
+	GetClient(login string) interfaces.ClientInterface
+	RemoveWaitingClient(login string)
+	RemoveClient(login string)
 }
 
 func (ls *LoginServer) AttachGs(gs gameServerInterface) {
@@ -161,4 +166,17 @@ func howLongNeedSleep() time.Duration {
 		return time.Duration(attempt) * time.Second
 	}
 	return time.Second * 5
+}
+
+func (ls *LoginServer) ExistsWaitClientOnGameServer(login string) bool {
+	return ls.gameServer.ExistsWaitClient(login)
+}
+func (ls *LoginServer) GetClientFromGS(login string) interfaces.ClientInterface {
+	return ls.gameServer.GetClient(login)
+}
+func (ls *LoginServer) RemoveWaitingClientFromGS(login string) {
+	ls.gameServer.RemoveWaitingClient(login)
+}
+func (ls *LoginServer) RemoveClientFromGS(login string) {
+	ls.gameServer.RemoveClient(login)
 }

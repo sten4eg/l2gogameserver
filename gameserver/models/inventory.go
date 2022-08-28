@@ -540,6 +540,7 @@ func DeleteItem(selectedItem *MyItem, character *Character) {
 	if selectedItem.Location == PaperdollLoc {
 		character.Paperdoll[selectedItem.LocData] = MyItem{}
 	}
+
 	var inventory Inventory
 	for _, v := range character.Inventory.Items {
 		if v.ObjectId != selectedItem.ObjectId {
@@ -627,7 +628,7 @@ func AddItem(selectedItem MyItem, character *Character) Inventory {
 	return character.Inventory
 }
 
-//RemoveItemCharacter Удаление предмета из инвентаря персонажа
+// RemoveItemCharacter Удаление предмета из инвентаря персонажа
 // count - сколько надо удалить
 func RemoveItemCharacter(character *Character, item *MyItem, count int64) {
 	logger.Info.Println("Удаление предмета из инвентаря")

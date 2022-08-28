@@ -22,8 +22,9 @@ func CharSelectionInfo(clientI interfaces.ReciverAndSender) []byte {
 		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
-	//todo допистаь sql , убрать *
-	rows, err := dbConn.Query(context.Background(), `SELECT * FROM characters WHERE Login = $1`, client.Account.Login)
+
+	sql := `SELECT login,object_id,level,max_hp,cur_hp,max_mp,cur_mp,face,hair_style,hair_color,sex,x,y,z,exp,sp,karma,pvp_kills,pk_kills,clan_id,race,class_id,base_class,title,online_time,nobless,vitality,char_name,first_enter_game FROM characters WHERE Login = $1`
+	rows, err := dbConn.Query(context.Background(), sql, client.Account.Login)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}

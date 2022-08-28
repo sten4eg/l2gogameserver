@@ -1,7 +1,9 @@
 package interfaces
 
 import (
+	"l2gogameserver/gameserver/models/clientStates"
 	"l2gogameserver/gameserver/models/items/attribute"
+	"l2gogameserver/packets"
 	"sync"
 )
 
@@ -41,6 +43,7 @@ type Npcer interface {
 	UniquerId
 	Identifier
 }
+
 type TradableItemInterface interface {
 	UniquerId
 	Identifier
@@ -53,6 +56,7 @@ type TradableItemInterface interface {
 	GetEnchantedOption() [3]int32
 	GetCount() int64
 }
+
 type TradeListInterface interface {
 	SetPartner(CharacterI)
 	GetPartner() CharacterI
@@ -75,6 +79,7 @@ type InventoryInterface interface {
 	SetAllItemsUpdatedTypeNone()
 	sync.Locker
 }
+
 type MyItemInterface interface {
 	BaseItemInterface
 	UniquerId
@@ -139,11 +144,16 @@ type ClientInterface interface {
 	ReciverAndSender
 	SetLogin(string)
 	RemoveCurrentChar()
+	SetState(state clientStates.State)
+	GetState() clientStates.State
+	SetSessionKey(playOk1, playOk2, loginOk1, loginOk2 uint32)
+	GetSessionKey() (playOk1, playOk2, loginOk1, loginOk2 uint32)
 }
 type ReciverAndSender interface {
 	Receive() (opcode byte, data []byte, e error)
 	AddLengthAndSand(d []byte)
 	Send(data []byte)
+	SendBuf(*packets.Buffer) error
 	EncryptAndSend(data []byte)
 	CryptAndReturnPackageReadyToShip(data []byte) []byte
 	GetCurrentChar() CharacterI

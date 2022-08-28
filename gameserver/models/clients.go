@@ -5,6 +5,8 @@ import (
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/crypt"
 	"l2gogameserver/gameserver/interfaces"
+	"l2gogameserver/gameserver/models/clientStates"
+	"l2gogameserver/packets"
 	"net"
 	"sync"
 )
@@ -21,6 +23,14 @@ type ClientCtx struct {
 	InKey       []int32
 	CurrentChar *Character
 	Account     *Account
+	state       clientStates.State
+	sessionKey  SessionKey
+}
+type SessionKey struct {
+	PlayOk1  uint32
+	PlayOk2  uint32
+	LoginOk1 uint32
+	LoginOk2 uint32
 }
 
 func NewClient() *ClientCtx {
@@ -64,6 +74,7 @@ func NewClient() *ClientCtx {
 		},
 		Account:     new(Account),
 		CurrentChar: nil,
+		state:       clientStates.Connected,
 	}
 
 	return c
@@ -93,6 +104,30 @@ func (c *ClientCtx) EncryptAndSend(data []byte) {
 	if err != nil {
 		logger.Error.Panicln("Пакет не отправлен, ошибка: " + err.Error())
 	}
+}
+func (c *ClientCtx) SendBuf(buffer *packets.Buffer) error {
+	if buffer == nil {
+		return nil //todo мб ошибку кинуть?
+	}
+
+	data := buffer.Bytes()
+	defer packets.Put(buffer)
+
+	data = crypt.Encrypt(data, c.OutKey)
+	// Вычисление длинны пакета
+	length := uint16(len(data) + 2)
+
+	toSend := packets.Get()
+	toSend.WriteHU(length)
+	toSend.WriteSlice(data) //TODO очень много выделяет
+	defer packets.Put(toSend)
+
+	err := c.sendDataToSocket(data)
+	if err != nil {
+		logger.Error.Panicln("Пакет не отправлен, ошибка: " + err.Error())
+	}
+
+	return nil
 }
 func (c *ClientCtx) Send(d []byte) {
 	if len(d) == 0 {
@@ -193,4 +228,22 @@ func (c *ClientCtx) SetLogin(login string) {
 
 func (c *ClientCtx) RemoveCurrentChar() {
 	c.CurrentChar = nil
+}
+
+func (c *ClientCtx) SetState(state clientStates.State) {
+	c.state = state
+}
+func (c *ClientCtx) GetState() clientStates.State {
+	return c.state
+}
+
+func (c *ClientCtx) SetSessionKey(playOk1, playOk2, loginOk1, loginOk2 uint32) {
+	c.sessionKey.PlayOk1 = playOk1
+	c.sessionKey.PlayOk2 = playOk2
+	c.sessionKey.LoginOk1 = loginOk1
+	c.sessionKey.LoginOk2 = loginOk2
+}
+
+func (c *ClientCtx) GetSessionKey() (playOk1, playOk2, loginOk1, loginOk2 uint32) {
+	return c.sessionKey.PlayOk1, c.sessionKey.PlayOk2, c.sessionKey.LoginOk1, c.sessionKey.LoginOk2
 }

@@ -7,7 +7,8 @@ import (
 )
 
 type gameServerInterface interface {
-	AddClient(string, interfaces.ClientInterface)
+	AddWaitClient(string, interfaces.ClientInterface)
+	AddClient(string, interfaces.ClientInterface) bool
 }
 
 func AuthLogin(data []byte, client interfaces.ClientInterface, gs gameServerInterface) {
@@ -15,14 +16,24 @@ func AuthLogin(data []byte, client interfaces.ClientInterface, gs gameServerInte
 
 	login := packet.ReadString()
 	client.SetLogin(login)
-	playKey1 := packet.ReadInt32()
-	playKey2 := packet.ReadInt32()
-	loginKey1 := packet.ReadInt32()
-	loginKey2 := packet.ReadInt32()
+	playKey1 := packet.ReadUInt32()
+	playKey2 := packet.ReadUInt32()
+	loginKey1 := packet.ReadUInt32()
+	loginKey2 := packet.ReadUInt32()
+	//TODO проверить что они приходят в правильном порядке
+
 	_, _, _, _ = playKey1, playKey2, loginKey1, loginKey2
 
-	gs.AddClient(login, client)
-	pkg := serverpackets.CharSelectionInfo(client)
+	if client.GetCurrentChar() == nil {
+		if gs.AddClient(login, client) {
+			client.SetSessionKey(playKey1, playKey2, loginKey1, loginKey2)
+			gs.AddWaitClient(login, client)
+		} else {
+			//TODO client.CLOSE()
+		}
 
-	client.EncryptAndSend(pkg)
+		pkg := serverpackets.CharSelectionInfo(client)
+		client.EncryptAndSend(pkg)
+	}
+
 }

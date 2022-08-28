@@ -9,7 +9,7 @@ import (
 func (ls *LoginServer) HandlePacket(data []byte) {
 	opCode := data[0]
 	data = data[1:]
-	fmt.Println(opCode)
+	fmt.Println("логин прислал : ", opCode)
 
 	switch opCode {
 	default:
@@ -24,8 +24,12 @@ func (ls *LoginServer) HandlePacket(data []byte) {
 		buf = gs2ls.AuthRequest()
 		ls.Send(buf)
 	case 0x02:
-		ls2gs.AuthResponse(data)
-		buf := gs2ls.ServerStatus()
-		ls.Send(buf)
+		ls2gs.AuthResponse(data, ls)
+
+		//todo пройтись по серверу и отослать логины которые в игре
+	case 0x03:
+		ls2gs.PlayerAuthResponse(data, ls)
+	case 0x05:
+		ls2gs.RequestCharacters(data, ls)
 	}
 }
