@@ -1,9 +1,20 @@
 package models
 
 import (
+	"context"
+	"fmt"
+	"l2gogameserver/data/logger"
+	"l2gogameserver/db"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/items/attribute"
+	"math"
+	"sync"
 )
+
+const InsertIntoDB = `INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', 0, 0, 0, 0, '-1', 0, 0)`
+
+// const UpdateInDB = `UPDATE items SET owner_id=$1, count=$2, loc=$3, loc_data=$4, enchant_level=$5, custom_type1=$6, custom_type2=$7, mana_left=$8, time=$9, agathion_energy=$10 WHERE object_id=$11`
+const UpdateInDB = `UPDATE items SET owner_id=$1, count=$2 WHERE object_id=$3`
 
 type MyItem struct {
 	// встроенный "шаблон" предмета
@@ -19,7 +30,7 @@ type MyItem struct {
 	Mana                int32
 	AttributeDefend     [6]int16
 	EnchantedOption     [3]int32
-
+	sync.Mutex
 	//UpdateType для обновления инвентаря
 	LastChange int16
 }
@@ -53,6 +64,9 @@ func (i *MyItem) getBaseAttributeElement() attribute.Attribute {
 func (i *MyItem) GetCount() int64 {
 	return i.Count
 }
+func (i *MyItem) SetCount(count int64) {
+	i.Count = count
+}
 func (i *MyItem) GetEnchant() int16 {
 	return i.Enchant
 }
@@ -72,9 +86,67 @@ func (i *MyItem) GetLocation() string {
 func (i *MyItem) GetUpdateType() int16 {
 	return i.LastChange
 }
+func (i *MyItem) SetUpdateType(lastChange int16) {
+	i.LastChange = lastChange
+}
 func (i *MyItem) GetLocData() int32 {
 	return i.LocData
 }
 func (i *MyItem) GetMana() int32 {
 	return i.Mana
 }
+
+func (i *MyItem) ChangeCount(count int) {
+	if count == 0 {
+		return
+	}
+	//TODO log [old := i.GetCount()]
+	var max int
+	if i.GetId() == 57 { //TODO заменить на константу AdenaId
+		max = 99900000000 //TODO заменить на getMaxAdena
+	} else {
+		max = math.MaxInt64
+	}
+
+	if count > 0 && int(i.GetCount()) > max-count {
+		i.SetCount(int64(max))
+	} else {
+		i.SetCount(i.GetCount() + int64(count))
+	}
+
+	if i.GetCount() < 0 {
+		i.SetCount(0)
+	}
+
+	//TODO log
+
+}
+func (i *MyItem) UpdateDB(ownerId int32) {
+	dbConn, err := db.GetConn()
+	if err != nil {
+		logger.Error.Panicln(err)
+	}
+	defer dbConn.Release()
+	if true { //TODO добавить поле для проверки существования данного предмета в бд
+		if false { //TODO добавить проверки для удаления итема из бд
+			fmt.Println("False")
+		} else {
+			_, err = dbConn.Exec(context.Background(), UpdateInDB, ownerId, i.GetCount(), i.GetObjectId())
+		}
+	} else {
+		//TODO добавить проверку
+		_, err = dbConn.Exec(context.Background(), InsertIntoDB, ownerId, i.ObjectId, i.Item.Id, i.Count)
+		//TODO доделать функцию
+	}
+}
+
+//TODO додолеть
+//func DestroyItem(item interfaces.MyItemInterface, actor interfaces.CharacterI) {
+//	item.SetCount(0)
+//	// item.setOwnerId(0); ?
+//	// item.setItemLocation(ItemLocation.VOID); ?
+//	item.SetUpdateType(3) //TODO заменить на константу Removed
+//
+//	// L2World.getInstance().removeObject(item); ?
+//	// IdFactory.getInstance().releaseId(item.getObjectId()); ?
+//}
