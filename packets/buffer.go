@@ -42,7 +42,9 @@ func (b *Buffer) WriteQ(value int64) {
 	binary.LittleEndian.PutUint64(buf[:], uint64(value))
 	b.B = append(b.B, buf[:]...)
 }
-
+func (b *Buffer) WriteHU(value uint16) {
+	b.B = append(b.B, byte(value&0xff), byte(value>>8))
+}
 func (b *Buffer) WriteD(value int32) {
 	var buf [4]byte
 	binary.LittleEndian.PutUint32(buf[:], uint32(value))

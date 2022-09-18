@@ -3,6 +3,9 @@ package clientpackets
 import (
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
+
+	"l2gogameserver/gameserver/models/clientStates"
+
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
@@ -20,44 +23,6 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 	pkg2 := serverpackets.ExBrExtraUserInfo(client.CurrentChar)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
-	//Если персонажа никогда не заходил в игру, выдадим ему какие-то стартовые предметы
-	//if client.CurrentChar.FirstEnterGame {
-	//	client.CurrentChar.SaveFirstInGamePlayer()
-	//	logger.Info.Println("Выдача предметов новому персонажу: ", client.CurrentChar.CharName)
-	//
-	//	client.CurrentChar.Inventory = models.AddItem(models.MyItem{
-	//		ObjectId: idfactory.GetNext(),
-	//		Item: items.Item{
-	//			Id: 6379,
-	//		},
-	//		Count: 1,
-	//	}, client.CurrentChar)
-	//
-	//	client.CurrentChar.Inventory = models.AddItem(models.MyItem{
-	//		ObjectId: idfactory.GetNext(),
-	//		Item: items.Item{
-	//			Id: 6382,
-	//		},
-	//		Count: 1,
-	//	}, client.CurrentChar)
-	//
-	//	client.CurrentChar.Inventory = models.AddItem(models.MyItem{
-	//		ObjectId: idfactory.GetNext(),
-	//		Item: items.Item{
-	//			Id: 6381,
-	//		},
-	//		Count: 1,
-	//	}, client.CurrentChar)
-	//
-	//	client.CurrentChar.Inventory = models.AddItem(models.MyItem{
-	//		ObjectId: idfactory.GetNext(),
-	//		Item: items.Item{
-	//			Id: 6380,
-	//		},
-	//		Count: 1,
-	//	}, client.CurrentChar)
-	//
-	//}
 
 	count := uint8(len(client.CurrentChar.Macros))
 	for index, macro := range client.CurrentChar.Macros {
@@ -65,7 +30,7 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 		buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg3))
 	}
 
-	pkg4 := serverpackets.ItemList(client)
+	pkg4 := serverpackets.ItemList(client.CurrentChar)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg4))
 
 	pkg5 := serverpackets.ExQuestItemList(client)
@@ -103,7 +68,7 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 
 	pkg16 := serverpackets.ActionList(client) //todo test
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg16))
-
+	client.SetState(clientStates.InGame)
 	client.Send(buff.Bytes())
 	packets.Put(buff)
 	//NPCdistance := client.CurrentChar.SpawnDistancePoint(5000)
@@ -118,6 +83,48 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 	//	}
 	//	pkg17 := serverpackets.NpcInfo(client, id, npc, locdata)
 	//	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg17))
+	//}
+
+}
+
+func firstEnter() {
+	//Если персонажа никогда не заходил в игру, выдадим ему какие-то стартовые предметы
+	//if client.CurrentChar.FirstEnterGame {
+	//	client.CurrentChar.SaveFirstInGamePlayer()
+	//	logger.Info.Println("Выдача предметов новому персонажу: ", client.CurrentChar.CharName)
+	//
+	//	client.CurrentChar.Inventory = models.AddItem(models.MyItem{
+	//		ObjectId: idfactory.GetNext(),
+	//		Item: items.Item{
+	//			Id: 6379,
+	//		},
+	//		Count: 1,
+	//	}, client.CurrentChar)
+	//
+	//	client.CurrentChar.Inventory = models.AddItem(models.MyItem{
+	//		ObjectId: idfactory.GetNext(),
+	//		Item: items.Item{
+	//			Id: 6382,
+	//		},
+	//		Count: 1,
+	//	}, client.CurrentChar)
+	//
+	//	client.CurrentChar.Inventory = models.AddItem(models.MyItem{
+	//		ObjectId: idfactory.GetNext(),
+	//		Item: items.Item{
+	//			Id: 6381,
+	//		},
+	//		Count: 1,
+	//	}, client.CurrentChar)
+	//
+	//	client.CurrentChar.Inventory = models.AddItem(models.MyItem{
+	//		ObjectId: idfactory.GetNext(),
+	//		Item: items.Item{
+	//			Id: 6380,
+	//		},
+	//		Count: 1,
+	//	}, client.CurrentChar)
+	//
 	//}
 
 }

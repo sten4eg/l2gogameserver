@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	github.com/puzpuzpuz/xsync v1.4.3
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
 	gopkg.in/yaml.v3 v3.0.1

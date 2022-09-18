@@ -3,6 +3,7 @@ package clientpackets
 import (
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/clientStates"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
@@ -26,4 +27,6 @@ func CharSelected(data []byte, clientI interfaces.ReciverAndSender) {
 
 	pkg2 := serverpackets.CharSelected(client.Account.Char[client.Account.CharSlot], client)
 	client.EncryptAndSend(pkg2)
+
+	client.SetState(clientStates.Joining)
 }

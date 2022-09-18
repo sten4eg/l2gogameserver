@@ -2,26 +2,31 @@ package server
 
 import (
 	"fmt"
+	"github.com/puzpuzpuz/xsync"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/handlers"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/loginserver"
-	"log"
+	"l2gogameserver/loginserver/network/gs2ls"
 	"net"
-	"sync"
 )
 
 type GameServer struct {
 	clientsListener *net.TCPListener
-	clients         sync.Map
+	clients         *xsync.MapOf[interfaces.ClientInterface]
+	waitingClients  *xsync.MapOf[interfaces.ClientInterface]
+	loginServer     *loginserver.LoginServer
 }
 
 func New() *GameServer {
 	gs := &GameServer{}
-	gs.clients.Store("q", "v")
+	gs.clients = xsync.NewMapOf[interfaces.ClientInterface]()
+	gs.waitingClients = xsync.NewMapOf[interfaces.ClientInterface]()
 	ls := loginserver.GetLoginServerInstance()
+	gs.loginServer = ls
+
 	ls.AttachGs(gs)
 	return gs
 }
@@ -60,16 +65,38 @@ func (g *GameServer) Start() {
 	}
 }
 
-func (g *GameServer) AddClient(login string, clientI interfaces.ClientInterface) {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok || client == nil {
-		log.Println("нету клиента для добавления")
-		return
-	}
+// AddClient вернёт true если клинта небыло в мапе, false если клиент был обновлен в мапе
+func (g *GameServer) AddClient(login string, clientI interfaces.ClientInterface) bool {
+	_, loaded := g.clients.LoadOrStore(login, clientI)
+	return !loaded
+}
 
-	//g.onlineCharacters[login] = client
+func (g *GameServer) AddWaitClient(login string, clientI interfaces.ClientInterface) {
+	playOk1, playOk2, loginOk1, loginOk2 := clientI.GetSessionKey()
+	g.loginServer.Send(gs2ls.PlayerAuthRequest(login, playOk1, playOk2, loginOk1, loginOk2))
+	g.waitingClients.Store(login, clientI)
+}
+
+func (g *GameServer) ExistsWaitClient(login string) bool {
+	_, exist := g.waitingClients.Load(login)
+	return exist
 }
 
 func (g *GameServer) KickClientByLogin(login string) {
 	//for i,v := range g.onlineCharacters
+}
+
+func (g *GameServer) GetClient(login string) interfaces.ClientInterface {
+	v, ok := g.clients.Load(login)
+	if !ok {
+		return nil
+	}
+	return v
+}
+
+func (g *GameServer) RemoveWaitingClient(login string) {
+	g.waitingClients.Delete(login)
+}
+func (g *GameServer) RemoveClient(login string) {
+	g.clients.Delete(login)
 }

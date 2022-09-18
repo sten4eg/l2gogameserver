@@ -2,24 +2,18 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func Attack(clientI interfaces.ReciverAndSender, targetObjId, targetX, targetY, targetZ int32) []byte {
+func Attack(client interfaces.CharacterI, targetObjId, targetX, targetY, targetZ int32) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return []byte{}
-	}
-
-	x, y, z := client.CurrentChar.GetXYZ()
+	x, y, z := client.GetXYZ()
 
 	buffer.WriteSingleByte(0x33)
 
-	buffer.WriteD(client.CurrentChar.ObjectId)
+	buffer.WriteD(client.GetObjectId())
 
 	buffer.WriteD(targetObjId)
 	buffer.WriteD(4)

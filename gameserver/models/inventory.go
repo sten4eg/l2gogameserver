@@ -61,6 +61,7 @@ const (
 
 )
 
+const LimitSizeInventory = 80 // todo дефолтно 80 , но может быть больше
 // Inventory реализует InventoryInterface
 type Inventory struct {
 	Items []MyItem
@@ -116,6 +117,7 @@ func (i *Inventory) SetAllItemsUpdatedTypeNone() {
 		v.LastChange = UpdateTypeUnchanged
 	}
 }
+
 func (i *Inventory) ValidateWeight(weight int) bool {
 	return int(i.TotalWeight)+weight < 69000 //TODO заменить на реальный допустимый вес
 }
@@ -218,6 +220,7 @@ func (i *Inventory) RefreshWeight() {
 	}
 	i.TotalWeight = int32(weight)
 }
+
 func RestoreVisibleInventory(charId int32) [26]MyItem {
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -271,7 +274,7 @@ func GetMyItems(charId int32) []MyItem {
 		logger.Error.Panicln(err)
 	}
 
-	itemsInInventory := make([]MyItem, 0, 80)
+	itemsInInventory := make([]MyItem, 0, LimitSizeInventory)
 	for rows.Next() {
 		var itm MyItem
 		var id int
@@ -618,10 +621,9 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 }
 
 func getFirstEmptySlot(myItems []MyItem) int32 {
-	limit := int32(80) // todo дефолтно 80 , но может быть больше
 
 	i := int32(0)
-	for ; i < limit; i++ {
+	for ; i < LimitSizeInventory; i++ {
 		flag := false
 		for j := range myItems {
 			v := &myItems[j]
@@ -649,6 +651,7 @@ func DeleteItem(selectedItem *MyItem, character *Character) {
 	if selectedItem.Location == PaperdollLoc {
 		character.Paperdoll[selectedItem.LocData] = MyItem{}
 	}
+
 	var inventory Inventory
 	for _, v := range character.Inventory.Items {
 		if v.ObjectId != selectedItem.ObjectId {
@@ -694,6 +697,7 @@ func GetPaperdollOrder() []uint8 {
 }
 
 // AddItem Добавление предмета
+
 //func AddItem(selectedItem MyItem, character *Character) Inventory {
 //	//Прежде чем просто добавить, необходимо проверить на существование предмета в инвентаре
 //	//Если он есть, тогда просто добавим к имеющимся предмету.
@@ -735,6 +739,7 @@ func GetPaperdollOrder() []uint8 {
 //
 //	return character.Inventory
 //}
+
 
 // RemoveItemCharacter Удаление предмета из инвентаря персонажа
 // count - сколько надо удалить

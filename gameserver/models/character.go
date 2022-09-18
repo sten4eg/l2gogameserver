@@ -8,9 +8,11 @@ import (
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/interfaces"
+	"l2gogameserver/gameserver/models/clientStates"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/race"
 	"l2gogameserver/gameserver/models/sysmsg"
+	"l2gogameserver/packets"
 	"l2gogameserver/utils"
 	"net"
 
@@ -445,9 +447,6 @@ func (c *Character) GetZ() int32 {
 	return c.Coordinates.Z
 }
 
-func (c *Character) EncryptAndSend(data []byte) {
-	c.Conn.EncryptAndSend(data)
-}
 func (c *Character) GetCurrentRegion() interfaces.WorldRegioner {
 	return c.CurrentRegion
 }
@@ -591,3 +590,28 @@ func (c *Character) SendSysMsg(num interface{}, options ...string) {
 
 	c.EncryptAndSend(sysmsg.SystemMessage(smsg))
 }
+
+// методы для реализации ClientInterface, не нужно их заполнять
+func (c *Character) SetLogin(login string)                                     { panic("нельзя") }
+func (c *Character) RemoveCurrentChar()                                        { panic("нельзя") }
+func (c *Character) SetState(state clientStates.State)                         { panic("нельзя") }
+func (c *Character) GetState() clientStates.State                              { panic("нельзя") }
+func (c *Character) SetSessionKey(playOk1, playOk2, loginOk1, loginOk2 uint32) { panic("нельзя") }
+func (c *Character) GetSessionKey() (playOk1, playOk2, loginOk1, loginOk2 uint32) {
+	panic("нельзя")
+}
+
+///////////
+
+// методлы для реализации ReciverAndSender
+func (c *Character) Receive() (opcode byte, data []byte, err error) { panic("нельзя") }
+func (c *Character) AddLengthAndSand(data []byte)                   { c.Conn.AddLengthAndSand(data) }
+func (c *Character) Send(data []byte)                               { c.Conn.Send(data) }
+func (c *Character) SendBuf(buffer *packets.Buffer) error           { return c.Conn.SendBuf(buffer) }
+func (c *Character) EncryptAndSend(data []byte)                     { c.Conn.EncryptAndSend(data) }
+func (c *Character) CryptAndReturnPackageReadyToShip(data []byte) []byte {
+	return c.Conn.CryptAndReturnPackageReadyToShip(data)
+}
+func (c *Character) GetCurrentChar() interfaces.CharacterI { return c }
+
+///////////

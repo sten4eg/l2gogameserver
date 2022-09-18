@@ -6,15 +6,15 @@ import (
 	"l2gogameserver/packets"
 )
 
-func ItemList(clientI interfaces.ReciverAndSender) []byte {
-	client, ok := clientI.(*models.ClientCtx)
+func ItemList(clientI interfaces.CharacterI) []byte {
+	client, ok := clientI.(*models.Character)
 	if !ok {
 		return []byte{}
 	}
 
 	buffer := packets.Get()
 
-	myItems := client.CurrentChar.Inventory.Items
+	myItems := client.Inventory.Items
 
 	buffer.WriteSingleByte(0x11)
 	buffer.WriteH(0)                   // 1 - открывает окно инвентаря
