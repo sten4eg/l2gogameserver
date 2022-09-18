@@ -6,7 +6,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func Attack(data []byte, client interfaces.ReciverAndSender) {
+func Attack(data []byte, client interfaces.CharacterI) {
 	var packet = packets.NewReader(data)
 
 	objId := packet.ReadInt32() // targetObjId

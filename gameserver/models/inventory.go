@@ -61,6 +61,7 @@ const (
 
 )
 
+const LimitSizeInventory = 80 // todo дефолтно 80 , но может быть больше
 // Inventory реализует InventoryInterface
 type Inventory struct {
 	Items []MyItem
@@ -109,6 +110,7 @@ func (i *Inventory) SetAllItemsUpdatedTypeNone() {
 		v.LastChange = UpdateTypeUnchanged
 	}
 }
+
 func RestoreVisibleInventory(charId int32) [26]MyItem {
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -162,7 +164,7 @@ func GetMyItems(charId int32) []MyItem {
 		logger.Error.Panicln(err)
 	}
 
-	itemsInInventory := make([]MyItem, 0, 80)
+	itemsInInventory := make([]MyItem, 0, LimitSizeInventory)
 	for rows.Next() {
 		var itm MyItem
 		var id int
@@ -509,10 +511,9 @@ func setPaperdollItem(slot uint8, selectedItem *MyItem, character *Character) {
 }
 
 func getFirstEmptySlot(myItems []MyItem) int32 {
-	limit := int32(80) // todo дефолтно 80 , но может быть больше
 
 	i := int32(0)
-	for ; i < limit; i++ {
+	for ; i < LimitSizeInventory; i++ {
 		flag := false
 		for j := range myItems {
 			v := &myItems[j]

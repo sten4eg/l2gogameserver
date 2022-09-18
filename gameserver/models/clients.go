@@ -233,6 +233,7 @@ func (c *ClientCtx) RemoveCurrentChar() {
 func (c *ClientCtx) SetState(state clientStates.State) {
 	c.state = state
 }
+
 func (c *ClientCtx) GetState() clientStates.State {
 	return c.state
 }

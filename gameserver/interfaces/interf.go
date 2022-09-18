@@ -139,10 +139,11 @@ type CharacterI interface {
 	ValidateWeight(int32) bool
 	GetMaxLoad() int32
 	SendSysMsg(q interface{}, options ...string)
+	ClientInterface
 }
 type ClientInterface interface {
 	ReciverAndSender
-	SetLogin(string)
+	SetLogin(login string)
 	RemoveCurrentChar()
 	SetState(state clientStates.State)
 	GetState() clientStates.State
@@ -150,10 +151,10 @@ type ClientInterface interface {
 	GetSessionKey() (playOk1, playOk2, loginOk1, loginOk2 uint32)
 }
 type ReciverAndSender interface {
-	Receive() (opcode byte, data []byte, e error)
-	AddLengthAndSand(d []byte)
+	Receive() (opcode byte, data []byte, err error)
+	AddLengthAndSand(data []byte)
 	Send(data []byte)
-	SendBuf(*packets.Buffer) error
+	SendBuf(buffer *packets.Buffer) error
 	EncryptAndSend(data []byte)
 	CryptAndReturnPackageReadyToShip(data []byte) []byte
 	GetCurrentChar() CharacterI
