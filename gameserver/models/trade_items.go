@@ -32,6 +32,7 @@ func NewTradeItem(item interfaces.MyItemInterface, count, price int64) interface
 	}
 	t := TradeItem{
 		Item:                *baseItem,
+		ObjectId:            item.GetObjectId(),
 		Location:            item.GetLocation(),
 		Enchant:             item.GetEnchant(),
 		Type1:               item.GetItemType1(),

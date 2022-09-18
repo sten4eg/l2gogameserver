@@ -62,20 +62,29 @@ type TradeListInterface interface {
 	IsConfirmed() bool
 	GetOwner() CharacterI
 	InvalidateConfirmation()
-	Confirmed() (bool, bool)
+	Confirmed() (bool, bool, bool, bool)
 	MuLock()
 	MuUnlock()
 	Validate() bool
-	CalcItemsWeight() int32
+	CalcItemsWeight() int
+	CountItemSlots(CharacterI) int
+	TransferItems() bool
 }
 type InventoryInterface interface {
+	sync.Locker
 	GetItemByObjectId(id int32) MyItemInterface
+	GetItemByItemId(int) MyItemInterface
 	CanManipulateWithItemId(id int32) bool
 	GetItemsWithUpdatedType() []MyItemInterface
 	SetAllItemsUpdatedTypeNone()
-	sync.Locker
+	ValidateWeight(int) bool
+	ValidateCapacity(int, CharacterI) bool
+	AddItem(item MyItemInterface, actor CharacterI) MyItemInterface
+	RefreshWeight()
+	TransferItem(int32, int, InventoryInterface, CharacterI) MyItemInterface
 }
 type MyItemInterface interface {
+	sync.Locker
 	BaseItemInterface
 	UniquerId
 	TradableItemInterface
@@ -90,6 +99,10 @@ type MyItemInterface interface {
 	GetUpdateType() int16
 	GetLocData() int32
 	GetMana() int32
+	ChangeCount(int)
+	SetUpdateType(int16)
+	SetCount(int64)
+	UpdateDB(int32)
 }
 
 type BaseItemInterface interface {
@@ -134,6 +147,8 @@ type CharacterI interface {
 	ValidateWeight(int32) bool
 	GetMaxLoad() int32
 	SendSysMsg(q interface{}, options ...string)
+	GetInventoryLimit() int16
+	OnTradeFinish()
 }
 type ClientInterface interface {
 	ReciverAndSender

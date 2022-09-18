@@ -39,9 +39,13 @@ func TradeDone(data []byte, client interfaces.ReciverAndSender) {
 			endTrade(client)
 			return
 		}
-		_, isTradeConfirmed := trade.Confirmed()
+		_, isTradeConfirmed, tradeDone, success := trade.Confirmed()
 		if isTradeConfirmed {
 			tradeConfirmed(client, trade.GetPartner())
+		}
+		if tradeDone {
+			finishTrade(player, success)
+			finishTrade(partner, success)
 		}
 	} else {
 		needSendCancelToMe, _ := client.GetCurrentChar().CancelActiveTrade()
@@ -74,4 +78,14 @@ func endTrade(client interfaces.ReciverAndSender) {
 	client.Send(buff.Bytes())
 
 	packets.Put(buff)
+}
+
+func finishTrade(c interfaces.CharacterI, successful bool) {
+	//c.EncryptAndSend(serverpackets.InventoryUpdate(c.GetInventory().GetItemsWithUpdatedType()))
+
+	c.OnTradeFinish()
+	c.EncryptAndSend(serverpackets.TradeDone(1))
+	if successful {
+		c.EncryptAndSend(sysmsg.SystemMessage(sysmsg.TradeSuccessful))
+	}
 }

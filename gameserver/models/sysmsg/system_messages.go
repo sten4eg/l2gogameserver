@@ -46,7 +46,6 @@ func (sys *Params) GetType() ParamType {
 // <li>81-89 Territory names</li>
 // <li>90-100 null</li>
 // <li>101-121 Fortress names</li>
-//
 func (sys *SysMsg) AddCastleId(number int32) {
 	sys.Params = append(sys.Params, Params{tType: TypeCastleName, value: number})
 }
@@ -96,6 +95,9 @@ var C1CanceledTrade = SysMsg{Params: []Params{}, Id: 124}
 var CannotAdjustItemsAfterTradeConfirmed = SysMsg{Params: []Params{}, Id: 124}
 var NothingHappened = SysMsg{Params: []Params{}, Id: 61}
 var C1ConfirmedTrade = SysMsg{Params: []Params{}, Id: 121}
+var WeightLimitExceeded = SysMsg{Params: []Params{}, Id: 422}
+var SlotsFull = SysMsg{Params: []Params{}, Id: 129}
+var TradeSuccessful = SysMsg{Params: []Params{}, Id: 123}
 
 func FindById() {
 

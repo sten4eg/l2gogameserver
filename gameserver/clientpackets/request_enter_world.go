@@ -1,11 +1,8 @@
 package clientpackets
 
 import (
-	"l2gogameserver/data/logger"
-	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
-	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
@@ -24,43 +21,43 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
 	//Если персонажа никогда не заходил в игру, выдадим ему какие-то стартовые предметы
-	if client.CurrentChar.FirstEnterGame {
-		client.CurrentChar.SaveFirstInGamePlayer()
-		logger.Info.Println("Выдача предметов новому персонажу: ", client.CurrentChar.CharName)
-
-		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
-			ObjectId: idfactory.GetNext(),
-			Item: items.Item{
-				Id: 6379,
-			},
-			Count: 1,
-		}, client.CurrentChar)
-
-		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
-			ObjectId: idfactory.GetNext(),
-			Item: items.Item{
-				Id: 6382,
-			},
-			Count: 1,
-		}, client.CurrentChar)
-
-		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
-			ObjectId: idfactory.GetNext(),
-			Item: items.Item{
-				Id: 6381,
-			},
-			Count: 1,
-		}, client.CurrentChar)
-
-		client.CurrentChar.Inventory = models.AddItem(models.MyItem{
-			ObjectId: idfactory.GetNext(),
-			Item: items.Item{
-				Id: 6380,
-			},
-			Count: 1,
-		}, client.CurrentChar)
-
-	}
+	//if client.CurrentChar.FirstEnterGame {
+	//	client.CurrentChar.SaveFirstInGamePlayer()
+	//	logger.Info.Println("Выдача предметов новому персонажу: ", client.CurrentChar.CharName)
+	//
+	//	client.CurrentChar.Inventory = models.AddItem(models.MyItem{
+	//		ObjectId: idfactory.GetNext(),
+	//		Item: items.Item{
+	//			Id: 6379,
+	//		},
+	//		Count: 1,
+	//	}, client.CurrentChar)
+	//
+	//	client.CurrentChar.Inventory = models.AddItem(models.MyItem{
+	//		ObjectId: idfactory.GetNext(),
+	//		Item: items.Item{
+	//			Id: 6382,
+	//		},
+	//		Count: 1,
+	//	}, client.CurrentChar)
+	//
+	//	client.CurrentChar.Inventory = models.AddItem(models.MyItem{
+	//		ObjectId: idfactory.GetNext(),
+	//		Item: items.Item{
+	//			Id: 6381,
+	//		},
+	//		Count: 1,
+	//	}, client.CurrentChar)
+	//
+	//	client.CurrentChar.Inventory = models.AddItem(models.MyItem{
+	//		ObjectId: idfactory.GetNext(),
+	//		Item: items.Item{
+	//			Id: 6380,
+	//		},
+	//		Count: 1,
+	//	}, client.CurrentChar)
+	//
+	//}
 
 	count := uint8(len(client.CurrentChar.Macros))
 	for index, macro := range client.CurrentChar.Macros {

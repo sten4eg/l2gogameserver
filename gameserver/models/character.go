@@ -538,6 +538,14 @@ func (c *Character) OnTradeCancel() bool {
 	return true
 }
 
+func (c *Character) OnTradeFinish() {
+	c.ActiveTradeList = nil
+	//c.EncryptAndSend(serverpackets.TradeDone(1))
+	//if successful {
+	//	c.EncryptAndSend(sysmsg.SystemMessage(sysmsg.TradeSuccessful))
+	//}
+}
+
 func (c *Character) ValidateItemManipulation(objectId int32) bool {
 	item := c.Inventory.GetItemByObjectId(objectId)
 	if item == nil {

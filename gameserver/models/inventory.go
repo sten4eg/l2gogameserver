@@ -76,10 +76,17 @@ func NewInventory() Inventory {
 		BlockMode: -1,
 	}
 }
-
 func (i *Inventory) GetItemByObjectId(id int32) interfaces.MyItemInterface {
 	for _, item := range i.Items {
 		if item.ObjectId == id {
+			return &item
+		}
+	}
+	return nil
+}
+func (i *Inventory) GetItemByItemId(itemId int) interfaces.MyItemInterface {
+	for _, item := range i.Items {
+		if item.Id == itemId {
 			return &item
 		}
 	}
@@ -108,6 +115,108 @@ func (i *Inventory) SetAllItemsUpdatedTypeNone() {
 	for _, v := range i.Items {
 		v.LastChange = UpdateTypeUnchanged
 	}
+}
+func (i *Inventory) ValidateWeight(weight int) bool {
+	return int(i.TotalWeight)+weight < 69000 //TODO заменить на реальный допустимый вес
+}
+func (i *Inventory) ValidateCapacity(slots int, owner interfaces.CharacterI) bool {
+	return len(i.Items)+slots <= int(owner.GetInventoryLimit())
+}
+func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.InventoryInterface, actor interfaces.CharacterI) interfaces.MyItemInterface {
+	if target == nil {
+		return nil
+	}
+
+	sourceItem := i.GetItemByObjectId(objectId)
+	if sourceItem == nil {
+		return nil
+	}
+
+	var targetItem interfaces.MyItemInterface
+	if sourceItem.IsStackable() {
+		targetItem = target.GetItemByItemId(int(sourceItem.GetId()))
+	} else {
+		targetItem = nil
+	}
+
+	sourceItem.Lock()
+	defer sourceItem.Unlock()
+
+	//if i.GetItemByObjectId(objectId) != sourceItem { TODO объект одинаковый, но мьютекс имеет разные состояния
+	//	return nil
+	//}
+
+	if count > int(sourceItem.GetCount()) {
+		count = int(sourceItem.GetCount())
+	}
+
+	if int(sourceItem.GetCount()) == count && targetItem == nil {
+		i.RemoveItem(sourceItem)
+		target.AddItem(sourceItem, actor)
+		targetItem = sourceItem
+	} else {
+		if int(sourceItem.GetCount()) > count {
+			sourceItem.ChangeCount(-count)
+		} else {
+			i.RemoveItem(sourceItem)
+		}
+
+		if targetItem != nil {
+			targetItem.ChangeCount(count)
+		} else {
+			targetItem = target.AddItem(sourceItem, actor)
+		}
+	}
+
+	sourceItem.UpdateDB(actor.GetObjectId())
+	if targetItem != sourceItem && targetItem != nil {
+		targetItem.UpdateDB(actor.GetObjectId())
+	}
+	//TODO проверка isAugmented
+	i.RefreshWeight()
+	target.RefreshWeight()
+
+	return sourceItem
+}
+func (i *Inventory) RemoveItem(removeItem interfaces.MyItemInterface) bool {
+	for index, item := range i.Items {
+		if item.GetId() == removeItem.GetId() {
+			i.Items = append(i.Items[:index], i.Items[index+1:]...)
+			return true
+		}
+	}
+	return false
+}
+func (i *Inventory) AddItem(item interfaces.MyItemInterface, actor interfaces.CharacterI) interfaces.MyItemInterface {
+	oldItem := i.GetItemByItemId(int(item.GetId()))
+
+	if oldItem != nil && oldItem.IsStackable() {
+		count := int(item.GetCount())
+		oldItem.ChangeCount(count)
+		oldItem.SetUpdateType(2) //TODO заменить на константу
+
+		//TODO destroyItem()
+		item.UpdateDB(actor.GetObjectId())
+		item = oldItem
+		//TODO добавить обновление адены
+	} else {
+		item.SetUpdateType(1) //TODO добавить константу Added
+		i.Items = append(i.Items, *item.(*MyItem))
+		item.GetObjectId()
+		item.UpdateDB(actor.GetObjectId())
+	}
+	i.RefreshWeight()
+
+	//TODO Манипуляции с аденой
+
+	return item
+}
+func (i *Inventory) RefreshWeight() {
+	weight := 0
+	for _, item := range i.Items {
+		weight += item.GetWeight() * int(item.GetCount())
+	}
+	i.TotalWeight = int32(weight)
 }
 func RestoreVisibleInventory(charId int32) [26]MyItem {
 	dbConn, err := db.GetConn()
@@ -585,49 +694,49 @@ func GetPaperdollOrder() []uint8 {
 }
 
 // AddItem Добавление предмета
-func AddItem(selectedItem MyItem, character *Character) Inventory {
-	//Прежде чем просто добавить, необходимо проверить на существование предмета в инвентаре
-	//Если он есть, тогда просто добавим к имеющимся предмету.
-	//TODO: Однако, есть предметы (кроме оружия, брони, бижи), которые не стакуются, к примеру 7832
-	//TODO: потом нужно определить тип предметов которые не стыкуются.
-	for i := range character.Inventory.Items {
-		itemInventory := &character.Inventory.Items[i]
-		if selectedItem.Item.Id == itemInventory.Item.Id {
-			character.Inventory.Items[i].Count = itemInventory.Count + character.Inventory.Items[i].Count
-			return character.Inventory
-		}
-	}
+//func AddItem(selectedItem MyItem, character *Character) Inventory {
+//	//Прежде чем просто добавить, необходимо проверить на существование предмета в инвентаре
+//	//Если он есть, тогда просто добавим к имеющимся предмету.
+//	//TODO: Однако, есть предметы (кроме оружия, брони, бижи), которые не стакуются, к примеру 7832
+//	//TODO: потом нужно определить тип предметов которые не стыкуются.
+//	for i := range character.Inventory.Items {
+//		itemInventory := &character.Inventory.Items[i]
+//		if selectedItem.Item.Id == itemInventory.Item.Id {
+//			character.Inventory.Items[i].Count = itemInventory.Count + character.Inventory.Items[i].Count
+//			return character.Inventory
+//		}
+//	}
+//
+//	dbConn, err := db.GetConn()
+//	if err != nil {
+//		logger.Error.Panicln(err)
+//	}
+//	defer dbConn.Release()
+//
+//	nitem := MyItem{
+//		Item:                selectedItem.Item,
+//		ObjectId:            selectedItem.ObjectId,
+//		Enchant:             selectedItem.Enchant,
+//		LocData:             selectedItem.LocData,
+//		Count:               selectedItem.Count,
+//		Location:            "",
+//		Time:                selectedItem.Time,
+//		AttackAttributeType: selectedItem.AttackAttributeType,
+//		AttackAttributeVal:  selectedItem.AttackAttributeVal,
+//		Mana:                selectedItem.Mana,
+//		AttributeDefend:     [6]int16{},
+//	}
+//	character.Inventory.Items = append(character.Inventory.Items, nitem)
+//
+//	_, err = dbConn.Exec(context.Background(), `INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', 0, 0, 0, 0, '-1', 0, 0)`, character.ObjectId, selectedItem.ObjectId, selectedItem.Item.Id, selectedItem.Count)
+//	if err != nil {
+//		logger.Error.Panicln(err)
+//	}
+//
+//	return character.Inventory
+//}
 
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
-
-	nitem := MyItem{
-		Item:                selectedItem.Item,
-		ObjectId:            selectedItem.ObjectId,
-		Enchant:             selectedItem.Enchant,
-		LocData:             selectedItem.LocData,
-		Count:               selectedItem.Count,
-		Location:            "",
-		Time:                selectedItem.Time,
-		AttackAttributeType: selectedItem.AttackAttributeType,
-		AttackAttributeVal:  selectedItem.AttackAttributeVal,
-		Mana:                selectedItem.Mana,
-		AttributeDefend:     [6]int16{},
-	}
-	character.Inventory.Items = append(character.Inventory.Items, nitem)
-
-	_, err = dbConn.Exec(context.Background(), `INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', 0, 0, 0, 0, '-1', 0, 0)`, character.ObjectId, selectedItem.ObjectId, selectedItem.Item.Id, selectedItem.Count)
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-
-	return character.Inventory
-}
-
-//RemoveItemCharacter Удаление предмета из инвентаря персонажа
+// RemoveItemCharacter Удаление предмета из инвентаря персонажа
 // count - сколько надо удалить
 func RemoveItemCharacter(character *Character, item *MyItem, count int64) {
 	logger.Info.Println("Удаление предмета из инвентаря")

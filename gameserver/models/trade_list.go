@@ -50,10 +50,12 @@ func (t *TradeList) IsConfirmed() bool {
 func (t *TradeList) InvalidateConfirmation() {
 	t.confirmed = false
 }
-func (t *TradeList) Confirmed() (bool, needSendTradeConfirm bool) {
+func (t *TradeList) Confirmed() (bool, needSendTradeConfirm bool, tradeDone bool, success bool) {
 	needSendTradeConfirm = false
+	tradeDone = false
+	success = false
 	if t.confirmed {
-		return true, needSendTradeConfirm
+		return true, needSendTradeConfirm, tradeDone, success
 	}
 
 	partner := t.GetPartner()
@@ -61,7 +63,7 @@ func (t *TradeList) Confirmed() (bool, needSendTradeConfirm bool) {
 		partnerList := partner.GetActiveTradeList()
 		if partnerList == nil {
 			log.Println(partner.GetName() + ": Trading partner (" + partner.GetName() + ") is invalid in this trade!")
-			return false, needSendTradeConfirm
+			return false, needSendTradeConfirm, tradeDone, success
 		}
 
 		var sync1, sync2 interfaces.TradeListInterface
@@ -82,13 +84,14 @@ func (t *TradeList) Confirmed() (bool, needSendTradeConfirm bool) {
 			partnerList.Lock()
 			t.Lock()
 			if !partnerList.Validate() {
-				return false, needSendTradeConfirm
+				return false, needSendTradeConfirm, tradeDone, success
 			}
 			if !t.Validate() {
-				return false, needSendTradeConfirm
+				return false, needSendTradeConfirm, tradeDone, success
 			}
 
-			//	doExchange(partnerList)
+			success = t.doExchange(partnerList)
+			tradeDone = true
 		} else {
 			partner.SendSysMsg(sysmsg.AlreadyTrading)
 			needSendTradeConfirm = true
@@ -100,7 +103,7 @@ func (t *TradeList) Confirmed() (bool, needSendTradeConfirm bool) {
 	} else {
 		t.confirmed = true
 	}
-	return t.confirmed, needSendTradeConfirm
+	return t.confirmed, needSendTradeConfirm, tradeDone, success
 }
 
 func (t *TradeList) AddItem(objectId int32, count int64, char interfaces.CharacterI, price int64) interfaces.TradableItemInterface {
@@ -135,6 +138,7 @@ func (t *TradeList) AddItem(objectId int32, count int64, char interfaces.Charact
 	}
 	r := NewTradeItem(item, count, price)
 	t.InvalidateConfirmation()
+	t.items = append(t.items, r)
 	return r
 }
 
@@ -162,7 +166,7 @@ func (t *TradeList) Validate() bool {
 	return true
 }
 
-func (t *TradeList) CalcItemsWeight() int32 {
+func (t *TradeList) CalcItemsWeight() int {
 	weight := 0.0
 
 	for _, v := range t.items {
@@ -172,5 +176,56 @@ func (t *TradeList) CalcItemsWeight() int32 {
 		weight += float64(v.GetCount()) * float64(v.GetBaseItem().GetWeight())
 	}
 
-	return int32(math.Min(weight, math.MaxInt32))
+	return int(math.Min(weight, math.MaxInt32))
+}
+
+func (t *TradeList) doExchange(partnerList interfaces.TradeListInterface) bool {
+	success := false
+	owner := t.GetOwner()
+	partner := partnerList.GetOwner()
+
+	if !owner.GetInventory().ValidateWeight(partnerList.CalcItemsWeight()) || !partner.GetInventory().ValidateWeight(t.CalcItemsWeight()) {
+		owner.EncryptAndSend(sysmsg.SystemMessage(sysmsg.WeightLimitExceeded))
+		partner.EncryptAndSend(sysmsg.SystemMessage(sysmsg.WeightLimitExceeded))
+	} else if !owner.GetInventory().ValidateCapacity(partnerList.CountItemSlots(owner), owner) || !partner.GetInventory().ValidateCapacity(t.CountItemSlots(partner), partner) {
+		owner.EncryptAndSend(sysmsg.SystemMessage(sysmsg.SlotsFull))
+		partner.EncryptAndSend(sysmsg.SystemMessage(sysmsg.SlotsFull))
+	} else {
+		partnerList.TransferItems()
+		t.TransferItems()
+		success = true
+	}
+
+	return success
+}
+
+func (t *TradeList) CountItemSlots(partner interfaces.CharacterI) int {
+	var slots int
+
+	for _, item := range t.items {
+		if item == nil {
+			continue
+		}
+		if !item.IsStackable() {
+			slots += int(item.GetCount())
+		} else if partner.GetInventory().GetItemByItemId(int(item.GetBaseItem().GetId())) == nil {
+			slots++
+		}
+	}
+
+	return slots
+}
+
+func (t *TradeList) TransferItems() bool {
+	for _, tItem := range t.items {
+		oldItem := t.GetOwner().GetInventory().GetItemByObjectId(tItem.GetObjectId())
+		if oldItem == nil {
+			return false
+		}
+		newItem := t.GetOwner().GetInventory().TransferItem(tItem.GetObjectId(), int(tItem.GetCount()), t.partner.GetInventory(), t.partner)
+		if newItem == nil {
+			return false
+		}
+	}
+	return true
 }
