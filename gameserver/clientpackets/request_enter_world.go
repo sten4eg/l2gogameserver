@@ -3,7 +3,9 @@ package clientpackets
 import (
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
+
 	"l2gogameserver/gameserver/models/clientStates"
+
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
@@ -20,6 +22,7 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 
 	pkg2 := serverpackets.ExBrExtraUserInfo(client.CurrentChar)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
+
 
 	count := uint8(len(client.CurrentChar.Macros))
 	for index, macro := range client.CurrentChar.Macros {
