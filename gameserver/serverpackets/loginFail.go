@@ -6,7 +6,7 @@ type LoginFailReason int32
 
 const (
 	NO_TEXT                                         LoginFailReason = 0
-	SYSTEM_ERROR_LOGIN_LATER                        LoginFailReason = 1
+	SystemErrorLoginLater                           LoginFailReason = 1
 	PASSWORD_DOES_NOT_MATCH_THIS_ACCOUNT            LoginFailReason = 2
 	PASSWORD_DOES_NOT_MATCH_THIS_ACCOUNT2           LoginFailReason = 3
 	ACCESS_FAILED_TRY_LATER                         LoginFailReason = 4

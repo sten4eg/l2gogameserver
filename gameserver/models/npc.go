@@ -142,7 +142,7 @@ func LoadNpc() {
 	NpcObject = make(map[int32]Locations)
 
 	logger.Info.Println("Загрузка NPC")
-	file, err := os.Open("./datapack/data/stats/npcdata/npcdata.json")
+	file, err := os.Open("./datapack/data/stats/npcData/npcData.json")
 	if err != nil {
 		logger.Error.Panicln("Failed to load config file " + err.Error())
 	}
@@ -188,7 +188,7 @@ func LoadNpc() {
 	if !config.IsEnableSpawnList() {
 		return
 	}
-	file, err = os.Open("./datapack/data/stats/npcdata/spawnlist.json")
+	file, err = os.Open("./datapack/data/stats/npcData/spawnList.json")
 	if err != nil {
 		logger.Error.Panicln("Failed to load config file " + err.Error())
 	}

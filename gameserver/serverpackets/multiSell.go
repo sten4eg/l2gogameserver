@@ -8,7 +8,7 @@ import (
 
 const pageSize = 40
 
-//MultiSell Отправка пакета
+// MultiSell Отправка пакета
 func MultiSell(msData multisell.MultiList) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
