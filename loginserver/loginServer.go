@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -18,6 +19,7 @@ type LoginServer struct {
 	conn       *net.TCPConn
 	blowfish   *blowfish.Cipher
 	gameServer gameServerInterface
+	sync.Mutex
 }
 
 var loginServerInstance *LoginServer
@@ -42,16 +44,25 @@ var initBlowfishKey = []byte{95, 59, 118, 46, 93, 48, 53, 45, 51, 49, 33, 124, 4
 func HandlerInit() error {
 	loginServerInstance = new(LoginServer)
 
+	loginServerInstance.Lock()
+	defer loginServerInstance.Unlock()
+
+	loginServerInstance.SetConn()
+
+	go loginServerInstance.Run()
+
+	return nil
+}
+
+func (ls *LoginServer) SetConn() {
 	port := config.GetLoginServerPort()
 	intPort, err := strconv.Atoi(port)
 	if err != nil {
-		return err
+		return //err>
 	}
-
 	addr := new(net.TCPAddr)
 	addr.Port = intPort
 	addr.IP = net.IP{127, 0, 0, 1} //TODO IP тоже брать из конфига
-
 	var conn *net.TCPConn
 	for conn == nil {
 		conn, err = net.DialTCP("tcp4", nil, addr)
@@ -61,18 +72,33 @@ func HandlerInit() error {
 		time.Sleep(howLongNeedSleep())
 	}
 
-	loginServerInstance.conn = conn
+	ls.conn = conn
+}
 
-	go loginServerInstance.Run()
+func (ls *LoginServer) tryReconnectToLS() {
+	log.Println("попытка реконнекта к логин серверу")
+	ls.Lock()
+	defer ls.Unlock()
+	if ls.conn == nil {
+		log.Println("реконнект к логин серверу")
+		ls.SetConn()
 
-	return nil
+		go ls.Run()
+	}
+	return
+}
+
+func (ls *LoginServer) CloseConnAndReconnectLS() {
+	ls.conn = nil
+	ls.tryReconnectToLS()
 }
 
 func (ls *LoginServer) Run() {
+	defer ls.CloseConnAndReconnectLS()
+
 	ls.setBlowFish(initBlowfishKey)
 
 	for {
-
 		header := make([]byte, 2)
 
 		n, err := ls.conn.Read(header)
@@ -115,7 +141,12 @@ func (ls *LoginServer) Run() {
 func generateNewBlowFish() []byte {
 	bfk := make([]byte, 40)
 	_, _ = rand.Read(bfk)
-	bfk[0] = 119 // главное чтобы не 0
+
+	// главное чтобы не 0
+	if bfk[0] == 0 {
+		const blowFishFirstByte byte = 113
+		bfk[0] = blowFishFirstByte
+	}
 	return bfk
 }
 
