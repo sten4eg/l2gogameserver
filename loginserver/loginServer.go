@@ -71,7 +71,7 @@ func (ls *LoginServer) SetConn() {
 		}
 		time.Sleep(howLongNeedSleep())
 	}
-
+	attempt = 0
 	ls.conn = conn
 }
 
