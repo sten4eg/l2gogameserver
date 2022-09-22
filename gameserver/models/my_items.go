@@ -2,9 +2,11 @@ package models
 
 import (
 	"context"
-	"fmt"
+	"l2gogameserver/config"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
+	"l2gogameserver/gameserver/idfactory"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/items/attribute"
 	"math"
@@ -15,11 +17,13 @@ const InsertIntoDB = `INSERT INTO "items" ("owner_id", "object_id", "item", "cou
 
 // const UpdateInDB = `UPDATE items SET owner_id=$1, count=$2, loc=$3, loc_data=$4, enchant_level=$5, custom_type1=$6, custom_type2=$7, mana_left=$8, time=$9, agathion_energy=$10 WHERE object_id=$11`
 const UpdateInDB = `UPDATE items SET owner_id=$1, count=$2 WHERE object_id=$3`
+const RemoveFromDB = `DELETE FROM items WHERE object_id = $1`
 
 type MyItem struct {
 	// встроенный "шаблон" предмета
 	items.Item
 	ObjectId            int32
+	ownerId             int32
 	Enchant             int16
 	LocData             int32
 	Count               int64
@@ -33,10 +37,20 @@ type MyItem struct {
 	sync.Mutex
 	//UpdateType для обновления инвентаря
 	LastChange int16
+	//БД
+	existsInDb bool
+	storedInDb bool
 }
 
 func (i *MyItem) GetObjectId() int32 {
 	return i.ObjectId
+}
+func (i *MyItem) GetOwnerId() int32 {
+	return i.ownerId
+}
+func (i *MyItem) SetOwnerId(ownerId int32) {
+	i.ownerId = ownerId
+	i.storedInDb = false
 }
 func (i *MyItem) IsEquipped() int16 {
 	if i.Location == InventoryLoc {
@@ -102,8 +116,8 @@ func (i *MyItem) ChangeCount(count int) {
 	}
 	//TODO log [old := i.GetCount()]
 	var max int
-	if i.GetId() == 57 { //TODO заменить на константу AdenaId
-		max = 99900000000 //TODO заменить на getMaxAdena
+	if i.GetId() == config.AdenaId {
+		max = config.MaxAdena
 	} else {
 		max = math.MaxInt64
 	}
@@ -118,35 +132,58 @@ func (i *MyItem) ChangeCount(count int) {
 		i.SetCount(0)
 	}
 
+	i.storedInDb = false
+	i.SetUpdateType(UpdateTypeModify)
+
 	//TODO log
 
 }
-func (i *MyItem) UpdateDB(ownerId int32) {
+func (i *MyItem) UpdateDB() {
 	dbConn, err := db.GetConn()
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
 	defer dbConn.Release()
-	if true { //TODO добавить поле для проверки существования данного предмета в бд
-		if false { //TODO добавить проверки для удаления итема из бд
-			fmt.Println("False")
+	if i.existsInDb {
+		if i.ownerId == 0 || i.GetCount() == 0 { //TODO добавить проверки для удаления итема из бд
+			_, err = dbConn.Exec(context.Background(), RemoveFromDB, i.GetObjectId())
+			i.existsInDb = false
+			i.storedInDb = false
 		} else {
-			_, err = dbConn.Exec(context.Background(), UpdateInDB, ownerId, i.GetCount(), i.GetObjectId())
+			if !i.storedInDb {
+				_, err = dbConn.Exec(context.Background(), UpdateInDB, i.ownerId, i.GetCount(), i.GetObjectId())
+				i.storedInDb = true
+			}
 		}
 	} else {
 		//TODO добавить проверку
-		_, err = dbConn.Exec(context.Background(), InsertIntoDB, ownerId, i.ObjectId, i.Item.Id, i.Count)
+		_, err = dbConn.Exec(context.Background(), InsertIntoDB, i.ownerId, i.ObjectId, i.Item.Id, i.Count)
+		i.existsInDb = true
 		//TODO доделать функцию
 	}
 }
 
-//TODO додолеть
-//func DestroyItem(item interfaces.MyItemInterface, actor interfaces.CharacterI) {
-//	item.SetCount(0)
-//	// item.setOwnerId(0); ?
-//	// item.setItemLocation(ItemLocation.VOID); ?
-//	item.SetUpdateType(3) //TODO заменить на константу Removed
-//
-//	// L2World.getInstance().removeObject(item); ?
-//	// IdFactory.getInstance().releaseId(item.getObjectId()); ?
-//}
+func CreateItem(itemId int, count int) interfaces.MyItemInterface {
+	item, _ := items.GetItemFromStorage(itemId)
+	mt := MyItem{
+		Item:       item,
+		ObjectId:   idfactory.GetNext(),
+		Enchant:    0,
+		Count:      int64(count),
+		Location:   InventoryLoc,
+		existsInDb: false,
+		storedInDb: false,
+	}
+	return &mt
+}
+
+// TODO додолеть
+func DestroyItem(item interfaces.MyItemInterface) {
+	item.SetCount(0)
+	item.SetOwnerId(0)
+	// item.setItemLocation(ItemLocation.VOID); ?
+	item.SetUpdateType(UpdateTypeRemove)
+
+	// L2World.getInstance().removeObject(item); ?
+	// IdFactory.getInstance().releaseId(item.getObjectId()); ?
+}

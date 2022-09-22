@@ -64,7 +64,8 @@ const (
 const LimitSizeInventory = 80 // todo дефолтно 80 , но может быть больше
 // Inventory реализует InventoryInterface
 type Inventory struct {
-	Items []MyItem
+	Items   []MyItem
+	ownerId int32
 	//BlockItems содержит не objectId, а id предметов
 	BlockItems  []int32
 	BlockMode   int32
@@ -72,23 +73,32 @@ type Inventory struct {
 	mu          sync.Mutex
 }
 
-func NewInventory() Inventory {
+func NewInventory(ownerId int32) Inventory {
 	return Inventory{
 		BlockMode: -1,
+		ownerId:   ownerId,
 	}
 }
 func (i *Inventory) GetItemByObjectId(id int32) interfaces.MyItemInterface {
+	for index, _ := range i.Items {
+		if i.Items[index].GetObjectId() == id {
+			return &i.Items[index]
+		}
+	}
+	return nil
+}
+func (i *Inventory) GetItemCopyByObjectId(id int32) interfaces.MyItemInterface {
 	for _, item := range i.Items {
-		if item.ObjectId == id {
+		if item.GetObjectId() == id {
 			return &item
 		}
 	}
 	return nil
 }
 func (i *Inventory) GetItemByItemId(itemId int) interfaces.MyItemInterface {
-	for _, item := range i.Items {
-		if item.Id == itemId {
-			return &item
+	for index, _ := range i.Items {
+		if i.Items[index].Id == itemId {
+			return &i.Items[index]
 		}
 	}
 	return nil
@@ -129,7 +139,7 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 		return nil
 	}
 
-	sourceItem := i.GetItemByObjectId(objectId)
+	sourceItem := i.GetItemCopyByObjectId(objectId)
 	if sourceItem == nil {
 		return nil
 	}
@@ -137,6 +147,10 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 	var targetItem interfaces.MyItemInterface
 	if sourceItem.IsStackable() {
 		targetItem = target.GetItemByItemId(int(sourceItem.GetId()))
+		if targetItem != nil {
+			targetItem.Lock()
+			defer targetItem.Unlock()
+		}
 	} else {
 		targetItem = nil
 	}
@@ -154,25 +168,30 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 
 	if int(sourceItem.GetCount()) == count && targetItem == nil {
 		i.RemoveItem(sourceItem)
-		target.AddItem(sourceItem, actor)
+		sourceItem = target.AddItem(sourceItem, actor)
 		targetItem = sourceItem
 	} else {
 		if int(sourceItem.GetCount()) > count {
+			i.GetItemByObjectId(objectId).Lock()
+			i.GetItemByObjectId(objectId).ChangeCount(-count)
 			sourceItem.ChangeCount(-count)
+			i.GetItemByObjectId(objectId).Unlock()
+
 		} else {
 			i.RemoveItem(sourceItem)
+			DestroyItem(sourceItem)
 		}
 
 		if targetItem != nil {
 			targetItem.ChangeCount(count)
 		} else {
-			targetItem = target.AddItem(sourceItem, actor)
+			targetItem = target.AddItem2(sourceItem.GetId(), count, actor)
 		}
 	}
 
-	sourceItem.UpdateDB(actor.GetObjectId())
+	sourceItem.UpdateDB()
 	if targetItem != sourceItem && targetItem != nil {
-		targetItem.UpdateDB(actor.GetObjectId())
+		targetItem.UpdateDB()
 	}
 	//TODO проверка isAugmented
 	i.RefreshWeight()
@@ -181,8 +200,8 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 	return sourceItem
 }
 func (i *Inventory) RemoveItem(removeItem interfaces.MyItemInterface) bool {
-	for index, item := range i.Items {
-		if item.GetId() == removeItem.GetId() {
+	for index, _ := range i.Items {
+		if i.Items[index].GetId() == removeItem.GetId() {
 			i.Items = append(i.Items[:index], i.Items[index+1:]...)
 			return true
 		}
@@ -195,23 +214,49 @@ func (i *Inventory) AddItem(item interfaces.MyItemInterface, actor interfaces.Ch
 	if oldItem != nil && oldItem.IsStackable() {
 		count := int(item.GetCount())
 		oldItem.ChangeCount(count)
-		oldItem.SetUpdateType(2) //TODO заменить на константу
+		oldItem.SetUpdateType(UpdateTypeModify)
 
-		//TODO destroyItem()
-		item.UpdateDB(actor.GetObjectId())
+		DestroyItem(item)
+		item.UpdateDB()
 		item = oldItem
-		//TODO добавить обновление адены
+		//TODO Манипуляции с аденой
+
 	} else {
-		item.SetUpdateType(1) //TODO добавить константу Added
+		item.SetOwnerId(i.ownerId)
+		item.SetUpdateType(UpdateTypeAdd)
 		i.Items = append(i.Items, *item.(*MyItem))
-		item.GetObjectId()
-		item.UpdateDB(actor.GetObjectId())
+		defer i.GetItemByObjectId(item.GetObjectId()).Unlock()
+		item.UpdateDB()
 	}
 	i.RefreshWeight()
-
-	//TODO Манипуляции с аденой
-
 	return item
+}
+func (i *Inventory) AddItem2(itemId int32, count int, actor interfaces.CharacterI) interfaces.MyItemInterface {
+	item := i.GetItemByItemId(int(itemId))
+
+	if item != nil && item.IsStackable() {
+		item.ChangeCount(count)
+		item.SetUpdateType(UpdateTypeModify)
+		item.UpdateDB()
+	} else {
+		for j := 0; j < count; j++ {
+			item := CreateItem(int(itemId), count)
+			item.SetOwnerId(i.ownerId)
+			item.SetUpdateType(UpdateTypeAdd)
+
+			i.Items = append(i.Items, *item.(*MyItem))
+			i.GetItemByObjectId(item.GetObjectId()).UpdateDB()
+			//item.UpdateDB()
+
+			if item.IsStackable() {
+				break
+			}
+		}
+	}
+
+	i.RefreshWeight()
+	return item
+
 }
 func (i *Inventory) RefreshWeight() {
 	weight := 0
@@ -220,7 +265,32 @@ func (i *Inventory) RefreshWeight() {
 	}
 	i.TotalWeight = int32(weight)
 }
+func (i *Inventory) DestroyItem(item interfaces.MyItemInterface, count int) interfaces.MyItemInterface {
+	item.Lock()
+	defer item.Unlock()
 
+	if int(item.GetCount()) > count {
+		item.ChangeCount(-count)
+		item.SetUpdateType(UpdateTypeModify)
+		item.UpdateDB()
+		i.RefreshWeight()
+	} else {
+		if int(item.GetCount()) < count {
+			return nil
+		}
+
+		removed := i.RemoveItem(item)
+		if !removed {
+			return nil
+		}
+
+		DestroyItem(item)
+
+		item.UpdateDB()
+		i.RefreshWeight()
+	}
+	return item
+}
 func RestoreVisibleInventory(charId int32) [26]MyItem {
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -268,7 +338,7 @@ func GetMyItems(charId int32) []MyItem {
 	}
 	defer dbConn.Release()
 
-	sqlString := "SELECT items.object_id, item, loc_data, enchant_level, count, loc, time, mana_left FROM items WHERE owner_id = $1"
+	sqlString := "SELECT owner_id ,items.object_id, item, loc_data, enchant_level, count, loc, time, mana_left FROM items WHERE owner_id = $1"
 	rows, err := dbConn.Query(context.Background(), sqlString, charId)
 	if err != nil {
 		logger.Error.Panicln(err)
@@ -279,7 +349,7 @@ func GetMyItems(charId int32) []MyItem {
 		var itm MyItem
 		var id int
 
-		err := rows.Scan(&itm.ObjectId, &id, &itm.LocData, &itm.Enchant, &itm.Count, &itm.Location, &itm.Time, &itm.Mana)
+		err := rows.Scan(&itm.ownerId, &itm.ObjectId, &id, &itm.LocData, &itm.Enchant, &itm.Count, &itm.Location, &itm.Time, &itm.Mana)
 		if err != nil {
 			logger.Error.Panicln(err)
 		}
@@ -287,7 +357,8 @@ func GetMyItems(charId int32) []MyItem {
 		it, ok := items.GetItemFromStorage(id)
 		if ok {
 			itm.Item = it
-
+			itm.existsInDb = true
+			itm.storedInDb = false
 			if itm.IsWeapon() {
 				itm.AttackAttributeType, itm.AttackAttributeVal = getAttributeForWeapon(itm.ObjectId)
 			} else if itm.IsArmor() {
@@ -739,7 +810,6 @@ func GetPaperdollOrder() []uint8 {
 //
 //	return character.Inventory
 //}
-
 
 // RemoveItemCharacter Удаление предмета из инвентаря персонажа
 // count - сколько надо удалить
