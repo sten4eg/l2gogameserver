@@ -1,12 +1,9 @@
 package serverpackets
 
-import (
-	"l2gogameserver/packets"
-)
+func LogoutWithInGameState() []byte {
+	return []byte{0x84}
+}
 
-func LogoutToClient(data []byte) []byte {
-	buffer := packets.Get()
-	defer packets.Put(buffer)
-	buffer.WriteSingleByte(0x84)
-	return buffer.Bytes()
+func LogoutWithAuthedState() []byte {
+	return []byte{0x20}
 }

@@ -44,7 +44,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 			default:
 				fmt.Printf("Неопознаный опкод %v при state Authed\n", opcode)
 			case 0x00:
-				clientpackets.Logout(data, client)
+				clientpackets.Logout(data, client, state)
 			case 0x0c:
 				clientpackets.CharacterCreate(data, client)
 			case 0x12:
@@ -89,7 +89,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 			default:
 				fmt.Printf("Неопознаный опкод %v при state InGame\n", data[0])
 			case 0x00:
-				clientpackets.Logout(data, character)
+				clientpackets.Logout(data, character, state)
 			case 0x01:
 				clientpackets.Attack(data, character)
 			case 0x1a: //Запрос другому персонажу на желание торговать
