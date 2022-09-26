@@ -9,6 +9,8 @@ import (
 type gameServerInterface interface {
 	AddWaitClient(string, interfaces.ClientInterface)
 	AddClient(string, interfaces.ClientInterface) bool
+	DeleteClient(string)
+	SendLogout(string)
 }
 
 func AuthLogin(data []byte, client interfaces.ClientInterface, gs gameServerInterface) {

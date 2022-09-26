@@ -98,6 +98,7 @@ var C1ConfirmedTrade = SysMsg{Params: []Params{}, Id: 121}
 var WeightLimitExceeded = SysMsg{Params: []Params{}, Id: 422}
 var SlotsFull = SysMsg{Params: []Params{}, Id: 129}
 var TradeSuccessful = SysMsg{Params: []Params{}, Id: 123}
+var AnotherLoginWithAccount = SysMsg{Params: []Params{}, Id: 421}
 
 func FindById() {
 

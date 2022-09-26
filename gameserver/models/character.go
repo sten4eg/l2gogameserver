@@ -409,6 +409,9 @@ func (c *Character) ExistItemInInventory(objectItemId int32) *MyItem {
 func (c *Character) GetObjectId() int32 {
 	return c.ObjectId
 }
+func (c *Character) GetAccountLogin() string {
+	return c.Login
+}
 func (c *Character) GetName() string {
 	return c.CharName
 }

@@ -7,14 +7,21 @@ import (
 
 type logoutInterface interface {
 	EncryptAndSend(data []byte)
+	GetAccountLogin() string
 }
 
-func Logout(data []byte, client logoutInterface, state clientStates.State) {
+func Logout(client logoutInterface, state clientStates.State, gs gameServerInterface) {
 	var pkg []byte
 	if state == clientStates.InGame {
 		pkg = serverpackets.LogoutWithInGameState()
 	} else {
 		pkg = serverpackets.LogoutWithAuthedState()
 	}
+
 	client.EncryptAndSend(pkg)
+	login := client.GetAccountLogin()
+
+	gs.SendLogout(login)
+	gs.DeleteClient(login)
+
 }

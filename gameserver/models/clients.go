@@ -248,3 +248,7 @@ func (c *ClientCtx) SetSessionKey(playOk1, playOk2, loginOk1, loginOk2 uint32) {
 func (c *ClientCtx) GetSessionKey() (playOk1, playOk2, loginOk1, loginOk2 uint32) {
 	return c.sessionKey.PlayOk1, c.sessionKey.PlayOk2, c.sessionKey.LoginOk1, c.sessionKey.LoginOk2
 }
+
+func (c *ClientCtx) GetAccountLogin() string {
+	return c.Account.Login
+}
