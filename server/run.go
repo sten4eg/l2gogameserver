@@ -71,10 +71,6 @@ func (g *GameServer) AddClient(login string, clientI interfaces.ClientInterface)
 	return !loaded
 }
 
-func (g *GameServer) DeleteClient(login string) {
-	g.clients.Delete(login)
-}
-
 func (g *GameServer) AddWaitClient(login string, clientI interfaces.ClientInterface) {
 	playOk1, playOk2, loginOk1, loginOk2 := clientI.GetSessionKey()
 	g.loginServer.Send(gs2ls.PlayerAuthRequest(login, playOk1, playOk2, loginOk1, loginOk2))

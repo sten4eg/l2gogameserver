@@ -9,7 +9,7 @@ import (
 type gameServerInterface interface {
 	AddWaitClient(string, interfaces.ClientInterface)
 	AddClient(string, interfaces.ClientInterface) bool
-	DeleteClient(string)
+	RemoveClient(string)
 	SendLogout(string)
 }
 
