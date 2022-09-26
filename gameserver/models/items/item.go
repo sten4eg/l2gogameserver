@@ -154,7 +154,7 @@ func (i *Item) setItemType1() {
 	}
 }
 func (i *Item) IsStackable() bool {
-	return i.ConsumeType == 0
+	return !(i.ConsumeType == 1)
 }
 func (i *Item) GetId() int32 {
 	return int32(i.Id)

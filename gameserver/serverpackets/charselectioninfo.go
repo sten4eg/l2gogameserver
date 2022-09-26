@@ -65,6 +65,7 @@ func CharSelectionInfo(clientI interfaces.ReciverAndSender) []byte {
 			&character.CharName,
 			&character.FirstEnterGame,
 		)
+		character.Inventory = models.NewInventory(character.ObjectId)
 		if err != nil {
 			logger.Error.Panicln(err)
 		}

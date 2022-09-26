@@ -48,6 +48,7 @@ type Debug struct {
 var configInstance config
 
 const MaxAdena = 99_900_000_000
+const AdenaId = 57
 
 //func Get() GameServer {
 //	if !configInstance.isConfigInit {

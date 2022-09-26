@@ -77,6 +77,7 @@ type TradeListInterface interface {
 type InventoryInterface interface {
 	sync.Locker
 	GetItemByObjectId(id int32) MyItemInterface
+	GetItemCopyByObjectId(id int32) MyItemInterface
 	GetItemByItemId(int) MyItemInterface
 	CanManipulateWithItemId(id int32) bool
 	GetItemsWithUpdatedType() []MyItemInterface
@@ -84,8 +85,11 @@ type InventoryInterface interface {
 	ValidateWeight(int) bool
 	ValidateCapacity(int, CharacterI) bool
 	AddItem(item MyItemInterface, actor CharacterI) MyItemInterface
+	AddItem2(itemId int32, count int, actor CharacterI) MyItemInterface
 	RefreshWeight()
 	TransferItem(int32, int, InventoryInterface, CharacterI) MyItemInterface
+	RemoveItem(MyItemInterface) bool
+	DestroyItem(MyItemInterface, int) MyItemInterface
 }
 
 type MyItemInterface interface {
@@ -107,7 +111,9 @@ type MyItemInterface interface {
 	ChangeCount(int)
 	SetUpdateType(int16)
 	SetCount(int64)
-	UpdateDB(int32)
+	UpdateDB()
+	GetOwnerId() int32
+	SetOwnerId(ownerId int32)
 }
 
 type BaseItemInterface interface {
@@ -152,12 +158,12 @@ type CharacterI interface {
 	ValidateWeight(int32) bool
 	GetMaxLoad() int32
 	SendSysMsg(q interface{}, options ...string)
+	GetActiveEnchantItemId() int32
 
 	ClientInterface
 
 	GetInventoryLimit() int16
 	OnTradeFinish()
-
 }
 type ClientInterface interface {
 	ReciverAndSender

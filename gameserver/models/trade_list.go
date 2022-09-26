@@ -93,7 +93,7 @@ func (t *TradeList) Confirmed() (bool, needSendTradeConfirm bool, tradeDone bool
 			success = t.doExchange(partnerList)
 			tradeDone = true
 		} else {
-			partner.SendSysMsg(sysmsg.AlreadyTrading)
+			//partner.SendSysMsg(sysmsg.AlreadyTrading)
 			needSendTradeConfirm = true
 		}
 

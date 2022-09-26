@@ -119,7 +119,6 @@ func GetNewCharacterModel() *Character {
 	character.ChannelUpdateShadowItem = make(chan IUP, 10)
 	character.InGame = false
 	character.ActiveEnchantItemId = IdNone
-	character.Inventory = NewInventory()
 	return character
 }
 
@@ -572,8 +571,7 @@ func (c *Character) GetItemByObjectId(objectId int32) interfaces.MyItemInterface
 }
 
 func (c *Character) GetInventory() interfaces.InventoryInterface {
-	i := c.Inventory
-	return &i
+	return &c.Inventory
 }
 
 func (c *Character) ValidateWeight(weight int32) bool {
@@ -583,6 +581,9 @@ func (c *Character) ValidateWeight(weight int32) bool {
 func (c *Character) GetMaxLoad() int32 {
 	//todo calcStat
 	return 69000 * 3
+}
+func (c *Character) GetActiveEnchantItemId() int32 {
+	return c.ActiveEnchantItemId
 }
 
 func (c *Character) SendSysMsg(num interface{}, options ...string) {
