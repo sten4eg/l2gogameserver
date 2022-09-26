@@ -6,6 +6,7 @@ import (
 	"l2gogameserver/utils"
 )
 
+// todo unused?
 func TradeOtherDone(client interfaces.CharacterI) {
 	buffer := packets.Get()
 	defer packets.Put(buffer)

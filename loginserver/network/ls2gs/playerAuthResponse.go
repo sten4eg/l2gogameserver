@@ -32,7 +32,7 @@ func PlayerAuthResponse(data []byte, ls loginServerInterface) {
 			client.EncryptAndSend(pkg)
 		} else {
 			//log
-			client.EncryptAndSend(serverpackets.LoginFail(serverpackets.SYSTEM_ERROR_LOGIN_LATER))
+			client.EncryptAndSend(serverpackets.LoginFail(serverpackets.SystemErrorLoginLater))
 			ls.RemoveClientFromGS(account)
 		}
 

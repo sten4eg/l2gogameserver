@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-//TODO нужен ли тут буффер ?
+// TODO нужен ли тут буффер ?
 func ActionFailed(client interfaces.ReciverAndSender) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
