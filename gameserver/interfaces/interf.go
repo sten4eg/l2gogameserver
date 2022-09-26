@@ -164,6 +164,7 @@ type CharacterI interface {
 
 	GetInventoryLimit() int16
 	OnTradeFinish()
+	GetAccountLogin() string
 }
 type ClientInterface interface {
 	ReciverAndSender
@@ -173,6 +174,7 @@ type ClientInterface interface {
 	GetState() clientStates.State
 	SetSessionKey(playOk1, playOk2, loginOk1, loginOk2 uint32)
 	GetSessionKey() (playOk1, playOk2, loginOk1, loginOk2 uint32)
+	GetAccountLogin() string
 }
 type ReciverAndSender interface {
 	Receive() (opcode byte, data []byte, err error)
