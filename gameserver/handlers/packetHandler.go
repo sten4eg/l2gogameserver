@@ -15,7 +15,7 @@ import (
 type GameServerInterface interface {
 	AddClient(string, interfaces.ClientInterface) bool
 	AddWaitClient(string, interfaces.ClientInterface)
-	DeleteClient(string)
+	RemoveClient(string)
 	SendLogout(string)
 }
 

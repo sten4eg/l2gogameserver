@@ -22,6 +22,6 @@ func Logout(client logoutInterface, state clientStates.State, gs gameServerInter
 	login := client.GetAccountLogin()
 
 	gs.SendLogout(login)
-	gs.DeleteClient(login)
+	gs.RemoveClient(login)
 
 }
