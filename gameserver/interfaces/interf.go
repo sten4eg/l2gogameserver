@@ -174,6 +174,7 @@ type ClientInterface interface {
 	SetSessionKey(playOk1, playOk2, loginOk1, loginOk2 uint32)
 	GetSessionKey() (playOk1, playOk2, loginOk1, loginOk2 uint32)
 	GetAccountLogin() string
+	CloseConnection()
 }
 type ReciverAndSender interface {
 	Receive() (opcode byte, data []byte, err error)

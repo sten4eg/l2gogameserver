@@ -14,6 +14,8 @@ type loginServerInterface interface {
 	GetClientFromGS(login string) interfaces.ClientInterface
 	RemoveWaitingClientFromGS(login string)
 	RemoveClientFromGS(login string)
+
+	SendLogoutFromGS(login string)
 }
 
 func PlayerAuthResponse(data []byte, ls loginServerInterface) {

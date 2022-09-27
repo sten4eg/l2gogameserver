@@ -29,6 +29,8 @@ func (ls *LoginServer) HandlePacket(data []byte) {
 		//todo пройтись по серверу и отослать логины которые в игре
 	case 0x03:
 		ls2gs.PlayerAuthResponse(data, ls)
+	case 0x04:
+		ls2gs.KickPlayer(data, ls)
 	case 0x05:
 		ls2gs.RequestCharacters(data, ls)
 	}
