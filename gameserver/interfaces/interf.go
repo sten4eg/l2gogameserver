@@ -164,6 +164,8 @@ type CharacterI interface {
 	GetInventoryLimit() int16
 	OnTradeFinish()
 	GetAccountLogin() string
+
+	DropItem(objectId int32, count int64) MyItemInterface
 }
 type ClientInterface interface {
 	ReciverAndSender

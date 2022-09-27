@@ -57,3 +57,10 @@ func Contains[T constraints.Integer](slice []T, need T) bool {
 	}
 	return false
 }
+
+func BoolToInt32(b bool) int32 {
+	if b {
+		return 1
+	}
+	return 0
+}

@@ -936,3 +936,32 @@ func RemoveItem(character *Character, item *MyItem, count int64) (MyItem, int64,
 	}
 	return MyItem{}, 0, UpdateTypeModify, false
 }
+
+func (i *Inventory) DropItem(objectId int32, count int64) interfaces.MyItemInterface {
+	item := i.GetItemByObjectId(objectId)
+	if item == nil {
+		return nil
+	}
+
+	item.Lock()
+	defer item.Unlock()
+
+	if item.GetCount() > count {
+		item.ChangeCount(int(-count))
+		item.SetUpdateType(UpdateTypeModify)
+		item.UpdateDB()
+
+		item = CreateItem(int(item.GetId()), int(count))
+		item.UpdateDB()
+		i.RefreshWeight()
+		return item
+	}
+
+	i.RemoveItem(item)
+	item.SetOwnerId(0)
+	item.SetUpdateType(UpdateTypeRemove)
+
+	item.UpdateDB()
+	i.RefreshWeight()
+	return item
+}

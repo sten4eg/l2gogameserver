@@ -623,3 +623,14 @@ func (c *Character) CryptAndReturnPackageReadyToShip(data []byte) []byte {
 func (c *Character) GetCurrentChar() interfaces.CharacterI { return c }
 
 ///////////
+
+func (c *Character) DropItem(objectId int32, count int64) interfaces.MyItemInterface {
+	//invitem := c.Inventory.GetItemByObjectId(objectId)
+	item := c.Inventory.DropItem(objectId, count)
+
+	if item == nil {
+		return nil
+	}
+
+	return item
+}
