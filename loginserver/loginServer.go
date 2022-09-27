@@ -29,6 +29,7 @@ type gameServerInterface interface {
 	GetClient(login string) interfaces.ClientInterface
 	RemoveWaitingClient(login string)
 	RemoveClient(login string)
+	SendLogout(login string)
 }
 
 func (ls *LoginServer) AttachGs(gs gameServerInterface) {
@@ -210,4 +211,7 @@ func (ls *LoginServer) RemoveWaitingClientFromGS(login string) {
 }
 func (ls *LoginServer) RemoveClientFromGS(login string) {
 	ls.gameServer.RemoveClient(login)
+}
+func (ls *LoginServer) SendLogoutFromGS(login string) {
+	ls.gameServer.SendLogout(login)
 }

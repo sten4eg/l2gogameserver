@@ -514,6 +514,10 @@ func (c *Character) GetActiveTradeList() interfaces.TradeListInterface {
 	return c.ActiveTradeList
 }
 
+func (c *Character) CloseConnection() {
+	c.Conn.CloseConnection()
+}
+
 // CancelActiveTrade
 // возвращает bool,bool.
 // Надо ли отправлять tradeDone(0) и sysMsg для себя(первый параметр) и партнёра(второй параметр)

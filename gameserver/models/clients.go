@@ -252,3 +252,7 @@ func (c *ClientCtx) GetSessionKey() (playOk1, playOk2, loginOk1, loginOk2 uint32
 func (c *ClientCtx) GetAccountLogin() string {
 	return c.Account.Login
 }
+
+func (c *ClientCtx) CloseConnection() {
+	c.conn.Close()
+}
