@@ -134,9 +134,6 @@ func (i *MyItem) ChangeCount(count int) {
 
 	i.storedInDb = false
 	i.SetUpdateType(UpdateTypeModify)
-
-	//TODO log
-
 }
 func (i *MyItem) UpdateDB() {
 	dbConn, err := db.GetConn()
@@ -159,6 +156,7 @@ func (i *MyItem) UpdateDB() {
 		//TODO добавить проверку
 		_, err = dbConn.Exec(context.Background(), InsertIntoDB, i.ownerId, i.ObjectId, i.Item.Id, i.Count)
 		i.existsInDb = true
+		i.storedInDb = true
 		//TODO доделать функцию
 	}
 }

@@ -77,15 +77,14 @@ type TradeListInterface interface {
 type InventoryInterface interface {
 	sync.Locker
 	GetItemByObjectId(id int32) MyItemInterface
-	GetItemCopyByObjectId(id int32) MyItemInterface
 	GetItemByItemId(int) MyItemInterface
 	CanManipulateWithItemId(id int32) bool
 	GetItemsWithUpdatedType() []MyItemInterface
 	SetAllItemsUpdatedTypeNone()
 	ValidateWeight(int) bool
 	ValidateCapacity(int, CharacterI) bool
-	AddItem(item MyItemInterface, actor CharacterI) MyItemInterface
-	AddItem2(itemId int32, count int, actor CharacterI) MyItemInterface
+	AddItem(item MyItemInterface) MyItemInterface
+	AddItem2(itemId int32, count int) MyItemInterface
 	RefreshWeight()
 	TransferItem(int32, int, InventoryInterface, CharacterI) MyItemInterface
 	RemoveItem(MyItemInterface) bool

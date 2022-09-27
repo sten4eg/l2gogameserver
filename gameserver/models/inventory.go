@@ -87,14 +87,6 @@ func (i *Inventory) GetItemByObjectId(id int32) interfaces.MyItemInterface {
 	}
 	return nil
 }
-func (i *Inventory) GetItemCopyByObjectId(id int32) interfaces.MyItemInterface {
-	for _, item := range i.Items {
-		if item.GetObjectId() == id {
-			return &item
-		}
-	}
-	return nil
-}
 func (i *Inventory) GetItemByItemId(itemId int) interfaces.MyItemInterface {
 	for index, _ := range i.Items {
 		if i.Items[index].Id == itemId {
@@ -139,7 +131,7 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 		return nil
 	}
 
-	sourceItem := i.GetItemCopyByObjectId(objectId)
+	sourceItem := i.GetItemByObjectId(objectId)
 	if sourceItem == nil {
 		return nil
 	}
@@ -158,9 +150,9 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 	sourceItem.Lock()
 	defer sourceItem.Unlock()
 
-	//if i.GetItemByObjectId(objectId) != sourceItem { TODO объект одинаковый, но мьютекс имеет разные состояния
-	//	return nil
-	//}
+	if i.GetItemByObjectId(objectId) != sourceItem {
+		return nil
+	}
 
 	if count > int(sourceItem.GetCount()) {
 		count = int(sourceItem.GetCount())
@@ -168,14 +160,11 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 
 	if int(sourceItem.GetCount()) == count && targetItem == nil {
 		i.RemoveItem(sourceItem)
-		sourceItem = target.AddItem(sourceItem, actor)
+		sourceItem = target.AddItem(sourceItem)
 		targetItem = sourceItem
 	} else {
 		if int(sourceItem.GetCount()) > count {
-			i.GetItemByObjectId(objectId).Lock()
-			i.GetItemByObjectId(objectId).ChangeCount(-count)
 			sourceItem.ChangeCount(-count)
-			i.GetItemByObjectId(objectId).Unlock()
 
 		} else {
 			i.RemoveItem(sourceItem)
@@ -185,7 +174,7 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 		if targetItem != nil {
 			targetItem.ChangeCount(count)
 		} else {
-			targetItem = target.AddItem2(sourceItem.GetId(), count, actor)
+			targetItem = target.AddItem2(sourceItem.GetId(), count)
 		}
 	}
 
@@ -202,13 +191,13 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 func (i *Inventory) RemoveItem(removeItem interfaces.MyItemInterface) bool {
 	for index, _ := range i.Items {
 		if i.Items[index].GetId() == removeItem.GetId() {
-			i.Items = append(i.Items[:index], i.Items[index+1:]...)
+			i.Items = append(i.Items[:index:index], i.Items[index+1:]...)
 			return true
 		}
 	}
 	return false
 }
-func (i *Inventory) AddItem(item interfaces.MyItemInterface, actor interfaces.CharacterI) interfaces.MyItemInterface {
+func (i *Inventory) AddItem(item interfaces.MyItemInterface) interfaces.MyItemInterface {
 	oldItem := i.GetItemByItemId(int(item.GetId()))
 
 	if oldItem != nil && oldItem.IsStackable() {
@@ -219,7 +208,6 @@ func (i *Inventory) AddItem(item interfaces.MyItemInterface, actor interfaces.Ch
 		DestroyItem(item)
 		item.UpdateDB()
 		item = oldItem
-		//TODO Манипуляции с аденой
 
 	} else {
 		item.SetOwnerId(i.ownerId)
@@ -231,7 +219,7 @@ func (i *Inventory) AddItem(item interfaces.MyItemInterface, actor interfaces.Ch
 	i.RefreshWeight()
 	return item
 }
-func (i *Inventory) AddItem2(itemId int32, count int, actor interfaces.CharacterI) interfaces.MyItemInterface {
+func (i *Inventory) AddItem2(itemId int32, count int) interfaces.MyItemInterface {
 	item := i.GetItemByItemId(int(itemId))
 
 	if item != nil && item.IsStackable() {
@@ -240,13 +228,12 @@ func (i *Inventory) AddItem2(itemId int32, count int, actor interfaces.Character
 		item.UpdateDB()
 	} else {
 		for j := 0; j < count; j++ {
-			item := CreateItem(int(itemId), count)
+			item = CreateItem(int(itemId), count)
 			item.SetOwnerId(i.ownerId)
 			item.SetUpdateType(UpdateTypeAdd)
 
+			item.UpdateDB()
 			i.Items = append(i.Items, *item.(*MyItem))
-			i.GetItemByObjectId(item.GetObjectId()).UpdateDB()
-			//item.UpdateDB()
 
 			if item.IsStackable() {
 				break
