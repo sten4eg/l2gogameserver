@@ -122,7 +122,7 @@ func (c *ClientCtx) SendBuf(buffer *packets.Buffer) error {
 	toSend.WriteSlice(data) //TODO очень много выделяет
 	defer packets.Put(toSend)
 
-	err := c.sendDataToSocket(data)
+	err := c.sendDataToSocket(toSend.Bytes())
 	if err != nil {
 		logger.Error.Panicln("Пакет не отправлен, ошибка: " + err.Error())
 	}

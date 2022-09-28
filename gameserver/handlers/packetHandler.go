@@ -103,7 +103,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 			case 0x1c: //tradeDone
 				clientpackets.TradeDone(data, client)
 			case 0x17:
-				//pkg, item := clientpackets.DropItem(client, data)
+				clientpackets.DropItem(client, data)
 			//client.Send(pkg)
 			//
 			//pkgInventoryUpdate := clientpackets.InventoryUpdate(client, &item, models.UpdateTypeRemove)
