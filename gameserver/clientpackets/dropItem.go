@@ -3,6 +3,7 @@ package clientpackets
 import (
 	"fmt"
 	"l2gogameserver/gameserver/interfaces"
+	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
 )
@@ -10,15 +11,18 @@ import (
 func DropItem(client interfaces.ReciverAndSender, data []byte) {
 	var read = packets.NewReader(data)
 	objectId := read.ReadInt32()
-	count := int64(read.ReadInt32())
-	_ = read.ReadInt32() // хз
-	z := read.ReadInt32()
+	count := read.ReadInt64()
 	x := read.ReadInt32()
 	y := read.ReadInt32()
+	z := read.ReadInt32()
 
 	activeChar := client.GetCurrentChar()
 	//item := drops.DropItemCharacter(client, objectId, count, x, y, z)
 	item := activeChar.DropItem(objectId, count)
+
+	items := []interfaces.MyItemInterface{item}
+	msg := serverpackets.InventoryUpdate(items)
+	client.EncryptAndSend(msg)
 
 	pkg := dropItem(item, activeChar.GetObjectId(), x, y, z)
 	err := client.SendBuf(pkg)
