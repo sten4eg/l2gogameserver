@@ -19,7 +19,7 @@ func ToAroundPlayerInRadius(my interfaces.ReciverAndSender, pkg *utils.PacketByt
 }
 
 func BroadCastToAroundPlayers(my interfaces.ReciverAndSender, pkg *utils.PacketByte) {
-	charsIds := models.GetAroundPlayer(my.GetCurrentChar())
+	charsIds := models.GetAroundPlayerWithoutSelf(my.GetCurrentChar())
 	for i := range charsIds {
 		charsIds[i].EncryptAndSend(pkg.GetData())
 	}

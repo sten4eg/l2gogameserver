@@ -97,16 +97,22 @@ func GetAroundPlayer(c interfaces.Positionable) []interfaces.CharacterI {
 	result := make([]interfaces.CharacterI, 0, 64)
 
 	for _, v := range currentRegion.GetNeighbors() {
-		for _, vv := range v.GetCharsInRegion() {
-			if vv.GetObjectId() == c.GetObjectId() {
-				continue
-			}
-			result = append(result, vv)
-		}
-		//result = append(result, v.GetCharsInRegion()...)
+		result = append(result, v.GetCharsInRegion()...)
 	}
 	return result
 }
+
+func GetAroundPlayerWithoutSelf(c interfaces.Positionable) []interfaces.CharacterI {
+	result := GetAroundPlayer(c)
+	for i, _ := range result {
+		if result[i].GetObjectId() == c.GetObjectId() {
+			result = append(result[:i], result[i+1:]...)
+			break
+		}
+	}
+	return result
+}
+
 func GetAroundPlayerObjId(c *Character) []int32 {
 	currentRegion := c.GetCurrentRegion()
 	if nil == currentRegion {
