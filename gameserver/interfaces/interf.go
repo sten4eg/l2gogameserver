@@ -17,6 +17,7 @@ type Namer interface {
 	GetName() string
 }
 type Positionable interface {
+	GetObjectId() int32
 	SetX(int32)
 	SetY(int32)
 	SetZ(int32)
@@ -40,6 +41,7 @@ type WorldRegioner interface {
 	DeleteVisibleChar(CharacterI)
 	AddVisibleItems(MyItemInterface)
 	GetItemsInRegion() []MyItemInterface
+	DeleteVisibleItem(MyItemInterface)
 }
 type Npcer interface {
 	UniquerId

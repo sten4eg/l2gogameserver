@@ -76,6 +76,10 @@ func (w *WorldRegion) GetItemsInRegion() []interfaces.MyItemInterface {
 	})
 	return result
 }
+func (w *WorldRegion) DeleteVisibleItem(item interfaces.MyItemInterface) {
+	key := strconv.FormatInt(int64(item.GetObjectId()), 10)
+	w.ItemsInRegion.Delete(key)
+}
 
 func Contains(regions []interfaces.WorldRegioner, region interfaces.WorldRegioner) bool {
 	for _, v := range regions {
@@ -93,7 +97,13 @@ func GetAroundPlayer(c interfaces.Positionable) []interfaces.CharacterI {
 	result := make([]interfaces.CharacterI, 0, 64)
 
 	for _, v := range currentRegion.GetNeighbors() {
-		result = append(result, v.GetCharsInRegion()...)
+		for _, vv := range v.GetCharsInRegion() {
+			if vv.GetObjectId() == c.GetObjectId() {
+				continue
+			}
+			result = append(result, vv)
+		}
+		//result = append(result, v.GetCharsInRegion()...)
 	}
 	return result
 }
