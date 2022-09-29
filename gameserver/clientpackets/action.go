@@ -1,12 +1,15 @@
 package clientpackets
 
 import (
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
+	"reflect"
+	"strconv"
 )
 
 func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardToLocation {
@@ -32,33 +35,9 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 
 	switch target_ := target.(type) {
 	case *interfaces.MyItemInterface:
-		item := *target_
-
-		pb := utils.GetPacketByte()
-		defer pb.Release()
-
-		pkg := serverpackets.GetItem(*target_, client.CurrentChar.GetObjectId())
-		pb.SetData(pkg.Bytes())
-		client.SendBuf(pkg)
-		broadcast.BroadCastToAroundPlayers(client, pb)
-
-		pkg2 := serverpackets.DeleteObject(item.GetObjectId())
-		pb.SetData(pkg2.Bytes())
-		client.SendBuf(pkg2)
-		broadcast.BroadCastToAroundPlayers(client, pb)
-
-		client.CurrentChar.GetInventory().AddItem2(item.GetId(), int(item.GetCount()))
-		client.CurrentChar.GetCurrentRegion().DeleteVisibleItem(*target_)
-
+		itemAction(client, *target_, actionId)
 	case *interfaces.CharacterI:
-		buffer := packets.Get()
-		defer packets.Put(buffer)
-
-		pkg := serverpackets.TargetSelected(client.CurrentChar.ObjectId, objectId, originX, originY, originZ)
-		buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-
-		client.Send(buffer.Bytes())
-
+		characterAction(client, *target_, actionId, originX, originY, originZ)
 	default:
 		break
 	}
@@ -114,23 +93,97 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 }
 
 func getTargetByObjectId(objId int32, region interfaces.WorldRegioner) any {
-	for _, item := range region.GetItemsInRegion() {
-		if item.GetObjectId() == objId {
-			return &item
-		}
-	}
 
-	for _, npc := range region.GetNpcInRegion() {
-		if npc.GetObjectId() == objId {
-			return &npc
+	for _, v := range region.GetNeighbors() {
+		for _, item := range v.GetItemsInRegion() {
+			if item.GetObjectId() == objId {
+				return &item
+			}
 		}
-	}
 
-	for _, char := range region.GetCharsInRegion() {
-		if char.GetObjectId() == objId {
-			return &char
+		for _, npc := range v.GetNpcInRegion() {
+			if npc.GetObjectId() == objId {
+				return &npc
+			}
 		}
+
+		for _, char := range v.GetCharsInRegion() {
+			if char.GetObjectId() == objId {
+				return &char
+			}
+		}
+
 	}
 
 	return nil
+}
+
+func itemAction(client *models.ClientCtx, item interfaces.MyItemInterface, actionId byte) {
+	switch actionId {
+	case 0:
+		doActionOnItem(client, item)
+	case 1:
+		doActionShiftOnItem(client, item)
+	default:
+		logger.Info.Panicln("Wrong actionId")
+	}
+}
+
+func doActionOnItem(client *models.ClientCtx, item interfaces.MyItemInterface) {
+	pb := utils.GetPacketByte()
+	defer pb.Release()
+
+	pkg := serverpackets.GetItem(item, client.CurrentChar.GetObjectId())
+	pb.SetData(pkg.Bytes())
+	broadcast.BroadCastToAroundPlayers(client, pb)
+
+	pkg2 := serverpackets.DeleteObject(item.GetObjectId())
+	pb.SetData(pkg2.Bytes())
+	broadcast.BroadCastToAroundPlayers(client, pb)
+
+	updateItem := client.CurrentChar.GetInventory().AddItem2(item.GetId(), int(item.GetCount()))
+	client.CurrentChar.GetCurrentRegion().DeleteVisibleItem(item)
+
+	items := []interfaces.MyItemInterface{updateItem}
+	msg := serverpackets.InventoryUpdate(items)
+	client.EncryptAndSend(msg)
+}
+
+func doActionShiftOnItem(client *models.ClientCtx, item interfaces.MyItemInterface) {
+	//TODO Генерировать html нормальный образом
+	//html := "<html><body><center><font color=\"LEVEL\">Item Info</font></center><br></body></html>"
+
+	itemObjId := strconv.FormatInt(int64(item.GetObjectId()), 10)
+	itemId := strconv.FormatInt(int64(item.GetId()), 10)
+	x, y, z := item.GetCoordinate()
+	itemLocation := strconv.FormatInt(int64(x), 10) + " " + strconv.FormatInt(int64(y), 10) + " " + strconv.FormatInt(int64(z), 10)
+	itemClass := reflect.TypeOf(item).String()
+
+	html := "<html><body><center><font color=\"LEVEL\">Item Info</font></center><br><table border=0>" + "<tr><td>Object ID: </td><td>" + itemObjId + "</td></tr><tr><td>Item ID: </td><td>" + itemId + "</td></tr><tr><td>Owner ID: </td><td>" + "0" + "</td></tr><tr><td>Location: </td><td>" + itemLocation + "</td></tr><tr><td><br></td></tr><tr><td>Class: </td><td>" + itemClass + "</td></tr></table></body></html>"
+
+	pkg := serverpackets.NpcHtmlMessage2(0, html, 0)
+	client.SendBuf(pkg)
+
+}
+
+func characterAction(client *models.ClientCtx, char interfaces.CharacterI, actionId byte, x, y, z int32) {
+	switch actionId {
+	case 0:
+		doActionOnCharacter(client, char, x, y, z)
+	case 1:
+		//TODO Доделать окно с информации о персонаже
+		logger.Info.Println("TODO")
+	default:
+		logger.Info.Panicln("Wrong actionId")
+	}
+}
+
+func doActionOnCharacter(client *models.ClientCtx, char interfaces.CharacterI, x, y, z int32) {
+	buffer := packets.Get()
+	defer packets.Put(buffer)
+
+	pkg := serverpackets.TargetSelected(client.CurrentChar.ObjectId, char.GetObjectId(), x, y, z)
+	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+
+	client.Send(buffer.Bytes())
 }

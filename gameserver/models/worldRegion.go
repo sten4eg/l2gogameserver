@@ -5,15 +5,14 @@ import (
 	"l2gogameserver/gameserver/interfaces"
 	"math"
 	"strconv"
-	"sync"
 )
 
 type WorldRegion struct {
 	TileX         int32
 	TileY         int32
 	TileZ         int32
-	CharsInRegion sync.Map //TODO переделать на мапу с RW мьютексом ци шо ци каво
-	NpcInRegion   sync.Map //TODO переделать на мапу с RW мьютексом ци шо ци каво
+	CharsInRegion *xsync.MapOf[interfaces.CharacterI]
+	NpcInRegion   *xsync.MapOf[interfaces.Npcer]
 	ItemsInRegion *xsync.MapOf[interfaces.MyItemInterface]
 }
 
@@ -22,19 +21,24 @@ func NewWorldRegion(x, y, z int32) *WorldRegion {
 	newRegion.TileX = x
 	newRegion.TileY = y
 	newRegion.TileZ = z
+	newRegion.CharsInRegion = xsync.NewMapOf[interfaces.CharacterI]()
+	newRegion.NpcInRegion = xsync.NewMapOf[interfaces.Npcer]()
 	newRegion.ItemsInRegion = xsync.NewMapOf[interfaces.MyItemInterface]()
 	return &newRegion
 }
 
 func (w *WorldRegion) AddVisibleChar(character interfaces.CharacterI) {
-	w.CharsInRegion.Store(character.GetObjectId(), character)
+	key := strconv.FormatInt(int64(character.GetObjectId()), 10)
+	w.CharsInRegion.Store(key, character)
 }
 func (w *WorldRegion) DeleteVisibleChar(character interfaces.CharacterI) {
-	w.CharsInRegion.Delete(character.GetObjectId())
+	key := strconv.FormatInt(int64(character.GetObjectId()), 10)
+	w.CharsInRegion.Delete(key)
 }
 
 func (w *WorldRegion) AddVisibleNpc(npc Npc) {
-	w.NpcInRegion.Store(npc.ObjId, npc)
+	key := strconv.FormatInt(int64(npc.GetObjectId()), 10)
+	w.NpcInRegion.Store(key, npc)
 }
 
 func (w *WorldRegion) GetNeighbors() []interfaces.WorldRegioner {
@@ -43,7 +47,7 @@ func (w *WorldRegion) GetNeighbors() []interfaces.WorldRegioner {
 
 func (w *WorldRegion) GetCharsInRegion() []interfaces.CharacterI {
 	result := make([]interfaces.CharacterI, 0, 64)
-	w.CharsInRegion.Range(func(key, value interface{}) bool {
+	w.CharsInRegion.Range(func(key string, value interfaces.CharacterI) bool {
 		result = append(result, value.(*Character))
 		return true
 	})
@@ -53,7 +57,7 @@ func (w *WorldRegion) GetCharsInRegion() []interfaces.CharacterI {
 
 func (w *WorldRegion) GetNpcInRegion() []interfaces.Npcer {
 	result := make([]interfaces.Npcer, 0, 64)
-	w.NpcInRegion.Range(func(key, value interface{}) bool {
+	w.NpcInRegion.Range(func(key string, value interfaces.Npcer) bool {
 		result = append(result, value.(Npc))
 		return true
 	})
@@ -66,10 +70,6 @@ func (w *WorldRegion) AddVisibleItems(item interfaces.MyItemInterface) {
 }
 func (w *WorldRegion) GetItemsInRegion() []interfaces.MyItemInterface {
 	result := make([]interfaces.MyItemInterface, 0, 64)
-	//w.ItemsInRegion.Range(func(key string, value interface{}) bool {
-	//	result = append(result, value.(*MyItem))
-	//	return true
-	//})
 	w.ItemsInRegion.Range(func(key string, value interfaces.MyItemInterface) bool {
 		result = append(result, value)
 		return true
@@ -98,17 +98,6 @@ func GetAroundPlayer(c interfaces.Positionable) []interfaces.CharacterI {
 
 	for _, v := range currentRegion.GetNeighbors() {
 		result = append(result, v.GetCharsInRegion()...)
-	}
-	return result
-}
-
-func GetAroundPlayerWithoutSelf(c interfaces.Positionable) []interfaces.CharacterI {
-	result := GetAroundPlayer(c)
-	for i, _ := range result {
-		if result[i].GetObjectId() == c.GetObjectId() {
-			result = append(result[:i], result[i+1:]...)
-			break
-		}
 	}
 	return result
 }
