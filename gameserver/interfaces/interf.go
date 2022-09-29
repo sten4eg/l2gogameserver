@@ -38,6 +38,8 @@ type WorldRegioner interface {
 	AddVisibleChar(CharacterI)
 	GetNpcInRegion() []Npcer
 	DeleteVisibleChar(CharacterI)
+	AddVisibleItems(MyItemInterface)
+	GetItemsInRegion() []MyItemInterface
 }
 type Npcer interface {
 	UniquerId
@@ -113,6 +115,8 @@ type MyItemInterface interface {
 	UpdateDB()
 	GetOwnerId() int32
 	SetOwnerId(ownerId int32)
+	SetCoordinate(x, y, z int32)
+	GetCoordinate() (x, y, z int32)
 }
 
 type BaseItemInterface interface {
@@ -165,7 +169,7 @@ type CharacterI interface {
 	OnTradeFinish()
 	GetAccountLogin() string
 
-	DropItem(objectId int32, count int64) MyItemInterface
+	DropItem(objectId int32, count int64) (MyItemInterface, MyItemInterface)
 }
 type ClientInterface interface {
 	ReciverAndSender

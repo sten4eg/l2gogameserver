@@ -76,6 +76,7 @@ type (
 		CharInfoTo              chan []int32
 		DeleteObjectTo          chan []int32
 		NpcInfo                 chan []interfaces.Npcer
+		DropItemsInfo           chan []interfaces.MyItemInterface
 		IsMoving                bool
 		Sit                     bool
 		FirstEnterGame          bool
@@ -186,6 +187,7 @@ func (c *Character) Load() {
 	c.CharInfoTo = make(chan []int32, 2)
 	c.DeleteObjectTo = make(chan []int32, 2)
 	c.NpcInfo = make(chan []interfaces.Npcer, 2)
+	c.DropItemsInfo = make(chan []interfaces.MyItemInterface, 2)
 	c.setWorldRegion(reg)
 
 	reg.AddVisibleChar(c)
@@ -340,6 +342,7 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 	// кому отправить charInfo
 	charInfoPkgTo := make([]int32, 0, 64)
 	npcPkgTo := make([]interfaces.Npcer, 0, 64)
+	itemsPkgTo := make([]interfaces.MyItemInterface, 0, 64)
 	for _, region := range newAreas {
 		if !Contains(oldAreas, region) {
 			for _, v := range region.GetCharsInRegion() {
@@ -350,9 +353,11 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 			}
 
 			npcPkgTo = append(npcPkgTo, region.GetNpcInRegion()...)
+			itemsPkgTo = append(itemsPkgTo, region.GetItemsInRegion()...)
 
 		}
 	}
+
 	if len(charInfoPkgTo) > 0 {
 		c.CharInfoTo <- charInfoPkgTo
 	}
@@ -360,6 +365,10 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 
 	if len(npcPkgTo) > 0 {
 		c.NpcInfo <- npcPkgTo
+	}
+
+	if len(itemsPkgTo) > 0 {
+		c.DropItemsInfo <- itemsPkgTo
 	}
 
 }
@@ -458,6 +467,7 @@ func (c *Character) CloseChannels() {
 	c.NpcInfo = nil
 	c.CharInfoTo = nil
 	c.DeleteObjectTo = nil
+	c.DropItemsInfo = nil
 }
 func (c *Character) StartTransactionRequest() {
 	c.RequestExpireTime = time.Now().Add(RequestTimeout).Unix()
@@ -624,13 +634,13 @@ func (c *Character) GetCurrentChar() interfaces.CharacterI { return c }
 
 ///////////
 
-func (c *Character) DropItem(objectId int32, count int64) interfaces.MyItemInterface {
-	//invitem := c.Inventory.GetItemByObjectId(objectId)
-	item := c.Inventory.DropItem(objectId, count)
+func (c *Character) DropItem(objectId int32, count int64) (dropItem, updateItem interfaces.MyItemInterface) {
+	updateItem = c.Inventory.GetItemByObjectId(objectId)
+	dropItem = c.Inventory.DropItem(objectId, count)
 
-	if item == nil {
-		return nil
+	if dropItem == nil {
+		return
 	}
 
-	return item
+	return
 }

@@ -1,8 +1,10 @@
 package models
 
 import (
+	"github.com/puzpuzpuz/xsync"
 	"l2gogameserver/gameserver/interfaces"
 	"math"
+	"strconv"
 	"sync"
 )
 
@@ -12,6 +14,7 @@ type WorldRegion struct {
 	TileZ         int32
 	CharsInRegion sync.Map //TODO переделать на мапу с RW мьютексом ци шо ци каво
 	NpcInRegion   sync.Map //TODO переделать на мапу с RW мьютексом ци шо ци каво
+	ItemsInRegion *xsync.MapOf[interfaces.MyItemInterface]
 }
 
 func NewWorldRegion(x, y, z int32) *WorldRegion {
@@ -19,6 +22,7 @@ func NewWorldRegion(x, y, z int32) *WorldRegion {
 	newRegion.TileX = x
 	newRegion.TileY = y
 	newRegion.TileZ = z
+	newRegion.ItemsInRegion = xsync.NewMapOf[interfaces.MyItemInterface]()
 	return &newRegion
 }
 
@@ -56,6 +60,23 @@ func (w *WorldRegion) GetNpcInRegion() []interfaces.Npcer {
 
 	return result
 }
+func (w *WorldRegion) AddVisibleItems(item interfaces.MyItemInterface) {
+	key := strconv.FormatInt(int64(item.GetObjectId()), 10)
+	w.ItemsInRegion.Store(key, item)
+}
+func (w *WorldRegion) GetItemsInRegion() []interfaces.MyItemInterface {
+	result := make([]interfaces.MyItemInterface, 0, 64)
+	//w.ItemsInRegion.Range(func(key string, value interface{}) bool {
+	//	result = append(result, value.(*MyItem))
+	//	return true
+	//})
+	w.ItemsInRegion.Range(func(key string, value interfaces.MyItemInterface) bool {
+		result = append(result, value)
+		return true
+	})
+	return result
+}
+
 func Contains(regions []interfaces.WorldRegioner, region interfaces.WorldRegioner) bool {
 	for _, v := range regions {
 		if v == region {

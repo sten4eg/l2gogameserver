@@ -2,6 +2,7 @@ package clientpackets
 
 import (
 	"fmt"
+	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
@@ -17,46 +18,32 @@ func DropItem(client interfaces.ReciverAndSender, data []byte) {
 	z := read.ReadInt32()
 
 	activeChar := client.GetCurrentChar()
-	//item := drops.DropItemCharacter(client, objectId, count, x, y, z)
-	item := activeChar.DropItem(objectId, count)
 
-	items := []interfaces.MyItemInterface{item}
-	msg := serverpackets.InventoryUpdate(items)
-	client.EncryptAndSend(msg)
+	dropItem, updateItem := activeChar.DropItem(objectId, count)
 
-	pkg := dropItem(item, activeChar.GetObjectId(), x, y, z)
-	err := client.SendBuf(pkg)
-	if err != nil {
-		fmt.Println("spok")
+	if dropItem != nil {
+		dropItem.SetCoordinate(x, y, z)
+
+		if updateItem != nil {
+			items := []interfaces.MyItemInterface{updateItem}
+			msg := serverpackets.InventoryUpdate(items)
+			client.EncryptAndSend(msg)
+		}
+
+		pkg := serverpackets.DropItem(dropItem, activeChar.GetObjectId())
+
+		pb := utils.GetPacketByte()
+		defer pb.Release()
+		pb.SetData(pkg.Bytes())
+
+		err := client.SendBuf(pkg)
+		if err != nil {
+			fmt.Println("spok")
+		}
+
+		activeChar.GetCurrentRegion().AddVisibleItems(dropItem)
+
+		broadcast.BroadCastToAroundPlayers(client, pb)
 	}
-	//activeChar.Send(pkg)
 
-	//buffer := packets.Get()
-	//defer packets.Put(buffer)
-
-	//pkg := serverpackets.DropItem(client, objectId, count, x, y, z)
-	//buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-	//
-	//return buffer.Bytes(), item
-	//return []byte{}, models.MyItem{}
-}
-
-func dropItem(item interfaces.MyItemInterface, charObjectId int32, x int32, y int32, z int32) *packets.Buffer {
-	buf := packets.Get()
-
-	buf.WriteSingleByte(0x16)
-	buf.WriteD(charObjectId)
-	buf.WriteD(item.GetObjectId())
-	buf.WriteD(item.GetId())
-
-	buf.WriteD(x)
-	buf.WriteD(y)
-	buf.WriteD(z)
-
-	buf.WriteD(utils.BoolToInt32(item.IsStackable()))
-	buf.WriteQ(item.GetCount())
-
-	buf.WriteD(0x01)
-
-	return buf
 }
