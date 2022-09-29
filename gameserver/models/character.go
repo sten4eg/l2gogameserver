@@ -405,14 +405,8 @@ func (c *Character) SaveFirstInGamePlayer() {
 }
 
 // ExistItemInInventory Возвращает ссылку на Item если он есть в инвентаре
-func (c *Character) ExistItemInInventory(objectItemId int32) *MyItem {
-	for i := range c.Inventory.Items {
-		item := &c.Inventory.Items[i]
-		if item.ObjectId == objectItemId {
-			return item
-		}
-	}
-	return nil
+func (c *Character) ExistItemInInventory(objectItemId int32) interfaces.MyItemInterface {
+	return c.GetInventory().GetItemByObjectId(objectItemId)
 }
 
 func (c *Character) GetObjectId() int32 {
