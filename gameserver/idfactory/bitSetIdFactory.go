@@ -5,11 +5,11 @@ import (
 	"github.com/bits-and-blooms/bitset"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
+	"math"
 	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
-	"time"
 )
 
 var IdExtracts = [][]string{
@@ -30,10 +30,11 @@ const FreeObjectIdSize = LastOid - FirstOid
 
 var mu sync.Mutex
 
-//Load загрузка из бд всех занятих objectId
+// Load загрузка из бд всех занятих objectId
 func Load() {
 	primeInit()
-	FreeIds = *bitset.New(uint(NextPrime(100000)))
+	//FreeIds = *bitset.New(uint(NextPrime(100000)))
+	FreeIds = *bitset.New(uint(NextPrime(math.MaxInt32)))
 	FreeIds.ClearAll()
 	FreeIdCount = FreeObjectIdSize
 
@@ -52,7 +53,7 @@ func Load() {
 	v, _ := FreeIds.NextClear(0)
 	NextFreeId = uint64(v)
 
-	go bitSetCapacityCheck()
+	//go bitSetCapacityCheck()
 }
 
 // GetNext получение свободного идентификатора objectId
@@ -150,11 +151,12 @@ func reachingBitSetCapacity() bool {
 // bitSetCapacityCheck проверка каждые 30 секунд
 // достиг ли bitSet максимальной capacity
 // и увеличение его если необходимо
-func bitSetCapacityCheck() {
-	for {
-		time.Sleep(time.Second * 30)
-		if reachingBitSetCapacity() {
-			increaseBitSetCapacity()
-		}
-	}
-}
+
+//func bitSetCapacityCheck() {
+//	for {
+//		time.Sleep(time.Second * 30)
+//		if reachingBitSetCapacity() {
+//			increaseBitSetCapacity()
+//		}
+//	}
+//}

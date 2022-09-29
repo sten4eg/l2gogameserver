@@ -190,7 +190,7 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 }
 func (i *Inventory) RemoveItem(removeItem interfaces.MyItemInterface) bool {
 	for index, _ := range i.Items {
-		if i.Items[index].GetId() == removeItem.GetId() {
+		if i.Items[index].GetObjectId() == removeItem.GetObjectId() {
 			i.Items = append(i.Items[:index:index], i.Items[index+1:]...)
 			return true
 		}
