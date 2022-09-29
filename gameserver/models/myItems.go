@@ -40,6 +40,10 @@ type MyItem struct {
 	//БД
 	existsInDb bool
 	storedInDb bool
+
+	x int32
+	y int32
+	z int32
 }
 
 func (i *MyItem) GetObjectId() int32 {
@@ -153,7 +157,9 @@ func (i *MyItem) UpdateDB() {
 			}
 		}
 	} else {
-		//TODO добавить проверку
+		if i.ownerId == 0 || i.GetCount() == 0 {
+			return
+		}
 		_, err = dbConn.Exec(context.Background(), InsertIntoDB, i.ownerId, i.ObjectId, i.Item.Id, i.Count)
 		i.existsInDb = true
 		i.storedInDb = true
@@ -184,4 +190,14 @@ func DestroyItem(item interfaces.MyItemInterface) {
 
 	// L2World.getInstance().removeObject(item); ?
 	// IdFactory.getInstance().releaseId(item.getObjectId()); ?
+}
+
+func (i *MyItem) SetCoordinate(x, y, z int32) {
+	i.x = x
+	i.y = y
+	i.z = z
+}
+
+func (i *MyItem) GetCoordinate() (x, y, z int32) {
+	return i.x, i.y, i.z
 }

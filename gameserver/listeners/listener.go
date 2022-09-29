@@ -15,6 +15,7 @@ func StartClientListener(client interfaces.ReciverAndSender) {
 	go channelListener(client)
 	go npcListener(client)
 	go moveListener(client)
+	go dropItemListener(client)
 }
 func channelListener(client interfaces.ReciverAndSender) {
 	ch, ok := client.(*models.ClientCtx)
@@ -46,7 +47,21 @@ func npcListener(client interfaces.ReciverAndSender) {
 		packets.Put(buff)
 	}
 }
-
+func dropItemListener(client interfaces.ReciverAndSender) {
+	ch, ok := client.(*models.ClientCtx)
+	if !ok {
+		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
+	}
+	for q := range ch.CurrentChar.DropItemsInfo {
+		buff := packets.Get()
+		for i := range q {
+			pkg := serverpackets.DropItem(q[i], 0)
+			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg.Bytes()))
+		}
+		client.Send(buff.Bytes())
+		packets.Put(buff)
+	}
+}
 func moveListener(client interfaces.ReciverAndSender) {
 	ch, ok := client.(*models.ClientCtx)
 	if !ok {
