@@ -1,7 +1,6 @@
 package clientpackets
 
 import (
-	"fmt"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/serverpackets"
@@ -35,11 +34,6 @@ func DropItem(client interfaces.ReciverAndSender, data []byte) {
 		pb := utils.GetPacketByte()
 		defer pb.Release()
 		pb.SetData(pkg.Bytes())
-
-		err := client.SendBuf(pkg)
-		if err != nil {
-			fmt.Println("spok")
-		}
 
 		activeChar.GetCurrentRegion().AddVisibleItems(dropItem)
 

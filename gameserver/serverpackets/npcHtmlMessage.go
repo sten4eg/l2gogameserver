@@ -19,3 +19,15 @@ func NpcHtmlMessage(client interfaces.ReciverAndSender, npcid int32) []byte {
 
 	return buffer.Bytes()
 }
+
+func NpcHtmlMessage2(npcObjId int32, html string, itemId int32) *packets.Buffer {
+	buffer := packets.Get()
+
+	buffer.WriteSingleByte(0x19)
+
+	buffer.WriteD(npcObjId)
+	buffer.WriteS(html)
+	buffer.WriteD(itemId)
+
+	return buffer
+}

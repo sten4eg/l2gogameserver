@@ -83,7 +83,7 @@ func moveListener(client interfaces.ReciverAndSender) {
 	pkg.Free()
 
 	for q := range ch.CurrentChar.DeleteObjectTo {
-		pkg.SetData(serverpackets.DeleteObject(ch.CurrentChar))
+		pkg.SetDataBuf(serverpackets.DeleteObject(ch.CurrentChar.GetObjectId()))
 		for _, v := range q {
 			gameserver.OnlineCharacters.Mu.Lock()
 			gameserver.OnlineCharacters.Char[v].Conn.EncryptAndSend(pkg.GetData())

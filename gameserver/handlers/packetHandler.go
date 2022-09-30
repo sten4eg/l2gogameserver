@@ -152,12 +152,12 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				clientpackets.RequestTargetCancel(data, client)
 			case 0xcd:
 				clientpackets.RequestMakeMacro(client, data)
-			case 86: //todo в java все обрабатывается внутри пакета RequestActionUse
+			case 0x56: //todo в java все обрабатывается внутри пакета RequestActionUse
 				if len(data) >= 2 {
 					switch data[0] {
 					default:
 						fmt.Printf("Неопознаный второй опкод %v при state InGame\n", data[0])
-					case 0: //посадить персонажа на жопу
+					case 0x00: //посадить персонажа на жопу
 						clientpackets.ChangeWaitType(client)
 
 					}

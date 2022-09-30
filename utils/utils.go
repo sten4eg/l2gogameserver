@@ -2,6 +2,7 @@ package utils
 
 import (
 	"golang.org/x/exp/constraints"
+	"l2gogameserver/packets"
 	"sync"
 )
 
@@ -49,6 +50,13 @@ func (b *PacketByte) SetData(v []byte) {
 	copy(b.data, v)
 }
 
+func (b *PacketByte) SetDataBuf(v *packets.Buffer) {
+	cl := make([]byte, len(v.Bytes()))
+	b.data = cl
+	copy(b.data, v.Bytes())
+	packets.Put(v)
+}
+
 func Contains[T constraints.Integer](slice []T, need T) bool {
 	for i := range slice {
 		if slice[i] == need {
@@ -63,4 +71,8 @@ func BoolToInt32(b bool) int32 {
 		return 1
 	}
 	return 0
+}
+
+func I2B[T constraints.Integer](i T) bool {
+	return i != 0
 }
