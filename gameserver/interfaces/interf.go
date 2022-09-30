@@ -93,7 +93,7 @@ type InventoryInterface interface {
 	ValidateWeight(int) bool
 	ValidateCapacity(int, CharacterI) bool
 	AddItem(item MyItemInterface) MyItemInterface
-	AddItem2(itemId int32, count int) MyItemInterface
+	AddItem2(itemId int32, count int, stackable bool) MyItemInterface
 	RefreshWeight()
 	TransferItem(int32, int, InventoryInterface, CharacterI) MyItemInterface
 	RemoveItem(MyItemInterface) bool

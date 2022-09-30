@@ -30,7 +30,7 @@ func addAdminItem(command string, client interfaces.ReciverAndSender) {
 	if err != nil {
 		return
 	}
-	client.GetCurrentChar().GetInventory().AddItem2(int32(itemId), count)
+	client.GetCurrentChar().GetInventory().AddItem2(int32(itemId), count, false)
 }
 
 //TODO всё что ниже написал logan22, может быть что то и понадобится

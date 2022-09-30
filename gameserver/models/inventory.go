@@ -174,7 +174,7 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 		if targetItem != nil {
 			targetItem.ChangeCount(count)
 		} else {
-			targetItem = target.AddItem2(sourceItem.GetId(), count)
+			targetItem = target.AddItem2(sourceItem.GetId(), count, sourceItem.IsStackable())
 		}
 	}
 
@@ -219,7 +219,7 @@ func (i *Inventory) AddItem(item interfaces.MyItemInterface) interfaces.MyItemIn
 	i.RefreshWeight()
 	return item
 }
-func (i *Inventory) AddItem2(itemId int32, count int) interfaces.MyItemInterface {
+func (i *Inventory) AddItem2(itemId int32, count int, stackable bool) interfaces.MyItemInterface {
 	item := i.GetItemByItemId(int(itemId))
 
 	if item != nil && item.IsStackable() {
@@ -229,12 +229,7 @@ func (i *Inventory) AddItem2(itemId int32, count int) interfaces.MyItemInterface
 	} else {
 		for j := 0; j < count; j++ {
 
-			itemInfo, ok := items.GetItemInfo(int(itemId))
-			if !ok {
-				return nil
-			}
-
-			if itemInfo.IsStackable() {
+			if stackable {
 				item = CreateItem(int(itemId), count)
 			} else {
 				item = CreateItem(int(itemId), 1)

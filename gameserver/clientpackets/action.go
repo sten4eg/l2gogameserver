@@ -133,7 +133,7 @@ func doActionOnItem(client *models.ClientCtx, item interfaces.MyItemInterface) {
 	buffer2 := serverpackets.DeleteObject(item.GetObjectId())
 	broadcast.BroadCastBufferToAroundPlayers(client, buffer2)
 
-	updateItem := client.CurrentChar.GetInventory().AddItem2(item.GetId(), int(item.GetCount()))
+	updateItem := client.CurrentChar.GetInventory().AddItem2(item.GetId(), int(item.GetCount()), item.IsStackable())
 	client.CurrentChar.GetCurrentRegion().DeleteVisibleItem(item)
 
 	items := []interfaces.MyItemInterface{updateItem}
