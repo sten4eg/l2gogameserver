@@ -3,7 +3,9 @@ package utils
 import (
 	"golang.org/x/exp/constraints"
 	"l2gogameserver/packets"
+	"reflect"
 	"sync"
+	"unsafe"
 )
 
 const maxCap = 1 << 11 // 2 kB
@@ -75,4 +77,17 @@ func BoolToInt32(b bool) int32 {
 
 func I2B[T constraints.Integer](i T) bool {
 	return i != 0
+}
+
+func B2s(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
+}
+
+func S2b(s string) (b []byte) {
+	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	bh.Data = sh.Data
+	bh.Cap = sh.Len
+	bh.Len = sh.Len
+	return b
 }

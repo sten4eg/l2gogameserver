@@ -173,6 +173,9 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 					clientpackets.RequestAutoSoulShot(data, client)
 
 				}
+			case 0x74:
+				clientpackets.SendBypassBuildCmd(character, data)
+
 			}
 		}
 
