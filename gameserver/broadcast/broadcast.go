@@ -6,6 +6,7 @@ import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/chat"
 	"l2gogameserver/gameserver/serverpackets"
+	"l2gogameserver/packets"
 	"l2gogameserver/utils"
 )
 
@@ -23,6 +24,16 @@ func BroadCastToAroundPlayers(my interfaces.ReciverAndSender, pkg *utils.PacketB
 	for i := range charsIds {
 		charsIds[i].EncryptAndSend(pkg.GetData())
 	}
+}
+
+func BroadCastBufferToAroundPlayers(my interfaces.ReciverAndSender, buffer *packets.Buffer) {
+	pb := utils.GetPacketByte()
+	pb.SetData(buffer.Bytes())
+
+	BroadCastToAroundPlayers(my, pb)
+
+	pb.Release()
+	packets.Put(buffer)
 }
 
 // BroadCastUserInfoInRadius отправляет всем персонажам в радиусе radius
