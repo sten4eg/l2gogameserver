@@ -42,10 +42,15 @@ type WorldRegioner interface {
 	AddVisibleItems(MyItemInterface)
 	GetItemsInRegion() []MyItemInterface
 	DeleteVisibleItem(MyItemInterface)
+	GetChar(int32) (CharacterI, bool)
+	GetItem(int32) (MyItemInterface, bool)
+	GetNpc(int32) (Npcer, bool)
 }
 type Npcer interface {
 	UniquerId
 	Identifier
+	IsTargetable() bool
+	GetCoordinates() (x, y, z int32)
 }
 
 type TradableItemInterface interface {

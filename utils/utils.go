@@ -72,3 +72,7 @@ func BoolToInt32(b bool) int32 {
 	}
 	return 0
 }
+
+func I2B[T constraints.Integer](i T) bool {
+	return i != 0
+}

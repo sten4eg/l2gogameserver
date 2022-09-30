@@ -4,9 +4,8 @@ import (
 	"l2gogameserver/packets"
 )
 
-func TargetSelected(objectId, targetId, x, y, z int32) []byte {
+func TargetSelected(objectId, targetId, x, y, z int32) *packets.Buffer {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x23)
 	buffer.WriteD(objectId)
@@ -16,5 +15,5 @@ func TargetSelected(objectId, targetId, x, y, z int32) []byte {
 	buffer.WriteD(z)
 	buffer.WriteD(0)
 
-	return buffer.Bytes()
+	return buffer
 }

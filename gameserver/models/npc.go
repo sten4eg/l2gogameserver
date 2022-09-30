@@ -6,6 +6,7 @@ import (
 	"l2gogameserver/config"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/idfactory"
+	"l2gogameserver/utils"
 	"os"
 )
 
@@ -134,6 +135,7 @@ var Npcs map[int32]map[int32]Npc
 var NpcObject map[int32]Locations
 
 // Временное функция подгрузки листа с спаунами NPC
+// Парсит из json npc. Итерируется по каждому npc и полю Locations(массив спавн точек npc), за каждую локацию создает npc с spawn текущей локации, добавляет npc в глобальную мапу
 func LoadNpc() {
 	if !config.IsEnableNPC() {
 		return
@@ -224,17 +226,18 @@ func GetDialogNPC(npctype string) int32 {
 
 // Информация о объекте
 func GetNpcObject(objectId int32) (Npc, int32, int32, int32, error) {
-	for npcObjId, npc := range NpcObject {
-		if objectId == npcObjId {
-			npcInfo, err := GetNpc(npc.NpcId, objectId)
-			if err != nil {
-				logger.Info.Println(err)
-				return Npc{}, 0, 0, 0, err
-			}
-			return npcInfo, npc.Locx, npc.Locy, npc.Locz, nil
-		}
+	npc, ok := NpcObject[objectId]
+	if !ok {
+		return Npc{}, 0, 0, 0, errors.New("Not find object")
 	}
-	return Npc{}, 0, 0, 0, errors.New("Not find object")
+
+	npcInfo, err := GetNpc(npc.NpcId, objectId)
+	if err != nil {
+		logger.Info.Println(err)
+		return Npc{}, 0, 0, 0, err
+	}
+	return npcInfo, npc.Locx, npc.Locy, npc.Locz, nil
+
 }
 
 // Информация о NPC
@@ -252,9 +255,25 @@ func GetNpc(getNpcID, objectId int32) (Npc, error) {
 	return Npc{}, errors.New("Not find npc#1")
 }
 
-func (n Npc) GetObjectId() int32 {
+// Медоты нпц
+func (n *Npc) GetCoordinates() (x, y, z int32) {
+	return n.Spawn.GetCoordinate()
+}
+
+func (n *Npc) GetObjectId() int32 {
 	return n.ObjId
 }
-func (n Npc) GetId() int32 {
+func (n *Npc) GetId() int32 {
 	return n.NpcId
+}
+func (n *Npc) IsTargetable() bool {
+	return utils.I2B(n.Targetable)
+}
+
+// Медоты Локации
+func (l *Locations) GetCoordinate() (x, y, z int32) {
+	x = l.Locx
+	y = l.Locy
+	z = l.Locz
+	return
 }

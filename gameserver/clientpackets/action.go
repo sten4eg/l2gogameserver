@@ -8,7 +8,6 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
-	"reflect"
 	"strconv"
 )
 
@@ -27,19 +26,22 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 
 	if objectId == client.CurrentChar.Target {
 		reAppeal = true
-	} else {
-		client.CurrentChar.Target = objectId
 	}
+	//else {
+	//	client.CurrentChar.Target = objectId
+	//}
 
-	target := getTargetByObjectId(objectId, client.CurrentChar.GetCurrentRegion())
+	object := getTargetByObjectId(objectId, client.CurrentChar.GetCurrentRegion())
 
-	switch target_ := target.(type) {
-	case *interfaces.MyItemInterface:
-		itemAction(client, *target_, actionId)
-	case *interfaces.CharacterI:
-		characterAction(client, *target_, actionId, originX, originY, originZ)
+	switch target := object.(type) {
+	case interfaces.MyItemInterface:
+		itemAction(client, target, actionId)
+	case interfaces.CharacterI:
+		characterAction(client, target, actionId)
+	case interfaces.Npcer:
+		npcAction(client, target, actionId)
 	default:
-		break
+		logger.Info.Println("Wrong object type")
 	}
 
 	_, _ = actionId, reAppeal
@@ -93,26 +95,22 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 }
 
 func getTargetByObjectId(objId int32, region interfaces.WorldRegioner) any {
+	var target any
+	var ok bool
 
 	for _, v := range region.GetNeighbors() {
-		for _, item := range v.GetItemsInRegion() {
-			if item.GetObjectId() == objId {
-				return &item
-			}
+		target, ok = v.GetItem(objId)
+		if ok {
+			return target
 		}
-
-		for _, npc := range v.GetNpcInRegion() {
-			if npc.GetObjectId() == objId {
-				return &npc
-			}
+		target, ok = v.GetChar(objId)
+		if ok {
+			return target
 		}
-
-		for _, char := range v.GetCharsInRegion() {
-			if char.GetObjectId() == objId {
-				return &char
-			}
+		target, ok = v.GetNpc(objId)
+		if ok {
+			return target
 		}
-
 	}
 
 	return nil
@@ -157,7 +155,7 @@ func doActionShiftOnItem(client *models.ClientCtx, item interfaces.MyItemInterfa
 	itemId := strconv.FormatInt(int64(item.GetId()), 10)
 	x, y, z := item.GetCoordinate()
 	itemLocation := strconv.FormatInt(int64(x), 10) + " " + strconv.FormatInt(int64(y), 10) + " " + strconv.FormatInt(int64(z), 10)
-	itemClass := reflect.TypeOf(item).String()
+	itemClass := "*models.MyItem"
 
 	html := "<html><body><center><font color=\"LEVEL\">Item Info</font></center><br><table border=0>" + "<tr><td>Object ID: </td><td>" + itemObjId + "</td></tr><tr><td>Item ID: </td><td>" + itemId + "</td></tr><tr><td>Owner ID: </td><td>" + "0" + "</td></tr><tr><td>Location: </td><td>" + itemLocation + "</td></tr><tr><td><br></td></tr><tr><td>Class: </td><td>" + itemClass + "</td></tr></table></body></html>"
 
@@ -166,24 +164,51 @@ func doActionShiftOnItem(client *models.ClientCtx, item interfaces.MyItemInterfa
 
 }
 
-func characterAction(client *models.ClientCtx, char interfaces.CharacterI, actionId byte, x, y, z int32) {
+func characterAction(client *models.ClientCtx, char interfaces.CharacterI, actionId byte) {
 	switch actionId {
 	case 0:
-		doActionOnCharacter(client, char, x, y, z)
+		doActionOnCharacter(client, char)
 	case 1:
 		//TODO Доделать окно с информации о персонаже
-		logger.Info.Println("TODO")
+		break
 	default:
 		logger.Info.Panicln("Wrong actionId")
 	}
 }
 
-func doActionOnCharacter(client *models.ClientCtx, char interfaces.CharacterI, x, y, z int32) {
-	buffer := packets.Get()
-	defer packets.Put(buffer)
-
+func doActionOnCharacter(client *models.ClientCtx, char interfaces.CharacterI) {
+	x, y, z := char.GetXYZ()
 	pkg := serverpackets.TargetSelected(client.CurrentChar.ObjectId, char.GetObjectId(), x, y, z)
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+	client.SendBuf(pkg)
+}
 
-	client.Send(buffer.Bytes())
+func npcAction(client *models.ClientCtx, npc interfaces.Npcer, actionId byte) {
+	switch actionId {
+	case 0:
+		doActionOnNpc(client, npc, true)
+	case 1:
+		break
+	default:
+		logger.Info.Panicln("Wrong actionId")
+	}
+}
+
+func doActionOnNpc(client *models.ClientCtx, npc interfaces.Npcer, interact bool) {
+	if !npc.IsTargetable() {
+		return
+	}
+
+	//client.CurrentChar.SetLastFolkNPC(npc)
+
+	if npc.GetObjectId() != client.CurrentChar.Target {
+		x, y, z := npc.GetCoordinates()
+		client.CurrentChar.Target = npc.GetObjectId()
+		//TODO проверка на авто агр моба
+
+		pkg := serverpackets.TargetSelected(client.CurrentChar.GetObjectId(), npc.GetObjectId(), x, y, z)
+		client.SendBuf(pkg)
+
+	} else if interact {
+		//TODO взаимодействие с нпц
+	}
 }

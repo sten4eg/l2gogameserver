@@ -9,7 +9,7 @@ import (
 
 func NpcInfo(npcI interfaces.Npcer) []byte {
 
-	npc, ok := npcI.(models.Npc)
+	npc, ok := npcI.(*models.Npc)
 	if !ok {
 		logger.Error.Panicln("NpcInfo convert to npc logger.Error.Panicln")
 	}
