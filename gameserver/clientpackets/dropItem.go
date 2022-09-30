@@ -5,7 +5,6 @@ import (
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
-	"l2gogameserver/utils"
 )
 
 func DropItem(client interfaces.ReciverAndSender, data []byte) {
@@ -29,15 +28,11 @@ func DropItem(client interfaces.ReciverAndSender, data []byte) {
 			client.EncryptAndSend(msg)
 		}
 
-		pkg := serverpackets.DropItem(dropItem, activeChar.GetObjectId())
-
-		pb := utils.GetPacketByte()
-		defer pb.Release()
-		pb.SetData(pkg.Bytes())
+		buffer := serverpackets.DropItem(dropItem, activeChar.GetObjectId())
 
 		activeChar.GetCurrentRegion().AddVisibleItems(dropItem)
 
-		broadcast.BroadCastToAroundPlayers(client, pb)
+		broadcast.BroadCastBufferToAroundPlayers(client, buffer)
 	}
 
 }

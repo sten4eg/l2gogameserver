@@ -228,7 +228,18 @@ func (i *Inventory) AddItem2(itemId int32, count int) interfaces.MyItemInterface
 		item.UpdateDB()
 	} else {
 		for j := 0; j < count; j++ {
-			item = CreateItem(int(itemId), count)
+
+			itemInfo, ok := items.GetItemInfo(int(itemId))
+			if !ok {
+				return nil
+			}
+
+			if itemInfo.IsStackable() {
+				item = CreateItem(int(itemId), count)
+			} else {
+				item = CreateItem(int(itemId), 1)
+			}
+
 			item.SetOwnerId(i.ownerId)
 			item.SetUpdateType(UpdateTypeAdd)
 

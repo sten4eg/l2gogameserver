@@ -7,7 +7,6 @@ import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
-	"l2gogameserver/utils"
 	"strconv"
 )
 
@@ -128,16 +127,11 @@ func itemAction(client *models.ClientCtx, item interfaces.MyItemInterface, actio
 }
 
 func doActionOnItem(client *models.ClientCtx, item interfaces.MyItemInterface) {
-	pb := utils.GetPacketByte()
-	defer pb.Release()
+	buffer := serverpackets.GetItem(item, client.CurrentChar.GetObjectId())
+	broadcast.BroadCastBufferToAroundPlayers(client, buffer)
 
-	pkg := serverpackets.GetItem(item, client.CurrentChar.GetObjectId())
-	pb.SetData(pkg.Bytes())
-	broadcast.BroadCastToAroundPlayers(client, pb)
-
-	pkg2 := serverpackets.DeleteObject(item.GetObjectId())
-	pb.SetData(pkg2.Bytes())
-	broadcast.BroadCastToAroundPlayers(client, pb)
+	buffer2 := serverpackets.DeleteObject(item.GetObjectId())
+	broadcast.BroadCastBufferToAroundPlayers(client, buffer2)
 
 	updateItem := client.CurrentChar.GetInventory().AddItem2(item.GetId(), int(item.GetCount()))
 	client.CurrentChar.GetCurrentRegion().DeleteVisibleItem(item)
