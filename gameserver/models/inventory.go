@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"github.com/jackc/pgx/v4"
+	"l2gogameserver/config"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/idfactory"
@@ -284,6 +285,28 @@ func (i *Inventory) DestroyItem(item interfaces.MyItemInterface, count int) inte
 	}
 	return item
 }
+
+func (i *Inventory) GetAdenaCount() int64 {
+	adena := i.GetItemByItemId(config.AdenaId)
+	if adena == nil {
+		return 0
+	}
+	return adena.GetCount()
+}
+
+func (i *Inventory) GetAvailableItems(tradeList interfaces.TradeListInterface, char interfaces.CharacterI) []interfaces.TradableItemInterface {
+	var list []interfaces.TradableItemInterface
+	for _, item := range i.Items {
+		if item.IsAvailable(char, false, false) {
+			adjItem := tradeList.AdjustAvailableItem(&item)
+			if adjItem != nil {
+				list = append(list, adjItem)
+			}
+		}
+	}
+	return list
+}
+
 func RestoreVisibleInventory(charId int32) [26]MyItem {
 	dbConn, err := db.GetConn()
 	if err != nil {

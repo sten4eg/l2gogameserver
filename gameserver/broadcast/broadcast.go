@@ -19,11 +19,34 @@ func ToAroundPlayerInRadius(my interfaces.ReciverAndSender, pkg *utils.PacketByt
 	}
 }
 
+func BroadCastPkgToAroundPlayer(my interfaces.ReciverAndSender, pkg []byte) {
+	pb := utils.GetPacketByte()
+	pb.SetData(pkg)
+	BroadCastToAroundPlayers(my, pb)
+	pb.Release()
+}
+
 func BroadCastToAroundPlayers(my interfaces.ReciverAndSender, pkg *utils.PacketByte) {
 	charsIds := models.GetAroundPlayer(my.GetCurrentChar())
 	for i := range charsIds {
 		charsIds[i].EncryptAndSend(pkg.GetData())
 	}
+}
+
+func BroadCastToAroundPlayersWithoutSelf(my interfaces.ReciverAndSender, pkg *utils.PacketByte) {
+	chardIds := models.GetAroundPlayer(my.GetCurrentChar())
+	for i := range chardIds {
+		if chardIds[i].GetObjectId() != my.GetCurrentChar().GetObjectId() {
+			chardIds[i].EncryptAndSend(pkg.GetData())
+		}
+	}
+}
+
+func BroadCastPkgToAroundPlayersWithoutSelf(my interfaces.ReciverAndSender, pkg []byte) {
+	pb := utils.GetPacketByte()
+	pb.SetData(pkg)
+	BroadCastToAroundPlayersWithoutSelf(my, pb)
+	pb.Release()
 }
 
 func BroadCastBufferToAroundPlayers(my interfaces.ReciverAndSender, buffer *packets.Buffer) {
@@ -62,6 +85,17 @@ func BroadCastUserInfoInRadius(me interfaces.ReciverAndSender, radius int32) {
 		gameserver.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(exUi.GetData())
 	}
 	//g.OnlineCharacters.Mu.Unlock()
+}
+
+func BroadcastUserInfo(client interfaces.ReciverAndSender) {
+	pkg := serverpackets.UserInfo(client.GetCurrentChar())
+	client.EncryptAndSend(pkg)
+
+	pkg2 := serverpackets.CharInfo(client.GetCurrentChar())
+	BroadCastPkgToAroundPlayersWithoutSelf(client, pkg2)
+
+	pkg3 := serverpackets.ExBrExtraUserInfo(client.GetCurrentChar())
+	BroadCastPkgToAroundPlayer(client, pkg3)
 }
 
 func BroadCastChat(me interfaces.ReciverAndSender, say models.Say) {

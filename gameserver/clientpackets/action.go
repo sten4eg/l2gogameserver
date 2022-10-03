@@ -5,6 +5,7 @@ import (
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/trade/privateStoreType"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"strconv"
@@ -170,10 +171,18 @@ func characterAction(client *models.ClientCtx, char interfaces.CharacterI, actio
 	}
 }
 
-func doActionOnCharacter(client *models.ClientCtx, char interfaces.CharacterI) {
-	x, y, z := char.GetXYZ()
-	pkg := serverpackets.TargetSelected(client.CurrentChar.ObjectId, char.GetObjectId(), x, y, z)
-	client.SendBuf(pkg)
+func doActionOnCharacter(client *models.ClientCtx, targetChar interfaces.CharacterI) {
+	if client.GetCurrentChar().GetTarget() != targetChar.GetObjectId() {
+		client.GetCurrentChar().SetTarget(targetChar.GetObjectId())
+		x, y, z := targetChar.GetXYZ()
+		pkg := serverpackets.TargetSelected(client.CurrentChar.ObjectId, targetChar.GetObjectId(), x, y, z)
+		client.SendBuf(pkg)
+	} else {
+		if targetChar.GetPrivateStoreType() == privateStoreType.SELL || targetChar.GetPrivateStoreType() == privateStoreType.PACKAGE_SELL {
+			pkg := serverpackets.PrivateStoreListSell(client.GetCurrentChar(), targetChar)
+			client.SendBuf(pkg)
+		}
+	}
 }
 
 func npcAction(client *models.ClientCtx, npc interfaces.Npcer, actionId byte) {

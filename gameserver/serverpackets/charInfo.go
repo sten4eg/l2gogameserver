@@ -79,15 +79,15 @@ func CharInfo(userI interfaces.CharacterI) []byte {
 	buffer.WriteD(0) //cursedW
 	buffer.WriteD(0) //cursedW
 
-	buffer.WriteSingleByte(1) // standing = 1 sitting = 0
+	buffer.WriteSingleByte()  // standing = 1 sitting = 0
 	buffer.WriteSingleByte(1) // running = 1 walking = 0
 	buffer.WriteSingleByte(0) //isInCombat
 
 	buffer.WriteSingleByte(0) //!_activeChar.isInOlympiadMode() && _activeChar.isAlikeDead()
 	buffer.WriteSingleByte(0) // invisible = 1 visible =0
 
-	buffer.WriteSingleByte(0) // 1-on Strider, 2-on Wyvern, 3-on Great Wolf, 0-no mount
-	buffer.WriteSingleByte(0) // privateStore
+	buffer.WriteSingleByte(0)                                // 1-on Strider, 2-on Wyvern, 3-on Great Wolf, 0-no mount
+	buffer.WriteSingleByte(byte(user.GetPrivateStoreType())) // privateStore
 
 	buffer.WriteH(0) //CubickSize
 	///FOR CUBICs

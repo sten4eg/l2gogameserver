@@ -118,11 +118,11 @@ func UserInfo(clientI interfaces.CharacterI) []byte {
 	buffer.WriteD(0)                //allyCrestId
 	buffer.WriteD(0)                //RELATION CALCULATE ?
 
-	buffer.WriteSingleByte(0) //mountType
-	buffer.WriteSingleByte(0) //privateStoreType
-	buffer.WriteSingleByte(0) //hasDwarfCraft
-	buffer.WriteD(1)          //pk //TODO
-	buffer.WriteD(1)          //pvp //TODO
+	buffer.WriteSingleByte(0)                                     //mountType
+	buffer.WriteSingleByte(byte(character.GetPrivateStoreType())) //privateStoreType
+	buffer.WriteSingleByte(0)                                     //hasDwarfCraft
+	buffer.WriteD(1)                                              //pk //TODO
+	buffer.WriteD(1)                                              //pvp //TODO
 
 	buffer.WriteH(0) //cubic size
 	//FOR cubicks

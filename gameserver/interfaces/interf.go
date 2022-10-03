@@ -3,6 +3,7 @@ package interfaces
 import (
 	"l2gogameserver/gameserver/models/clientStates"
 	"l2gogameserver/gameserver/models/items/attribute"
+	"l2gogameserver/gameserver/models/trade/privateStoreType"
 	"l2gogameserver/packets"
 	"sync"
 )
@@ -16,6 +17,15 @@ type UniquerId interface {
 type Namer interface {
 	GetName() string
 }
+
+type ItemRequestInterface interface {
+	UniquerId
+	Identifier
+	SetCount(int64)
+	GetCount() int64
+	GetPrice() int64
+}
+
 type Positionable interface {
 	GetObjectId() int32
 	SetX(int32)
@@ -45,6 +55,7 @@ type WorldRegioner interface {
 	GetChar(int32) (CharacterI, bool)
 	GetItem(int32) (MyItemInterface, bool)
 	GetNpc(int32) (Npcer, bool)
+	GetCharacterInRegions(int32) CharacterI
 }
 type Npcer interface {
 	UniquerId
@@ -64,6 +75,12 @@ type TradableItemInterface interface {
 	GetElementDefAttr() [6]int16
 	GetEnchantedOption() [3]int32
 	GetCount() int64
+	SetCount(count int64)
+	GetLocData() int32
+	IsEquipped() int16
+	GetDefaultPrice() int
+	GetPrice() int64
+	WriteItem(buffer *packets.Buffer)
 }
 
 type TradeListInterface interface {
@@ -82,6 +99,14 @@ type TradeListInterface interface {
 	CalcItemsWeight() int
 	CountItemSlots(CharacterI) int
 	TransferItems() bool
+	AdjustAvailableItem(item MyItemInterface) TradableItemInterface
+	GetItems() []TradableItemInterface
+	SetTitle(string)
+	GetTitle() string
+	Clear()
+	SetPackaged(bool)
+	IsPackaged() bool
+	PrivateStoreBuy(character CharacterI, items []ItemRequestInterface) byte
 }
 type InventoryInterface interface {
 	sync.Locker
@@ -98,6 +123,8 @@ type InventoryInterface interface {
 	TransferItem(int32, int, InventoryInterface, CharacterI) MyItemInterface
 	RemoveItem(MyItemInterface) bool
 	DestroyItem(MyItemInterface, int) MyItemInterface
+	GetAdenaCount() int64
+	GetAvailableItems(tradeList TradeListInterface, char CharacterI) []TradableItemInterface
 }
 
 type MyItemInterface interface {
@@ -124,6 +151,7 @@ type MyItemInterface interface {
 	SetOwnerId(ownerId int32)
 	SetCoordinate(x, y, z int32)
 	GetCoordinate() (x, y, z int32)
+	GetDefaultPrice() int
 }
 
 type BaseItemInterface interface {
@@ -145,6 +173,7 @@ type CharacterI interface {
 	Positionable
 	Namer
 	UniquerId
+	ClientInterface
 	EncryptAndSend(data []byte)
 	CloseChannels()
 	GetClassId() int32
@@ -169,14 +198,16 @@ type CharacterI interface {
 	GetMaxLoad() int32
 	SendSysMsg(q interface{}, options ...string)
 	GetActiveEnchantItemId() int32
-
-	ClientInterface
-
 	GetInventoryLimit() int16
 	OnTradeFinish()
 	GetAccountLogin() string
-
 	DropItem(objectId int32, count int64) (MyItemInterface, MyItemInterface)
+	GetSellList() TradeListInterface
+	SetPrivateStoreType(value privateStoreType.PrivateStoreType)
+	GetPrivateStoreType() privateStoreType.PrivateStoreType
+	IsSittings() bool
+	SetTarget(int32)
+	GetTarget() int32
 }
 type ClientInterface interface {
 	ReciverAndSender

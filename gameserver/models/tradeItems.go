@@ -5,6 +5,7 @@ import (
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/items/attribute"
+	"l2gogameserver/packets"
 )
 
 type TradeItem struct {
@@ -92,6 +93,56 @@ func (i *TradeItem) GetElementDefAttr() [6]int16 {
 func (i *TradeItem) GetEnchantedOption() [3]int32 {
 	return i.EnchantedOption
 }
+func (i *TradeItem) SetCount(count int64) {
+	i.Count = count
+}
 func (i *TradeItem) GetCount() int64 {
 	return i.Count
+}
+func (i *TradeItem) GetLocData() int32 {
+	return i.LocData
+}
+func (i *TradeItem) IsEquipped() int16 {
+	if i.Location == InventoryLoc {
+		return 0
+	}
+	return 1
+}
+func (i *TradeItem) GetDefaultPrice() int {
+	return i.Item.DefaultPrice
+}
+
+func (i *TradeItem) GetPrice() int64 {
+	return i.Price
+}
+
+func (i *TradeItem) WriteItem(buffer *packets.Buffer) {
+	buffer.WriteD(i.GetObjectId())
+	buffer.WriteD(i.GetId())
+	buffer.WriteD(i.GetLocData())
+	buffer.WriteQ(i.GetCount())
+	buffer.WriteH(i.GetItemType2())
+	buffer.WriteH(0)
+	buffer.WriteH(i.IsEquipped())
+	buffer.WriteD(i.GetBodyPart())
+	buffer.WriteH(i.GetEnchant())
+	buffer.WriteH(i.GetItemType2())
+	buffer.WriteD(0)
+	buffer.WriteD(0)
+	buffer.WriteD(0)
+
+	i.writeItemElementalAndEnchant(buffer)
+}
+
+func (i *TradeItem) writeItemElementalAndEnchant(buffer *packets.Buffer) {
+	buffer.WriteH(int16(i.GetAttackElementType()))
+	buffer.WriteH(i.GetAttackElementPower())
+
+	for i := 0; i < 6; i++ {
+		buffer.WriteH(0)
+	}
+
+	for _, op := range i.GetEnchantedOption() {
+		buffer.WriteH(int16(op))
+	}
 }
