@@ -247,6 +247,7 @@ func (t *TradeList) TransferItems() bool {
 	return true
 }
 
+// AdjustAvailableItem если предмет не стакается, добовляет его в трейд лист, если предмет стакается, проверяет что в инвентаре достаточно данного предмета(количество).
 func (t *TradeList) AdjustAvailableItem(item interfaces.MyItemInterface) interfaces.TradableItemInterface {
 	if item.IsStackable() {
 		for _, exclItem := range t.items {

@@ -48,7 +48,7 @@ func RequestPrivateStoreBuy(client interfaces.ReciverAndSender, data []byte) {
 
 	//TODO floodProtectors
 
-	storeCharacter := getCharacter(activeChar, storePlayerId)
+	storeCharacter := activeChar.GetCurrentRegion().GetCharacterInRegions(storePlayerId)
 	if storeCharacter == nil {
 		return
 	}

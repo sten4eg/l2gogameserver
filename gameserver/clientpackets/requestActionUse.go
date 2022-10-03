@@ -25,7 +25,7 @@ func RequestActionUse(client interfaces.ReciverAndSender, data []byte) {
 
 	switch actionId {
 	default:
-		fmt.Printf("Неопознаный второй опкод %v при state InGame\n", data[0])
+		fmt.Printf("Неопознаный второй опкод %v в RequestActionUse\n", data[0])
 	case 0:
 		ChangeWaitType(client)
 	case 10:
@@ -36,7 +36,7 @@ func RequestActionUse(client interfaces.ReciverAndSender, data []byte) {
 
 func tryOpenPrivateSellShop(client interfaces.ReciverAndSender, isPackageSale bool) {
 	c := client.GetCurrentChar()
-	if true {
+	if true { //TODO проверка на возможность создания магазина
 		if c.GetPrivateStoreType() == privateStoreType.SELL || c.GetPrivateStoreType() == privateStoreType.SELL_MANAGE || c.GetPrivateStoreType() == privateStoreType.PACKAGE_SELL {
 			c.SetPrivateStoreType(privateStoreType.NONE)
 		}
@@ -44,7 +44,6 @@ func tryOpenPrivateSellShop(client interfaces.ReciverAndSender, isPackageSale bo
 		if c.GetPrivateStoreType() == privateStoreType.NONE {
 			if c.IsSittings() {
 				ChangeWaitType(client)
-				fmt.Println("Character Sitting")
 			}
 			c.SetPrivateStoreType(privateStoreType.SELL_MANAGE)
 			pkg := serverpackets.PrivateStoreManageListSell(c, isPackageSale)
@@ -52,7 +51,7 @@ func tryOpenPrivateSellShop(client interfaces.ReciverAndSender, isPackageSale bo
 		}
 
 	} else {
-		if false {
+		if false { //TODO проверка что персонаж находится в зоне, в которой нельзя торговать
 			c.EncryptAndSend(sysmsg.SystemMessage(sysmsg.NoPrivateStoreHere))
 		}
 		pkg := serverpackets.ActionFailed(client)

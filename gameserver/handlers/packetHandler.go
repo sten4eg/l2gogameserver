@@ -129,6 +129,8 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				clientpackets.DestroyItem(data, client)
 			case 0xc1:
 				clientpackets.RequestObserverEnd(client, data)
+			case 0x5c:
+				clientpackets.FinishRotating(client, data)
 			case 0x6c:
 				clientpackets.RequestShowMiniMap(client, data)
 			case 0xa6: //TODO На java сборках пакет deprecated и не реализован

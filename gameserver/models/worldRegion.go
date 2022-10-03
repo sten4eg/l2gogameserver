@@ -132,6 +132,16 @@ func GetAroundPlayerObjId(c *Character) []int32 {
 	return result
 }
 
+func (w *WorldRegion) GetCharacterInRegions(objectId int32) interfaces.CharacterI {
+	for _, region := range w.GetNeighbors() {
+		char, ok := region.GetChar(objectId)
+		if ok {
+			return char
+		}
+	}
+	return nil
+}
+
 func GetAroundPlayersInRadius(c interfaces.CharacterI, radius int32) []*Character {
 	currentRegion := c.GetCurrentRegion()
 	if nil == currentRegion {
