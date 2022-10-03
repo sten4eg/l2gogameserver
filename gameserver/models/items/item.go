@@ -93,13 +93,12 @@ func LoadItems() {
 	loadItems()
 }
 
-func GetItemInfo(id int) (Item, bool) {
-	for _, item := range AllItems {
-		if item.Id == id {
-			return item, true
-		}
+func GetItemInfo(id int) (*Item, bool) {
+	item, ok := AllItems[id]
+	if ok {
+		return &item, true
 	}
-	return Item{}, false
+	return nil, false
 }
 
 func loadItems() {

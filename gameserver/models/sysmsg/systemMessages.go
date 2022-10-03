@@ -61,6 +61,10 @@ func (sys *SysMsg) AddLong(number int64) {
 func (sys *SysMsg) AddString(str string) {
 	sys.Params = append(sys.Params, Params{tType: TypeText, value: str})
 }
+func (sys *SysMsg) AddItemName(id int32) {
+	sys.Params = append(sys.Params, Params{tType: TypeItemName, value: id})
+}
+
 func (sys *SysMsg) AddZone(x, y, z int32) {
 	sys.Params = append(sys.Params, Params{tType: TypeZoneName, value: [3]int32{x, y, z}})
 }
@@ -80,25 +84,33 @@ func (sys *Params) GetThreeElementSlice() [3]int32 {
 	return sys.value.([3]int32)
 }
 
-var CantMoveSitting = SysMsg{Params: []Params{}, Id: 31}
-var CannotEquipItemDueToBadCondition = SysMsg{Params: []Params{}, Id: 1518}
-var TargetIsIncorrect = SysMsg{Params: []Params{}, Id: 144}
-var C1IsBusyTryLater = SysMsg{Params: []Params{}, Id: 153}
-var AlreadyTrading = SysMsg{Params: []Params{}, Id: 142}
 var TargetTooFar = SysMsg{Params: []Params{}, Id: 22}
-var S1 = SysMsg{Params: []Params{}, Id: 1987}
+var CantMoveSitting = SysMsg{Params: []Params{}, Id: 31}
+var NothingHappened = SysMsg{Params: []Params{}, Id: 61}
 var RequestC1ForTrade = SysMsg{Params: []Params{}, Id: 118}
-var TargetIsNotFoundInTheGame = SysMsg{Params: []Params{}, Id: 145}
 var C1DeniedTradeRequest = SysMsg{Params: []Params{}, Id: 119}
 var BeginTradeWithC1 = SysMsg{Params: []Params{}, Id: 120}
-var C1CanceledTrade = SysMsg{Params: []Params{}, Id: 124}
-var CannotAdjustItemsAfterTradeConfirmed = SysMsg{Params: []Params{}, Id: 124}
-var NothingHappened = SysMsg{Params: []Params{}, Id: 61}
 var C1ConfirmedTrade = SysMsg{Params: []Params{}, Id: 121}
-var WeightLimitExceeded = SysMsg{Params: []Params{}, Id: 422}
-var SlotsFull = SysMsg{Params: []Params{}, Id: 129}
+var CannotAdjustItemsAfterTradeConfirmed = SysMsg{Params: []Params{}, Id: 122}
 var TradeSuccessful = SysMsg{Params: []Params{}, Id: 123}
+var C1CanceledTrade = SysMsg{Params: []Params{}, Id: 124}
+var SlotsFull = SysMsg{Params: []Params{}, Id: 129}
+var AlreadyTrading = SysMsg{Params: []Params{}, Id: 142}
+var TargetIsIncorrect = SysMsg{Params: []Params{}, Id: 144}
+var TargetIsNotFoundInTheGame = SysMsg{Params: []Params{}, Id: 145}
+var C1IsBusyTryLater = SysMsg{Params: []Params{}, Id: 153}
+var YouNotEnoughAdena = SysMsg{Params: []Params{}, Id: 279}
+var IncorrectItemCount = SysMsg{Params: []Params{}, Id: 347}
+var C1purchasedS2 = SysMsg{Params: []Params{}, Id: 378}
+var C1PurchasedS3S2S = SysMsg{Params: []Params{}, Id: 380}
 var AnotherLoginWithAccount = SysMsg{Params: []Params{}, Id: 421}
+var WeightLimitExceeded = SysMsg{Params: []Params{}, Id: 422}
+var PurchasedS2FromC1 = SysMsg{Params: []Params{}, Id: 559}
+var PurchasedS3S2SFromC1 = SysMsg{Params: []Params{}, Id: 561}
+var YouHaveExceededQuantityThatCanBeInputted = SysMsg{Params: []Params{}, Id: 1036}
+var NoPrivateStoreHere = SysMsg{Params: []Params{}, Id: 1296}
+var CannotEquipItemDueToBadCondition = SysMsg{Params: []Params{}, Id: 1518}
+var S1 = SysMsg{Params: []Params{}, Id: 1987}
 
 func FindById() {
 

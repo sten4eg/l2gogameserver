@@ -9,6 +9,8 @@ import (
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/items/attribute"
+	"l2gogameserver/packets"
+	"l2gogameserver/utils"
 	"math"
 	"sync"
 )
@@ -113,6 +115,21 @@ func (i *MyItem) GetLocData() int32 {
 func (i *MyItem) GetMana() int32 {
 	return i.Mana
 }
+func (i *MyItem) GetDefaultPrice() int {
+	return i.Item.DefaultPrice
+}
+func (i *MyItem) GetPrice() int64 {
+	return int64(i.Item.Price)
+}
+func (i *MyItem) IsAvailable(character interfaces.CharacterI, allowAdena, allowNonTradable bool) bool {
+	return !utils.I2B(i.IsEquipped()) &&
+		i.GetItemType2() != items.Quest &&
+		(i.GetItemType2() != items.Money || i.GetItemType1() != items.ShieldArmor) &&
+		character.GetActiveEnchantItemId() != i.GetObjectId() &&
+		(allowAdena || i.GetId() != config.AdenaId)
+	//allowNonTradable
+	//return i.GetId() != 5
+}
 
 func (i *MyItem) ChangeCount(count int) {
 	if count == 0 {
@@ -200,4 +217,35 @@ func (i *MyItem) SetCoordinate(x, y, z int32) {
 
 func (i *MyItem) GetCoordinate() (x, y, z int32) {
 	return i.x, i.y, i.z
+}
+
+func (i *MyItem) WriteItem(buffer *packets.Buffer) {
+	buffer.WriteD(i.GetObjectId())
+	buffer.WriteD(i.GetId())
+	buffer.WriteD(i.GetLocData())
+	buffer.WriteQ(i.GetCount())
+	buffer.WriteH(i.GetItemType2())
+	buffer.WriteH(0)
+	buffer.WriteH(i.IsEquipped())
+	buffer.WriteD(i.GetBodyPart())
+	buffer.WriteH(i.GetEnchant())
+	buffer.WriteH(i.GetItemType2())
+	buffer.WriteD(0)
+	buffer.WriteD(0)
+	buffer.WriteD(0)
+
+	i.writeItemElementalAndEnchant(buffer)
+}
+
+func (i *MyItem) writeItemElementalAndEnchant(buffer *packets.Buffer) {
+	buffer.WriteH(int16(i.GetAttackElementType()))
+	buffer.WriteH(i.GetAttackElementPower())
+
+	for i := 0; i < 6; i++ {
+		buffer.WriteH(0)
+	}
+
+	for _, op := range i.GetEnchantedOption() {
+		buffer.WriteH(int16(op))
+	}
 }

@@ -12,6 +12,7 @@ import (
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/race"
 	"l2gogameserver/gameserver/models/sysmsg"
+	"l2gogameserver/gameserver/models/trade/privateStoreType"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
 	"net"
@@ -85,6 +86,8 @@ type (
 		ActiveTradeList         *TradeList
 		TradeRefusal            bool
 		ActiveEnchantItemId     int32
+		PrivateStoreType        privateStoreType.PrivateStoreType
+		sellList                *TradeList
 	}
 	SkillHolder struct {
 		Skill        Skill
@@ -132,6 +135,10 @@ func (c *Character) SetSitStandPose() int32 {
 	}
 	c.Sit = false
 	return 1
+}
+
+func (c *Character) IsSittings() bool {
+	return c.Sit
 }
 
 func (c *Character) ListenSkillQueue() {
@@ -522,6 +529,21 @@ func (c *Character) CloseConnection() {
 	c.Conn.CloseConnection()
 }
 
+func (c *Character) SetPrivateStoreType(value privateStoreType.PrivateStoreType) {
+	c.PrivateStoreType = value
+}
+
+func (c *Character) GetPrivateStoreType() privateStoreType.PrivateStoreType {
+	return c.PrivateStoreType
+}
+
+func (c *Character) GetSellList() interfaces.TradeListInterface {
+	if c.sellList == nil {
+		c.sellList = NewTradeList(c)
+	}
+	return c.sellList
+}
+
 // CancelActiveTrade
 // возвращает bool,bool.
 // Надо ли отправлять tradeDone(0) и sysMsg для себя(первый параметр) и партнёра(второй параметр)
@@ -595,6 +617,12 @@ func (c *Character) GetMaxLoad() int32 {
 }
 func (c *Character) GetActiveEnchantItemId() int32 {
 	return c.ActiveEnchantItemId
+}
+func (c *Character) SetTarget(objId int32) {
+	c.Target = objId
+}
+func (c *Character) GetTarget() int32 {
+	return c.Target
 }
 
 func (c *Character) SendSysMsg(num interface{}, options ...string) {

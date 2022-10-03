@@ -3,6 +3,7 @@ package models
 import (
 	"l2gogameserver/config"
 	"l2gogameserver/gameserver/interfaces"
+	items2 "l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/sysmsg"
 	"log"
 	"math"
@@ -36,6 +37,22 @@ func (t *TradeList) GetPartner() interfaces.CharacterI {
 
 func (t *TradeList) GetOwner() interfaces.CharacterI {
 	return t.owner
+}
+
+func (t *TradeList) SetTitle(title string) {
+	t.title = title
+}
+
+func (t *TradeList) GetTitle() string {
+	return t.title
+}
+
+func (t *TradeList) SetPackaged(packaged bool) {
+	t.packaged = packaged
+}
+
+func (t *TradeList) IsPackaged() bool {
+	return t.packaged
 }
 
 func (t *TradeList) Lock() {
@@ -228,4 +245,221 @@ func (t *TradeList) TransferItems() bool {
 		}
 	}
 	return true
+}
+
+func (t *TradeList) AdjustAvailableItem(item interfaces.MyItemInterface) interfaces.TradableItemInterface {
+	if item.IsStackable() {
+		for _, exclItem := range t.items {
+			if exclItem.GetId() == item.GetId() {
+				if item.GetCount() <= exclItem.GetCount() {
+					return nil
+				}
+				return NewTradeItem(item, item.GetCount()-exclItem.GetCount(), int64(item.GetDefaultPrice()))
+			}
+		}
+	}
+	return NewTradeItem(item, item.GetCount(), int64(item.GetDefaultPrice()))
+}
+
+func (t *TradeList) GetItems() []interfaces.TradableItemInterface {
+	return t.items
+}
+
+func (t *TradeList) Clear() {
+	t.MuLock()
+	t.items = nil
+	t.locked = false
+	t.MuUnlock()
+}
+
+// PrivateStoreBuy @return byte: результат трейда. 0 - ок, 1 - отменен (недостаточно адены), 2 - неудача (ошибка предмета)
+func (t *TradeList) PrivateStoreBuy(character interfaces.CharacterI, items []interfaces.ItemRequestInterface) byte {
+	t.MuLock()
+	defer t.MuUnlock()
+
+	if t.locked {
+		return 1
+	}
+
+	if !t.Validate() {
+		t.locked = true
+		return 1
+	}
+
+	//TODO проверка что оба игрока онлайн
+
+	var slots int32
+	var weight int32
+	var totalPrice int64
+
+	ownerInventory := t.owner.GetInventory()
+	playerInventory := character.GetInventory()
+
+	for _, item := range items {
+		found := false
+
+		for _, tradeItem := range t.items {
+			if tradeItem.GetObjectId() == item.GetObjectId() {
+				if tradeItem.GetPrice() == item.GetPrice() {
+					if tradeItem.GetCount() < item.GetCount() {
+						item.SetCount(tradeItem.GetCount())
+					}
+					found = true
+				}
+				break
+			}
+		}
+		if !found {
+			if t.IsPackaged() {
+				//TODO читер бан
+				return 2
+			}
+
+			item.SetCount(0)
+			continue
+		}
+
+		if config.MaxAdena/item.GetCount() < item.GetPrice() {
+			t.locked = true
+			return 1
+		}
+
+		totalPrice += item.GetCount() * item.GetPrice()
+
+		if config.MaxAdena < totalPrice || totalPrice < 0 {
+			t.locked = true
+			return 1
+		}
+
+		oldItem := t.owner.CheckItemManipulation(item.GetObjectId(), item.GetCount())
+		if oldItem == nil { //TODO проврека на трейдбл
+			t.locked = true
+			return 2
+		}
+
+		template, _ := items2.GetItemInfo(int(item.GetId()))
+		if template == nil {
+			continue
+		}
+		weight += int32(int(item.GetCount()) * template.GetWeight())
+		if !template.IsStackable() {
+			slots += int32(item.GetCount())
+		} else if playerInventory.GetItemByItemId(int(item.GetId())) == nil {
+			slots++
+		}
+
+	}
+
+	if totalPrice > playerInventory.GetAdenaCount() {
+		character.EncryptAndSend(sysmsg.SystemMessage(sysmsg.YouNotEnoughAdena))
+		return 1
+	}
+
+	if !playerInventory.ValidateWeight(int(weight)) {
+		character.EncryptAndSend(sysmsg.SystemMessage(sysmsg.WeightLimitExceeded))
+		return 1
+	}
+
+	if !playerInventory.ValidateCapacity(int(slots), character) {
+		character.EncryptAndSend(sysmsg.SystemMessage(sysmsg.SlotsFull))
+		return 1
+	}
+
+	adenaItem := playerInventory.GetItemByItemId(config.AdenaId)
+	if totalPrice > adenaItem.GetCount() {
+		character.EncryptAndSend(sysmsg.SystemMessage(sysmsg.YouNotEnoughAdena))
+		return 1
+	}
+	adenaItem.ChangeCount(int(-totalPrice))
+	adenaItem.UpdateDB()
+	if adenaItem.GetCount() <= 0 {
+		playerInventory.RemoveItem(adenaItem)
+	}
+
+	ownerInventory.AddItem2(config.AdenaId, int(totalPrice), true)
+
+	ok := true
+
+	for _, item := range items {
+		if item.GetCount() == 0 {
+			continue
+		}
+
+		oldItem := t.owner.CheckItemManipulation(item.GetObjectId(), item.GetCount())
+		if oldItem == nil {
+			t.locked = true
+			ok = false
+			break
+		}
+
+		newItem := ownerInventory.TransferItem(item.GetObjectId(), int(item.GetCount()), playerInventory, nil)
+		if newItem == nil {
+			ok = false
+			break
+		}
+		t.removeItem(item.GetObjectId(), -1, item.GetCount())
+
+		//TODO updateInventory
+
+		if newItem.IsStackable() {
+			msg1 := sysmsg.C1PurchasedS3S2S
+			msg1.AddString(character.GetName())
+			msg1.AddItemName(newItem.GetId())
+			msg1.AddLong(item.GetCount())
+			t.owner.SendSysMsg(msg1)
+
+			msg2 := sysmsg.PurchasedS3S2SFromC1
+			msg2.AddString(t.owner.GetName())
+			msg2.AddItemName(newItem.GetId())
+			msg2.AddLong(item.GetCount())
+			character.SendSysMsg(msg2)
+		} else {
+			msg1 := sysmsg.C1purchasedS2
+			msg1.AddString(character.GetName())
+			msg1.AddItemName(newItem.GetId())
+			t.owner.SendSysMsg(msg1)
+
+			msg2 := sysmsg.PurchasedS2FromC1
+			msg2.AddString(t.owner.GetName())
+			msg2.AddItemName(newItem.GetId())
+			character.SendSysMsg(msg2)
+		}
+
+	}
+
+	if ok {
+		return 0
+	}
+	return 2
+}
+
+func (t *TradeList) removeItem(objectId, itemId int32, count int64) interfaces.TradableItemInterface {
+	if t.IsLocked() {
+		return nil
+	}
+
+	for i, _ := range t.items {
+		if t.items[i].GetObjectId() == objectId || t.items[i].GetId() == itemId {
+			if t.partner != nil {
+				partnerList := t.partner.GetActiveTradeList()
+				if partnerList == nil {
+					return nil
+				}
+				partnerList.InvalidateConfirmation()
+			}
+
+			var item interfaces.TradableItemInterface
+			if count != -1 && t.items[i].GetCount() > count {
+				item = t.items[i]
+				t.items[i].SetCount(t.items[i].GetCount() - count)
+			} else {
+				item = t.items[i]
+				t.items = append(t.items[:i], t.items[i+1:]...)
+			}
+
+			return item
+		}
+	}
+
+	return nil
 }

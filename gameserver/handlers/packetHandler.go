@@ -114,6 +114,8 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				clientpackets.BypassToServer(data, client)
 			case 0x19:
 				clientpackets.UseItem(character, data)
+			case 0x31:
+				clientpackets.SetPrivateStoreListSell(client, data)
 			case 0x39:
 				clientpackets.RequestMagicSkillUse(data, client)
 			case 0x3d:
@@ -152,17 +154,8 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				clientpackets.RequestTargetCancel(data, client)
 			case 0xcd:
 				clientpackets.RequestMakeMacro(client, data)
-			case 0x56: //todo в java все обрабатывается внутри пакета RequestActionUse
-				if len(data) >= 2 {
-					switch data[0] {
-					default:
-						fmt.Printf("Неопознаный второй опкод %v при state InGame\n", data[0])
-					case 0x00: //посадить персонажа на жопу
-						clientpackets.ChangeWaitType(client)
-
-					}
-
-				}
+			case 0x56:
+				clientpackets.RequestActionUse(client, data)
 			case 0xd0:
 				switch data[0] {
 				default:
@@ -175,7 +168,12 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				}
 			case 0x74:
 				clientpackets.SendBypassBuildCmd(character, data)
-
+			case 0x83:
+				clientpackets.RequestPrivateStoreBuy(client, data)
+			case 0x96:
+				clientpackets.RequestPrivateStoreQuitSell(client)
+			case 0x97:
+				clientpackets.SetPrivateStoreMsgSell(client, data)
 			}
 		}
 
