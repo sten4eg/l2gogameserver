@@ -131,7 +131,11 @@ func CharSelectionInfo(clientI interfaces.ReciverAndSender) []byte {
 
 		paperdoll := models.RestoreVisibleInventory(char.ObjectId)
 		for _, slot := range models.GetPaperdollOrder() {
-			buffer.WriteD(int32(paperdoll[slot].Id))
+			if paperdoll[slot].Item == nil {
+				buffer.WriteD(0)
+			} else {
+				buffer.WriteD(int32(paperdoll[slot].Id))
+			}
 		}
 
 		buffer.WriteD(char.HairStyle) //hairStyle

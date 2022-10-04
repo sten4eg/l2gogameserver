@@ -10,7 +10,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-const BatchLength = 20
+const SellItemBatchLength = 20
 
 type Item struct {
 	itemId int32
@@ -18,7 +18,7 @@ type Item struct {
 	price  int64
 }
 
-func (i *Item) addToTradeList(list interfaces.TradeListInterface, char interfaces.CharacterI) bool {
+func (i *Item) addToTradeListByObjectId(list interfaces.TradeListInterface, char interfaces.CharacterI) bool {
 	if (config.MaxAdena / i.count) < i.price {
 		return false
 	}
@@ -27,8 +27,20 @@ func (i *Item) addToTradeList(list interfaces.TradeListInterface, char interface
 	return true
 }
 
+func (i *Item) addToTradeListByItemId(list interfaces.TradeListInterface, char interfaces.CharacterI) bool {
+	if (config.MaxAdena / i.count) < i.price {
+		return false
+	}
+	list.AddItemByItemId(i.itemId, i.count, i.price)
+	return true
+}
+
 func (i *Item) getPrice() int64 {
 	return i.count * i.price
+}
+
+func (i *Item) getCost() int64 {
+	return i.getPrice()
 }
 
 func SetPrivateStoreListSell(client interfaces.ReciverAndSender, data []byte) {
@@ -36,8 +48,8 @@ func SetPrivateStoreListSell(client interfaces.ReciverAndSender, data []byte) {
 
 	packageSale := packet.ReadInt32() == 1
 	count := packet.ReadInt32()
-
-	if count < 1 || count > 250 || len(data)-int(count)*BatchLength > BatchLength { //TODO заменить на вызовы методов
+	//TODO 3 проверка - проверить что в массиве не осталось предметов (возможно не правильно сделано, проверить).
+	if count < 1 || count > 250 || len(data)-int(count)*SellItemBatchLength > SellItemBatchLength { //TODO заменить на вызовы методов
 		return
 	}
 
@@ -56,33 +68,34 @@ func SetPrivateStoreListSell(client interfaces.ReciverAndSender, data []byte) {
 		items[i] = Item{itemId: itemId, count: cnt, price: price}
 	}
 
-	activeChar := client.GetCurrentChar()
-	if activeChar == nil {
+	character := client.GetCurrentChar()
+	if character == nil {
 		return
 	}
 
 	if items == nil {
-		activeChar.EncryptAndSend(sysmsg.SystemMessage(sysmsg.IncorrectItemCount))
-		activeChar.SetPrivateStoreType(privateStoreType.NONE)
+		character.EncryptAndSend(sysmsg.SystemMessage(sysmsg.IncorrectItemCount))
+		character.SetPrivateStoreType(privateStoreType.NONE)
 		broadcast.BroadcastUserInfo(client)
+		return
 	}
 
 	//TODO проверка на AccessLevel
 
 	if len(items) > 3 { //TODO > getPrivateSellStoreLimit()
-		pkg := serverpackets.PrivateStoreManageListSell(activeChar, packageSale)
-		activeChar.SendBuf(pkg)
-		activeChar.EncryptAndSend(sysmsg.SystemMessage(sysmsg.YouHaveExceededQuantityThatCanBeInputted))
+		pkg := serverpackets.PrivateStoreManageListSell(character, packageSale)
+		character.SendBuf(pkg)
+		character.EncryptAndSend(sysmsg.SystemMessage(sysmsg.YouHaveExceededQuantityThatCanBeInputted))
 		return
 	}
 
-	tradeList := activeChar.GetSellList()
+	tradeList := character.GetSellList()
 	tradeList.Clear()
 	tradeList.SetPackaged(packageSale)
 
-	totalCost := activeChar.GetInventory().GetAdenaCount()
+	totalCost := character.GetInventory().GetAdenaCount()
 	for _, item := range items {
-		if !item.addToTradeList(tradeList, activeChar) {
+		if !item.addToTradeListByObjectId(tradeList, character) {
 			return
 		}
 
@@ -94,22 +107,22 @@ func SetPrivateStoreListSell(client interfaces.ReciverAndSender, data []byte) {
 
 	}
 
-	if !activeChar.IsSittings() {
+	if !character.IsSittings() {
 		ChangeWaitType(client)
 	}
 	if packageSale {
-		activeChar.SetPrivateStoreType(privateStoreType.PACKAGE_SELL)
+		character.SetPrivateStoreType(privateStoreType.PACKAGE_SELL)
 	} else {
-		activeChar.SetPrivateStoreType(privateStoreType.SELL)
+		character.SetPrivateStoreType(privateStoreType.SELL)
 	}
 
 	broadcast.BroadcastUserInfo(client)
 
 	if packageSale {
-		pkg := serverpackets.ExPrivateStoreSetWholeMsg(activeChar, activeChar.GetSellList().GetTitle())
+		pkg := serverpackets.ExPrivateStoreSetWholeMsg(character, character.GetSellList().GetTitle())
 		broadcast.BroadCastBufferToAroundPlayers(client, pkg)
 	} else {
-		pkg := serverpackets.PrivateStoreMsgSell(activeChar)
+		pkg := serverpackets.PrivateStoreMsgSell(character)
 		broadcast.BroadCastBufferToAroundPlayers(client, pkg)
 	}
 }

@@ -81,6 +81,11 @@ type TradableItemInterface interface {
 	GetDefaultPrice() int
 	GetPrice() int64
 	WriteItem(buffer *packets.Buffer)
+	SetStoreCount(int64)
+	GetStoreCount() int64
+	SetPrice(int64)
+	SetObjectId(int32)
+	SetEnchant(int16)
 }
 
 type TradeListInterface interface {
@@ -107,6 +112,10 @@ type TradeListInterface interface {
 	SetPackaged(bool)
 	IsPackaged() bool
 	PrivateStoreBuy(character CharacterI, items []ItemRequestInterface) byte
+	AddItemByItemId(int32, int64, int64) TradableItemInterface
+	GetAvailableItems(inventory InventoryInterface) []TradableItemInterface
+	UpdateItems()
+	PrivateStoreSell(character CharacterI, items []ItemRequestInterface) bool
 }
 type InventoryInterface interface {
 	sync.Locker
@@ -125,6 +134,9 @@ type InventoryInterface interface {
 	DestroyItem(MyItemInterface, int) MyItemInterface
 	GetAdenaCount() int64
 	GetAvailableItems(tradeList TradeListInterface, char CharacterI) []TradableItemInterface
+	GetUniqueItems(character CharacterI, allowAdena, allowAncientAdena, onlyAvailable bool) []MyItemInterface
+	GetItemsByItemId(int32) []MyItemInterface
+	AdjustAvailableItem(TradableItemInterface)
 }
 
 type MyItemInterface interface {
@@ -208,6 +220,8 @@ type CharacterI interface {
 	IsSittings() bool
 	SetTarget(int32)
 	GetTarget() int32
+
+	GetBuyList() TradeListInterface
 }
 type ClientInterface interface {
 	ReciverAndSender

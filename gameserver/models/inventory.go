@@ -96,6 +96,15 @@ func (i *Inventory) GetItemByItemId(itemId int) interfaces.MyItemInterface {
 	}
 	return nil
 }
+func (i *Inventory) GetItemsByItemId(itemId int32) []interfaces.MyItemInterface {
+	var list []interfaces.MyItemInterface
+	for _, item := range i.Items {
+		if item.GetId() == itemId {
+			list = append(list, &item)
+		}
+	}
+	return list
+}
 func (i *Inventory) CanManipulateWithItemId(id int32) bool {
 	return (i.BlockMode != 0 || !utils.Contains(i.BlockItems, id)) && i.BlockMode != 1 || utils.Contains(i.BlockItems, id)
 }
@@ -307,6 +316,58 @@ func (i *Inventory) GetAvailableItems(tradeList interfaces.TradeListInterface, c
 	return list
 }
 
+// GetUniqueItems получает уникальные итемы персонажа.
+func (i *Inventory) GetUniqueItems(character interfaces.CharacterI, allowAdena, allowAncientAdena, onlyAvailable bool) []interfaces.MyItemInterface {
+	//TODO подумать как получить персонажа без передачи
+	var list []interfaces.MyItemInterface
+	for _, item := range i.Items {
+		if !allowAdena && item.GetId() == config.AdenaId {
+			continue
+		}
+		if !allowAncientAdena && item.GetId() == config.AncientAdenaId {
+			continue
+		}
+		isDuplicate := false
+		for _, listItem := range list {
+			if listItem.GetId() == item.GetId() {
+				isDuplicate = true
+				break
+			}
+		}
+		if !isDuplicate && (!onlyAvailable || item.IsAvailable(character, false, false)) {
+			list = append(list, i.GetItemByObjectId(item.GetObjectId()))
+		}
+	}
+	return list
+}
+
+func (i *Inventory) AdjustAvailableItem(item interfaces.TradableItemInterface) {
+	notAllEquipped := false
+	for _, adjItem := range i.GetItemsByItemId(item.GetId()) {
+		if adjItem.IsEquipable() {
+			if !utils.I2B(adjItem.IsEquipped()) {
+				notAllEquipped = true
+			}
+		} else {
+			notAllEquipped = true
+			break
+		}
+	}
+	if notAllEquipped {
+		adjItem := i.GetItemByItemId(int(item.GetId()))
+		item.SetObjectId(adjItem.GetObjectId())
+		item.SetEnchant(adjItem.GetEnchant())
+
+		if adjItem.GetCount() < item.GetCount() {
+			item.SetCount(adjItem.GetCount())
+		}
+
+		return
+	}
+
+	item.SetCount(0)
+}
+
 func RestoreVisibleInventory(charId int32) [26]MyItem {
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -331,7 +392,7 @@ func RestoreVisibleInventory(charId int32) [26]MyItem {
 			logger.Info.Println(err)
 		}
 
-		item, ok := items.GetItemFromStorage(itemId)
+		item, ok := items.GetItemInfo(itemId)
 		if !ok {
 			logger.Error.Panicln("Предмет не найден")
 		}
@@ -370,7 +431,7 @@ func GetMyItems(charId int32) []MyItem {
 			logger.Error.Panicln(err)
 		}
 
-		it, ok := items.GetItemFromStorage(id)
+		it, ok := items.GetItemInfo(id)
 		if ok {
 			itm.Item = it
 			itm.existsInDb = true

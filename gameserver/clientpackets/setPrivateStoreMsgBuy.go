@@ -6,24 +6,23 @@ import (
 	"l2gogameserver/packets"
 )
 
-const MaxMsgLength = 29
-
-func SetPrivateStoreMsgSell(client interfaces.ReciverAndSender, data []byte) {
+func SetPrivateStoreMsgBuy(client interfaces.ReciverAndSender, data []byte) {
 	reader := packets.NewReader(data)
 
 	storeMsg := reader.ReadString()
 
 	character := client.GetCurrentChar()
-	if character == nil || character.GetSellList() == nil {
+	if character == nil || character.GetBuyList() == nil {
 		return
 	}
 
 	if storeMsg != "" && len(storeMsg) > MaxMsgLength {
-		//TODO читер бан
+		//Читер
 		return
 	}
 
-	character.GetSellList().SetTitle(storeMsg)
-	pkg := serverpackets.PrivateStoreMsgSell(character)
+	character.GetBuyList().SetTitle(storeMsg)
+	pkg := serverpackets.PrivateStoreMsgBuy(character)
 	client.SendBuf(pkg)
+
 }

@@ -79,6 +79,13 @@ func I2B[T constraints.Integer](i T) bool {
 	return i != 0
 }
 
+func BoolToByte(flag bool) byte {
+	if flag {
+		return 1
+	}
+	return 0
+}
+
 func B2s(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
 }

@@ -4,6 +4,7 @@ import (
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
+	"l2gogameserver/utils"
 )
 
 func CharInfo(userI interfaces.CharacterI) []byte {
@@ -34,7 +35,11 @@ func CharInfo(userI interfaces.CharacterI) []byte {
 	buffer.WriteD(user.BaseClass)   //baseClass
 
 	for _, v := range getPaperdollOrder() {
-		buffer.WriteD(int32(user.Paperdoll[v].Id))
+		if user.Paperdoll[v].Item == nil {
+			buffer.WriteD(0)
+		} else {
+			buffer.WriteD(int32(user.Paperdoll[v].Id))
+		}
 	}
 
 	for _, v := range getPaperdollOrder() {
@@ -79,9 +84,9 @@ func CharInfo(userI interfaces.CharacterI) []byte {
 	buffer.WriteD(0) //cursedW
 	buffer.WriteD(0) //cursedW
 
-	buffer.WriteSingleByte()  // standing = 1 sitting = 0
-	buffer.WriteSingleByte(1) // running = 1 walking = 0
-	buffer.WriteSingleByte(0) //isInCombat
+	buffer.WriteSingleByte(utils.BoolToByte(!user.IsSittings())) // standing = 1 sitting = 0
+	buffer.WriteSingleByte(1)                                    // running = 1 walking = 0
+	buffer.WriteSingleByte(0)                                    //isInCombat
 
 	buffer.WriteSingleByte(0) //!_activeChar.isInOlympiadMode() && _activeChar.isAlikeDead()
 	buffer.WriteSingleByte(0) // invisible = 1 visible =0

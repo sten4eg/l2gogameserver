@@ -23,7 +23,7 @@ const RemoveFromDB = `DELETE FROM items WHERE object_id = $1`
 
 type MyItem struct {
 	// встроенный "шаблон" предмета
-	items.Item
+	*items.Item
 	ObjectId            int32
 	ownerId             int32
 	Enchant             int16
@@ -48,6 +48,9 @@ type MyItem struct {
 	z int32
 }
 
+func (i *MyItem) SetObjectId(value int32) {
+	i.ObjectId = value
+}
 func (i *MyItem) GetObjectId() int32 {
 	return i.ObjectId
 }
@@ -87,6 +90,9 @@ func (i *MyItem) GetCount() int64 {
 func (i *MyItem) SetCount(count int64) {
 	i.Count = count
 }
+func (i *MyItem) SetEnchant(value int16) {
+	i.Enchant = value
+}
 func (i *MyItem) GetEnchant() int16 {
 	return i.Enchant
 }
@@ -118,6 +124,9 @@ func (i *MyItem) GetMana() int32 {
 func (i *MyItem) GetDefaultPrice() int {
 	return i.Item.DefaultPrice
 }
+func (i *MyItem) SetPrice(value int64) {
+	i.Price = int(value)
+}
 func (i *MyItem) GetPrice() int64 {
 	return int64(i.Item.Price)
 }
@@ -128,7 +137,6 @@ func (i *MyItem) IsAvailable(character interfaces.CharacterI, allowAdena, allowN
 		character.GetActiveEnchantItemId() != i.GetObjectId() &&
 		(allowAdena || i.GetId() != config.AdenaId)
 	//allowNonTradable
-	//return i.GetId() != 5
 }
 
 func (i *MyItem) ChangeCount(count int) {
@@ -185,7 +193,10 @@ func (i *MyItem) UpdateDB() {
 }
 
 func CreateItem(itemId int, count int) interfaces.MyItemInterface {
-	item, _ := items.GetItemFromStorage(itemId)
+	item, ok := items.GetItemInfo(itemId)
+	if !ok {
+		return nil
+	}
 	mt := MyItem{
 		Item:       item,
 		ObjectId:   idfactory.GetNext(),
@@ -248,4 +259,12 @@ func (i *MyItem) writeItemElementalAndEnchant(buffer *packets.Buffer) {
 	for _, op := range i.GetEnchantedOption() {
 		buffer.WriteH(int16(op))
 	}
+}
+
+func (i *MyItem) SetStoreCount(value int64) {
+	return
+}
+
+func (i *MyItem) GetStoreCount() int64 {
+	return 0
 }

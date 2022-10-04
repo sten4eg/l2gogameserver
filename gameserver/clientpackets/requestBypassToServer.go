@@ -2,6 +2,7 @@ package clientpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
+	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/packets"
 	"strconv"
 	"strings"
@@ -30,7 +31,10 @@ func addAdminItem(command string, client interfaces.ReciverAndSender) {
 	if err != nil {
 		return
 	}
-	client.GetCurrentChar().GetInventory().AddItem2(int32(itemId), count, false)
+	item, ok := items.GetItemInfo(itemId)
+	if ok {
+		client.GetCurrentChar().GetInventory().AddItem2(int32(itemId), count, item.IsStackable())
+	}
 }
 
 //TODO всё что ниже написал logan22, может быть что то и понадобится

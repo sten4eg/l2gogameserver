@@ -88,6 +88,7 @@ type (
 		ActiveEnchantItemId     int32
 		PrivateStoreType        privateStoreType.PrivateStoreType
 		sellList                *TradeList
+		buyList                 *TradeList
 	}
 	SkillHolder struct {
 		Skill        Skill
@@ -542,6 +543,13 @@ func (c *Character) GetSellList() interfaces.TradeListInterface {
 		c.sellList = NewTradeList(c)
 	}
 	return c.sellList
+}
+
+func (c *Character) GetBuyList() interfaces.TradeListInterface {
+	if c.buyList == nil {
+		c.buyList = NewTradeList(c)
+	}
+	return c.buyList
 }
 
 // CancelActiveTrade

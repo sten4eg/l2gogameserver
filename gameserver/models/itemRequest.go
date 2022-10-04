@@ -7,7 +7,16 @@ type ItemRequest struct {
 	price    int64
 }
 
-func NewItemRequest(objectId int32, count, price int64) *ItemRequest {
+func NewItemRequest(objectId, itemId int32, count, price int64) *ItemRequest {
+	var item ItemRequest
+	item.objectId = objectId
+	item.itemId = itemId
+	item.count = count
+	item.price = price
+	return &item
+}
+
+func NewItemRequestWithoutItemId(objectId int32, count, price int64) *ItemRequest {
 	var item ItemRequest
 	item.objectId = objectId
 	item.count = count
