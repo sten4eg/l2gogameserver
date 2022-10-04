@@ -13,17 +13,17 @@ func FinishRotating(client interfaces.ReciverAndSender, data []byte) {
 	degree := reader.ReadInt32()
 	_ = reader.ReadInt32() // unknown
 
-	activeChar := client.GetCurrentChar()
-	if activeChar == nil {
+	character := client.GetCurrentChar()
+	if character == nil {
 		return
 	}
 
-	if false { //TODO if (activeChar.isInAirShip() && activeChar.getAirShip().isCaptain(activeChar))
-		// activeChar.getAirShip().setHeading(_degree)
-		//pkg := serverpackets.StopRotation(0, degree, 0) // TODO activeChar.getAirShip().getObjectId()
-		// activeChar.getAirShip().broadcastPacket(sr)
+	if false { //TODO if (character.isInAirShip() && character.getAirShip().isCaptain(character))
+		// character.getAirShip().setHeading(_degree)
+		//pkg := serverpackets.StopRotation(0, degree, 0) // TODO character.getAirShip().getObjectId()
+		// character.getAirShip().broadcastPacket(sr)
 	} else {
-		pkg := serverpackets.StopRotation(activeChar.GetObjectId(), degree, 0)
+		pkg := serverpackets.StopRotation(character.GetObjectId(), degree, 0)
 		broadcast.BroadCastBufferToAroundPlayers(client, pkg)
 	}
 

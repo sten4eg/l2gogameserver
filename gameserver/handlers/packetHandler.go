@@ -176,6 +176,15 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				clientpackets.RequestPrivateStoreQuitSell(client)
 			case 0x97:
 				clientpackets.SetPrivateStoreMsgSell(client, data)
+			case 0x9a:
+				clientpackets.SetPrivateStoreListBuy(client, data)
+			case 0x9c:
+				clientpackets.RequestPrivateStoreQuitBuy(client)
+			case 0x9d:
+				clientpackets.SetPrivateStoreMsgBuy(client, data)
+			case 0x9f:
+				clientpackets.RequestPrivateStoreSell(client, data)
+
 			}
 		}
 

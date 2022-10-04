@@ -8,6 +8,7 @@ import (
 
 func PrivateStoreManageListSell(character interfaces.CharacterI, isPackageSale bool) *packets.Buffer {
 	buffer := packets.Get()
+	character.GetSellList().UpdateItems()
 	itemList := character.GetInventory().GetAvailableItems(character.GetSellList(), character)
 	sellList := character.GetSellList().GetItems()
 

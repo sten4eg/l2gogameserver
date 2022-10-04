@@ -18,8 +18,8 @@ func RequestActionUse(client interfaces.ReciverAndSender, data []byte) {
 
 	_, _ = ctrlPressed, shiftPressed
 
-	activeChar := client.GetCurrentChar()
-	if activeChar == nil {
+	character := client.GetCurrentChar()
+	if character == nil {
 		return
 	}
 
@@ -30,6 +30,8 @@ func RequestActionUse(client interfaces.ReciverAndSender, data []byte) {
 		ChangeWaitType(client)
 	case 10:
 		tryOpenPrivateSellShop(client, false)
+	case 28:
+		tryOpenPrivateBuyStore(client)
 	}
 
 }
@@ -52,10 +54,33 @@ func tryOpenPrivateSellShop(client interfaces.ReciverAndSender, isPackageSale bo
 
 	} else {
 		if false { //TODO проверка что персонаж находится в зоне, в которой нельзя торговать
-			c.EncryptAndSend(sysmsg.SystemMessage(sysmsg.NoPrivateStoreHere))
+			c.SendSysMsg(sysmsg.NoPrivateStoreHere)
 		}
 		pkg := serverpackets.ActionFailed(client)
 		client.EncryptAndSend(pkg)
 
+	}
+}
+
+func tryOpenPrivateBuyStore(client interfaces.ReciverAndSender) {
+	c := client.GetCurrentChar()
+	if true { //TODO проверка на возможность создания магазина
+		if c.GetPrivateStoreType() == privateStoreType.BUY || c.GetPrivateStoreType() == privateStoreType.BUY_MANAGE {
+			c.SetPrivateStoreType(privateStoreType.NONE)
+		}
+		if c.GetPrivateStoreType() == privateStoreType.NONE {
+			if c.IsSittings() {
+				ChangeWaitType(client)
+			}
+			c.SetPrivateStoreType(privateStoreType.BUY_MANAGE)
+			pkg := serverpackets.PrivateStoreManageListBuy(c)
+			client.SendBuf(pkg)
+		}
+	} else {
+		if false { //TODO проверка что персонаж находится в зоне, в которой нельзя торговать
+			c.SendSysMsg(sysmsg.NoPrivateStoreHere)
+		}
+		pkg := serverpackets.ActionFailed(client)
+		client.EncryptAndSend(pkg)
 	}
 }

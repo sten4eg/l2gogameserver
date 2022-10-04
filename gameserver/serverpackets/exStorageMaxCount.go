@@ -19,8 +19,8 @@ func ExStorageMaxCount(clientI interfaces.ReciverAndSender) []byte {
 	buffer.WriteD(int32(client.CurrentChar.GetInventoryLimit())) // _inventory Limit
 	buffer.WriteD(0)                                             // _warehouse Limit
 	buffer.WriteD(0)                                             // _clan Limit
-	buffer.WriteD(0)                                             // _privateSell
-	buffer.WriteD(0)                                             // _privateBuy
+	buffer.WriteD(3)                                             // _privateSell
+	buffer.WriteD(3)                                             // _privateBuy
 	buffer.WriteD(0)                                             // _recipeD (dworf)
 	buffer.WriteD(0)                                             //_recipe
 	buffer.WriteD(0)                                             // _inventoryExtraSlots

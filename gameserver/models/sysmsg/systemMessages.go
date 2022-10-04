@@ -107,6 +107,7 @@ var AnotherLoginWithAccount = SysMsg{Params: []Params{}, Id: 421}
 var WeightLimitExceeded = SysMsg{Params: []Params{}, Id: 422}
 var PurchasedS2FromC1 = SysMsg{Params: []Params{}, Id: 559}
 var PurchasedS3S2SFromC1 = SysMsg{Params: []Params{}, Id: 561}
+var ThePurchasePriceIsHigherThanMoney = SysMsg{Params: []Params{}, Id: 720}
 var YouHaveExceededQuantityThatCanBeInputted = SysMsg{Params: []Params{}, Id: 1036}
 var NoPrivateStoreHere = SysMsg{Params: []Params{}, Id: 1296}
 var CannotEquipItemDueToBadCondition = SysMsg{Params: []Params{}, Id: 1518}

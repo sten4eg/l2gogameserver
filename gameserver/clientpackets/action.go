@@ -181,6 +181,9 @@ func doActionOnCharacter(client *models.ClientCtx, targetChar interfaces.Charact
 		if targetChar.GetPrivateStoreType() == privateStoreType.SELL || targetChar.GetPrivateStoreType() == privateStoreType.PACKAGE_SELL {
 			pkg := serverpackets.PrivateStoreListSell(client.GetCurrentChar(), targetChar)
 			client.SendBuf(pkg)
+		} else if targetChar.GetPrivateStoreType() == privateStoreType.BUY {
+			pkg := serverpackets.PrivateStoreListBuy(client.GetCurrentChar(), targetChar)
+			client.SendBuf(pkg)
 		}
 	}
 }

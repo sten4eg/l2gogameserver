@@ -9,7 +9,7 @@ import (
 )
 
 type TradeItem struct {
-	items.Item
+	*items.Item
 	ObjectId            int32
 	Enchant             int16
 	LocData             int32
@@ -32,7 +32,7 @@ func NewTradeItem(item interfaces.MyItemInterface, count, price int64) interface
 		logger.Error.Panicln("NewTradeItem baseItemInterface is not item.Item")
 	}
 	t := TradeItem{
-		Item:                *baseItem,
+		Item:                baseItem,
 		ObjectId:            item.GetObjectId(),
 		Location:            item.GetLocation(),
 		Enchant:             item.GetEnchant(),
@@ -48,6 +48,17 @@ func NewTradeItem(item interfaces.MyItemInterface, count, price int64) interface
 	return &t
 }
 
+func NewAvailableItem(item interfaces.TradableItemInterface, count, price int64) interfaces.TradableItemInterface {
+	availableItem := item
+	availableItem.SetCount(count)
+	availableItem.SetStoreCount(count)
+	availableItem.SetPrice(price)
+	return availableItem
+}
+
+func (i *TradeItem) SetObjectId(id int32) {
+	i.ObjectId = id
+}
 func (i *TradeItem) GetObjectId() int32 {
 	return i.ObjectId
 }
@@ -79,6 +90,9 @@ func (i *TradeItem) GetAttackElementType() attribute.Attribute {
 }
 func (i *TradeItem) getBaseAttributeElement() attribute.Attribute {
 	return i.BaseAttributeAttack.Type
+}
+func (i *TradeItem) SetEnchant(value int16) {
+	i.Enchant = value
 }
 func (i *TradeItem) GetEnchant() int16 {
 	return i.Enchant
@@ -112,8 +126,20 @@ func (i *TradeItem) GetDefaultPrice() int {
 	return i.Item.DefaultPrice
 }
 
+func (i *TradeItem) SetPrice(value int64) {
+	i.Price = value
+}
+
 func (i *TradeItem) GetPrice() int64 {
 	return i.Price
+}
+
+func (i *TradeItem) SetStoreCount(value int64) {
+	i.StoreCount = value
+}
+
+func (i *TradeItem) GetStoreCount() int64 {
+	return i.StoreCount
 }
 
 func (i *TradeItem) WriteItem(buffer *packets.Buffer) {

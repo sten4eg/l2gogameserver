@@ -1,7 +1,6 @@
 package clientpackets
 
 import (
-	"fmt"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
@@ -10,13 +9,13 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestPrivateStoreBuy(client interfaces.ReciverAndSender, data []byte) {
+func RequestPrivateStoreSell(client interfaces.ReciverAndSender, data []byte) {
 	reader := packets.NewReader(data)
 
 	storeCharacterId := reader.ReadInt32()
 	count := reader.ReadInt32()
 	//TODO 3 проверка - проверить что в массиве не осталось предметов (возможно не правильно сделано, проверить).
-	if count <= 0 || count > 250 || len(data)-int(count)*SellItemBatchLength > SellItemBatchLength { //TODO заменить на вызовы методов
+	if count <= 0 || count > 250 || len(data)-int(count)*BuyItemBatchLength > BuyItemBatchLength {
 		return
 	}
 
@@ -24,19 +23,23 @@ func RequestPrivateStoreBuy(client interfaces.ReciverAndSender, data []byte) {
 
 	for i := int32(0); i < count; i++ {
 		objectId := reader.ReadInt32()
+		itemId := reader.ReadInt32()
+
+		_ = reader.ReadInt16() //Enchant level
+		_ = reader.ReadInt16() // NameExist
+
 		cnt := reader.ReadInt64()
 		price := reader.ReadInt64()
 
-		if objectId < 1 || cnt < 1 || price < 0 {
+		if objectId < 1 || itemId < 1 || cnt < 1 || price < 0 {
 			items = nil
 			return
 		}
-
-		items[i] = models.NewItemRequestWithoutItemId(objectId, cnt, price)
+		items[i] = models.NewItemRequest(objectId, itemId, cnt, price)
 	}
 
-	character := client.GetCurrentChar()
-	if character == nil {
+	player := client.GetCurrentChar()
+	if player == nil {
 		return
 	}
 
@@ -46,16 +49,14 @@ func RequestPrivateStoreBuy(client interfaces.ReciverAndSender, data []byte) {
 		return
 	}
 
-	//TODO floodProtectors
+	//TODO if (!getClient().getFloodProtectors().getTransaction().tryPerformAction("privatestoresell"))
 
-	storeCharacter := character.GetCurrentRegion().GetCharacterInRegions(storeCharacterId)
+	storeCharacter := player.GetCurrentRegion().GetCharacterInRegions(storeCharacterId)
 	if storeCharacter == nil {
 		return
 	}
 
-	//TODO if (player.isCursedWeaponEquipped())
-
-	ox, oy, oz := character.GetXYZ()
+	ox, oy, oz := player.GetXYZ()
 	mx, my, mz := storeCharacter.GetXYZ()
 	if models.CalculateDistance(ox, oy, oz, mx, my, mz, true, false) > 150.0 {
 		return
@@ -63,29 +64,22 @@ func RequestPrivateStoreBuy(client interfaces.ReciverAndSender, data []byte) {
 
 	//TODO if ((player.getInstanceId() != storeCharacter.getInstanceId()) && (player.getInstanceId() != -1))
 
-	if !(storeCharacter.GetPrivateStoreType() == privateStoreType.SELL || storeCharacter.GetPrivateStoreType() == privateStoreType.PACKAGE_SELL) {
+	if storeCharacter.GetPrivateStoreType() != privateStoreType.BUY {
 		return
 	}
 
-	storeList := storeCharacter.GetSellList()
+	//TODO if (player.isCursedWeaponEquipped())
+
+	storeList := storeCharacter.GetBuyList()
 	if storeList == nil {
 		return
 	}
 
 	//TODO if (!player.getAccessLevel().allowTransaction())
 
-	if storeCharacter.GetPrivateStoreType() == privateStoreType.PACKAGE_SELL && len(storeList.GetItems()) > len(items) {
-		//TODO Читер забанить
-		return
-	}
-
-	result := storeList.PrivateStoreBuy(character, items)
-	if result > 0 {
+	if !storeList.PrivateStoreSell(player, items) {
 		pkg := serverpackets.ActionFailed(client)
 		client.EncryptAndSend(pkg)
-		if result > 1 {
-			fmt.Println("failed")
-		}
 		return
 	}
 
@@ -93,5 +87,4 @@ func RequestPrivateStoreBuy(client interfaces.ReciverAndSender, data []byte) {
 		storeCharacter.SetPrivateStoreType(privateStoreType.NONE)
 		broadcast.BroadcastUserInfo(storeCharacter)
 	}
-
 }

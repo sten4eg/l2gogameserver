@@ -15,9 +15,9 @@ func DropItem(client interfaces.ReciverAndSender, data []byte) {
 	y := read.ReadInt32()
 	z := read.ReadInt32()
 
-	activeChar := client.GetCurrentChar()
+	character := client.GetCurrentChar()
 
-	dropItem, updateItem := activeChar.DropItem(objectId, count)
+	dropItem, updateItem := character.DropItem(objectId, count)
 
 	if dropItem != nil {
 		dropItem.SetCoordinate(x, y, z)
@@ -28,9 +28,9 @@ func DropItem(client interfaces.ReciverAndSender, data []byte) {
 			client.EncryptAndSend(msg)
 		}
 
-		buffer := serverpackets.DropItem(dropItem, activeChar.GetObjectId())
+		buffer := serverpackets.DropItem(dropItem, character.GetObjectId())
 
-		activeChar.GetCurrentRegion().AddVisibleItems(dropItem)
+		character.GetCurrentRegion().AddVisibleItems(dropItem)
 
 		broadcast.BroadCastBufferToAroundPlayers(client, buffer)
 	}

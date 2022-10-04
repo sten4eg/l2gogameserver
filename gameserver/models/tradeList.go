@@ -159,6 +159,40 @@ func (t *TradeList) AddItem(objectId int32, count int64, char interfaces.Charact
 	return r
 }
 
+func (t *TradeList) AddItemByItemId(itemId int32, count, price int64) interfaces.TradableItemInterface {
+	if t.IsLocked() {
+		return nil
+	}
+
+	t.MuLock()
+	defer t.MuUnlock()
+
+	item, ok := items2.GetItemInfo(int(itemId))
+	if !ok {
+		return nil
+	}
+
+	//TODO !isTradeable() || IsQuestItem()
+
+	if !item.IsStackable() && count > 1 {
+		return nil
+	}
+
+	if (config.MaxAdena / count) < price {
+		return nil
+	}
+
+	var tradeItem TradeItem
+
+	tradeItem.Item = item
+	tradeItem.Count = count
+	tradeItem.Price = price
+
+	t.items = append(t.items, &tradeItem)
+	return &tradeItem
+
+}
+
 func (t *TradeList) MuLock() {
 	t.mu.Lock()
 }
@@ -202,11 +236,11 @@ func (t *TradeList) doExchange(partnerList interfaces.TradeListInterface) bool {
 	partner := partnerList.GetOwner()
 
 	if !owner.GetInventory().ValidateWeight(partnerList.CalcItemsWeight()) || !partner.GetInventory().ValidateWeight(t.CalcItemsWeight()) {
-		owner.EncryptAndSend(sysmsg.SystemMessage(sysmsg.WeightLimitExceeded))
-		partner.EncryptAndSend(sysmsg.SystemMessage(sysmsg.WeightLimitExceeded))
+		owner.SendSysMsg(sysmsg.WeightLimitExceeded)
+		partner.SendSysMsg(sysmsg.WeightLimitExceeded)
 	} else if !owner.GetInventory().ValidateCapacity(partnerList.CountItemSlots(owner), owner) || !partner.GetInventory().ValidateCapacity(t.CountItemSlots(partner), partner) {
-		owner.EncryptAndSend(sysmsg.SystemMessage(sysmsg.SlotsFull))
-		partner.EncryptAndSend(sysmsg.SystemMessage(sysmsg.SlotsFull))
+		owner.SendSysMsg(sysmsg.SlotsFull)
+		partner.SendSysMsg(sysmsg.SlotsFull)
 	} else {
 		partnerList.TransferItems()
 		t.TransferItems()
@@ -260,6 +294,17 @@ func (t *TradeList) AdjustAvailableItem(item interfaces.MyItemInterface) interfa
 		}
 	}
 	return NewTradeItem(item, item.GetCount(), int64(item.GetDefaultPrice()))
+}
+
+// GetAvailableItems возвращает список предметов доступных для покупки.
+func (t *TradeList) GetAvailableItems(inventory interfaces.InventoryInterface) []interfaces.TradableItemInterface {
+	var list []interfaces.TradableItemInterface
+	for index := range t.items {
+		i := NewAvailableItem(t.items[index], t.items[index].GetCount(), t.items[index].GetPrice())
+		inventory.AdjustAvailableItem(i)
+		list = append(list, i)
+	}
+	return list
 }
 
 func (t *TradeList) GetItems() []interfaces.TradableItemInterface {
@@ -338,8 +383,8 @@ func (t *TradeList) PrivateStoreBuy(character interfaces.CharacterI, items []int
 			return 2
 		}
 
-		template, _ := items2.GetItemInfo(int(item.GetId()))
-		if template == nil {
+		template, ok := items2.GetItemInfo(int(item.GetId()))
+		if !ok {
 			continue
 		}
 		weight += int32(int(item.GetCount()) * template.GetWeight())
@@ -352,7 +397,8 @@ func (t *TradeList) PrivateStoreBuy(character interfaces.CharacterI, items []int
 	}
 
 	if totalPrice > playerInventory.GetAdenaCount() {
-		character.EncryptAndSend(sysmsg.SystemMessage(sysmsg.YouNotEnoughAdena))
+		character.SendSysMsg(sysmsg.YouNotEnoughAdena)
+		//character.EncryptAndSend(sysmsg.SystemMessage(sysmsg.YouNotEnoughAdena))
 		return 1
 	}
 
@@ -463,4 +509,143 @@ func (t *TradeList) removeItem(objectId, itemId int32, count int64) interfaces.T
 	}
 
 	return nil
+}
+
+// UpdateItems обновляет список для покупок предметов (если кто-то продал предмет удаляет его из списка)
+func (t *TradeList) UpdateItems() {
+	for _, titem := range t.items {
+		item := t.owner.GetInventory().GetItemByObjectId(titem.GetObjectId())
+		if item == nil || titem.GetCount() < 1 {
+			t.removeItem(titem.GetObjectId(), -1, -1)
+		} else if item.GetCount() < titem.GetCount() {
+			titem.SetCount(item.GetCount())
+		}
+	}
+}
+
+// PrivateStoreSell продажа предметов скупщику.
+func (t *TradeList) PrivateStoreSell(character interfaces.CharacterI, items []interfaces.ItemRequestInterface) bool {
+	t.MuLock()
+	defer t.MuUnlock()
+
+	if t.locked {
+		return false
+	}
+
+	//TODO if (!_owner.isOnline() || !player.isOnline())
+
+	ok := false
+
+	ownerInventory := t.owner.GetInventory()
+	partnerInventory := character.GetInventory()
+
+	var totalPrice int64
+
+	for _, item := range items {
+		found := false
+
+		for _, tradeItem := range t.items {
+			if tradeItem.GetId() == item.GetId() {
+				if tradeItem.GetPrice() == item.GetPrice() {
+					if tradeItem.GetCount() == item.GetCount() {
+						item.SetCount(tradeItem.GetCount())
+					}
+					found = item.GetCount() > 0
+				}
+				break
+			}
+		}
+		if !found {
+			continue
+		}
+
+		if (config.MaxAdena / item.GetCount()) < item.GetPrice() {
+			t.Lock()
+			break
+		}
+
+		totalPrice += item.GetCount() * item.GetPrice()
+
+		if config.MaxAdena < totalPrice || totalPrice < 0 {
+			t.Lock()
+			break
+		}
+
+		if ownerInventory.GetAdenaCount() < totalPrice {
+			continue
+		}
+
+		oldItem := character.CheckItemManipulation(item.GetObjectId(), item.GetCount())
+		if oldItem == nil {
+			oldItem = partnerInventory.GetItemByItemId(int(item.GetId()))
+			if oldItem == nil {
+				continue
+			}
+		}
+		if oldItem.GetId() != item.GetId() {
+			//Читер
+			return false
+		}
+
+		//TODO if (!oldItem.isTradeable())
+
+		newItem := partnerInventory.TransferItem(oldItem.GetObjectId(), int(item.GetCount()), ownerInventory, nil)
+		if newItem == nil {
+			continue
+		}
+
+		t.removeItem(-1, item.GetId(), item.GetCount())
+		ok = true
+
+		//TODO пакет обновления инвентарей
+
+		if newItem.IsStackable() {
+			msg1 := sysmsg.PurchasedS3S2SFromC1
+			msg1.AddString(character.GetName())
+			msg1.AddItemName(newItem.GetId())
+			msg1.AddLong(item.GetCount())
+			t.owner.SendSysMsg(msg1)
+
+			msg2 := sysmsg.C1PurchasedS3S2S
+			msg2.AddString(t.owner.GetName())
+			msg2.AddItemName(newItem.GetId())
+			msg2.AddLong(item.GetCount())
+			character.SendSysMsg(msg2)
+		} else {
+			msg1 := sysmsg.PurchasedS2FromC1
+			msg1.AddString(character.GetName())
+			msg1.AddItemName(newItem.GetId())
+			t.owner.SendSysMsg(msg1)
+
+			msg2 := sysmsg.C1purchasedS2
+			msg2.AddString(t.owner.GetName())
+			msg2.AddItemName(newItem.GetId())
+			character.SendSysMsg(msg2)
+		}
+	}
+
+	if totalPrice > 0 {
+		if totalPrice > ownerInventory.GetAdenaCount() {
+			return false
+		}
+		ownerAdena := ownerInventory.GetItemByItemId(config.AdenaId)
+		ownerAdena.ChangeCount(int(-totalPrice))
+		ownerAdena.UpdateDB()
+		if ownerAdena.GetCount() <= 0 {
+			ownerInventory.RemoveItem(ownerAdena)
+		}
+
+		partnerAdena := partnerInventory.GetItemByItemId(config.AdenaId)
+		if partnerAdena == nil {
+			partnerInventory.AddItem2(config.AdenaId, int(totalPrice), true)
+		} else {
+			partnerAdena.ChangeCount(int(totalPrice))
+			partnerAdena.UpdateDB()
+		}
+	}
+
+	if ok {
+		//TODO отправка обновленных инвентарей участникам
+	}
+	return ok
 }
