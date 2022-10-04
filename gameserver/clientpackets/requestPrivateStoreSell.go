@@ -25,8 +25,8 @@ func RequestPrivateStoreSell(client interfaces.ReciverAndSender, data []byte) {
 		objectId := reader.ReadInt32()
 		itemId := reader.ReadInt32()
 
-		_ = reader.ReadInt16()
-		_ = reader.ReadInt16()
+		_ = reader.ReadInt16() //Enchant level
+		_ = reader.ReadInt16() // NameExist
 
 		cnt := reader.ReadInt64()
 		price := reader.ReadInt64()
@@ -46,6 +46,7 @@ func RequestPrivateStoreSell(client interfaces.ReciverAndSender, data []byte) {
 	if items == nil {
 		pkg := serverpackets.ActionFailed(client)
 		client.EncryptAndSend(pkg)
+		return
 	}
 
 	//TODO if (!getClient().getFloodProtectors().getTransaction().tryPerformAction("privatestoresell"))

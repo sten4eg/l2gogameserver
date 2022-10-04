@@ -299,8 +299,8 @@ func (t *TradeList) AdjustAvailableItem(item interfaces.MyItemInterface) interfa
 // GetAvailableItems возвращает список предметов доступных для покупки.
 func (t *TradeList) GetAvailableItems(inventory interfaces.InventoryInterface) []interfaces.TradableItemInterface {
 	var list []interfaces.TradableItemInterface
-	for _, item := range t.items {
-		i := NewAvailableItem(item, item.GetCount(), item.GetPrice())
+	for index := range t.items {
+		i := NewAvailableItem(t.items[index], t.items[index].GetCount(), t.items[index].GetPrice())
 		inventory.AdjustAvailableItem(i)
 		list = append(list, i)
 	}

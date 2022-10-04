@@ -98,9 +98,9 @@ func (i *Inventory) GetItemByItemId(itemId int) interfaces.MyItemInterface {
 }
 func (i *Inventory) GetItemsByItemId(itemId int32) []interfaces.MyItemInterface {
 	var list []interfaces.MyItemInterface
-	for _, item := range i.Items {
-		if item.GetId() == itemId {
-			list = append(list, &item)
+	for index, _ := range i.Items {
+		if i.Items[index].GetId() == itemId {
+			list = append(list, &i.Items[index])
 		}
 	}
 	return list
@@ -320,22 +320,22 @@ func (i *Inventory) GetAvailableItems(tradeList interfaces.TradeListInterface, c
 func (i *Inventory) GetUniqueItems(character interfaces.CharacterI, allowAdena, allowAncientAdena, onlyAvailable bool) []interfaces.MyItemInterface {
 	//TODO подумать как получить персонажа без передачи
 	var list []interfaces.MyItemInterface
-	for _, item := range i.Items {
-		if !allowAdena && item.GetId() == config.AdenaId {
+	for index := range i.Items {
+		if !allowAdena && i.Items[index].GetId() == config.AdenaId {
 			continue
 		}
-		if !allowAncientAdena && item.GetId() == config.AncientAdenaId {
+		if !allowAncientAdena && i.Items[index].GetId() == config.AncientAdenaId {
 			continue
 		}
 		isDuplicate := false
 		for _, listItem := range list {
-			if listItem.GetId() == item.GetId() {
+			if listItem.GetId() == i.Items[index].GetId() {
 				isDuplicate = true
 				break
 			}
 		}
-		if !isDuplicate && (!onlyAvailable || item.IsAvailable(character, false, false)) {
-			list = append(list, i.GetItemByObjectId(item.GetObjectId()))
+		if !isDuplicate && (!onlyAvailable || i.Items[index].IsAvailable(character, false, false)) {
+			list = append(list, i.GetItemByObjectId(i.Items[index].GetObjectId()))
 		}
 	}
 	return list

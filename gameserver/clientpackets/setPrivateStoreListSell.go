@@ -39,10 +39,6 @@ func (i *Item) getPrice() int64 {
 	return i.count * i.price
 }
 
-func (i *Item) getCost() int64 {
-	return i.getPrice()
-}
-
 func SetPrivateStoreListSell(client interfaces.ReciverAndSender, data []byte) {
 	packet := packets.NewReader(data)
 
