@@ -2,10 +2,32 @@ package models
 
 import (
 	"github.com/puzpuzpuz/xsync"
+	"l2gogameserver/config"
 	"l2gogameserver/gameserver/interfaces"
 	"math"
 	"strconv"
 )
+
+const MAP_MIN_X = (config.GeoFirstX - 20) << 15
+const MAP_MAX_X = ((config.GeoLastX - 20 + 1) << 15) - 1
+const MAP_MIN_Y = (config.GeoFirstY - 18 + 1) << 15
+const MAP_MAX_Y = ((config.GeoLastY - 18 + 1) << 15) - 1
+const MAP_MIN_Z = -16384
+const MAP_MAX_Z = 16384
+
+const WORLD_SIZE_X = config.GeoLastX - config.GeoFirstX + 1
+const WORLD_SIZE_Y = config.GeoLastY - config.GeoFirstY + 1
+
+const SHIFT_BY = config.SHIFT_BY
+const SHIFT_BY_Z = config.SHIFT_BY_Z
+
+var OFFSET_X = math.Abs(MAP_MIN_X >> SHIFT_BY)
+var OFFSET_Y = math.Abs(MAP_MIN_Y >> SHIFT_BY)
+var OFFSET_Z = math.Abs(MAP_MIN_Z >> SHIFT_BY_Z)
+
+var REGIONS_X = int32((MAP_MAX_X >> SHIFT_BY) + OFFSET_X)
+var REGIONS_Y = int32((MAP_MAX_Y >> SHIFT_BY) + OFFSET_Y)
+var REGIONS_Z = int32((MAP_MAX_Z >> SHIFT_BY_Z) + OFFSET_Z)
 
 type WorldRegion struct {
 	TileX         int32
@@ -27,6 +49,15 @@ func NewWorldRegion(x, y, z int32) *WorldRegion {
 	return &newRegion
 }
 
+func (w *WorldRegion) GetX() int32 {
+	return w.TileX
+}
+func (w *WorldRegion) GetY() int32 {
+	return w.TileY
+}
+func (w *WorldRegion) GetZ() int32 {
+	return w.TileZ
+}
 func (w *WorldRegion) AddVisibleChar(character interfaces.CharacterI) {
 	key := strconv.FormatInt(int64(character.GetObjectId()), 10)
 	w.CharsInRegion.Store(key, character)
@@ -97,44 +128,33 @@ func (w *WorldRegion) DeleteVisibleItem(item interfaces.MyItemInterface) {
 }
 
 func Contains(regions []interfaces.WorldRegioner, region interfaces.WorldRegioner) bool {
-	for _, v := range regions {
-		if v == region {
+	for index := range regions {
+		if regions[index] == region {
 			return true
 		}
 	}
 	return false
 }
-func GetAroundPlayer(c interfaces.Positionable) []interfaces.CharacterI {
-	currentRegion := c.GetCurrentRegion()
+
+// GetAroundPlayer возвращает персонажей в текущем и всех соседних регионах
+func GetAroundPlayer(character interfaces.Positionable) []interfaces.CharacterI {
+	currentRegion := character.GetCurrentRegion()
 	if nil == currentRegion {
 		return nil
 	}
 	result := make([]interfaces.CharacterI, 0, 64)
 
-	for _, v := range currentRegion.GetNeighbors() {
-		result = append(result, v.GetCharsInRegion()...)
-	}
-	return result
-}
-
-func GetAroundPlayerObjId(c *Character) []int32 {
-	currentRegion := c.GetCurrentRegion()
-	if nil == currentRegion {
-		return nil
-	}
-	result := make([]int32, 0, 64)
-
-	for _, v := range currentRegion.GetNeighbors() {
-		for _, vv := range v.GetCharsInRegion() {
-			result = append(result, vv.GetObjectId())
-		}
+	neighbors := currentRegion.GetNeighbors()
+	for index := range neighbors {
+		result = append(result, neighbors[index].GetCharsInRegion()...)
 	}
 	return result
 }
 
 func (w *WorldRegion) GetCharacterInRegions(objectId int32) interfaces.CharacterI {
-	for _, region := range w.GetNeighbors() {
-		char, ok := region.GetChar(objectId)
+	neighbors := w.GetNeighbors()
+	for index := range neighbors {
+		char, ok := neighbors[index].GetChar(objectId)
 		if ok {
 			return char
 		}
@@ -142,33 +162,36 @@ func (w *WorldRegion) GetCharacterInRegions(objectId int32) interfaces.Character
 	return nil
 }
 
-func GetAroundPlayersInRadius(c interfaces.CharacterI, radius int32) []*Character {
-	currentRegion := c.GetCurrentRegion()
+// GetAroundPlayersInRadius найди пользователей в радиусе radius, с максимальной разницой по Z = height
+func GetAroundPlayersInRadius(myCharacter interfaces.CharacterI, radius int32, height float64) []interfaces.CharacterI {
+	currentRegion := myCharacter.GetCurrentRegion()
 	if nil == currentRegion {
 		return nil
 	}
-	result := make([]*Character, 0, 64)
+
+	result := make([]interfaces.CharacterI, 0, 64)
 
 	sqrad := radius * radius
 
 	for _, v := range currentRegion.GetNeighbors() {
-		charInRegion := v.GetCharsInRegion()
-		for _, vv := range charInRegion {
-			char, ok := vv.(*Character)
-			if !ok {
+		charactersInRegion := v.GetCharsInRegion()
+		for charInRegionIndex := range charactersInRegion {
+
+			if charactersInRegion[charInRegionIndex].GetObjectId() == myCharacter.GetObjectId() {
 				continue
 			}
-			if char.GetObjectId() == c.GetObjectId() {
-				continue
-			}
-			dx := math.Abs(float64(char.Coordinates.X - c.GetX()))
+			dx := math.Abs(float64(charactersInRegion[charInRegionIndex].GetX() - myCharacter.GetX()))
 			if dx > float64(radius) {
 				continue
 			}
 
-			//toDO тут Y должен быть ? проверить на других сборках
-			dy := math.Abs(float64(char.Coordinates.Y - c.GetY()))
+			dy := math.Abs(float64(charactersInRegion[charInRegionIndex].GetY() - myCharacter.GetY()))
 			if dy > float64(radius) {
+				continue
+			}
+
+			dz := math.Abs(float64(charactersInRegion[charInRegionIndex].GetZ() - myCharacter.GetZ()))
+			if dz > height {
 				continue
 			}
 
@@ -176,12 +199,49 @@ func GetAroundPlayersInRadius(c interfaces.CharacterI, radius int32) []*Characte
 				continue
 			}
 
-			result = append(result, char)
-
+			result = append(result, charactersInRegion[charInRegionIndex])
 		}
 	}
 	return result
 }
+
+func validX(x int32) int32 {
+	if x < 0 {
+		x = 0
+	} else if x > REGIONS_X {
+		x = REGIONS_X
+	}
+	return x
+}
+func validY(y int32) int32 {
+	if y < 0 {
+		y = 0
+	} else if y > REGIONS_Y {
+		y = REGIONS_Y
+	}
+	return y
+}
+func validZ(z int32) int32 {
+	if z < 0 {
+		z = 0
+	} else if z > REGIONS_Z {
+		z = REGIONS_Z
+	}
+	return z
+}
+
+func regionX(x int32) int32 {
+	return (x >> SHIFT_BY) + int32(OFFSET_X)
+}
+func regionY(y int32) int32 {
+	return (y >> SHIFT_BY) + int32(OFFSET_Y)
+}
+func regionZ(z int32) int32 {
+	return (z >> SHIFT_BY_Z) + int32(OFFSET_Z)
+}
+
+//todo
+//private static WorldRegion getRegion(final int x, final int y, final int z) {
 
 func GetAroundPlayersObjIdInRadius(c *Character, radius int32) []int32 {
 	currentRegion := c.CurrentRegion
@@ -218,6 +278,20 @@ func GetAroundPlayersObjIdInRadius(c *Character, radius int32) []int32 {
 
 			result = append(result, char.ObjectId)
 
+		}
+	}
+	return result
+}
+func GetAroundPlayerObjId(c *Character) []int32 {
+	currentRegion := c.GetCurrentRegion()
+	if nil == currentRegion {
+		return nil
+	}
+	result := make([]int32, 0, 64)
+
+	for _, v := range currentRegion.GetNeighbors() {
+		for _, vv := range v.GetCharsInRegion() {
+			result = append(result, vv.GetObjectId())
 		}
 	}
 	return result

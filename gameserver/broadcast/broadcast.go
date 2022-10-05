@@ -13,7 +13,7 @@ import (
 // ToAroundPlayerInRadius отправляет всем персонажам в радиусе radius
 // информацию из пакета pkg
 func ToAroundPlayerInRadius(my interfaces.ReciverAndSender, pkg *utils.PacketByte, radius int32) {
-	charsIds := models.GetAroundPlayersInRadius(my.GetCurrentChar(), radius)
+	charsIds := models.GetAroundPlayersInRadius(my.GetCurrentChar(), radius, float64(radius))
 	for i := range charsIds {
 		charsIds[i].EncryptAndSend(pkg.GetData())
 	}
@@ -65,7 +65,7 @@ func BroadCastUserInfoInRadius(me interfaces.ReciverAndSender, radius int32) {
 	ui := serverpackets.UserInfo(me.GetCurrentChar())
 	me.EncryptAndSend(ui)
 
-	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius)
+	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius, float64(radius))
 	if len(charsIds) == 0 {
 		return
 	}
@@ -81,8 +81,8 @@ func BroadCastUserInfoInRadius(me interfaces.ReciverAndSender, radius int32) {
 
 	//g.OnlineCharacters.Mu.Lock()
 	for i := range charsIds {
-		gameserver.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(ci.GetData())
-		gameserver.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(exUi.GetData())
+		gameserver.OnlineCharacters.Char[charsIds[i].GetObjectId()].Conn.EncryptAndSend(ci.GetData())
+		gameserver.OnlineCharacters.Char[charsIds[i].GetObjectId()].Conn.EncryptAndSend(exUi.GetData())
 	}
 	//g.OnlineCharacters.Mu.Unlock()
 }
@@ -158,7 +158,7 @@ func BroadCastToCharacterByName(pkg *utils.PacketByte, to string) bool {
 // SendCharInfoAboutCharactersInRadius отправляет me CharInfo персонажей
 // в радиусе radius
 func SendCharInfoAboutCharactersInRadius(me interfaces.ReciverAndSender, radius int32) {
-	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius)
+	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius, float64(radius))
 	for i := range charsIds {
 		me.EncryptAndSend(serverpackets.CharInfo(charsIds[i]))
 	}
