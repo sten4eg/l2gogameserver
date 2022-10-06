@@ -35,7 +35,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 		case clientStates.Connected:
 			switch opcode {
 			default:
-				fmt.Printf("Неопознаный опкод %d при state Connection\n", opcode)
+				fmt.Printf("Неопознаный опкод {%x} при state Connection\n", opcode)
 			case 0x0e:
 				clientpackets.ProtocolVersion(client, data)
 			case 0x2b:
@@ -44,7 +44,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 		case clientStates.Authed:
 			switch opcode {
 			default:
-				fmt.Printf("Неопознаный опкод %v при state Authed\n", opcode)
+				fmt.Printf("Неопознаный опкод %x при state Authed\n", opcode)
 			case 0x00:
 				clientpackets.Logout(client, state, gs)
 			case 0x0c:
@@ -58,7 +58,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				if len(data) > 2 {
 					switch data[0] {
 					default:
-						fmt.Printf("Неопознаный второй опкод %v при state Authed\n", data[0])
+						fmt.Printf("Неопознаный второй опкод %x при state Authed\n", data[0])
 					case 0x36:
 						clientpackets.RequestGoToLobby(client, data)
 
@@ -68,7 +68,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 		case clientStates.Joining:
 			switch opcode {
 			default:
-				fmt.Printf("Неопознаный опкод %v при state Joining\n", opcode)
+				fmt.Printf("Неопознаный опкод %x при state Joining\n", opcode)
 			case 0x11:
 				clientpackets.RequestEnterWorld(client, data)
 				broadcast.BroadCastUserInfoInRadius(client, 2000)
@@ -78,7 +78,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				if len(data) > 2 {
 					switch data[0] {
 					default:
-						fmt.Printf("Неопознаный второй опкод %v при state Joining\n", data[0])
+						fmt.Printf("Неопознаный второй опкод %x при state Joining\n", data[0])
 					case 0x01:
 						clientpackets.RequestManorList(client, data)
 					}
@@ -138,6 +138,12 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 			case 0x0f:
 				pkg := clientpackets.MoveBackwardToLocation(client, data)
 				broadcast.Checkaem(client, pkg)
+			case 0x42:
+				clientpackets.RequestJoinParty(client, data)
+			case 0x43:
+				clientpackets.RequestAnswerJoinParty(client, data)
+			case 0x44:
+				clientpackets.RequestWithDrawalParty(client)
 			case 0x49:
 				say := clientpackets.Say(client, data)
 				broadcast.BroadCastChat(client, say)
@@ -161,7 +167,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 			case 0xd0:
 				switch data[0] {
 				default:
-					fmt.Printf("Неопознаный второй опкод %v при state InGame, первый опкод %v\n", data[0], opcode)
+					fmt.Printf("Неопознаный второй опкод %x при state InGame, первый опкод %x\n", data[0], opcode)
 				case 0x24:
 					clientpackets.RequestSaveInventoryOrder(client, data)
 				case 0x0d:
