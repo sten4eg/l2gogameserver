@@ -720,3 +720,43 @@ func (c *Character) GetMaxMp() int32 {
 func (c *Character) SetParty(party interfaces.PartyInterface) {
 	c.party = party
 }
+
+func (c *Character) GetSex() int32 {
+	return c.Sex
+}
+func (c *Character) GetRace() race.Race {
+	return c.Race
+}
+func (c *Character) GetBaseClass() int32 {
+	return c.BaseClass
+}
+func (c *Character) GetCurrentSp() int32 {
+	return c.Sp
+}
+func (c *Character) GetCurrentExp() int32 {
+	return c.Exp
+}
+func (c *Character) GetLevel() int32 {
+	return c.Level
+}
+func (c *Character) GetKarma() int32 {
+	return c.Karma
+}
+func (c *Character) GetPK() int32 {
+	return c.PkKills
+}
+func (c *Character) GetPVP() int32 {
+	return c.PvpKills
+}
+func (c *Character) GetHairStyle() int32 {
+	return c.HairStyle
+}
+func (c *Character) GetHairColor() int32 {
+	return c.HairColor
+}
+func (c *Character) GetFace() int32 {
+	return c.Face
+}
+func (c *Character) GetVitality() int32 {
+	return c.Vitality
+}
