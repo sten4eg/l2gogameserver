@@ -9,10 +9,10 @@ import (
 	"l2gogameserver/packets"
 )
 
-func CharSelectionInfo(clientI interfaces.ReciverAndSender) []byte {
+func CharSelectionInfo(clientI interfaces.ReciverAndSender) *packets.Buffer {
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
-		return []byte{}
+		return nil
 	}
 
 	buffer := packets.Get()
@@ -165,6 +165,11 @@ func CharSelectionInfo(clientI interfaces.ReciverAndSender) []byte {
 
 	}
 
-	defer packets.Put(buffer)
-	return buffer.Bytes()
+	return buffer
 }
+
+//func CharSelectionInfo2(login, string, sessionId int32) *packets.Buffer {
+//	buffer := packets.Get()
+//
+//	return buffer
+//}

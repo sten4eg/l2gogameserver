@@ -31,7 +31,7 @@ func PlayerAuthResponse(data []byte, ls loginServerInterface) {
 			client.SetState(clientStates.Authed)
 			//todo чекнуть sessionKey
 			pkg := serverpackets.CharSelectionInfo(client)
-			client.EncryptAndSend(pkg)
+			client.SendBuf(pkg)
 		} else {
 			//log
 			client.EncryptAndSend(serverpackets.LoginFail(serverpackets.SystemErrorLoginLater))

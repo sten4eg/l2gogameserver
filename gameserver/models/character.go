@@ -633,10 +633,10 @@ func (c *Character) GetTarget() int32 {
 	return c.Target
 }
 
-func (c *Character) SendSysMsg(num interface{}, options ...string) {
+func (c *Character) SendSysMsg(num interface{}, options ...string) error {
 	smsg := num.(sysmsg.SysMsg)
 
-	c.EncryptAndSend(sysmsg.SystemMessage(smsg))
+	return c.EncryptAndSend(sysmsg.SystemMessage(smsg))
 }
 
 // методы для реализации ClientInterface, не нужно их заполнять
@@ -656,7 +656,7 @@ func (c *Character) Receive() (opcode byte, data []byte, err error) { panic("н�
 func (c *Character) AddLengthAndSand(data []byte)                   { c.Conn.AddLengthAndSand(data) }
 func (c *Character) Send(data []byte)                               { c.Conn.Send(data) }
 func (c *Character) SendBuf(buffer *packets.Buffer) error           { return c.Conn.SendBuf(buffer) }
-func (c *Character) EncryptAndSend(data []byte)                     { c.Conn.EncryptAndSend(data) }
+func (c *Character) EncryptAndSend(data []byte) error               { return c.Conn.EncryptAndSend(data) }
 func (c *Character) CryptAndReturnPackageReadyToShip(data []byte) []byte {
 	return c.Conn.CryptAndReturnPackageReadyToShip(data)
 }

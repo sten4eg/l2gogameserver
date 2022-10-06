@@ -7,6 +7,8 @@ import (
 	"log"
 )
 
+const CharsCount = `SELECT COUNT(object_id) FROM characters WHERE login = $1`
+
 func ReplyCharacters(login string) *packets.Buffer {
 	dbConn, err := db.GetConn()
 	if err != nil {
@@ -29,13 +31,20 @@ func ReplyCharacters(login string) *packets.Buffer {
 			log.Println(err)
 			return nil
 		}
-
 		timeToDel = append(timeToDel, i)
 	}
+
+	var charCount byte
+	err = dbConn.QueryRow(context.Background(), CharsCount, login).Scan(&charCount)
+	if err != nil {
+		log.Println("err", err.Error())
+		return nil
+	}
+
 	buf := packets.Get()
 	buf.WriteSingleByte(0x08)
 	buf.WriteS(login)
-	buf.WriteSingleByte(1)
+	buf.WriteSingleByte(charCount)
 	buf.WriteSingleByte(byte(len(timeToDel)))
 	for i := range timeToDel {
 		buf.WriteQ(timeToDel[i])

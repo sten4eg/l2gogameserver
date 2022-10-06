@@ -35,7 +35,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 		case clientStates.Connected:
 			switch opcode {
 			default:
-				fmt.Printf("Неопознаный опкод %v при state Connection\n", opcode)
+				fmt.Printf("Неопознаный опкод %d при state Connection\n", opcode)
 			case 0x0e:
 				clientpackets.ProtocolVersion(client, data)
 			case 0x2b:
@@ -48,7 +48,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 			case 0x00:
 				clientpackets.Logout(client, state, gs)
 			case 0x0c:
-				clientpackets.CharacterCreate(data, client)
+				clientpackets.CharacterCreate(client, data)
 			case 0x12:
 				clientpackets.CharSelected(data, client)
 				gameserver.AddOnlineChar(client.GetCurrentChar()) //todo проверить зачем еще одна мапа с чарами онлайн, есть мапа с клиентами
@@ -89,7 +89,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 
 			switch opcode {
 			default:
-				fmt.Printf("Неопознаный опкод %v при state InGame\n", data[0])
+				fmt.Printf("Неопознаный опкод {%x} при state InGame\n", opcode)
 			case 0x00:
 				clientpackets.Logout(character, state, gs)
 			case 0x01:
@@ -123,8 +123,8 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 			case 0x3f:
 				clientpackets.RequestShortCutDel(data, client)
 			case 0x57:
-				clientpackets.RequestRestart(data, client)
-				gameserver.CharOffline(client)
+				clientpackets.RequestRestart(client)
+				//gameserver.CharOffline(client)
 			case 0x60:
 				clientpackets.DestroyItem(data, client)
 			case 0xc1:

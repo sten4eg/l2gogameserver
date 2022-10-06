@@ -35,7 +35,7 @@ func AuthLogin(data []byte, client interfaces.ClientInterface, gs gameServerInte
 		}
 
 		pkg := serverpackets.CharSelectionInfo(client)
-		client.EncryptAndSend(pkg)
+		client.SendBuf(pkg)
 	}
 
 }

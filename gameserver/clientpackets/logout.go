@@ -6,7 +6,7 @@ import (
 )
 
 type logoutInterface interface {
-	EncryptAndSend(data []byte)
+	EncryptAndSend(data []byte) error
 	GetAccountLogin() string
 }
 
