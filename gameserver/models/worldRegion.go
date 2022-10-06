@@ -9,7 +9,7 @@ import (
 )
 
 const MAP_MIN_X = (config.GeoFirstX - 20) << 15
-const MAP_MAX_X = ((config.GeoLastX - 20 + 1) << 15) - 1
+const MAP_MAX_X = ((config.GeoLastX - 19) << 15) - 1
 const MAP_MIN_Y = (config.GeoFirstY - 18 + 1) << 15
 const MAP_MAX_Y = ((config.GeoLastY - 18 + 1) << 15) - 1
 const MAP_MIN_Z = -16384
@@ -241,7 +241,21 @@ func regionZ(z int32) int32 {
 }
 
 //todo
-//private static WorldRegion getRegion(final int x, final int y, final int z) {
+
+// getRegion возвращает регион, соответствующий координатам
+// x,y,z - координаты на карте регионов
+//func getRegion(x, y, z int32) *WorldRegion {
+//	xx := validX(regionX(x))
+//	yy := validY(regionY(y))
+//	zz := validZ(regionZ(z))
+//
+//	if World[xx][yy][zz] == nil {
+//		World[xx][yy][zz] = NewWorldRegion(xx, yy, zz)
+//	}
+//	qwe := World
+//	_ = qwe
+//	return World[xx][yy][zz]
+//}
 
 func GetAroundPlayersObjIdInRadius(c *Character, radius int32) []int32 {
 	currentRegion := c.CurrentRegion

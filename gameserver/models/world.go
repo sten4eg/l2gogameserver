@@ -40,8 +40,8 @@ var MapMaxY = ((TileYMax - 17) << 15) - 1
 var MapMinZ = -16384
 var MapMaxZ = 16383
 
-var ShiftBy = 12
-var ShiftByForZ = 10
+var ShiftBy = 11
+var ShiftByForZ = 11
 
 var OffsetX = math.Abs(float64(MapMinX >> ShiftBy))
 var OffsetY = math.Abs(float64(MapMinY >> ShiftBy))
@@ -55,12 +55,17 @@ var World [][][]*WorldRegion
 
 func NewWorld() {
 	World = make([][][]*WorldRegion, RegionsX+1)
+
+	//	wj := make([][]*WorldRegion, 0, RegionsY+1)
+	//	wz := make([]*WorldRegion, 0, RegionsZ+1)
+
 	for i := 0; i <= int(RegionsX); i++ {
 		wj := make([][]*WorldRegion, RegionsY+1)
 		for j := 0; j <= int(RegionsY); j++ {
-			wz := make([]*WorldRegion, 1)
-			for z := 0; z < 1; z++ { //todo Z из конфига??
-				wz[z] = NewWorldRegion(int32(i), int32(j), int32(z))
+			wz := make([]*WorldRegion, RegionsZ+1)
+			for z := 0; z < int(RegionsZ); z++ { //todo Z из конфига??
+				//	wz[z] = NewWorldRegion(int32(i), int32(j), int32(z))
+				wz[z] = nil
 			}
 			wj[j] = wz
 		}
@@ -125,21 +130,32 @@ func GetNeighbors(regX, regY, regZ, deepH, deepV int) []interfaces.WorldRegioner
 	return ret
 }
 
-func GetRegion(x, y, z int32) *WorldRegion {
-	_x := int(x>>ShiftBy) + int(OffsetX)
-	_y := int(y>>ShiftBy) + int(OffsetY)
-	_z := 0
-	if validRegion(_x, _y, _z) {
-		if len(World[_x][_y]) > 1 {
-			_z = int(z>>ShiftByForZ) + int(OffsetZ)
+func TESTGetNeighbors2TEST(xx, yy, zz int32) []interfaces.WorldRegioner {
+	var res []interfaces.WorldRegioner
+	for x := validX(xx - 1); x <= validX(xx+1); x++ {
+		for y := validY(yy - 1); y <= validY(yy+1); y++ {
+			for z := validZ(zz - 1); z <= validZ(zz+1); z++ {
+				res = append(res, getRegion(x, y, z))
+			}
 		}
-
-		if World[_x][_y][_z] == nil {
-			World[_x][_y][_z] = NewWorldRegion(int32(_x), int32(_y), int32(_z))
-		}
-		return World[_x][_y][_z]
 	}
-	return nil
+	return res
+}
+
+func GetRegion(x, y, z int32) *WorldRegion {
+	xx := validX(regionX(x))
+	yy := validY(regionY(y))
+	zz := validZ(regionZ(z))
+	return getRegion(xx, yy, zz)
+}
+
+func getRegion(x, y, z int32) *WorldRegion {
+
+	if World[x][y][z] == nil {
+		World[x][y][z] = NewWorldRegion(x, y, z)
+	}
+	return World[x][y][z]
+
 }
 
 func CalculateDistance(ox, oy, oz, mx, my, mz int32, includeZAxis, squared bool) float64 {
