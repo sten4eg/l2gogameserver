@@ -306,15 +306,21 @@ func GetAroundPlayerObjId(c *Character) []int32 {
 		return nil
 	}
 	result := make([]int32, 0, 64)
-
 	for _, v := range currentRegion.GetNeighbors() {
 		for _, vv := range v.GetCharsInRegion() {
 			result = append(result, vv.GetObjectId())
 		}
-    return result
+
 	}
+
+	return result
+}
 func (w *WorldRegion) DropItemChecker() []int32 {
 	var result []int32
+
+	if w == nil {
+		return result
+	}
 	w.ItemsExpireTime.ForEach(func(key int32, value int64) bool {
 		if value <= time.Now().Unix() {
 			key_ := strconv.FormatInt(int64(key), 10)
@@ -327,5 +333,6 @@ func (w *WorldRegion) DropItemChecker() []int32 {
 		}
 		return true
 	})
-	
+
+	return result
 }
