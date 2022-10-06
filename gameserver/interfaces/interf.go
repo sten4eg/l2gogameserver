@@ -26,6 +26,27 @@ type ItemRequestInterface interface {
 	GetPrice() int64
 }
 
+type PartyInterface interface {
+	GetMemberCount() int
+	AddPartyMember(character CharacterI) bool
+	GetLeaderObjectId() int32
+	GetDistributionType() PartyDistributionTypeInterface
+	SetMembers(members []CharacterI)
+	GetMembers() []CharacterI
+	GetLeader() CharacterI
+	IsMemberInParty(character CharacterI) bool
+	IsLeader(i CharacterI) bool
+	IsDisbanding() bool
+	SetDisbanding(bool)
+	GetMemberIndex(CharacterI) int
+	BroadcastParty([]byte)
+}
+
+type PartyDistributionTypeInterface interface {
+	Identifier
+	GetSysStringId() int32
+}
+
 type Positionable interface {
 	GetObjectId() int32
 	SetX(int32)
@@ -56,9 +77,10 @@ type WorldRegioner interface {
 	GetItem(int32) (MyItemInterface, bool)
 	GetNpc(int32) (Npcer, bool)
 	GetCharacterInRegions(int32) CharacterI
-	GetX() int32
+  GetX() int32
 	GetY() int32
 	GetZ() int32
+  DropItemChecker() []int32
 }
 type Npcer interface {
 	UniquerId
@@ -189,7 +211,7 @@ type CharacterI interface {
 	Namer
 	UniquerId
 	ClientInterface
-	EncryptAndSend(data []byte)
+	EncryptAndSend(data []byte) error
 	CloseChannels()
 	GetClassId() int32
 	StartTransactionRequest()
@@ -211,7 +233,7 @@ type CharacterI interface {
 	CheckItemManipulation(int32, int64) MyItemInterface
 	ValidateWeight(int32) bool
 	GetMaxLoad() int32
-	SendSysMsg(q interface{}, options ...string)
+	SendSysMsg(q interface{}, options ...string) error
 	GetActiveEnchantItemId() int32
 	GetInventoryLimit() int16
 	OnTradeFinish()
@@ -223,8 +245,18 @@ type CharacterI interface {
 	IsSittings() bool
 	SetTarget(int32)
 	GetTarget() int32
-
 	GetBuyList() TradeListInterface
+
+	IsinParty() bool
+	SetPartyDistributionType(pdt PartyDistributionTypeInterface)
+	GetParty() PartyInterface
+	JoinParty(party PartyInterface) bool
+	GetCurrentHp() int32
+	GetMaxHp() int32
+	GetCurrentMp() int32
+	GetMaxMp() int32
+	SetParty(party PartyInterface)
+	GetPartyDistributionType() PartyDistributionTypeInterface
 }
 type ClientInterface interface {
 	ReciverAndSender
@@ -242,7 +274,10 @@ type ReciverAndSender interface {
 	AddLengthAndSand(data []byte)
 	Send(data []byte)
 	SendBuf(buffer *packets.Buffer) error
-	EncryptAndSend(data []byte)
+	EncryptAndSend(data []byte) error
+	SendSysMsg(q interface{}, options ...string) error
 	CryptAndReturnPackageReadyToShip(data []byte) []byte
 	GetCurrentChar() CharacterI
+
+	GetAccountLogin() string
 }

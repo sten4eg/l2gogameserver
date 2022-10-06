@@ -7,5 +7,5 @@ import (
 
 func RequestGoToLobby(client interfaces.ReciverAndSender, data []byte) {
 	pkg := serverpackets.CharSelectionInfo(client)
-	client.EncryptAndSend(pkg)
+	client.SendBuf(pkg)
 }

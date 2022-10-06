@@ -25,13 +25,15 @@ func RequestActionUse(client interfaces.ReciverAndSender, data []byte) {
 
 	switch actionId {
 	default:
-		fmt.Printf("Неопознаный второй опкод %v в RequestActionUse\n", data[0])
+		fmt.Printf("Неопознаный второй опкод %x в RequestActionUse\n", data[0])
 	case 0:
 		ChangeWaitType(client)
 	case 10:
 		tryOpenPrivateSellShop(client, false)
 	case 28:
 		tryOpenPrivateBuyStore(client)
+	case 61:
+		tryOpenPrivateSellShop(client, true)
 	}
 
 }

@@ -1,11 +1,13 @@
 package models
 
 import (
+	"github.com/alphadose/haxmap"
 	"github.com/puzpuzpuz/xsync"
 	"l2gogameserver/config"
 	"l2gogameserver/gameserver/interfaces"
 	"math"
 	"strconv"
+	"time"
 )
 
 const MAP_MIN_X = (config.GeoFirstX - 20) << 15
@@ -28,6 +30,8 @@ type WorldRegion struct {
 	CharsInRegion *xsync.MapOf[interfaces.CharacterI]
 	NpcInRegion   *xsync.MapOf[interfaces.Npcer]
 	ItemsInRegion *xsync.MapOf[interfaces.MyItemInterface]
+
+	ItemsExpireTime *haxmap.Map[int32, int64]
 }
 
 func NewWorldRegion(x, y, z int32) *WorldRegion {
@@ -38,6 +42,7 @@ func NewWorldRegion(x, y, z int32) *WorldRegion {
 	newRegion.CharsInRegion = xsync.NewMapOf[interfaces.CharacterI]()
 	newRegion.NpcInRegion = xsync.NewMapOf[interfaces.Npcer]()
 	newRegion.ItemsInRegion = xsync.NewMapOf[interfaces.MyItemInterface]()
+	newRegion.ItemsExpireTime = haxmap.New[int32, int64]()
 	return &newRegion
 }
 
@@ -100,7 +105,10 @@ func (w *WorldRegion) GetNpcInRegion() []interfaces.Npcer {
 
 func (w *WorldRegion) AddVisibleItems(item interfaces.MyItemInterface) {
 	key := strconv.FormatInt(int64(item.GetObjectId()), 10)
+	expireTime := time.Now().Add(time.Second * 10).Unix()
+
 	w.ItemsInRegion.Store(key, item)
+	w.ItemsExpireTime.Set(item.GetObjectId(), expireTime)
 }
 func (w *WorldRegion) GetItem(objectId int32) (interfaces.MyItemInterface, bool) {
 	key := strconv.FormatInt(int64(objectId), 10)
@@ -116,8 +124,12 @@ func (w *WorldRegion) GetItemsInRegion() []interfaces.MyItemInterface {
 }
 func (w *WorldRegion) DeleteVisibleItem(item interfaces.MyItemInterface) {
 	key := strconv.FormatInt(int64(item.GetObjectId()), 10)
+
 	w.ItemsInRegion.Delete(key)
+	w.ItemsExpireTime.Del(item.GetObjectId())
 }
+
+//func (w *WorldRegion) Get
 
 func Contains(regions []interfaces.WorldRegioner, region interfaces.WorldRegioner) bool {
 	for index := range regions {
@@ -299,6 +311,21 @@ func GetAroundPlayerObjId(c *Character) []int32 {
 		for _, vv := range v.GetCharsInRegion() {
 			result = append(result, vv.GetObjectId())
 		}
+    return result
 	}
-	return result
+func (w *WorldRegion) DropItemChecker() []int32 {
+	var result []int32
+	w.ItemsExpireTime.ForEach(func(key int32, value int64) bool {
+		if value <= time.Now().Unix() {
+			key_ := strconv.FormatInt(int64(key), 10)
+
+			//item, _ := w.ItemsInRegion.Load(key_)
+
+			w.ItemsInRegion.Delete(key_)
+			w.ItemsExpireTime.Del(key)
+			result = append(result, key)
+		}
+		return true
+	})
+	
 }

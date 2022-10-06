@@ -89,6 +89,8 @@ type (
 		PrivateStoreType        privateStoreType.PrivateStoreType
 		sellList                *TradeList
 		buyList                 *TradeList
+		party                   interfaces.PartyInterface
+		partyDistributionType   interfaces.PartyDistributionTypeInterface
 	}
 	SkillHolder struct {
 		Skill        Skill
@@ -633,10 +635,10 @@ func (c *Character) GetTarget() int32 {
 	return c.Target
 }
 
-func (c *Character) SendSysMsg(num interface{}, options ...string) {
+func (c *Character) SendSysMsg(num interface{}, options ...string) error {
 	smsg := num.(sysmsg.SysMsg)
 
-	c.EncryptAndSend(sysmsg.SystemMessage(smsg))
+	return c.EncryptAndSend(sysmsg.SystemMessage(smsg))
 }
 
 // методы для реализации ClientInterface, не нужно их заполнять
@@ -656,7 +658,7 @@ func (c *Character) Receive() (opcode byte, data []byte, err error) { panic("н�
 func (c *Character) AddLengthAndSand(data []byte)                   { c.Conn.AddLengthAndSand(data) }
 func (c *Character) Send(data []byte)                               { c.Conn.Send(data) }
 func (c *Character) SendBuf(buffer *packets.Buffer) error           { return c.Conn.SendBuf(buffer) }
-func (c *Character) EncryptAndSend(data []byte)                     { c.Conn.EncryptAndSend(data) }
+func (c *Character) EncryptAndSend(data []byte) error               { return c.Conn.EncryptAndSend(data) }
 func (c *Character) CryptAndReturnPackageReadyToShip(data []byte) []byte {
 	return c.Conn.CryptAndReturnPackageReadyToShip(data)
 }
@@ -673,4 +675,48 @@ func (c *Character) DropItem(objectId int32, count int64) (dropItem, updateItem 
 	}
 
 	return
+}
+
+func (c *Character) IsinParty() bool {
+	return !(c.party == nil)
+}
+
+func (c *Character) SetPartyDistributionType(pdt interfaces.PartyDistributionTypeInterface) {
+	c.partyDistributionType = pdt
+}
+
+func (c *Character) GetPartyDistributionType() interfaces.PartyDistributionTypeInterface {
+	return c.partyDistributionType
+}
+
+func (c *Character) GetParty() interfaces.PartyInterface {
+	return c.party
+}
+
+func (c *Character) JoinParty(party interfaces.PartyInterface) bool {
+	if party != nil {
+		c.party = party
+		return party.AddPartyMember(c)
+	}
+	return false
+}
+
+func (c *Character) GetCurrentHp() int32 {
+	return c.CurHp
+}
+
+func (c *Character) GetMaxHp() int32 {
+	return c.MaxHp
+}
+
+func (c *Character) GetCurrentMp() int32 {
+	return c.CurMp
+}
+
+func (c *Character) GetMaxMp() int32 {
+	return c.MaxMp
+}
+
+func (c *Character) SetParty(party interfaces.PartyInterface) {
+	c.party = party
 }

@@ -68,6 +68,9 @@ func (sys *SysMsg) AddItemName(id int32) {
 func (sys *SysMsg) AddZone(x, y, z int32) {
 	sys.Params = append(sys.Params, Params{tType: TypeZoneName, value: [3]int32{x, y, z}})
 }
+func (sys *SysMsg) AddCharacterName(name string) {
+	sys.Params = append(sys.Params, Params{tType: TypePlayerName, value: name})
+}
 func (sys *Params) GetValueString() string {
 	return sys.value.(string)
 }
@@ -87,6 +90,10 @@ func (sys *Params) GetThreeElementSlice() [3]int32 {
 var TargetTooFar = SysMsg{Params: []Params{}, Id: 22}
 var CantMoveSitting = SysMsg{Params: []Params{}, Id: 31}
 var NothingHappened = SysMsg{Params: []Params{}, Id: 61}
+var C1InvitedToParty = SysMsg{Params: []Params{}, Id: 105}
+var YouJoinedS1Party = SysMsg{Params: []Params{}, Id: 106}
+var C1JoinedParty = SysMsg{Params: []Params{}, Id: 107}
+var C1LeftParty = SysMsg{Params: []Params{}, Id: 108}
 var RequestC1ForTrade = SysMsg{Params: []Params{}, Id: 118}
 var C1DeniedTradeRequest = SysMsg{Params: []Params{}, Id: 119}
 var BeginTradeWithC1 = SysMsg{Params: []Params{}, Id: 120}
@@ -98,7 +105,16 @@ var SlotsFull = SysMsg{Params: []Params{}, Id: 129}
 var AlreadyTrading = SysMsg{Params: []Params{}, Id: 142}
 var TargetIsIncorrect = SysMsg{Params: []Params{}, Id: 144}
 var TargetIsNotFoundInTheGame = SysMsg{Params: []Params{}, Id: 145}
+var YouHaveInvitedTheWrongTarget = SysMsg{Params: []Params{}, Id: 152}
 var C1IsBusyTryLater = SysMsg{Params: []Params{}, Id: 153}
+var OnlyLeaderCanInvite = SysMsg{Params: []Params{}, Id: 154}
+var PartyFull = SysMsg{Params: []Params{}, Id: 155}
+var C1IsAlreadyInParty = SysMsg{Params: []Params{}, Id: 160}
+var FirstSelectUserToInviteToParty = SysMsg{Params: []Params{}, Id: 185}
+var YouLeftParty = SysMsg{Params: []Params{}, Id: 200}
+var C1WasExpelledFromParty = SysMsg{Params: []Params{}, Id: 201}
+var HaveBeenExpelledFromParty = SysMsg{Params: []Params{}, Id: 202}
+var PartyDispersed = SysMsg{Params: []Params{}, Id: 203}
 var YouNotEnoughAdena = SysMsg{Params: []Params{}, Id: 279}
 var IncorrectItemCount = SysMsg{Params: []Params{}, Id: 347}
 var C1purchasedS2 = SysMsg{Params: []Params{}, Id: 378}
@@ -110,8 +126,10 @@ var PurchasedS3S2SFromC1 = SysMsg{Params: []Params{}, Id: 561}
 var ThePurchasePriceIsHigherThanMoney = SysMsg{Params: []Params{}, Id: 720}
 var YouHaveExceededQuantityThatCanBeInputted = SysMsg{Params: []Params{}, Id: 1036}
 var NoPrivateStoreHere = SysMsg{Params: []Params{}, Id: 1296}
+var C1HasBecomeAPartyLeader = SysMsg{Params: []Params{}, Id: 1384}
 var CannotEquipItemDueToBadCondition = SysMsg{Params: []Params{}, Id: 1518}
 var S1 = SysMsg{Params: []Params{}, Id: 1987}
+var C1IsSetToRefusePartyRequest = SysMsg{Params: []Params{}, Id: 3168}
 
 func FindById() {
 
