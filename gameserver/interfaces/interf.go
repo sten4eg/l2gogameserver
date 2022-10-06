@@ -77,8 +77,10 @@ type WorldRegioner interface {
 	GetItem(int32) (MyItemInterface, bool)
 	GetNpc(int32) (Npcer, bool)
 	GetCharacterInRegions(int32) CharacterI
-
-	DropItemChecker() []int32
+  GetX() int32
+	GetY() int32
+	GetZ() int32
+  DropItemChecker() []int32
 }
 type Npcer interface {
 	UniquerId

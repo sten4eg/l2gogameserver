@@ -13,7 +13,7 @@ import (
 // ToAroundPlayerInRadius отправляет всем персонажам в радиусе radius
 // информацию из пакета pkg
 func ToAroundPlayerInRadius(my interfaces.ReciverAndSender, pkg *utils.PacketByte, radius int32) {
-	charsIds := models.GetAroundPlayersInRadius(my.GetCurrentChar(), radius)
+	charsIds := models.GetAroundPlayersInRadius(my.GetCurrentChar(), radius, float64(radius))
 	for i := range charsIds {
 		charsIds[i].EncryptAndSend(pkg.GetData())
 	}
@@ -75,7 +75,7 @@ func BroadCastUserInfoInRadius(me interfaces.ReciverAndSender, radius int32) {
 	ui := serverpackets.UserInfo(me.GetCurrentChar())
 	me.EncryptAndSend(ui)
 
-	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius)
+	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius, float64(radius))
 	if len(charsIds) == 0 {
 		return
 	}
@@ -91,8 +91,8 @@ func BroadCastUserInfoInRadius(me interfaces.ReciverAndSender, radius int32) {
 
 	//g.OnlineCharacters.Mu.Lock()
 	for i := range charsIds {
-		gameserver.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(ci.GetData())
-		gameserver.OnlineCharacters.Char[charsIds[i].ObjectId].Conn.EncryptAndSend(exUi.GetData())
+		gameserver.OnlineCharacters.Char[charsIds[i].GetObjectId()].Conn.EncryptAndSend(ci.GetData())
+		gameserver.OnlineCharacters.Char[charsIds[i].GetObjectId()].Conn.EncryptAndSend(exUi.GetData())
 	}
 	//g.OnlineCharacters.Mu.Unlock()
 }
@@ -168,7 +168,7 @@ func BroadCastToCharacterByName(pkg *utils.PacketByte, to string) bool {
 // SendCharInfoAboutCharactersInRadius отправляет me CharInfo персонажей
 // в радиусе radius
 func SendCharInfoAboutCharactersInRadius(me interfaces.ReciverAndSender, radius int32) {
-	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius)
+	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius, float64(radius))
 	for i := range charsIds {
 		me.EncryptAndSend(serverpackets.CharInfo(charsIds[i]))
 	}
@@ -193,72 +193,3 @@ func Checkaem(client interfaces.ReciverAndSender, l models.BackwardToLocation) {
 func GetCharacterByObjectId(id int32) interfaces.CharacterI {
 	return gameserver.GetNetConnByCharObjectId(id)
 }
-
-//func (g *GameServer) Tick() {
-//	for {
-//		g.clients.Range(func(k, v interface{}) bool {
-//			client := v.(*models.ClientCtx)
-//			if client.CurrentChar.Coordinates == nil {
-//				return true
-//			}
-//
-//			x, y, _ := client.CurrentChar.GetXYZ()
-//			reg := models.GetRegion(x, y)
-//			if reg != client.CurrentChar.CurrentRegion && client.CurrentChar.CurrentRegion != nil {
-//				client.CurrentChar.CurrentRegion.CharsInRegion.Delete(client.CurrentChar.ObjectId)
-//				reg.CharsInRegion.Store(client.CurrentChar.ObjectId, client.CurrentChar)
-//				client.CurrentChar.CurrentRegion = reg
-//
-//				var info utils.packetByte
-//				info.B = serverpackets.CharInfo(client.CurrentChar)
-//				g.BroadToAroundPlayers(client, info)
-//				BroadCastToMe(g, client.CurrentChar)
-//				logger.Info.Println(client.CurrentChar.ObjectId, " change Region ")
-//			}
-//
-//			return true // if false, Range stops
-//		})
-//
-//		time.Sleep(1 * time.Second)
-//	}
-//}
-
-//func BroadCastToMe(g *GameServer, my *models.Character) {
-//	x, y, z := my.GetXYZ()
-//	reg := models.GetRegion(x, y,z)
-//	var charIds []int32
-//
-//	for _, iii := range reg.Sur {
-//		iii.CharsInRegion.Range(func(key, value interface{}) bool {
-//			val := value.(*models.Character)
-//			if val.ObjectId != my.ObjectId {
-//				charIds = append(charIds, val.ObjectId)
-//			}
-//			return true
-//		})
-//	}
-//
-//	if charIds == nil {
-//		return
-//	}
-//
-//	var me *models.ClientCtx
-//
-//	g.clients.Range(func(k, v interface{}) bool {
-//		client := v.(*models.ClientCtx)
-//		if client.CurrentChar.ObjectId == my.ObjectId {
-//			me = client
-//			return false
-//		}
-//		return true
-//	})
-//
-//	if me == nil {
-//		return // todo need log
-//	}
-//	for _, v := range charIds {
-//		var info utils.packetByte
-//		info.B = serverpackets.CharInfo(g.OnlineCharacters.Char[v])
-//		me.AddLenghtAndSand(info.GetData(), true)
-//	}
-//}
