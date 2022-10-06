@@ -9,30 +9,8 @@ import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
+	"time"
 )
-
-type CharCreate struct {
-	Name      string
-	Race      int32
-	Sex       uint8
-	ClassId   int32
-	Int       int32
-	Str       int32
-	Con       int32
-	Men       int32
-	Dex       int32
-	Wit       int32
-	HairStyle uint8
-	HairColor uint8
-	Face      uint8
-	X         int32
-	Y         int32
-	Z         int32
-	MaxHp     int32
-	CutHp     int32
-	MaxMp     int32
-	CurMp     int32
-}
 
 var (
 	ReasonCreationFailed      int32 = 0x00
@@ -45,59 +23,45 @@ var (
 	ReasonOk                  int32 = 99
 )
 
-func CharacterCreate(data []byte, client interfaces.ReciverAndSender) {
-	var packet = packets.NewReader(data)
-	var charCreate CharCreate
+const CharacterNameMaxLenght = 16
+const CharacterMaxNumber = 7
+const InsertCharacter = `INSERT INTO characters (object_id, char_name, race, sex, class_id, hair_style, hair_color, face, x, y, z, login, base_class, title) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`
 
-	charCreate.Name = packet.ReadString()
+func CharacterCreate(client interfaces.ReciverAndSender, data []byte) {
+	reader := packets.NewReader(data)
 
-	charCreate.Race = packet.ReadInt32()
-	charCreate.Sex = byte(packet.ReadInt32())
-	charCreate.ClassId = packet.ReadInt32()
-	// зачем клиент присылает статы - ХЗ, они всё равно не используются
-	charCreate.Int = packet.ReadInt32()
-	charCreate.Str = packet.ReadInt32()
-	charCreate.Con = packet.ReadInt32()
-	charCreate.Men = packet.ReadInt32()
-	charCreate.Dex = packet.ReadInt32()
-	charCreate.Wit = packet.ReadInt32()
-	//////////////////////
-	charCreate.HairStyle = byte(packet.ReadInt32())
-	charCreate.HairColor = byte(packet.ReadInt32())
-	charCreate.Face = byte(packet.ReadInt32())
+	name := reader.ReadString()
+	race := reader.ReadInt32()
+	sex := byte(reader.ReadInt32())
+	classId := reader.ReadInt32()
+	_ = reader.ReadInt32() //int
+	_ = reader.ReadInt32() //str
+	_ = reader.ReadInt32() //con
+	_ = reader.ReadInt32() //men
+	_ = reader.ReadInt32() //dex
+	_ = reader.ReadInt32() //wit
+	hairStyle := byte(reader.ReadInt32())
+	hairColor := byte(reader.ReadInt32())
+	face := byte(reader.ReadInt32())
 
-	pkg := charCreate.validate(client)
-	client.EncryptAndSend(pkg)
-}
-
-func (cc *CharCreate) validate(clientI interfaces.ReciverAndSender) []byte {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return []byte{}
+	if len(name) < 1 || len(name) > CharacterNameMaxLenght {
+		client.EncryptAndSend(serverpackets.CharCreateFail(client, Reason16EngChars))
+		return
 	}
 
-	buffer := packets.Get()
-	defer packets.Put(buffer)
-
-	lenName := len(cc.Name)
-	if (lenName < 1) || (lenName > 16) {
-		buffer.WriteSlice(serverpackets.CharCreateFail(client, Reason16EngChars))
-		return buffer.Bytes()
+	if face > 2 || face < 0 {
+		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonCreationFailed))
+		return
 	}
 
-	if cc.Face > 2 {
-		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonCreationFailed))
-		return buffer.Bytes()
+	if hairStyle < 0 || (sex == 0 && hairStyle > 4) || (sex != 0 && hairStyle > 6) {
+		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonCreationFailed))
+		return
 	}
 
-	if ((cc.Sex == 0) && (cc.HairStyle > 4)) || ((cc.Sex) != 0 && (cc.HairStyle > 6)) {
-		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonCreationFailed))
-		return buffer.Bytes()
-	}
-
-	if cc.HairStyle > 3 {
-		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonCreationFailed))
-		return buffer.Bytes()
+	if hairColor > 3 || hairColor < 0 {
+		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonCreationFailed))
+		return
 	}
 
 	dbConn, err := db.GetConn()
@@ -106,55 +70,35 @@ func (cc *CharCreate) validate(clientI interfaces.ReciverAndSender) []byte {
 	}
 	defer dbConn.Release()
 
-	row := dbConn.QueryRow(context.Background(), "(SELECT exists(SELECT char_name from characters WHERE char_name = $1))", cc.Name)
-	var exist bool
-	err = row.Scan(&exist)
+	var charCount byte
+	err = dbConn.QueryRow(context.Background(), `SELECT COUNT(object_id) FROM characters WHERE login = $1`, client.GetAccountLogin()).Scan(&charCount)
 	if err != nil {
-		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonCreateNotAllowed))
-		return buffer.Bytes()
+		logger.Error.Panicln(err)
+	}
+	if charCount > CharacterMaxNumber {
+		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonTooManyCharacters))
+		return
+	}
 
+	var exist bool
+	err = dbConn.QueryRow(context.Background(), `SELECT exists(SELECT char_name from characters WHERE char_name = $1)`, name).Scan(&exist)
+	if err != nil {
+		logger.Error.Panicln(err)
 	}
 	if exist {
-		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonNameAlreadyExists))
-		return buffer.Bytes()
-
+		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonNameAlreadyExists))
+		return
 	}
 
-	row = dbConn.QueryRow(context.Background(), "SELECT count(*) FROM characters where login = $1", client.Account.Login)
-	var i int
-	err = row.Scan(&i)
+	//TODO проверка что пришел норм classId
+
+	x, y, z := models.GetCreationCoordinates(classId)
+	_, err = dbConn.Exec(context.Background(), InsertCharacter, idfactory.GetNext(), name, race, sex, classId, hairStyle, hairColor, face, x, y, z, client.GetAccountLogin(), classId, "")
 	if err != nil {
-		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonCreateNotAllowed))
-		return buffer.Bytes()
-
-	}
-	if i > 6 {
-		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonTooManyCharacters))
-		return buffer.Bytes()
-
-	}
-	x, y, z := models.GetCreationCoordinates(cc.ClassId)
-	_, err = dbConn.Exec(context.Background(), "INSERT INTO characters (object_id, char_name, race, sex, class_id, hair_style, hair_color, face,x,y,z,login, base_class, title) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)",
-		idfactory.GetNext(),
-		cc.Name,
-		cc.Race,
-		cc.Sex,
-		cc.ClassId,
-		cc.HairStyle,
-		cc.HairColor,
-		cc.Face,
-		x,
-		y,
-		z,
-		client.Account.Login,
-		cc.ClassId,
-		"")
-	if err != nil {
-		buffer.WriteSlice(serverpackets.CharCreateFail(client, ReasonCreateNotAllowed))
-		return buffer.Bytes()
+		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonCreateNotAllowed))
 	}
 
-	//createChar
-	buffer.WriteSlice(serverpackets.CharCreateOk(client))
-	return buffer.Bytes()
+	client.SendBuf(serverpackets.CharCreateOk())
+	time.Sleep(250)
+	client.SendBuf(serverpackets.CharSelectionInfo(client))
 }

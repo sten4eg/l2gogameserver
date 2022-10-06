@@ -4,10 +4,12 @@ import (
 	"l2gogameserver/config"
 	"l2gogameserver/data"
 	"l2gogameserver/db"
+	"l2gogameserver/gameserver/checker"
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/multisell"
+	"l2gogameserver/gameserver/models/party"
 	"l2gogameserver/gameserver/models/teleport"
 	"l2gogameserver/loginserver"
 	"l2gogameserver/server"
@@ -40,6 +42,17 @@ func setup() {
 	models.LoadSkills()
 	items.LoadItems()
 	models.NewWorld()
+	world := models.World
 	data.Load()
 	models.LoadNpc()
+
+	party.LoadPartyDistributionTypes()
+
+	for _, x := range world {
+		for _, y := range x {
+			for _, z := range y {
+				go checker.DropItemChecker(z)
+			}
+		}
+	}
 }

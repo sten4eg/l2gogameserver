@@ -32,6 +32,8 @@ func RequestActionUse(client interfaces.ReciverAndSender, data []byte) {
 		tryOpenPrivateSellShop(client, false)
 	case 28:
 		tryOpenPrivateBuyStore(client)
+	case 61:
+		tryOpenPrivateSellShop(client, true)
 	}
 
 }

@@ -12,7 +12,7 @@ import (
 //interfaces.ReciverAndSender
 
 type TradeRequestInterface interface {
-	EncryptAndSend([]byte)
+	EncryptAndSend([]byte) error
 	GetCurrentChar() interfaces.CharacterI
 }
 

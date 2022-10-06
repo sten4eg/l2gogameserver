@@ -25,9 +25,9 @@ type Macro struct {
 	Commands    []MacroCommand
 }
 
-//AddMacros Добавление нового макроса
-//Также эта функция служит, и для изменения
-//макроса (если пользователь добавил или поменял содержимое макроса)
+// AddMacros Добавление нового макроса
+// Также эта функция служит, и для изменения
+// макроса (если пользователь добавил или поменял содержимое макроса)
 func (c *Character) AddMacros(macro Macro) {
 	//Если макрос найден, тогда делаем замену параметров его
 	if c.CheckMacros(macro.Id) {
@@ -39,8 +39,8 @@ func (c *Character) AddMacros(macro Macro) {
 	}
 }
 
-//Удаление макроса
-//todo Временное положение дел, необходимо будет НЕ удалять, а изменять, но пока и так сгодиться.
+// Удаление макроса
+// todo Временное положение дел, необходимо будет НЕ удалять, а изменять, но пока и так сгодиться.
 func removeMacros(id int32) {
 	sqlMacros := `DELETE FROM "macros" WHERE "id" = $1`
 	sqlCommands := `DELETE FROM "macros_commands" WHERE "command_id" = $1`
@@ -60,7 +60,7 @@ func removeMacros(id int32) {
 	}
 }
 
-//Сохранение макроса
+// Сохранение макроса
 func (c *Character) saveMacros(macro Macro) {
 	//Макроса нет, добавляем в базу
 	dbConn, err := db.GetConn()
@@ -145,7 +145,7 @@ func (c *Character) LoadCharactersMacros() {
 	}
 }
 
-//MacrosesCount Кол-во имеющихся макросов у персонажа
+// MacrosesCount Кол-во имеющихся макросов у персонажа
 func (c *Character) MacrosesCount() uint8 {
 	return uint8(len(c.Macros))
 }

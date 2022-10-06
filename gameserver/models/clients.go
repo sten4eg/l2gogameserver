@@ -6,6 +6,7 @@ import (
 	"l2gogameserver/gameserver/crypt"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/clientStates"
+	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/packets"
 	"net"
 	"sync"
@@ -91,7 +92,7 @@ func (c *ClientCtx) AddLengthAndSand(data []byte) {
 	c.Send(data)
 }
 
-func (c *ClientCtx) EncryptAndSend(data []byte) {
+func (c *ClientCtx) EncryptAndSend(data []byte) error {
 	data = crypt.Encrypt(data, c.OutKey)
 	// вычисление длинны пакета, 2 первых байта - размер пакета
 	length := int16(len(data) + 2)
@@ -102,8 +103,10 @@ func (c *ClientCtx) EncryptAndSend(data []byte) {
 
 	err := c.sendDataToSocket(data)
 	if err != nil {
-		logger.Error.Panicln("Пакет не отправлен, ошибка: " + err.Error())
+		//logger.Error.Panicln("Пакет не отправлен, ошибка: " + err.Error())
+		return err
 	}
+	return nil
 }
 func (c *ClientCtx) SendBuf(buffer *packets.Buffer) error {
 	if buffer == nil {
@@ -138,6 +141,12 @@ func (c *ClientCtx) Send(d []byte) {
 	if err != nil {
 		logger.Error.Panicln("Пакет не отправлен, ошибка: " + err.Error())
 	}
+}
+
+func (c *ClientCtx) SendSysMsg(num interface{}, options ...string) error {
+	smsg := num.(sysmsg.SysMsg)
+
+	return c.EncryptAndSend(sysmsg.SystemMessage(smsg))
 }
 
 func (c *ClientCtx) CryptAndReturnPackageReadyToShip(data []byte) []byte {

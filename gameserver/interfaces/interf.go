@@ -56,6 +56,8 @@ type WorldRegioner interface {
 	GetItem(int32) (MyItemInterface, bool)
 	GetNpc(int32) (Npcer, bool)
 	GetCharacterInRegions(int32) CharacterI
+
+	DropItemChecker() []int32
 }
 type Npcer interface {
 	UniquerId
@@ -186,7 +188,7 @@ type CharacterI interface {
 	Namer
 	UniquerId
 	ClientInterface
-	EncryptAndSend(data []byte)
+	EncryptAndSend(data []byte) error
 	CloseChannels()
 	GetClassId() int32
 	StartTransactionRequest()
@@ -208,7 +210,7 @@ type CharacterI interface {
 	CheckItemManipulation(int32, int64) MyItemInterface
 	ValidateWeight(int32) bool
 	GetMaxLoad() int32
-	SendSysMsg(q interface{}, options ...string)
+	SendSysMsg(q interface{}, options ...string) error
 	GetActiveEnchantItemId() int32
 	GetInventoryLimit() int16
 	OnTradeFinish()
@@ -220,7 +222,6 @@ type CharacterI interface {
 	IsSittings() bool
 	SetTarget(int32)
 	GetTarget() int32
-
 	GetBuyList() TradeListInterface
 }
 type ClientInterface interface {
@@ -239,7 +240,10 @@ type ReciverAndSender interface {
 	AddLengthAndSand(data []byte)
 	Send(data []byte)
 	SendBuf(buffer *packets.Buffer) error
-	EncryptAndSend(data []byte)
+	EncryptAndSend(data []byte) error
+	SendSysMsg(q interface{}, options ...string) error
 	CryptAndReturnPackageReadyToShip(data []byte) []byte
 	GetCurrentChar() CharacterI
+
+	GetAccountLogin() string
 }
