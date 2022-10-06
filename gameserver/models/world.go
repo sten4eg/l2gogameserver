@@ -1,6 +1,7 @@
 package models
 
 import (
+	"l2gogameserver/config"
 	"l2gogameserver/gameserver/interfaces"
 	"math"
 	"sync"
@@ -28,8 +29,8 @@ var TileYMin = 10
 var TileXMax = 26
 var TileYMax = 26
 
-var WorldSizeX = 26 - 11 + 1
-var WorldSizeY = 26 - 10 + 1
+const WORLD_SIZE_X = config.GeoLastX - config.GeoFirstX + 1
+const WORLD_SIZE_Y = config.GeoLastY - config.GeoFirstY + 1
 
 var MapMinX = (TileXMin - 20) << 15
 var MapMaxX = ((TileXMax - 19) << 15) - 1
@@ -37,104 +38,45 @@ var MapMaxX = ((TileXMax - 19) << 15) - 1
 var MapMinY = (TileYMin - 18) << 15
 var MapMaxY = ((TileYMax - 17) << 15) - 1
 
-var MapMinZ = -16384
-var MapMaxZ = 16383
+const MAP_MIN_Z = -16384
+const MAP_MAX_Z = 16384
 
-var ShiftBy = 11
-var ShiftByForZ = 11
+const SHIFT_BY = config.SHIFT_BY
+const SHIFT_BY_Z = config.SHIFT_BY_Z
 
-var OffsetX = math.Abs(float64(MapMinX >> ShiftBy))
-var OffsetY = math.Abs(float64(MapMinY >> ShiftBy))
-var OffsetZ = math.Abs(float64(MapMinZ >> ShiftByForZ))
+var OffsetX = math.Abs(float64(MapMinX >> SHIFT_BY))
+var OffsetY = math.Abs(float64(MapMinY >> SHIFT_BY))
+var OffsetZ = math.Abs(float64(MAP_MIN_Z >> SHIFT_BY_Z))
 
-var RegionsX = int32((float64(MapMaxX >> ShiftBy)) + OffsetX)
-var RegionsY = int32((float64(MapMaxY >> ShiftBy)) + OffsetY)
-var RegionsZ = int32((float64(MapMaxZ >> ShiftByForZ)) + OffsetZ)
+var RegionsX = int32((float64(MapMaxX >> SHIFT_BY)) + OffsetX)
+var RegionsY = int32((float64(MapMaxY >> SHIFT_BY)) + OffsetY)
+var RegionsZ = int32((float64(MAP_MAX_Z >> SHIFT_BY_Z)) + OffsetZ)
 
 var World [][][]*WorldRegion
 
 func NewWorld() {
 	World = make([][][]*WorldRegion, RegionsX+1)
 
-	//	wj := make([][]*WorldRegion, 0, RegionsY+1)
-	//	wz := make([]*WorldRegion, 0, RegionsZ+1)
-
 	for i := 0; i <= int(RegionsX); i++ {
 		wj := make([][]*WorldRegion, RegionsY+1)
 		for j := 0; j <= int(RegionsY); j++ {
 			wz := make([]*WorldRegion, RegionsZ+1)
-			for z := 0; z < int(RegionsZ); z++ { //todo Z из конфига??
-				//	wz[z] = NewWorldRegion(int32(i), int32(j), int32(z))
+			for z := 0; z < int(RegionsZ); z++ {
 				wz[z] = nil
 			}
 			wj[j] = wz
 		}
 		World[i] = wj
 	}
-	qw := World
-	_ = qw
-}
-func GetNeighbors(regX, regY, regZ, deepH, deepV int) []interfaces.WorldRegioner {
-	neighbors := make([]*WorldRegion, 0, 9)
-	deepH *= 2
-	deepV *= 2
-	var rx, ry, rz int
 
-	for x := 0; x <= deepH; x++ {
-		for y := 0; y <= deepH; y++ {
-			for z := 0; z <= deepV; z++ {
-
-				if x%2 == 0 {
-					rx = regX + (-x / 2)
-				} else {
-					rx = regX + (x - x/2)
-				}
-
-				if y%2 == 0 {
-					ry = regY + (-y / 2)
-				} else {
-					ry = regY + (y - y/2)
-				}
-				rz = 0
-				if validRegion(rx, ry, rz) {
-					if len(World[rx][ry]) > 1 {
-						if z%2 == 0 {
-							rz = regZ + (-z / 2)
-						} else {
-							rz = regZ + (z - z/2)
-						}
-
-						if !validRegion(rx, ry, rz) {
-							continue
-						}
-					} else {
-						z = deepV + 1
-					}
-
-					qw := rx
-					qe := ry
-					qq := rz
-					_, _, _ = qw, qe, qq
-					if World[rx][ry][rz] != nil {
-						neighbors = append(neighbors, World[rx][ry][rz])
-					}
-				}
-			}
-		}
-	}
-	ret := make([]interfaces.WorldRegioner, len(neighbors))
-	for i, d := range neighbors {
-		ret[i] = d
-	}
-
-	return ret
 }
 
-func TESTGetNeighbors2TEST(xx, yy, zz int32) []interfaces.WorldRegioner {
-	var res []interfaces.WorldRegioner
-	for x := validX(xx - 1); x <= validX(xx+1); x++ {
-		for y := validY(yy - 1); y <= validY(yy+1); y++ {
-			for z := validZ(zz - 1); z <= validZ(zz+1); z++ {
+// GetNeighbors x,y,z - координаты региона
+func GetNeighbors(regionX, regionY, regionZ int32) []interfaces.WorldRegioner {
+	res := make([]interfaces.WorldRegioner, 0, 27)
+	for x := validX(regionX - 1); x <= validX(regionX+1); x++ {
+		for y := validY(regionY - 1); y <= validY(regionY+1); y++ {
+			for z := validZ(regionZ - 1); z <= validZ(regionZ+1); z++ {
 				res = append(res, getRegion(x, y, z))
 			}
 		}
@@ -142,20 +84,17 @@ func TESTGetNeighbors2TEST(xx, yy, zz int32) []interfaces.WorldRegioner {
 	return res
 }
 
+// GetRegion игровые координаты объекта
 func GetRegion(x, y, z int32) *WorldRegion {
-	xx := validX(regionX(x))
-	yy := validY(regionY(y))
-	zz := validZ(regionZ(z))
-	return getRegion(xx, yy, zz)
+	return getRegion(validX(regionX(x)), validY(regionY(y)), validZ(regionZ(z)))
 }
 
+// getRegion x,y,z - координаты региона
 func getRegion(x, y, z int32) *WorldRegion {
-
 	if World[x][y][z] == nil {
 		World[x][y][z] = NewWorldRegion(x, y, z)
 	}
 	return World[x][y][z]
-
 }
 
 func CalculateDistance(ox, oy, oz, mx, my, mz int32, includeZAxis, squared bool) float64 {
@@ -173,6 +112,6 @@ func CalculateDistance(ox, oy, oz, mx, my, mz int32, includeZAxis, squared bool)
 	return math.Sqrt(distance)
 }
 
-func validRegion(x, y, z int) bool {
-	return x >= 0 && x < int(RegionsX) && y >= 0 && y < int(RegionsY) && z >= 0 && z < int(RegionsZ)
+func isNeighbour(x1, y1, z1, x2, y2, z2 int32) bool {
+	return (x1 <= x2+1) && (x1 >= x2-1) && (y1 <= y2+1) && (y1 >= y2-1) && (z1 <= z2+1) && (z1 >= z2-1)
 }

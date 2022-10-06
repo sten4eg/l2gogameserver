@@ -327,12 +327,7 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 	var newAreas []interfaces.WorldRegioner
 	if newRegion != nil {
 		newRegion.AddVisibleChar(c)
-		newAreas = newRegion.GetNeighbors()
-
-		testAr := TESTGetNeighbors2TEST(newRegion.GetX(), newRegion.GetY(), newRegion.GetZ())
-		_ = testAr
-		q := testAr
-		_ = q
+		newAreas = GetNeighbors(newRegion.GetX(), newRegion.GetY(), newRegion.GetZ())
 	}
 
 	// кому отправить charInfo

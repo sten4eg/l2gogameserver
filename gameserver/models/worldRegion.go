@@ -12,14 +12,6 @@ const MAP_MIN_X = (config.GeoFirstX - 20) << 15
 const MAP_MAX_X = ((config.GeoLastX - 19) << 15) - 1
 const MAP_MIN_Y = (config.GeoFirstY - 18 + 1) << 15
 const MAP_MAX_Y = ((config.GeoLastY - 18 + 1) << 15) - 1
-const MAP_MIN_Z = -16384
-const MAP_MAX_Z = 16384
-
-const WORLD_SIZE_X = config.GeoLastX - config.GeoFirstX + 1
-const WORLD_SIZE_Y = config.GeoLastY - config.GeoFirstY + 1
-
-const SHIFT_BY = config.SHIFT_BY
-const SHIFT_BY_Z = config.SHIFT_BY_Z
 
 var OFFSET_X = math.Abs(MAP_MIN_X >> SHIFT_BY)
 var OFFSET_Y = math.Abs(MAP_MIN_Y >> SHIFT_BY)
@@ -73,7 +65,7 @@ func (w *WorldRegion) AddVisibleNpc(npc Npc) {
 }
 
 func (w *WorldRegion) GetNeighbors() []interfaces.WorldRegioner {
-	return GetNeighbors(int(w.TileX), int(w.TileY), int(w.TileZ), 1, 1)
+	return GetNeighbors(w.TileX, w.TileY, w.TileZ)
 }
 
 func (w *WorldRegion) GetChar(objectId int32) (interfaces.CharacterI, bool) {
