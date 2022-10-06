@@ -25,7 +25,7 @@ func RequestActionUse(client interfaces.ReciverAndSender, data []byte) {
 
 	switch actionId {
 	default:
-		fmt.Printf("Неопознаный второй опкод %v в RequestActionUse\n", data[0])
+		fmt.Printf("Неопознаный второй опкод %x в RequestActionUse\n", data[0])
 	case 0:
 		ChangeWaitType(client)
 	case 10:

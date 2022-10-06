@@ -26,6 +26,27 @@ type ItemRequestInterface interface {
 	GetPrice() int64
 }
 
+type PartyInterface interface {
+	GetMemberCount() int
+	AddPartyMember(character CharacterI) bool
+	GetLeaderObjectId() int32
+	GetDistributionType() PartyDistributionTypeInterface
+	SetMembers(members []CharacterI)
+	GetMembers() []CharacterI
+	GetLeader() CharacterI
+	IsMemberInParty(character CharacterI) bool
+	IsLeader(i CharacterI) bool
+	IsDisbanding() bool
+	SetDisbanding(bool)
+	GetMemberIndex(CharacterI) int
+	BroadcastParty([]byte)
+}
+
+type PartyDistributionTypeInterface interface {
+	Identifier
+	GetSysStringId() int32
+}
+
 type Positionable interface {
 	GetObjectId() int32
 	SetX(int32)
@@ -223,6 +244,17 @@ type CharacterI interface {
 	SetTarget(int32)
 	GetTarget() int32
 	GetBuyList() TradeListInterface
+
+	IsinParty() bool
+	SetPartyDistributionType(pdt PartyDistributionTypeInterface)
+	GetParty() PartyInterface
+	JoinParty(party PartyInterface) bool
+	GetCurrentHp() int32
+	GetMaxHp() int32
+	GetCurrentMp() int32
+	GetMaxMp() int32
+	SetParty(party PartyInterface)
+	GetPartyDistributionType() PartyDistributionTypeInterface
 }
 type ClientInterface interface {
 	ReciverAndSender

@@ -89,6 +89,8 @@ type (
 		PrivateStoreType        privateStoreType.PrivateStoreType
 		sellList                *TradeList
 		buyList                 *TradeList
+		party                   interfaces.PartyInterface
+		partyDistributionType   interfaces.PartyDistributionTypeInterface
 	}
 	SkillHolder struct {
 		Skill        Skill
@@ -673,4 +675,48 @@ func (c *Character) DropItem(objectId int32, count int64) (dropItem, updateItem 
 	}
 
 	return
+}
+
+func (c *Character) IsinParty() bool {
+	return !(c.party == nil)
+}
+
+func (c *Character) SetPartyDistributionType(pdt interfaces.PartyDistributionTypeInterface) {
+	c.partyDistributionType = pdt
+}
+
+func (c *Character) GetPartyDistributionType() interfaces.PartyDistributionTypeInterface {
+	return c.partyDistributionType
+}
+
+func (c *Character) GetParty() interfaces.PartyInterface {
+	return c.party
+}
+
+func (c *Character) JoinParty(party interfaces.PartyInterface) bool {
+	if party != nil {
+		c.party = party
+		return party.AddPartyMember(c)
+	}
+	return false
+}
+
+func (c *Character) GetCurrentHp() int32 {
+	return c.CurHp
+}
+
+func (c *Character) GetMaxHp() int32 {
+	return c.MaxHp
+}
+
+func (c *Character) GetCurrentMp() int32 {
+	return c.CurMp
+}
+
+func (c *Character) GetMaxMp() int32 {
+	return c.MaxMp
+}
+
+func (c *Character) SetParty(party interfaces.PartyInterface) {
+	c.party = party
 }
