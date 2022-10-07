@@ -3,25 +3,14 @@ package models
 import (
 	"github.com/alphadose/haxmap"
 	"github.com/puzpuzpuz/xsync"
-	"l2gogameserver/config"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
+	"l2gogameserver/packets"
+	"l2gogameserver/utils"
 	"math"
 	"strconv"
 	"time"
 )
-
-const MAP_MIN_X = (config.GeoFirstX - 20) << 15
-const MAP_MAX_X = ((config.GeoLastX - 19) << 15) - 1
-const MAP_MIN_Y = (config.GeoFirstY - 18 + 1) << 15
-const MAP_MAX_Y = ((config.GeoLastY - 18 + 1) << 15) - 1
-
-var OFFSET_X = math.Abs(MAP_MIN_X >> SHIFT_BY)
-var OFFSET_Y = math.Abs(MAP_MIN_Y >> SHIFT_BY)
-var OFFSET_Z = math.Abs(MAP_MIN_Z >> SHIFT_BY_Z)
-
-var REGIONS_X = int32((MAP_MAX_X >> SHIFT_BY) + OFFSET_X)
-var REGIONS_Y = int32((MAP_MAX_Y >> SHIFT_BY) + OFFSET_Y)
-var REGIONS_Z = int32((MAP_MAX_Z >> SHIFT_BY_Z) + OFFSET_Z)
 
 type WorldRegion struct {
 	TileX         int32
@@ -43,9 +32,41 @@ func NewWorldRegion(x, y, z int32) *WorldRegion {
 	newRegion.NpcInRegion = xsync.NewMapOf[interfaces.Npcer]()
 	newRegion.ItemsInRegion = xsync.NewMapOf[interfaces.MyItemInterface]()
 	newRegion.ItemsExpireTime = haxmap.New[int32, int64]()
+
+	go DropItemChecker(&newRegion)
 	return &newRegion
 }
 
+func DropItemChecker(region interfaces.WorldRegioner) {
+	for {
+		ids := region.DropItemChecker()
+		for _, id := range ids {
+			buffer := delObj(id)
+			pb := utils.GetPacketByte()
+			pb.SetData(buffer.Bytes())
+			for _, r := range region.GetNeighbors() {
+				for _, character := range r.GetCharsInRegion() {
+					logger.Info.Println(character.GetName())
+					character.EncryptAndSend(pb.GetData())
+				}
+			}
+			pb.Release()
+			packets.Put(buffer)
+		}
+		time.Sleep(time.Second * 5)
+	}
+}
+
+// delObj копия serverpackets.DeleteObject
+// написана тут чтобы небыло цикл зависимости
+func delObj(objectId int32) *packets.Buffer {
+	buffer := packets.Get()
+	buffer.WriteSingleByte(0x08)
+	buffer.WriteD(objectId)
+	buffer.WriteD(0x00)
+	return buffer
+
+}
 func (w *WorldRegion) GetX() int32 {
 	return w.TileX
 }
@@ -129,8 +150,6 @@ func (w *WorldRegion) DeleteVisibleItem(item interfaces.MyItemInterface) {
 	w.ItemsExpireTime.Del(item.GetObjectId())
 }
 
-//func (w *WorldRegion) Get
-
 func Contains(regions []interfaces.WorldRegioner, region interfaces.WorldRegioner) bool {
 	for index := range regions {
 		if regions[index] == region {
@@ -212,54 +231,37 @@ func GetAroundPlayersInRadius(myCharacter interfaces.CharacterI, radius int32, h
 func validX(x int32) int32 {
 	if x < 0 {
 		x = 0
-	} else if x > REGIONS_X {
-		x = REGIONS_X
+	} else if x > RegionsX {
+		x = RegionsX
 	}
 	return x
 }
 func validY(y int32) int32 {
 	if y < 0 {
 		y = 0
-	} else if y > REGIONS_Y {
-		y = REGIONS_Y
+	} else if y > RegionsY {
+		y = RegionsY
 	}
 	return y
 }
 func validZ(z int32) int32 {
 	if z < 0 {
 		z = 0
-	} else if z > REGIONS_Z {
-		z = REGIONS_Z
+	} else if z > RegionsZ {
+		z = RegionsZ
 	}
 	return z
 }
 
 func regionX(x int32) int32 {
-	return (x >> SHIFT_BY) + int32(OFFSET_X)
+	return (x >> ShiftBy) + int32(OffsetX)
 }
 func regionY(y int32) int32 {
-	return (y >> SHIFT_BY) + int32(OFFSET_Y)
+	return (y >> ShiftBy) + int32(OffsetY)
 }
 func regionZ(z int32) int32 {
-	return (z >> SHIFT_BY_Z) + int32(OFFSET_Z)
+	return (z >> ShiftByZ) + int32(OffsetZ)
 }
-
-//todo
-
-// getRegion возвращает регион, соответствующий координатам
-// x,y,z - координаты на карте регионов
-//func getRegion(x, y, z int32) *WorldRegion {
-//	xx := validX(regionX(x))
-//	yy := validY(regionY(y))
-//	zz := validZ(regionZ(z))
-//
-//	if World[xx][yy][zz] == nil {
-//		World[xx][yy][zz] = NewWorldRegion(xx, yy, zz)
-//	}
-//	qwe := World
-//	_ = qwe
-//	return World[xx][yy][zz]
-//}
 
 func GetAroundPlayersObjIdInRadius(c *Character, radius int32) []int32 {
 	currentRegion := c.CurrentRegion
@@ -321,8 +323,11 @@ func (w *WorldRegion) DropItemChecker() []int32 {
 	if w == nil {
 		return result
 	}
+
+	now := time.Now().Unix()
+
 	w.ItemsExpireTime.ForEach(func(key int32, value int64) bool {
-		if value <= time.Now().Unix() {
+		if value <= now {
 			key_ := strconv.FormatInt(int64(key), 10)
 
 			//item, _ := w.ItemsInRegion.Load(key_)

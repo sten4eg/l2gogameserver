@@ -3,6 +3,7 @@ package interfaces
 import (
 	"l2gogameserver/gameserver/models/clientStates"
 	"l2gogameserver/gameserver/models/items/attribute"
+	"l2gogameserver/gameserver/models/race"
 	"l2gogameserver/gameserver/models/trade/privateStoreType"
 	"l2gogameserver/packets"
 	"sync"
@@ -77,10 +78,10 @@ type WorldRegioner interface {
 	GetItem(int32) (MyItemInterface, bool)
 	GetNpc(int32) (Npcer, bool)
 	GetCharacterInRegions(int32) CharacterI
-  GetX() int32
+	GetX() int32
 	GetY() int32
 	GetZ() int32
-  DropItemChecker() []int32
+	DropItemChecker() []int32
 }
 type Npcer interface {
 	UniquerId
@@ -255,8 +256,21 @@ type CharacterI interface {
 	GetMaxHp() int32
 	GetCurrentMp() int32
 	GetMaxMp() int32
+	GetCurrentSp() int32
+	GetCurrentExp() int32
 	SetParty(party PartyInterface)
 	GetPartyDistributionType() PartyDistributionTypeInterface
+	GetSex() int32
+	GetRace() race.Race
+	GetBaseClass() int32
+	GetLevel() int32
+	GetKarma() int32
+	GetPK() int32
+	GetPVP() int32
+	GetHairStyle() int32
+	GetHairColor() int32
+	GetFace() int32
+	GetVitality() int32
 }
 type ClientInterface interface {
 	ReciverAndSender

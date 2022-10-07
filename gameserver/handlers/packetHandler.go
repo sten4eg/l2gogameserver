@@ -167,7 +167,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 			case 0xd0:
 				switch data[0] {
 				default:
-					fmt.Printf("Неопознаный второй опкод %x при state InGame, первый опкод %x\n", data[0], opcode)
+					fmt.Printf("Неопознаный второй опкод {%x} при state InGame, первый опкод {%x}\n", data[0], opcode)
 				case 0x24:
 					clientpackets.RequestSaveInventoryOrder(client, data)
 				case 0x0d:

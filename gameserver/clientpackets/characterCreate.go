@@ -23,9 +23,13 @@ var (
 	ReasonOk                  int32 = 99
 )
 
-const CharacterNameMaxLenght = 16
+const CharacterNameMaxLength = 16
 const CharacterMaxNumber = 7
 const InsertCharacter = `INSERT INTO characters (object_id, char_name, race, sex, class_id, hair_style, hair_color, face, x, y, z, login, base_class, title) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`
+
+const countCharAndExistName = `SELECT *
+FROM (SELECT COUNT(object_id) FROM characters WHERE login = $1) as countChar,
+     (SELECT exists(SELECT char_name from characters WHERE char_name = $2)) as existCharName`
 
 func CharacterCreate(client interfaces.ReciverAndSender, data []byte) {
 	reader := packets.NewReader(data)
@@ -44,7 +48,7 @@ func CharacterCreate(client interfaces.ReciverAndSender, data []byte) {
 	hairColor := byte(reader.ReadInt32())
 	face := byte(reader.ReadInt32())
 
-	if len(name) < 1 || len(name) > CharacterNameMaxLenght {
+	if len(name) < 1 || len(name) > CharacterNameMaxLength {
 		client.EncryptAndSend(serverpackets.CharCreateFail(client, Reason16EngChars))
 		return
 	}
@@ -71,19 +75,16 @@ func CharacterCreate(client interfaces.ReciverAndSender, data []byte) {
 	defer dbConn.Release()
 
 	var charCount byte
-	err = dbConn.QueryRow(context.Background(), `SELECT COUNT(object_id) FROM characters WHERE login = $1`, client.GetAccountLogin()).Scan(&charCount)
+	var exist bool
+
+	err = dbConn.QueryRow(context.Background(), countCharAndExistName, client.GetAccountLogin(), name).Scan(&charCount, &exist)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
+
 	if charCount > CharacterMaxNumber {
 		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonTooManyCharacters))
 		return
-	}
-
-	var exist bool
-	err = dbConn.QueryRow(context.Background(), `SELECT exists(SELECT char_name from characters WHERE char_name = $1)`, name).Scan(&exist)
-	if err != nil {
-		logger.Error.Panicln(err)
 	}
 	if exist {
 		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonNameAlreadyExists))
@@ -99,6 +100,6 @@ func CharacterCreate(client interfaces.ReciverAndSender, data []byte) {
 	}
 
 	client.SendBuf(serverpackets.CharCreateOk())
-	time.Sleep(250)
+	time.Sleep(250) //todo клиент должен отправить RequestExGetOnAirShip и после этого CharSelectionInfo, иначе клиент крашиться
 	client.SendBuf(serverpackets.CharSelectionInfo(client))
 }
