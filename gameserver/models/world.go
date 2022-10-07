@@ -32,25 +32,24 @@ var TileYMax = 26
 const WORLD_SIZE_X = config.GeoLastX - config.GeoFirstX + 1
 const WORLD_SIZE_Y = config.GeoLastY - config.GeoFirstY + 1
 
-var MapMinX = (TileXMin - 20) << 15
-var MapMaxX = ((TileXMax - 19) << 15) - 1
+const MapMinX = (config.GeoFirstX - 20) << 15
+const MapMaxX = ((config.GeoLastX - 19) << 15) - 1
+const MapMinY = (config.GeoFirstY - 18 + 1) << 15
+const MapMaxY = ((config.GeoLastY - 18 + 1) << 15) - 1
 
-var MapMinY = (TileYMin - 18) << 15
-var MapMaxY = ((TileYMax - 17) << 15) - 1
+const MapMinZ = -16384
+const MapMaxZ = 16384
 
-const MAP_MIN_Z = -16384
-const MAP_MAX_Z = 16384
+const ShiftBy = config.SHIFT_BY
+const ShiftByZ = config.SHIFT_BY_Z
 
-const SHIFT_BY = config.SHIFT_BY
-const SHIFT_BY_Z = config.SHIFT_BY_Z
+var OffsetX = math.Abs(MapMinX >> ShiftBy)
+var OffsetY = math.Abs(MapMinY >> ShiftBy)
+var OffsetZ = math.Abs(MapMinZ >> ShiftByZ)
 
-var OffsetX = math.Abs(float64(MapMinX >> SHIFT_BY))
-var OffsetY = math.Abs(float64(MapMinY >> SHIFT_BY))
-var OffsetZ = math.Abs(float64(MAP_MIN_Z >> SHIFT_BY_Z))
-
-var RegionsX = int32((float64(MapMaxX >> SHIFT_BY)) + OffsetX)
-var RegionsY = int32((float64(MapMaxY >> SHIFT_BY)) + OffsetY)
-var RegionsZ = int32((float64(MAP_MAX_Z >> SHIFT_BY_Z)) + OffsetZ)
+var RegionsX = int32((MapMaxX >> ShiftBy) + OffsetX)
+var RegionsY = int32((MapMaxY >> ShiftBy) + OffsetY)
+var RegionsZ = int32((MapMaxZ >> ShiftByZ) + OffsetZ)
 
 var World [][][]*WorldRegion
 
