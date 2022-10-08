@@ -7,6 +7,6 @@ import (
 )
 
 func ChangeWaitType(client interfaces.ReciverAndSender) {
-	pkg := serverpackets.ChangeWaitType(client)
+	pkg := serverpackets.ChangeWaitType(client.GetCurrentChar())
 	broadcast.BroadCastPkgToAroundPlayer(client, pkg)
 }

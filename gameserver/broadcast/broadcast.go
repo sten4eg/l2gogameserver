@@ -184,7 +184,7 @@ func SendCharInfoAboutCharactersAround(me *models.ClientCtx) {
 
 func Checkaem(client interfaces.ReciverAndSender, l models.BackwardToLocation) {
 	ut := utils.GetPacketByte()
-	ut.SetData(serverpackets.MoveToLocation(&l, client))
+	ut.SetData(serverpackets.MoveToLocation(&l, client.GetCurrentChar()))
 
 	client.EncryptAndSend(ut.GetData())
 	BroadCastToAroundPlayers(client, ut)

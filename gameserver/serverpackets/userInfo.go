@@ -2,15 +2,10 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func UserInfo(clientI interfaces.CharacterI) []byte {
-	character, ok := clientI.(*models.Character)
-	if !ok {
-		return []byte{}
-	}
+func UserInfo(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
@@ -23,34 +18,34 @@ func UserInfo(clientI interfaces.CharacterI) []byte {
 
 	buffer.WriteD(0) // Vehicle
 
-	buffer.WriteD(character.ObjectId) //objId
+	buffer.WriteD(character.GetObjectId()) //objId
 
-	buffer.WriteS(character.CharName) //name //TODO
+	buffer.WriteS(character.GetName()) //name //TODO
 
-	buffer.WriteD(int32(character.Race)) //race ordinal //TODO
-	buffer.WriteD(character.Sex)         //sex
-	buffer.WriteD(character.BaseClass)   //baseClass
+	buffer.WriteD(int32(character.GetRace())) //race ordinal //TODO
+	buffer.WriteD(character.GetSex())         //sex
+	buffer.WriteD(character.GetBaseClass())   //baseClass
 
-	buffer.WriteD(character.Level)                                                      //level //TODO
-	buffer.WriteQ(int64(character.Exp))                                                 //exp
-	buffer.WriteF(character.GetPercentFromCurrentLevel(character.Exp, character.Level)) //percent
+	buffer.WriteD(character.GetLevel())                                                                  //level //TODO
+	buffer.WriteQ(int64(character.GetCurrentExp()))                                                      //exp
+	buffer.WriteF(character.GetPercentFromCurrentLevel(character.GetCurrentExp(), character.GetLevel())) //percent
 
-	buffer.WriteD(int32(character.Stats.STR)) //str
-	buffer.WriteD(int32(character.Stats.DEX)) //dex
-	buffer.WriteD(int32(character.Stats.CON)) //con
-	buffer.WriteD(int32(character.Stats.INT)) //int
-	buffer.WriteD(int32(character.Stats.WIT)) //wit
-	buffer.WriteD(int32(character.Stats.MEN)) //men
+	buffer.WriteD(int32(character.GetSTR())) //str
+	buffer.WriteD(int32(character.GetDEX())) //dex
+	buffer.WriteD(int32(character.GetCON())) //con
+	buffer.WriteD(int32(character.GetINT())) //int
+	buffer.WriteD(int32(character.GetWIT())) //wit
+	buffer.WriteD(int32(character.GetMEN())) //men
 
-	buffer.WriteD(character.MaxHp) //Max hp //TODO
+	buffer.WriteD(character.GetMaxHp()) //Max hp //TODO
 
-	buffer.WriteD(character.CurHp) //hp currnebt
+	buffer.WriteD(character.GetCurrentHp()) //hp currnebt
 
-	buffer.WriteD(character.MaxMp) //max mp
-	buffer.WriteD(character.CurMp) //mp
+	buffer.WriteD(character.GetMaxMp())     //max mp
+	buffer.WriteD(character.GetCurrentMp()) //mp
 
-	buffer.WriteD(character.Sp) //sp //TODO
-	buffer.WriteD(0)            //currentLoad
+	buffer.WriteD(character.GetCurrentSp()) //sp //TODO
+	buffer.WriteD(0)                        //currentLoad
 
 	buffer.WriteD(109020) //maxLoad
 
@@ -59,19 +54,15 @@ func UserInfo(clientI interfaces.CharacterI) []byte {
 	} else {
 		buffer.WriteD(40) //equiped weapon
 	}
-
-	for _, slot := range models.GetPaperdollOrder() {
-		buffer.WriteD(character.Paperdoll[slot].ObjectId) //objId
+	characterPaperdoll := character.GetPaperdoll()
+	for _, item := range characterPaperdoll {
+		buffer.WriteD(item.GetObjectId())
 	}
-	for _, slot := range models.GetPaperdollOrder() {
-		if character.Paperdoll[slot].Item == nil {
-			buffer.WriteD(0)
-		} else {
-			buffer.WriteD(int32(character.Paperdoll[slot].Id)) //itemId
-		}
+	for _, item := range characterPaperdoll {
+		buffer.WriteD(item.GetId())
 	}
-	for _, slot := range models.GetPaperdollOrder() {
-		buffer.WriteD(int32(character.Paperdoll[slot].Enchant)) //enchant
+	for _, item := range characterPaperdoll {
+		buffer.WriteD(int32(item.GetEnchant()))
 	}
 
 	buffer.WriteD(0) //talisman slot
@@ -90,8 +81,8 @@ func UserInfo(clientI interfaces.CharacterI) []byte {
 
 	buffer.WriteD(47) //mdef
 
-	buffer.WriteD(character.PvpKills) //pvp
-	buffer.WriteD(character.Karma)    //karma
+	buffer.WriteD(character.GetPVP())   //pvp
+	buffer.WriteD(character.GetKarma()) //karma
 
 	buffer.WriteD(999) //runSpeed
 	buffer.WriteD(80)  //walkspeed
@@ -108,19 +99,19 @@ func UserInfo(clientI interfaces.CharacterI) []byte {
 	buffer.WriteF(8.0)  //collisionRadius
 	buffer.WriteF(23.5) //collisionHeight
 
-	buffer.WriteD(character.HairStyle) //hairStyle
-	buffer.WriteD(character.HairColor) //hairColor
-	buffer.WriteD(character.Face)      //face
+	buffer.WriteD(character.GetHairStyle()) //hairStyle
+	buffer.WriteD(character.GetHairColor()) //hairColor
+	buffer.WriteD(character.GetFace())      //face
 
 	buffer.WriteD(1) //IsGM?
 
-	buffer.WriteS(character.Title) //title
+	buffer.WriteS(character.GetTitle()) //title
 
-	buffer.WriteD(character.ClanId) //clanId
-	buffer.WriteD(0)                //clancrestId
-	buffer.WriteD(0)                //allyId
-	buffer.WriteD(0)                //allyCrestId
-	buffer.WriteD(0)                //RELATION CALCULATE ?
+	buffer.WriteD(character.GetClanId()) //clanId
+	buffer.WriteD(0)                     //clancrestId
+	buffer.WriteD(0)                     //allyId
+	buffer.WriteD(0)                     //allyCrestId
+	buffer.WriteD(0)                     //RELATION CALCULATE ?
 
 	buffer.WriteSingleByte(0)                                     //mountType
 	buffer.WriteSingleByte(byte(character.GetPrivateStoreType())) //privateStoreType
@@ -146,8 +137,8 @@ func UserInfo(clientI interfaces.CharacterI) []byte {
 
 	buffer.WriteH(character.GetInventoryLimit()) //inventoryLimit
 
-	buffer.WriteD(character.ClassId) //	classId
-	buffer.WriteD(0)                 // special effects? circles around player...
+	buffer.WriteD(character.GetClassId()) //	classId
+	buffer.WriteD(0)                      // special effects? circles around player...
 
 	buffer.WriteD(50) //MaxCP
 	buffer.WriteD(50) //CurrentCp
@@ -191,10 +182,10 @@ func UserInfo(clientI interfaces.CharacterI) []byte {
 
 	buffer.WriteD(0) //agationId
 
-	buffer.WriteD(0)                  //FAME //TODO
-	buffer.WriteD(0)                  //minimap or hellbound
-	buffer.WriteD(character.Vitality) //vitaliti Point
-	buffer.WriteD(0)                  //abnormalEffects
+	buffer.WriteD(0)                       //FAME //TODO
+	buffer.WriteD(0)                       //minimap or hellbound
+	buffer.WriteD(character.GetVitality()) //vitaliti Point
+	buffer.WriteD(0)                       //abnormalEffects
 
 	return buffer.Bytes()
 }

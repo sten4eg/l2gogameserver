@@ -70,31 +70,6 @@ func RestoreMe(charId, classId int32) map[int32]dto.ShortCutDTO {
 	return shorts
 }
 
-func GetAllShortCuts(charId, classId int32) []dto.ShortCutSimpleDTO {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
-
-	rows, err := dbConn.Query(context.Background(), "SELECT type, slot, page,shortcut_id, level FROM character_shortcuts WHERE char_id = $1 AND class_index = $2",
-		charId,
-		classId)
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	var shortCuts []dto.ShortCutSimpleDTO
-	for rows.Next() {
-		var t dto.ShortCutSimpleDTO
-		err = rows.Scan(&t.ShortcutType, &t.Slot, &t.Page, &t.Id, &t.Level)
-		if err != nil {
-			logger.Error.Panicln(err)
-		}
-		shortCuts = append(shortCuts, t)
-	}
-	return shortCuts
-}
-
 func DeleteShortCut(slot, page int32, client *ClientCtx) {
 	all := client.CurrentChar.ShortCut
 	e, ok := all[slot+(page*MaxShortcutsPerBar)]

@@ -2,24 +2,18 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func TargetUnselected(clientI interfaces.ReciverAndSender) []byte {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return []byte{}
-	}
-
-	client.CurrentChar.Target = 0
+func TargetUnselected(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
+	character.SetTarget(0)
 
-	x, y, z := client.CurrentChar.GetXYZ()
+	x, y, z := character.GetXYZ()
 
 	buffer.WriteSingleByte(0x24)
-	buffer.WriteD(client.CurrentChar.ObjectId)
+	buffer.WriteD(character.GetObjectId())
 	buffer.WriteD(x)
 	buffer.WriteD(y)
 	buffer.WriteD(z)

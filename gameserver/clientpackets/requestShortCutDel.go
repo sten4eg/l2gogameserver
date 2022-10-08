@@ -24,7 +24,7 @@ func RequestShortCutDel(data []byte, clientI interfaces.ReciverAndSender) {
 
 	models.DeleteShortCut(slot, page, client)
 
-	pkg := serverpackets.ShortCutInit(client)
+	pkg := serverpackets.ShortCutInit(client.GetCurrentChar())
 	client.EncryptAndSend(pkg)
 
 }

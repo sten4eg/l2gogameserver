@@ -184,3 +184,27 @@ func GetCreationCoordinates(classId int32) (int, int, int) {
 	return x, y, z
 
 }
+
+func (s *Stats) GetINT() int {
+	return s.StaticData.INT
+}
+
+func (s *Stats) GetSTR() int {
+	return s.StaticData.STR
+}
+
+func (s *Stats) GetCON() int {
+	return s.StaticData.CON
+}
+
+func (s *Stats) GetMEN() int {
+	return s.StaticData.MEN
+}
+
+func (s *Stats) GetDEX() int {
+	return s.StaticData.DEX
+}
+
+func (s *Stats) GetWIT() int {
+	return s.StaticData.WIT
+}

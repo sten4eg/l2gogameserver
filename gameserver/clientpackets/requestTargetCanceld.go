@@ -12,6 +12,6 @@ func RequestTargetCancel(data []byte, client interfaces.ReciverAndSender) {
 	unselect := packet.ReadUInt16()
 	_ = unselect
 
-	pkg := serverpackets.TargetUnselected(client)
+	pkg := serverpackets.TargetUnselected(client.GetCurrentChar())
 	client.EncryptAndSend(pkg)
 }
