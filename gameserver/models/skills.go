@@ -165,3 +165,15 @@ func (c *Character) LoadSkills() {
 	}
 
 }
+
+func (s *Skill) GetId() int32 {
+	return int32(s.ID)
+}
+
+func (s *Skill) IsPassive() bool {
+	return s.OperateType.IsPassive()
+}
+
+func (s *Skill) GetLevel() int {
+	return s.Levels
+}

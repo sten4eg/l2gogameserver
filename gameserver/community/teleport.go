@@ -16,5 +16,5 @@ func UserTeleport(client interfaces.ReciverAndSender, teleportID int) []byte {
 	}
 	x, y, z, h := locx.X, locx.Y, locx.Z, 0
 
-	return serverpackets.TeleportToLocation(client, x, y, z, h)
+	return serverpackets.TeleportToLocation(client.GetCurrentChar(), x, y, z, h)
 }

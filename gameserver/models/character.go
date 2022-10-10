@@ -760,3 +760,46 @@ func (c *Character) GetFace() int32 {
 func (c *Character) GetVitality() int32 {
 	return c.Vitality
 }
+
+func (c *Character) GetINT() int {
+	return c.Stats.INT
+}
+func (c *Character) GetSTR() int {
+	return c.Stats.STR
+}
+func (c *Character) GetCON() int {
+	return c.Stats.CON
+}
+func (c *Character) GetMEN() int {
+	return c.Stats.MEN
+}
+func (c *Character) GetDEX() int {
+	return c.Stats.DEX
+}
+func (c *Character) GetWIT() int {
+	return c.Stats.WIT
+}
+func (c *Character) GetTitle() string {
+	return c.Title
+}
+func (c *Character) GetClanId() int32 {
+	return c.ClanId
+}
+func (c *Character) GetPaperdoll() []interfaces.MyItemInterface {
+	//TODO гойленг не дает вернуть ссылку на массив
+	paperdoll := make([]interfaces.MyItemInterface, len(c.Paperdoll))
+	for index := range c.Paperdoll {
+		paperdoll[index] = &c.Paperdoll[index]
+	}
+	return paperdoll
+}
+func (c *Character) GetSkills() []interfaces.SkillInterface {
+	skills := make([]interfaces.SkillInterface, len(c.Skills))
+	var i int
+	for key := range c.Skills {
+		skill, _ := c.Skills[key]
+		skills[i] = &skill
+		i++
+	}
+	return skills
+}

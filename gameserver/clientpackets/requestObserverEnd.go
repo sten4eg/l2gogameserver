@@ -6,6 +6,6 @@ import (
 )
 
 func RequestObserverEnd(client interfaces.ReciverAndSender, data []byte) {
-	pkg := serverpackets.ObservationReturn(client)
+	pkg := serverpackets.ObservationReturn(client.GetCurrentChar())
 	client.EncryptAndSend(pkg)
 }

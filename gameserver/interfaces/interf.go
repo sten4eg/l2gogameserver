@@ -48,6 +48,12 @@ type PartyDistributionTypeInterface interface {
 	GetSysStringId() int32
 }
 
+type SkillInterface interface {
+	Identifier
+	IsPassive() bool
+	GetLevel() int
+}
+
 type Positionable interface {
 	GetObjectId() int32
 	SetX(int32)
@@ -88,6 +94,12 @@ type Npcer interface {
 	Identifier
 	IsTargetable() bool
 	GetCoordinates() (x, y, z int32)
+	IsAttackable() int32
+	GetHeading() int32
+	GetCollisionRadius() float64
+	GetCollisionHeight() float64
+	GetSlotRhand() int32
+	GetSlotLhand() int32
 }
 
 type TradableItemInterface interface {
@@ -163,6 +175,7 @@ type InventoryInterface interface {
 	GetUniqueItems(character CharacterI, allowAdena, allowAncientAdena, onlyAvailable bool) []MyItemInterface
 	GetItemsByItemId(int32) []MyItemInterface
 	AdjustAvailableItem(TradableItemInterface)
+	GetItems() []MyItemInterface
 }
 
 type MyItemInterface interface {
@@ -190,6 +203,7 @@ type MyItemInterface interface {
 	SetCoordinate(x, y, z int32)
 	GetCoordinate() (x, y, z int32)
 	GetDefaultPrice() int
+	GetTime() int
 }
 
 type BaseItemInterface interface {
@@ -207,6 +221,7 @@ type BaseItemInterface interface {
 	GetItemType2() int16
 	GetWeight() int
 }
+
 type CharacterI interface {
 	Positionable
 	Namer
@@ -247,7 +262,6 @@ type CharacterI interface {
 	SetTarget(int32)
 	GetTarget() int32
 	GetBuyList() TradeListInterface
-
 	IsinParty() bool
 	SetPartyDistributionType(pdt PartyDistributionTypeInterface)
 	GetParty() PartyInterface
@@ -271,6 +285,20 @@ type CharacterI interface {
 	GetHairColor() int32
 	GetFace() int32
 	GetVitality() int32
+	GetINT() int
+	GetSTR() int
+	GetCON() int
+	GetMEN() int
+	GetDEX() int
+	GetWIT() int
+	IsActiveWeapon() bool
+	GetTitle() string
+	GetClanId() int32
+	GetPDef() int32
+	GetPercentFromCurrentLevel(exp, level int32) float64
+	GetPaperdoll() []MyItemInterface
+	GetSkills() []SkillInterface
+	SetSitStandPose() int32
 }
 type ClientInterface interface {
 	ReciverAndSender

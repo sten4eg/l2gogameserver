@@ -2,36 +2,28 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
+	"l2gogameserver/utils"
 )
 
-func SkillList(clientI interfaces.ReciverAndSender) []byte {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return []byte{}
-	}
-
+func SkillList(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
+	defer packets.Put(buffer)
 
-	skills := client.CurrentChar.Skills
+	skills := character.GetSkills()
 
 	buffer.WriteSingleByte(0x5F)
 	l := int32(len(skills))
 	buffer.WriteD(l) // skill size
 
 	for _, skill := range skills {
-		isPassive := int32(0)
-		if skill.OperateType.IsPassive() {
-			isPassive = 1
-		}
-		buffer.WriteD(isPassive)           // passiv ?
-		buffer.WriteD(int32(skill.Levels)) // level
-		buffer.WriteD(int32(skill.ID))     // id
-		buffer.WriteSingleByte(0)          // disable?
-		buffer.WriteSingleByte(0)          // enchant ?
+
+		buffer.WriteD(utils.BoolToInt32(skill.IsPassive())) // passiv ?
+		buffer.WriteD(int32(skill.GetLevel()))              // level
+		buffer.WriteD(skill.GetId())                        // id
+		buffer.WriteSingleByte(0)                           // disable?
+		buffer.WriteSingleByte(0)                           // enchant ?
 	}
 
-	defer packets.Put(buffer)
 	return buffer.Bytes()
 }

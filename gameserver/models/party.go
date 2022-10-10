@@ -35,7 +35,6 @@ func (p *Party) AddPartyMember(character interfaces.CharacterI) bool {
 		//TODO finishLootRequest(false)
 	}
 
-	p.members = append(p.members, character)
 	//TODO проверка на то, что левел нового участника больше текущего уровня пати
 
 	//TODO 	if (isInDimensionalRift()) {
@@ -120,4 +119,16 @@ func (p *Party) IsDisbanding() bool {
 
 func (p *Party) SetDisbanding(flag bool) {
 	p.disbanding = flag
+}
+
+func (p *Party) AddMember(member interfaces.CharacterI) {
+	p.members = append(p.members, member)
+}
+
+func (p *Party) RemoveMember(member interfaces.CharacterI) {
+	if !p.IsMemberInParty(member) {
+		return
+	}
+	index := p.GetMemberIndex(member)
+	p.members = append(p.members[:index], p.members[index+1:]...)
 }

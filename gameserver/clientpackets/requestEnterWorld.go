@@ -16,11 +16,12 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 		return
 	}
 	buff := packets.Get()
+	character := clientI.GetCurrentChar()
 
-	pkg := serverpackets.UserInfo(client.GetCurrentChar())
+	pkg := serverpackets.UserInfo(character)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
-	pkg2 := serverpackets.ExBrExtraUserInfo(client.CurrentChar)
+	pkg2 := serverpackets.ExBrExtraUserInfo(character)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
 	count := uint8(len(client.CurrentChar.Macros))
@@ -29,7 +30,7 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 		buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg3))
 	}
 
-	pkg4 := serverpackets.ItemList(client.CurrentChar)
+	pkg4 := serverpackets.ItemList(character)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg4))
 
 	pkg5 := serverpackets.ExQuestItemList(client)
@@ -41,16 +42,16 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 	pkg7 := serverpackets.ExGetBookMarkInfoPacket(client)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg7))
 
-	pkg8 := serverpackets.ExStorageMaxCount(client)
+	pkg8 := serverpackets.ExStorageMaxCount(character)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg8))
 
-	pkg9 := serverpackets.ShortCutInit(client)
+	pkg9 := serverpackets.ShortCutInit(character)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg9))
 
 	pkg10 := serverpackets.ExBasicActionList(client)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg10))
 
-	pkg11 := serverpackets.SkillList(client)
+	pkg11 := serverpackets.SkillList(character)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg11))
 
 	pkg12 := serverpackets.HennaInfo(client)

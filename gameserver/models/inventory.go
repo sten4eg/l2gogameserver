@@ -1055,3 +1055,11 @@ func (i *Inventory) DropItem(objectId int32, count int64) interfaces.MyItemInter
 	i.RefreshWeight()
 	return item
 }
+
+func (i *Inventory) GetItems() []interfaces.MyItemInterface {
+	items := make([]interfaces.MyItemInterface, len(i.Items))
+	for index := range i.Items {
+		items[index] = &i.Items[index]
+	}
+	return items
+}

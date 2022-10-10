@@ -73,7 +73,7 @@ func tradeConfirmed(client interfaces.CharacterI, partner interfaces.CharacterI)
 	msg.AddString(partner.GetName())
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(sysmsg.SystemMessage(msg)))
 	client.Send(buff.Bytes())
-	serverpackets.TradeOtherDone(client)
+	client.EncryptAndSend(serverpackets.TradeOtherDone())
 	packets.Put(buff)
 }
 func endTrade(client interfaces.ReciverAndSender) {

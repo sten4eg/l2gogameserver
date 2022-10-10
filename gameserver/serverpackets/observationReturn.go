@@ -2,20 +2,14 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func ObservationReturn(clientI interfaces.ReciverAndSender) []byte {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return []byte{}
-	}
-
+func ObservationReturn(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
-	x, y, z := client.CurrentChar.GetXYZ()
+	x, y, z := character.GetXYZ()
 
 	buffer.WriteSingleByte(0xEC)
 	buffer.WriteD(x) //x 53

@@ -75,7 +75,7 @@ func RequestMagicSkillUse(data []byte, clientI interfaces.ReciverAndSender) {
 	pkg2 := serverpackets.NewMagicSkillUse(client, skill, ctrlPressed, shiftPressed)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
-	pkg := serverpackets.SetupGauge(client)
+	pkg := serverpackets.SetupGauge(client.GetCurrentChar())
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 	client.Send(buffer.Bytes())
 }

@@ -1,11 +1,11 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 )
 
-func MoveToPawn(client *models.Character) []byte {
+func MoveToPawn(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
@@ -23,8 +23,8 @@ func MoveToPawn(client *models.Character) []byte {
 	//writeD(_tz);
 
 	buffer.WriteSingleByte(0x72)
-	buffer.WriteD(client.ObjectId)
-	buffer.WriteD(client.Target)
+	buffer.WriteD(character.GetObjectId())
+	buffer.WriteD(character.GetTarget())
 	buffer.WriteD(0)
 
 	buffer.WriteD(0)

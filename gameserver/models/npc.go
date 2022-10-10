@@ -263,11 +263,43 @@ func (n *Npc) GetCoordinates() (x, y, z int32) {
 func (n *Npc) GetObjectId() int32 {
 	return n.ObjId
 }
+
 func (n *Npc) GetId() int32 {
 	return n.NpcId
 }
+
+func (n *Npc) GetHeading() int32 {
+	return n.Spawn.Heading
+}
+
+func (n *Npc) GetCollisionRadius() float64 {
+	return n.CollisionRadius
+}
+
+func (n *Npc) GetCollisionHeight() float64 {
+	return n.CollisionHeight
+}
+
+func (n *Npc) GetSlotRhand() int32 {
+	return n.SlotRhand
+}
+
+func (n *Npc) GetSlotLhand() int32 {
+	return n.SlotLhand
+}
+
 func (n *Npc) IsTargetable() bool {
 	return utils.I2B(n.Targetable)
+}
+
+func (n *Npc) IsAttackable() int32 {
+	npcDialogs := []string{"citizen", "guild_coach", "guild_master", "teleporter", "merchant", "guard"}
+	for _, dialog := range npcDialogs {
+		if n.Type == dialog {
+			return 0
+		}
+	}
+	return 1
 }
 
 // Медоты Локации

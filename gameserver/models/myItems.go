@@ -268,3 +268,14 @@ func (i *MyItem) SetStoreCount(value int64) {
 func (i *MyItem) GetStoreCount() int64 {
 	return 0
 }
+
+func (i *MyItem) GetId() int32 {
+	if i.Item == nil {
+		return 0
+	}
+	return i.Item.GetId()
+}
+
+func (i *MyItem) GetTime() int {
+	return i.Time
+}

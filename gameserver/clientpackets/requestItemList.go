@@ -6,6 +6,6 @@ import (
 )
 
 func RequestItemList(data []byte, client interfaces.CharacterI) {
-	pkg := serverpackets.ItemList(client)
+	pkg := serverpackets.ItemList(client.GetCurrentChar())
 	client.EncryptAndSend(pkg)
 }

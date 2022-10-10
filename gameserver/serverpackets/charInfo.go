@@ -4,20 +4,12 @@ import (
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
-	"l2gogameserver/utils"
 )
 
-func CharInfo(userI interfaces.CharacterI) []byte {
-
-	user, ok := userI.(*models.Character)
-	if !ok {
-		return []byte{}
-	}
-
-	x, y, z := user.GetXYZ()
-
+func CharInfo(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
+	x, y, z := character.GetXYZ()
 
 	buffer.WriteSingleByte(0x31)
 	buffer.WriteD(x)
@@ -26,20 +18,18 @@ func CharInfo(userI interfaces.CharacterI) []byte {
 
 	buffer.WriteD(0) // Vehicle
 
-	buffer.WriteD(user.ObjectId) //objId
+	buffer.WriteD(character.GetObjectId()) //objId
 
-	buffer.WriteS(user.CharName) //name //TODO
+	buffer.WriteS(character.GetName()) //name //TODO
 
-	buffer.WriteD(int32(user.Race)) //race ordinal //TODO
-	buffer.WriteD(user.Sex)         //sex
-	buffer.WriteD(user.BaseClass)   //baseClass
+	buffer.WriteD(int32(character.GetRace())) //race ordinal //TODO
+	buffer.WriteD(character.GetSex())         //sex
+	buffer.WriteD(character.GetBaseClass())   //baseClass
 
-	for _, v := range getPaperdollOrder() {
-		if user.Paperdoll[v].Item == nil {
-			buffer.WriteD(0)
-		} else {
-			buffer.WriteD(int32(user.Paperdoll[v].Id))
-		}
+	paperdoll := character.GetPaperdoll()
+
+	for _, index := range getPaperdollOrder() {
+		buffer.WriteD(paperdoll[index].GetId())
 	}
 
 	for _, v := range getPaperdollOrder() {
@@ -50,8 +40,8 @@ func CharInfo(userI interfaces.CharacterI) []byte {
 	buffer.WriteD(0) //talisman
 	buffer.WriteD(0) //cloack   _activeChar.getInventory().canEquipCloak() ? 1 : 0
 
-	buffer.WriteD(0)          // pvpFlag The PvP Flag state of the L2PcInstance (0=White, 1=Purple)
-	buffer.WriteD(user.Karma) //karma  The Karma of the L2PcInstance (if higher than 0, the name of the L2PcInstance appears in red)
+	buffer.WriteD(0)                    // pvpFlag The PvP Flag state of the L2PcInstance (0=White, 1=Purple)
+	buffer.WriteD(character.GetKarma()) //karma  The Karma of the L2PcInstance (if higher than 0, the name of the L2PcInstance appears in red)
 
 	buffer.WriteD(0) //MatackSpeed
 	buffer.WriteD(0) //_pAtkSpd
@@ -73,26 +63,26 @@ func CharInfo(userI interfaces.CharacterI) []byte {
 	buffer.WriteF(8.0)  //collisionRadius
 	buffer.WriteF(23.5) //collisionHeight
 
-	buffer.WriteD(user.HairStyle) //hairStyle
-	buffer.WriteD(user.HairColor) //hairColor
-	buffer.WriteD(user.Face)      //face
+	buffer.WriteD(character.GetHairStyle()) //hairStyle
+	buffer.WriteD(character.GetHairColor()) //hairColor
+	buffer.WriteD(character.GetFace())      //face
 
-	buffer.WriteS(user.Title) //title
+	buffer.WriteS(character.GetTitle()) //title
 
 	buffer.WriteD(0) //cursedW
 	buffer.WriteD(0) //cursedW
 	buffer.WriteD(0) //cursedW
 	buffer.WriteD(0) //cursedW
 
-	buffer.WriteSingleByte(utils.BoolToByte(!user.IsSittings())) // standing = 1 sitting = 0
-	buffer.WriteSingleByte(1)                                    // running = 1 walking = 0
-	buffer.WriteSingleByte(0)                                    //isInCombat
+	buffer.WriteSingleByte(1) // standing = 1 sitting = 0
+	buffer.WriteSingleByte(1) // running = 1 walking = 0
+	buffer.WriteSingleByte(0) //isInCombat
 
 	buffer.WriteSingleByte(0) //!_activeChar.isInOlympiadMode() && _activeChar.isAlikeDead()
 	buffer.WriteSingleByte(0) // invisible = 1 visible =0
 
-	buffer.WriteSingleByte(0)                                // 1-on Strider, 2-on Wyvern, 3-on Great Wolf, 0-no mount
-	buffer.WriteSingleByte(byte(user.GetPrivateStoreType())) // privateStore
+	buffer.WriteSingleByte(0) // 1-on Strider, 2-on Wyvern, 3-on Great Wolf, 0-no mount
+	buffer.WriteSingleByte(0) // privateStore
 
 	buffer.WriteH(0) //CubickSize
 	///FOR CUBICs
@@ -106,8 +96,8 @@ func CharInfo(userI interfaces.CharacterI) []byte {
 	buffer.WriteH(0)       // Blue value for name (0 = white, 255 = pure blue)
 	buffer.WriteD(1000000) // ?
 
-	buffer.WriteD(user.ClassId) // getClassId().getId()
-	buffer.WriteD(0)            // ??
+	buffer.WriteD(character.GetClassId()) // getClassId().getId()
+	buffer.WriteD(0)                      // ??
 
 	buffer.WriteSingleByte(0) //_activeChar.isMounted() ? 0 : _activeChar.getEnchantEffect()
 	buffer.WriteSingleByte(0) //_activeChar.getTeam().getId()
@@ -142,6 +132,7 @@ func CharInfo(userI interfaces.CharacterI) []byte {
 }
 
 // todo что это тут делает?
+// TODO удалить модель
 func getPaperdollOrder() []uint8 {
 	return []uint8{
 		models.PAPERDOLL_UNDER,

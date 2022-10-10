@@ -2,24 +2,18 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func ChangeWaitType(clientI interfaces.ReciverAndSender) []byte {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return []byte{}
-	}
-
+func ChangeWaitType(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
-	locx, locy, locz := client.CurrentChar.GetXYZ()
+	locx, locy, locz := character.GetXYZ()
 
 	buffer.WriteSingleByte(0x29)
-	buffer.WriteD(client.CurrentChar.ObjectId)
-	buffer.WriteD(client.CurrentChar.SetSitStandPose())
+	buffer.WriteD(character.GetObjectId())
+	buffer.WriteD(character.SetSitStandPose())
 	buffer.WriteD(locx)
 	buffer.WriteD(locy)
 	buffer.WriteD(locz)
