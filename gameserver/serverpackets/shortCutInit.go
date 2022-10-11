@@ -14,7 +14,7 @@ func ShortCutInit(character interfaces.CharacterI) []byte {
 
 	buffer.WriteSingleByte(0x45)
 
-	shortCuts := dto.GetAllShortCuts(character.GetObjectId(), character.GetClassId())
+  shortCuts := dto.GetAllShortCuts(character.GetObjectId(), character.GetClassId())
 	buffer.WriteD(int32(len(shortCuts)))
 
 	for _, v := range shortCuts {

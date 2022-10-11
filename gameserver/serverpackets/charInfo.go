@@ -81,8 +81,8 @@ func CharInfo(character interfaces.CharacterI) []byte {
 	buffer.WriteSingleByte(0) //!_activeChar.isInOlympiadMode() && _activeChar.isAlikeDead()
 	buffer.WriteSingleByte(0) // invisible = 1 visible =0
 
-	buffer.WriteSingleByte(0) // 1-on Strider, 2-on Wyvern, 3-on Great Wolf, 0-no mount
-	buffer.WriteSingleByte(0) // privateStore
+	buffer.WriteSingleByte(0)                                     // 1-on Strider, 2-on Wyvern, 3-on Great Wolf, 0-no mount
+	buffer.WriteSingleByte(byte(character.GetPrivateStoreType())) // privateStore
 
 	buffer.WriteH(0) //CubickSize
 	///FOR CUBICs
