@@ -24,6 +24,10 @@ func ConfigureDB() {
 	dsnString += " pool_max_conns=" + conf.PoolMaxConns
 
 	dbConfig, err := pgxpool.ParseConfig(dsnString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	logrusLogger := &logrus.Logger{
 		Out:          os.Stderr,
 		Formatter:    new(logrus.JSONFormatter),
@@ -34,7 +38,9 @@ func ConfigureDB() {
 	}
 	dbConfig.ConnConfig.Logger = logrusadapter.NewLogger(logrusLogger)
 	conn, err := pgxpool.ConnectConfig(context.Background(), dbConfig)
-
+	if err != nil {
+		log.Fatal(err)
+	}
 	err = conn.Ping(context.Background())
 	if err != nil {
 		log.Fatal(err)

@@ -2,7 +2,6 @@ package clientpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
@@ -34,8 +33,6 @@ func AuthLogin(data []byte, client interfaces.ClientInterface, gs gameServerInte
 			//TODO client.CLOSE()
 		}
 
-		pkg := serverpackets.CharSelectionInfo(client)
-		client.SendBuf(pkg)
 	}
 
 }

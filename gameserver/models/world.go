@@ -4,7 +4,6 @@ import (
 	"l2gogameserver/config"
 	"l2gogameserver/gameserver/interfaces"
 	"math"
-	"sync"
 )
 
 type BackwardToLocation struct {
@@ -14,10 +13,6 @@ type BackwardToLocation struct {
 	OriginX int32
 	OriginY int32
 	OriginZ int32
-}
-type OnlineCharacters struct {
-	Char map[int32]*Character
-	Mu   sync.Mutex
 }
 
 var GraciaMaxX = -166168

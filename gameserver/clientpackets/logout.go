@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/clientStates"
 	"l2gogameserver/gameserver/serverpackets"
 )
@@ -10,7 +11,7 @@ type logoutInterface interface {
 	GetAccountLogin() string
 }
 
-func Logout(client logoutInterface, state clientStates.State, gs gameServerInterface) {
+func Logout(client interfaces.ReciverAndSender, state clientStates.State, gs gameServerInterface) {
 	var pkg []byte
 	if state == clientStates.InGame {
 		pkg = serverpackets.LogoutWithInGameState()
