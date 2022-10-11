@@ -28,18 +28,16 @@ func RequestWithDrawalParty(client interfaces.ReciverAndSender) {
 	}
 }
 
-func RemovePartyMember(character interfaces.CharacterI, p interfaces.PartyInterface, reason messageType.MessageType) {
-	if p.IsMemberInParty(character) {
-		isLeader := p.IsLeader(character)
-		if !p.IsDisbanding() {
-			if len(p.GetMembers()) == 2 {
-				disbandParty(p)
+func RemovePartyMember(character interfaces.CharacterI, party interfaces.PartyInterface, reason messageType.MessageType) {
+	if party.IsMemberInParty(character) {
+		isLeader := party.IsLeader(character)
+		if !party.IsDisbanding() {
+			if len(party.GetMembers()) == 2 {
+				disbandParty(party)
 			}
 		}
 
-		index := p.GetMemberIndex(character)
-		members := append(p.GetMembers()[:index], p.GetMembers()[index:]...)
-		p.SetMembers(members)
+		party.RemoveMember(character)
 		//TODO recalculatePartyLevel()
 
 		//TODO if (player.isFestivalParticipant())
@@ -50,17 +48,17 @@ func RemovePartyMember(character interfaces.CharacterI, p interfaces.PartyInterf
 			character.SendSysMsg(sysmsg.HaveBeenExpelledFromParty)
 			msg := sysmsg.C1WasExpelledFromParty
 			msg.AddString(character.GetName())
-			p.BroadcastParty(sysmsg.SystemMessage(msg))
+			party.BroadcastParty(sysmsg.SystemMessage(msg))
 		} else if reason == messageType.Left || reason == messageType.Disconnected {
 			character.SendSysMsg(sysmsg.YouLeftParty)
 			msg := sysmsg.C1LeftParty
 			msg.AddString(character.GetName())
-			p.BroadcastParty(sysmsg.SystemMessage(msg))
+			party.BroadcastParty(sysmsg.SystemMessage(msg))
 		}
 
 		character.SendBuf(serverpackets.PartySmallWindowDeleteAll())
 		character.SetParty(nil)
-		p.BroadcastParty(serverpackets.PartySmallWindowDelete(character).Bytes())
+		party.BroadcastParty(serverpackets.PartySmallWindowDelete(character).Bytes())
 		if false { //TODO hasSummon
 			return
 		}
@@ -73,20 +71,20 @@ func RemovePartyMember(character interfaces.CharacterI, p interfaces.PartyInterf
 			return
 		}
 
-		if isLeader && len(p.GetMembers()) > 1 && reason == messageType.Disconnected {
+		if isLeader && len(party.GetMembers()) > 1 && reason == messageType.Disconnected {
 			msg := sysmsg.C1HasBecomeAPartyLeader
-			msg.AddString(p.GetLeader().GetName())
-			p.BroadcastParty(sysmsg.SystemMessage(msg))
-			broadcastToPartyMembersNewLeader(p)
-		} else if len(p.GetMembers()) == 1 {
+			msg.AddString(party.GetLeader().GetName())
+			party.BroadcastParty(sysmsg.SystemMessage(msg))
+			broadcastToPartyMembersNewLeader(party)
+		} else if len(party.GetMembers()) == 1 {
 			if false { //TODO isInCommandChannel()
 				return
 			}
 
-			if p.GetLeader() != nil {
-				p.GetLeader().SetParty(nil)
+			if party.GetLeader() != nil {
+				party.GetLeader().SetParty(nil)
 			}
-			p.SetMembers(nil)
+			party.SetMembers(nil)
 
 		}
 	}

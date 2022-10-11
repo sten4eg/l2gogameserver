@@ -91,6 +91,9 @@ type (
 		buyList                 *TradeList
 		party                   interfaces.PartyInterface
 		partyDistributionType   interfaces.PartyDistributionTypeInterface
+
+		multiSocialAction int32
+		multiSocialTarget int32
 	}
 	SkillHolder struct {
 		Skill        Skill
@@ -802,4 +805,22 @@ func (c *Character) GetSkills() []interfaces.SkillInterface {
 		i++
 	}
 	return skills
+}
+func (c *Character) SetMultiSocialAction(id, targetId int32) {
+	c.multiSocialAction = id
+	c.multiSocialTarget = targetId
+}
+func (c *Character) GetMultiSocialAction() int32 {
+	return c.multiSocialAction
+}
+func (c *Character) GetMultiSocialTarget() int32 {
+	return c.multiSocialTarget
+}
+
+func (c *Character) GetObjectIdForSlot(slot int32) int32 {
+	return c.Conn.GetObjectIdForSlot(slot)
+}
+
+func (c *Character) MarkToDeleteChar(slot int32) int8 {
+	return c.Conn.MarkToDeleteChar(slot)
 }

@@ -41,17 +41,11 @@ func RequestAnswerJoinParty(client interfaces.ReciverAndSender, data []byte) {
 				requester.SendSysMsg(sysmsg.PartyFull)
 				return
 			}
-			success := character.JoinParty(requester.GetParty())
-			if success {
-				onJoinParty(character, requester.GetParty())
-			}
+			joinParty(character, requester.GetParty())
 		} else {
 			party := models.NewParty(requester, requester.GetPartyDistributionType())
 			requester.SetParty(party)
-			success := character.JoinParty(requester.GetParty())
-			if success {
-				onJoinParty(character, requester.GetParty())
-			}
+			joinParty(character, requester.GetParty())
 		}
 
 		//TODO какие то проверки и настройки
@@ -84,6 +78,8 @@ func onJoinParty(character interfaces.CharacterI, party interfaces.PartyInterfac
 		member.SendSysMsg(msg)
 	}
 
+	party.AddPartyMember(character)
+
 	buffer2 := serverpackets.PartySmallWindowAdd(character, party)
 	broadcast.BroadCastBufferToAroundPlayersWithoutSelf(character, buffer2)
 
@@ -106,5 +102,34 @@ func onJoinParty(character interfaces.CharacterI, party interfaces.PartyInterfac
 	//if (isInCommandChannel()) {
 	//	player.sendPacket(ExOpenMPCC.STATIC_PACKET);
 	//}
+
+}
+
+func joinParty(character interfaces.CharacterI, party interfaces.PartyInterface) {
+	if party != nil {
+		character.SetParty(party)
+		addPartyMember(character, party)
+	}
+}
+
+func addPartyMember(character interfaces.CharacterI, party interfaces.PartyInterface) {
+	if party.IsMemberInParty(character) {
+		return
+	}
+
+	character.SendBuf(serverpackets.PartySmallWindowAll(character, party))
+
+	msg := sysmsg.YouJoinedS1Party
+	msg.AddString(party.GetLeader().GetName())
+	character.SendSysMsg(msg)
+
+	for _, member := range party.GetMembers() {
+		msg2 := sysmsg.C1JoinedParty
+		msg2.AddString(character.GetName())
+		member.SendSysMsg(msg2)
+		member.SendBuf(serverpackets.PartySmallWindowAdd(character, party))
+	}
+
+	party.AddMember(character)
 
 }

@@ -7,17 +7,14 @@ import (
 	"l2gogameserver/packets"
 )
 
-func ShortCutInit(clientI interfaces.ReciverAndSender) []byte {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return []byte{}
-	}
+// TODO убрать модель
+func ShortCutInit(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x45)
 
-	shortCuts := models.GetAllShortCuts(client.CurrentChar.ObjectId, client.CurrentChar.ClassId)
+	shortCuts := dto.GetAllShortCuts(character.GetObjectId(), character.GetClassId())
 	buffer.WriteD(int32(len(shortCuts)))
 
 	for _, v := range shortCuts {

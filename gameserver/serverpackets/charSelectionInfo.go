@@ -11,6 +11,7 @@ import (
 
 const InfoAboutCharsByLogin = `SELECT login,object_id,level,max_hp,cur_hp,max_mp,cur_mp,face,hair_style,hair_color,sex,x,y,z,exp,sp,karma,pvp_kills,pk_kills,clan_id,race,class_id,base_class,title,online_time,nobless,vitality,char_name,first_enter_game FROM characters WHERE Login = $1`
 
+// TODO убрать модель
 func CharSelectionInfo(clientI interfaces.ReciverAndSender) *packets.Buffer {
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {

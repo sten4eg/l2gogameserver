@@ -1,8 +1,10 @@
 package models
 
 import (
+	"context"
 	"errors"
 	"l2gogameserver/data/logger"
+	"l2gogameserver/db"
 	"l2gogameserver/gameserver/crypt"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/clientStates"
@@ -11,6 +13,11 @@ import (
 	"net"
 	"sync"
 )
+
+const DeleteCharacterShortcuts = `DELETE FROM character_shortcuts WHERE char_id = $1`
+const DeleteCharacterSkills = `DELETE FROM character_skills WHERE char_id = $1`
+const DeleteCharacter = `DELETE FROM characters WHERE object_id = $1`
+const DeleteCharacterItems = `DELETE FROM items WHERE owner_id = $1`
 
 type ClientCtx struct {
 	m               sync.RWMutex
@@ -264,4 +271,52 @@ func (c *ClientCtx) GetAccountLogin() string {
 
 func (c *ClientCtx) CloseConnection() {
 	c.conn.Close()
+}
+
+func (c *ClientCtx) GetObjectIdForSlot(slot int32) int32 {
+	return c.Account.Char[slot].GetObjectId()
+}
+
+func (c *ClientCtx) MarkToDeleteChar(slot int32) int8 {
+	objId := c.GetObjectIdForSlot(slot)
+
+	if objId < 0 {
+		return -1
+	}
+
+	// TODO чекнуть в бд клан персонажа
+	var answer int8
+
+	if answer == 0 { // clan == nil
+		c.deleteCharByObjId(objId)
+	}
+
+	return answer
+}
+
+func (c *ClientCtx) deleteCharByObjId(objId int32) {
+	if objId < 0 {
+		return
+	}
+
+	dbConn, err := db.GetConn()
+	if err != nil {
+		logger.Error.Panicln(err)
+	}
+	defer dbConn.Release()
+
+	_, err = dbConn.Exec(context.Background(), DeleteCharacterShortcuts, objId)
+	if err != nil {
+		logger.Error.Panicln(err)
+	}
+
+	_, err = dbConn.Exec(context.Background(), DeleteCharacterItems, objId)
+	if err != nil {
+		logger.Error.Panicln(err)
+	}
+
+	_, err = dbConn.Exec(context.Background(), DeleteCharacter, objId)
+	if err != nil {
+		logger.Error.Panicln(err)
+	}
 }

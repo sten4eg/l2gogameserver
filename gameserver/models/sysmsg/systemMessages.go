@@ -94,6 +94,7 @@ var C1InvitedToParty = SysMsg{Params: []Params{}, Id: 105}
 var YouJoinedS1Party = SysMsg{Params: []Params{}, Id: 106}
 var C1JoinedParty = SysMsg{Params: []Params{}, Id: 107}
 var C1LeftParty = SysMsg{Params: []Params{}, Id: 108}
+var IncorrectTarget = SysMsg{Params: []Params{}, Id: 109}
 var RequestC1ForTrade = SysMsg{Params: []Params{}, Id: 118}
 var C1DeniedTradeRequest = SysMsg{Params: []Params{}, Id: 119}
 var BeginTradeWithC1 = SysMsg{Params: []Params{}, Id: 120}
@@ -129,6 +130,13 @@ var NoPrivateStoreHere = SysMsg{Params: []Params{}, Id: 1296}
 var C1HasBecomeAPartyLeader = SysMsg{Params: []Params{}, Id: 1384}
 var CannotEquipItemDueToBadCondition = SysMsg{Params: []Params{}, Id: 1518}
 var S1 = SysMsg{Params: []Params{}, Id: 1987}
+var CoupleActionDenied = SysMsg{Params: []Params{}, Id: 3119}
+var TargetDoNotMeetLocRequirements = SysMsg{Params: []Params{}, Id: 3120}
+var C1IsInPrivateShopModeOrInABattleAndCannotBeRequestedForACoupleAction = SysMsg{Params: []Params{}, Id: 3123}
+var C1IsAlreadyParticipatingInACoupleActionAndCannotBeRequestedForAnotherCoupleAction = SysMsg{Params: []Params{}, Id: 3126}
+var C1IsInAChaoticStateAndCannotBeRequestedForACoupleAction = SysMsg{Params: []Params{}, Id: 3127}
+var YouHaveRequestedCoupleActionC1 = SysMsg{Params: []Params{}, Id: 3150}
+var C1IsSetToRefuseCoupleActions = SysMsg{Params: []Params{}, Id: 3164}
 var C1IsSetToRefusePartyRequest = SysMsg{Params: []Params{}, Id: 3168}
 
 func FindById() {

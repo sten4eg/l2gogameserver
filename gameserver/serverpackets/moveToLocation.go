@@ -6,18 +6,14 @@ import (
 	"l2gogameserver/packets"
 )
 
-func MoveToLocation(location *models.BackwardToLocation, clientI interfaces.ReciverAndSender) []byte {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return []byte{}
-	}
-
+// TODO убрать модель
+func MoveToLocation(location *models.BackwardToLocation, character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x2f)
 
-	buffer.WriteD(client.CurrentChar.ObjectId)
+	buffer.WriteD(character.GetObjectId())
 
 	buffer.WriteD(location.TargetX)
 	buffer.WriteD(location.TargetY)
@@ -27,6 +23,6 @@ func MoveToLocation(location *models.BackwardToLocation, clientI interfaces.Reci
 	buffer.WriteD(location.OriginY)
 	buffer.WriteD(location.OriginZ)
 
-	client.CurrentChar.SetXYZ(location.TargetX, location.TargetY, location.TargetZ)
+	character.SetXYZ(location.TargetX, location.TargetY, location.TargetZ)
 	return buffer.Bytes()
 }

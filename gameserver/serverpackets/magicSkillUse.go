@@ -7,6 +7,7 @@ import (
 	"l2gogameserver/packets"
 )
 
+// TODO убрать модель
 func NewMagicSkillUse(clientI interfaces.ReciverAndSender, skill models.Skill, ctrlPressed, shiftPressed bool) []byte {
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
