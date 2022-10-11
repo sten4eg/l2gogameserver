@@ -5,13 +5,13 @@ import (
 	"l2gogameserver/packets"
 )
 
-func SocialAction(character interfaces.CharacterI) []byte {
+func SocialAction(character interfaces.CharacterI, actionId int32) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x27)
 	buffer.WriteD(character.GetObjectId())
-	buffer.WriteD(3)
+	buffer.WriteD(actionId)
 
 	return buffer.Bytes()
 }

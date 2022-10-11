@@ -41,6 +41,8 @@ type PartyInterface interface {
 	SetDisbanding(bool)
 	GetMemberIndex(CharacterI) int
 	BroadcastParty([]byte)
+	AddMember(member CharacterI)
+	RemoveMember(member CharacterI)
 }
 
 type PartyDistributionTypeInterface interface {
@@ -299,7 +301,12 @@ type CharacterI interface {
 	GetPaperdoll() []MyItemInterface
 	GetSkills() []SkillInterface
 	SetSitStandPose() int32
+
+	SetMultiSocialAction(id, targetId int32)
+	GetMultiSocialAction() int32
+	GetMultiSocialTarget() int32
 }
+
 type ClientInterface interface {
 	ReciverAndSender
 	SetLogin(login string)
@@ -322,4 +329,7 @@ type ReciverAndSender interface {
 	GetCurrentChar() CharacterI
 
 	GetAccountLogin() string
+
+	GetObjectIdForSlot(int32) int32
+	MarkToDeleteChar(int32) int8
 }

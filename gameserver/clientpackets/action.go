@@ -94,6 +94,7 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 	return nil
 }
 
+// TODO мб переместить в медоты региона и чекать соседние регионы
 func getTargetByObjectId(objId int32, region interfaces.WorldRegioner) any {
 	var target any
 	var ok bool

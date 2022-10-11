@@ -5,6 +5,7 @@ import (
 	"l2gogameserver/packets"
 )
 
+// TODO убрать модель
 func MacroMake(macro models.Macro, count uint8) []byte {
 	buffer := packets.Get()
 	defer packets.Put(buffer)

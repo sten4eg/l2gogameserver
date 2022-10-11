@@ -49,6 +49,8 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				clientpackets.Logout(client, state, gs)
 			case 0x0c:
 				clientpackets.CharacterCreate(client, data)
+			case 0x0d:
+				clientpackets.CharacterDelete(client, data)
 			case 0x12:
 				clientpackets.CharSelected(data, client)
 				gameserver.AddOnlineChar(client.GetCurrentChar()) //todo проверить зачем еще одна мапа с чарами онлайн, есть мапа с клиентами
@@ -172,6 +174,8 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 					clientpackets.RequestSaveInventoryOrder(client, data)
 				case 0x0d:
 					clientpackets.RequestAutoSoulShot(data, client)
+				case 0x7a:
+					clientpackets.AnswerCoupleAction(client, data)
 
 				}
 			case 0x74:
@@ -190,7 +194,6 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				clientpackets.SetPrivateStoreMsgBuy(client, data)
 			case 0x9f:
 				clientpackets.RequestPrivateStoreSell(client, data)
-
 			}
 		}
 

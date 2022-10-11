@@ -6,6 +6,7 @@ import (
 	"l2gogameserver/packets"
 )
 
+// TODO убрать модель
 func ItemUpdate(clientI interfaces.ReciverAndSender, updateType int16, objId int32) []byte {
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {

@@ -11,7 +11,7 @@ func PartySmallWindowAll(exclude interfaces.CharacterI, party interfaces.PartyIn
 	buffer.WriteSingleByte(0x4e)
 	buffer.WriteD(party.GetLeaderObjectId())
 	buffer.WriteD(party.GetDistributionType().GetId())
-	buffer.WriteD(int32(party.GetMemberCount() - 1))
+	buffer.WriteD(int32(party.GetMemberCount()))
 
 	for _, member := range party.GetMembers() {
 		if member != nil && member != exclude {
