@@ -1,5 +1,6 @@
 ---
 gameserver:
+  serverIp: 127.0.0.1
   serverId: 1
   acceptAlternateId: true
   reserveHostOnLogin: false

@@ -33,7 +33,7 @@ func AuthRequest() *packets.Buffer {
 		buf.WriteSingleByte(0x00)
 	}
 
-	buf.WriteH(port)
+	buf.WriteH(int16(port))
 	buf.WriteD(int32(maxPlayer))
 	buf.WriteD(int32(len(hexId)))
 	buf.WriteSlice(hexId)

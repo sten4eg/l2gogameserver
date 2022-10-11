@@ -9,6 +9,8 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
+	"log"
+	"strconv"
 )
 
 func StartClientListener(client interfaces.ReciverAndSender) {
@@ -71,23 +73,33 @@ func moveListener(client interfaces.ReciverAndSender) {
 	pkg := utils.GetPacketByte()
 	defer pkg.Release()
 
-	for q := range ch.CurrentChar.CharInfoTo {
+	for to := range ch.CurrentChar.CharInfoTo {
 		pkg.SetData(serverpackets.CharInfo(ch.CurrentChar))
-		for _, v := range q {
-			gameserver.OnlineCharacters.Mu.Lock()
-			gameserver.OnlineCharacters.Char[v].Conn.EncryptAndSend(pkg.GetData())
-			gameserver.OnlineCharacters.Mu.Unlock()
+		for index := range to {
+			strKey := strconv.Itoa(int(to[index]))
+			char, ok := gameserver.OnlineCharacters.Load(strKey)
+			if !ok {
+				log.Println("Персонаж не найден")
+				continue
+			}
+			char.EncryptAndSend(pkg.GetData())
 		}
 	}
 
 	pkg.Free()
 
-	for q := range ch.CurrentChar.DeleteObjectTo {
+	for to := range ch.CurrentChar.DeleteObjectTo {
 		pkg.SetDataBuf(serverpackets.DeleteObject(ch.CurrentChar.GetObjectId()))
-		for _, v := range q {
-			gameserver.OnlineCharacters.Mu.Lock()
-			gameserver.OnlineCharacters.Char[v].Conn.EncryptAndSend(pkg.GetData())
-			gameserver.OnlineCharacters.Mu.Unlock()
+		for index := range to {
+
+			strKey := strconv.Itoa(int(to[index]))
+			char, ok := gameserver.OnlineCharacters.Load(strKey)
+			if !ok {
+				log.Println("Персонаж не найден")
+				continue
+			}
+			char.EncryptAndSend(pkg.GetData())
+
 		}
 	}
 

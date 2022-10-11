@@ -32,7 +32,7 @@ func addAdminItem(command string, client interfaces.ReciverAndSender) {
 		return
 	}
 	item, ok := items.GetItemInfo(itemId)
-	if ok {
+	if ok { //todo чекать что влезет в инвентарь
 		client.GetCurrentChar().GetInventory().AddItem2(int32(itemId), count, item.IsStackable())
 	}
 }

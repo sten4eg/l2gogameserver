@@ -8,6 +8,8 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
+	"log"
+	"strconv"
 )
 
 // ToAroundPlayerInRadius отправляет всем персонажам в радиусе radius
@@ -89,12 +91,17 @@ func BroadCastUserInfoInRadius(me interfaces.ReciverAndSender, radius int32) {
 	defer exUi.Release()
 	exUi.SetData(serverpackets.ExBrExtraUserInfo(me.GetCurrentChar()))
 
-	//g.OnlineCharacters.Mu.Lock()
 	for i := range charsIds {
-		gameserver.OnlineCharacters.Char[charsIds[i].GetObjectId()].Conn.EncryptAndSend(ci.GetData())
-		gameserver.OnlineCharacters.Char[charsIds[i].GetObjectId()].Conn.EncryptAndSend(exUi.GetData())
+		strKey := strconv.Itoa(int(charsIds[i].GetObjectId()))
+		char, ok := gameserver.OnlineCharacters.Load(strKey)
+		if !ok {
+			log.Println("Персонаж не найден")
+			continue
+		}
+		char.EncryptAndSend(ci.GetData())
+		char.EncryptAndSend(exUi.GetData())
 	}
-	//g.OnlineCharacters.Mu.Unlock()
+
 }
 
 func BroadcastUserInfo(client interfaces.ReciverAndSender) {
@@ -153,8 +160,6 @@ func BroadCastChat(me interfaces.ReciverAndSender, say models.Say) {
 // BroadCastToCharacterByName отправляет pkg персонажу с ником to
 // true если отправлен, false если персонаж не найден
 func BroadCastToCharacterByName(pkg *utils.PacketByte, to string) bool {
-	gameserver.OnlineCharacters.Mu.Lock()
-	defer gameserver.OnlineCharacters.Mu.Unlock()
 
 	conn := gameserver.GetNetConnByCharacterName(to)
 	if conn != nil {

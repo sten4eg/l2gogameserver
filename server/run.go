@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"github.com/puzpuzpuz/xsync"
+	"l2gogameserver/config"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/handlers"
@@ -21,7 +22,7 @@ type GameServer struct {
 }
 
 func New() *GameServer {
-	gs := &GameServer{}
+	gs := new(GameServer)
 	gs.clients = xsync.NewMapOf[interfaces.ClientInterface]()
 	gs.waitingClients = xsync.NewMapOf[interfaces.ClientInterface]()
 	ls := loginserver.GetLoginServerInstance()
@@ -35,8 +36,9 @@ func (g *GameServer) Start() {
 	var err error
 
 	addr := new(net.TCPAddr)
-	addr.Port = 7777
-	addr.IP = net.IP{127, 0, 0, 1}
+	addr.Port = config.GetPort()
+
+	addr.IP = net.ParseIP(config.GetServerIp())
 
 	/* #nosec */
 	g.clientsListener, err = net.ListenTCP("tcp4", addr)
@@ -45,9 +47,7 @@ func (g *GameServer) Start() {
 	}
 	defer g.clientsListener.Close()
 
-	var onlineChars models.OnlineCharacters
-	onlineChars.Char = make(map[int32]*models.Character)
-	gameserver.OnlineCharacters = &onlineChars
+	gameserver.OnlineCharacters = xsync.NewMapOf[interfaces.CharacterI]()
 
 	//go g.Tick()
 
@@ -80,10 +80,6 @@ func (g *GameServer) AddWaitClient(login string, clientI interfaces.ClientInterf
 func (g *GameServer) ExistsWaitClient(login string) bool {
 	_, exist := g.waitingClients.Load(login)
 	return exist
-}
-
-func (g *GameServer) KickClientByLogin(login string) {
-	//for i,v := range g.onlineCharacters
 }
 
 func (g *GameServer) GetClient(login string) interfaces.ClientInterface {

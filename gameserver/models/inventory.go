@@ -81,7 +81,7 @@ func NewInventory(ownerId int32) Inventory {
 	}
 }
 func (i *Inventory) GetItemByObjectId(id int32) interfaces.MyItemInterface {
-	for index, _ := range i.Items {
+	for index := range i.Items {
 		if i.Items[index].GetObjectId() == id {
 			return &i.Items[index]
 		}

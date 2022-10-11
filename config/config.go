@@ -10,10 +10,11 @@ type config struct {
 	isConfigInit bool
 }
 type GameServer struct {
+	ServerIp           string         `yaml:"serverIp"`
 	ServerId           int            `yaml:"serverId"`
 	AcceptAlternateId  bool           `yaml:"acceptAlternateId"`
 	ReserveHostOnLogin bool           `yaml:"reserveHostOnLogin"`
-	Port               int16          `yaml:"port"`
+	Port               int            `yaml:"port"`
 	ServerListBrackets bool           `yaml:"serverListBrackets"`
 	GMOnly             bool           `yaml:"GMOnly"`
 	ServerListAge      byte           `yaml:"serverListAge"`
@@ -106,6 +107,9 @@ func GetLoginServerPort() string {
 	return configInstance.GameServer.PortForLS
 }
 
+func GetServerIp() string {
+	return configInstance.GameServer.ServerIp
+}
 func GetServerId() int {
 	return configInstance.GameServer.ServerId
 }
@@ -118,7 +122,7 @@ func GetReserveHostOnLogin() bool {
 	return configInstance.GameServer.ReserveHostOnLogin
 }
 
-func GetPort() int16 {
+func GetPort() int {
 	return configInstance.GameServer.Port
 }
 
