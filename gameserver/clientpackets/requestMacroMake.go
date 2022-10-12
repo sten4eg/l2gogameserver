@@ -35,6 +35,10 @@ func RequestMakeMacro(clientI interfaces.ReciverAndSender, data []byte) {
 
 	client.CurrentChar.AddMacros(macro)
 	count := client.CurrentChar.MacrosesCount()
-	pkg := serverpackets.MacroMake(macro, count)
-	client.EncryptAndSend(pkg)
+
+	rev := client.CurrentChar.GetMacrosRevision()
+
+	for _, macro := range client.CurrentChar.Macros {
+		client.SendBuf(serverpackets.SendMacroList(rev, count, macro))
+	}
 }

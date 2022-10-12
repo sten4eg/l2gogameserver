@@ -74,6 +74,7 @@ type (
 		InGame                  bool
 		Target                  int32
 		Macros                  []Macro
+		MacroRevision           int32
 		CharInfoTo              chan []int32
 		DeleteObjectTo          chan []int32
 		NpcInfo                 chan []interfaces.Npcer
@@ -189,6 +190,7 @@ func (c *Character) Load() {
 	c.Inventory.Items = GetMyItems(c.ObjectId)
 	c.Paperdoll = RestoreVisibleInventory(c.ObjectId)
 	c.LoadCharactersMacros()
+	c.MacroRevision = 1
 	for _, v := range &c.Paperdoll {
 		if v.ObjectId != 0 {
 			c.AddBonusStat(v.BonusStats)
@@ -823,4 +825,20 @@ func (c *Character) GetObjectIdForSlot(slot int32) int32 {
 
 func (c *Character) MarkToDeleteChar(slot int32) int8 {
 	return c.Conn.MarkToDeleteChar(slot)
+}
+func (c *Character) GetMacrosRevision() int32 {
+	c.MacroRevision++
+	return c.MacroRevision
+}
+func (c *Character) DeleteMacro(id int32) {
+	for i := range c.Macros {
+		if c.Macros[i].Id == id {
+			c.Macros = append(c.Macros[:i], c.Macros[i+1:]...)
+		}
+	}
+	RemoveMacros(id)
+}
+
+func (c *Character) GetMacrosCount() uint8 {
+	return uint8(len(c.Macros))
 }

@@ -24,9 +24,10 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 	pkg2 := serverpackets.ExBrExtraUserInfo(character)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
 
+	rev := client.CurrentChar.GetMacrosRevision()
 	count := uint8(len(client.CurrentChar.Macros))
-	for index, macro := range client.CurrentChar.Macros {
-		pkg3 := serverpackets.SendMacroList(client, macro, count, index)
+	for _, macro := range client.CurrentChar.Macros {
+		pkg3 := serverpackets.SendMacroList(rev, count, macro).Bytes()
 		buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg3))
 	}
 

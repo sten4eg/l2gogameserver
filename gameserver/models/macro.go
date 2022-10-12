@@ -31,7 +31,7 @@ type Macro struct {
 func (c *Character) AddMacros(macro Macro) {
 	//Если макрос найден, тогда делаем замену параметров его
 	if c.CheckMacros(macro.Id) {
-		removeMacros(macro.Id)
+		RemoveMacros(macro.Id)
 		c.saveMacros(macro)
 		return
 	} else {
@@ -41,7 +41,7 @@ func (c *Character) AddMacros(macro Macro) {
 
 // Удаление макроса
 // todo Временное положение дел, необходимо будет НЕ удалять, а изменять, но пока и так сгодиться.
-func removeMacros(id int32) {
+func RemoveMacros(id int32) {
 	sqlMacros := `DELETE FROM "macros" WHERE "id" = $1`
 	sqlCommands := `DELETE FROM "macros_commands" WHERE "command_id" = $1`
 	dbConn, err := db.GetConn()
@@ -106,7 +106,7 @@ func (c *Character) LoadCharactersMacros() {
 	}
 	defer dbConn.Release()
 
-	sql := `SELECT id,icon,name,description,acronym FROM "macros" WHERE char_id=$1 `
+	sql := `SELECT id,icon,name,description,acronym FROM macros WHERE char_id=$1`
 	rows, err := dbConn.Query(context.Background(), sql, c.ObjectId)
 	if err != nil {
 		logger.Info.Println(err.Error())
@@ -124,7 +124,7 @@ func (c *Character) LoadCharactersMacros() {
 	}
 	for index, macros := range Macroses {
 		MacrosesCommands = nil
-		sqlCommand := `SELECT * FROM "macros_commands" WHERE command_id=$1`
+		sqlCommand := `SELECT * FROM macros_commands WHERE command_id=$1`
 		rowsCommand, err := dbConn.Query(context.Background(), sqlCommand, macros.Id)
 		if err != nil {
 			logger.Info.Println(err.Error())
@@ -132,7 +132,7 @@ func (c *Character) LoadCharactersMacros() {
 		}
 		for rowsCommand.Next() {
 			cCom := MacroCommand{}
-			err = rows.Scan(&cCom.Id, &cCom.Index, &cCom.Type, &cCom.SkillID, &cCom.ShortcutID, &cCom.Name)
+			err = rowsCommand.Scan(&cCom.Id, &cCom.Index, &cCom.Type, &cCom.SkillID, &cCom.ShortcutID, &cCom.Name)
 			if err != nil {
 				logger.Info.Println(err.Error())
 				return
