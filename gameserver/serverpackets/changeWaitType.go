@@ -7,7 +7,6 @@ import (
 
 func ChangeWaitType(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	locx, locy, locz := character.GetXYZ()
 

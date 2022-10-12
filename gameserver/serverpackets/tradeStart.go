@@ -7,7 +7,7 @@ import (
 
 func TradeStart(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
+
 	items := character.GetInventory().GetItems()
 
 	buffer.WriteSingleByte(0x14)

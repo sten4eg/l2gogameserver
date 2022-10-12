@@ -5,7 +5,6 @@ import "l2gogameserver/packets"
 func ShowBoard(htmlCode, id string) []byte {
 	content := id + "\u0008" + htmlCode
 	buf := packets.Get()
-	defer packets.Put(buf)
 
 	buf.WriteSingleByte(0x7B)
 	buf.WriteSingleByte(0x01)        // c4 1 to show community 00 to hide

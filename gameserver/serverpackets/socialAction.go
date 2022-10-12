@@ -7,7 +7,6 @@ import (
 
 func SocialAction(character interfaces.CharacterI, actionId int32) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x27)
 	buffer.WriteD(character.GetObjectId())

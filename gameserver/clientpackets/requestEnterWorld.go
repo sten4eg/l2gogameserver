@@ -71,7 +71,7 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg16))
 	client.SetState(clientStates.InGame)
 	client.Send(buff.Bytes())
-	packets.Put(buff)
+
 	//NPCdistance := client.CurrentChar.SpawnDistancePoint(5000)
 	//logger.Info.Printf("Загружено возле игрока %d npc", len(NPCdistance))
 	//for id, locdata := range NPCdistance {

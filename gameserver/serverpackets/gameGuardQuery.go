@@ -14,7 +14,6 @@ func GameGuardQuery(client interfaces.ReciverAndSender) []byte {
 	buffer.WriteD(0x2017038B)
 	buffer.WriteDU(0xC35B1EA3)
 
-	defer packets.Put(buffer)
 	return buffer.Bytes()
 
 }

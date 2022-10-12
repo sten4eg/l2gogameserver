@@ -13,6 +13,5 @@ func QuestList(client interfaces.ReciverAndSender) []byte {
 	x := make([]byte, 128)
 	buffer.WriteSlice(x)
 
-	defer packets.Put(buffer)
 	return buffer.Bytes()
 }

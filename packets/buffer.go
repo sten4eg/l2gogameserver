@@ -7,23 +7,26 @@ import (
 )
 
 type Buffer struct {
-	B []byte
+	b []byte
 }
 
 func (b *Buffer) Len() int {
-	return len(b.B)
+	return len(b.b)
 }
 
 func (b *Buffer) Bytes() []byte {
-	return b.B
+	cl := make([]byte, len(b.b))
+	_ = copy(cl, b.b)
+	Put(b)
+	return cl
 }
 
 func (b *Buffer) Reset() {
-	b.B = b.B[:0]
+	b.b = b.b[:0]
 }
 
 func (b *Buffer) WriteF(value float64) {
-	b.B = append(b.B, float64ToByte(value)...)
+	b.b = append(b.b, float64ToByte(value)...)
 }
 
 func float64ToByte(f float64) []byte {
@@ -34,34 +37,34 @@ func float64ToByte(f float64) []byte {
 
 func (b *Buffer) WriteH(value int16) {
 	var h, l = byte(value >> 8), byte(value & 0xff)
-	b.B = append(b.B, l, h)
+	b.b = append(b.b, l, h)
 }
 
 func (b *Buffer) WriteQ(value int64) {
 	var buf [8]byte
 	binary.LittleEndian.PutUint64(buf[:], uint64(value))
-	b.B = append(b.B, buf[:]...)
+	b.b = append(b.b, buf[:]...)
 }
 func (b *Buffer) WriteHU(value uint16) {
-	b.B = append(b.B, byte(value&0xff), byte(value>>8))
+	b.b = append(b.b, byte(value&0xff), byte(value>>8))
 }
 func (b *Buffer) WriteD(value int32) {
 	var buf [4]byte
 	binary.LittleEndian.PutUint32(buf[:], uint32(value))
-	b.B = append(b.B, buf[:]...)
+	b.b = append(b.b, buf[:]...)
 }
 func (b *Buffer) WriteDU(value uint32) {
 	var buf [4]byte
 	binary.LittleEndian.PutUint32(buf[:], value)
-	b.B = append(b.B, buf[:]...)
+	b.b = append(b.b, buf[:]...)
 }
 
 func (b *Buffer) WriteSlice(value []byte) {
-	b.B = append(b.B, value...)
+	b.b = append(b.b, value...)
 }
 
 func (b *Buffer) WriteSingleByte(value byte) {
-	b.B = append(b.B, value)
+	b.b = append(b.b, value)
 }
 
 const EmptyByte byte = 0
@@ -81,5 +84,5 @@ func (b *Buffer) WriteS(value string) {
 
 	buf = append(buf, EmptyByte, EmptyByte)
 
-	b.B = append(b.B, buf...)
+	b.b = append(b.b, buf...)
 }

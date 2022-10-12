@@ -22,6 +22,6 @@ func LoginFail(reason LoginFailReason) []byte {
 	buf := packets.Get()
 	buf.WriteSingleByte(0x0A)
 	buf.WriteD(int32(reason))
-	defer packets.Put(buf)
+
 	return buf.Bytes()
 }

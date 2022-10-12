@@ -7,7 +7,6 @@ import (
 
 func Attack(client interfaces.CharacterI, targetObjId, targetX, targetY, targetZ int32) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	x, y, z := client.GetXYZ()
 

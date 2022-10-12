@@ -10,11 +10,10 @@ import (
 // TODO убрать модель
 func ShortCutInit(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x45)
 
-  shortCuts := dto.GetAllShortCuts(character.GetObjectId(), character.GetClassId())
+	shortCuts := dto.GetAllShortCuts(character.GetObjectId(), character.GetClassId())
 	buffer.WriteD(int32(len(shortCuts)))
 
 	for _, v := range shortCuts {

@@ -7,7 +7,6 @@ import (
 
 func InventoryUpdate(items []interfaces.MyItemInterface) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x21)
 	buffer.WriteH(int16(len(items)))

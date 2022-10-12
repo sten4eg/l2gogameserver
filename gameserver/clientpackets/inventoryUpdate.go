@@ -9,7 +9,6 @@ import (
 
 func InventoryUpdate(client interfaces.ReciverAndSender, item models.MyItem, updateType int16) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	//TODO ne sdelano
 	pkg := serverpackets.InventoryUpdate([]interfaces.MyItemInterface{})

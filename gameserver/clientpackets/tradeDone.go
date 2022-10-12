@@ -74,7 +74,6 @@ func tradeConfirmed(client interfaces.CharacterI, partner interfaces.CharacterI)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(sysmsg.SystemMessage(msg)))
 	client.Send(buff.Bytes())
 	client.EncryptAndSend(serverpackets.TradeOtherDone())
-	packets.Put(buff)
 }
 func endTrade(client interfaces.ReciverAndSender) {
 	buff := packets.Get()
@@ -89,7 +88,6 @@ func endTrade(client interfaces.ReciverAndSender) {
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(sysmsg.SystemMessage(sysmsg.TargetIsNotFoundInTheGame)))
 	client.Send(buff.Bytes())
 
-	packets.Put(buff)
 }
 
 func finishTrade(c interfaces.CharacterI, successful bool) {
@@ -112,6 +110,5 @@ func cancelTrade(c interfaces.CharacterI, partner interfaces.CharacterI) {
 	msg.AddString(partner.GetName())
 	buff.WriteSlice(c.CryptAndReturnPackageReadyToShip(sysmsg.SystemMessage(msg)))
 	c.Send(buff.Bytes())
-	packets.Put(buff)
 
 }

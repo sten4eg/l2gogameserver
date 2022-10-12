@@ -21,7 +21,6 @@ func RequestMagicSkillUse(data []byte, clientI interfaces.ReciverAndSender) {
 	shiftPressed := packet.ReadSingleByte() != 0 // True if Shift pressed
 
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	if client.CurrentChar.IsDead {
 		pkg := serverpackets.ActionFailed(client)

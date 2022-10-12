@@ -7,7 +7,6 @@ import (
 
 func ExBrExtraUserInfo(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0xFE)
 	buffer.WriteH(0xDA)

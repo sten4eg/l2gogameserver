@@ -7,7 +7,6 @@ import (
 
 func CharCreateFail(client interfaces.ReciverAndSender, reason int32) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x10)
 	buffer.WriteD(reason)

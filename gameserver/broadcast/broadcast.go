@@ -58,7 +58,6 @@ func BroadCastBufferToAroundPlayers(my interfaces.ReciverAndSender, buffer *pack
 	BroadCastToAroundPlayers(my, pb)
 
 	pb.Release()
-	packets.Put(buffer)
 }
 
 func BroadCastBufferToAroundPlayersWithoutSelf(my interfaces.ReciverAndSender, buffer *packets.Buffer) {
@@ -68,7 +67,6 @@ func BroadCastBufferToAroundPlayersWithoutSelf(my interfaces.ReciverAndSender, b
 	BroadCastToAroundPlayersWithoutSelf(my, pb)
 
 	pb.Release()
-	packets.Put(buffer)
 }
 
 // BroadCastUserInfoInRadius отправляет всем персонажам в радиусе radius

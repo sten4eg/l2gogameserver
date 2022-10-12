@@ -11,7 +11,6 @@ const pageSize = 40
 // MultiSell Отправка пакета
 func MultiSell(msData multisell.MultiList) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0xD0)
 	buffer.WriteD(int32(msData.ID))        // msData.ID list id

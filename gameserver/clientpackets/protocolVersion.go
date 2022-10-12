@@ -17,7 +17,7 @@ func ProtocolVersion(clientI interfaces.ClientInterface, data []byte) {
 	var packet = packets.NewReader(data)
 	protocolVersion := packet.ReadUInt16()
 	//273 - последний протокол для HF
-	if protocolVersion != 273 {
+	if protocolVersion != 273 && protocolVersion != 268 {
 		logger.Info.Println(client.GetRemoteAddr(), " хотел подключиться с версией протококла:", protocolVersion)
 		return
 	}

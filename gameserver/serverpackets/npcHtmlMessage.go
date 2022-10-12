@@ -9,7 +9,6 @@ import (
 func NpcHtmlMessage(client interfaces.ReciverAndSender, npcid int32) []byte {
 
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x19)
 

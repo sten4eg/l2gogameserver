@@ -9,7 +9,6 @@ import (
 // TODO: в будущем можно будет сделать направление персонажа после ТП.
 func TeleportToLocation(character interfaces.CharacterI, x, y, z, h int) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x22)
 	buffer.WriteD(character.GetObjectId())

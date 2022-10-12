@@ -7,7 +7,7 @@ import (
 
 func TradeOtherAdd(item interfaces.TradableItemInterface) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
+
 	buffer.WriteSingleByte(0x1B)
 	buffer.WriteH(1) // static?item added count
 	buffer.WriteH(0) // static?

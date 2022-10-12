@@ -7,7 +7,7 @@ import (
 
 func NpcInfo(npc interfaces.Npcer) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
+
 	x, y, z := npc.GetCoordinates()
 
 	buffer.WriteSingleByte(0x0c) //12

@@ -12,6 +12,5 @@ func ShortBuffStatusUpdate(client interfaces.ReciverAndSender) []byte {
 	buffer.WriteD(1)
 	buffer.WriteD(20)
 
-	defer packets.Put(buffer)
 	return buffer.Bytes()
 }

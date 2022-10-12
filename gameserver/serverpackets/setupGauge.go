@@ -8,7 +8,6 @@ import (
 // SetupGauge полоска над персонажем во время каста скила
 func SetupGauge(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x6b)
 	buffer.WriteD(character.GetObjectId())

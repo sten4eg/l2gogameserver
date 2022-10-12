@@ -19,7 +19,6 @@ func RequestAutoSoulShot(data []byte, clientI interfaces.ReciverAndSender) {
 	client.CurrentChar.ActiveSoulShots = append(client.CurrentChar.ActiveSoulShots, itemId)
 	//todo реализцая должна быть в serverPackets
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0xFE)
 

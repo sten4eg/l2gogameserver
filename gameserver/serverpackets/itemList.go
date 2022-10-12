@@ -55,6 +55,5 @@ func ItemList(character interfaces.CharacterI) []byte {
 
 	buffer.WriteH(0) //writeInventoryBlock
 
-	defer packets.Put(buffer)
 	return buffer.Bytes()
 }

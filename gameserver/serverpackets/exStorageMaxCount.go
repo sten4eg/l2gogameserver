@@ -21,7 +21,6 @@ func ExStorageMaxCount(character interfaces.CharacterI) []byte {
 	buffer.WriteD(0)                                    // _inventoryExtraSlots
 	buffer.WriteD(0)                                    // _inventoryQuestItems
 
-	defer packets.Put(buffer)
 	return buffer.Bytes()
 
 }

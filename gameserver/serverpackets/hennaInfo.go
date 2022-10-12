@@ -18,6 +18,5 @@ func HennaInfo(client interfaces.ReciverAndSender) []byte {
 	buffer.WriteD(3)          //slots
 	buffer.WriteD(0)          //Size
 
-	defer packets.Put(buffer)
 	return buffer.Bytes()
 }
