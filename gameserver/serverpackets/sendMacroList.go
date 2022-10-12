@@ -9,6 +9,7 @@ import (
 func SendMacroList(rev int32, count uint8, macro models.Macro) *packets.Buffer {
 	buffer := packets.Get()
 
+	buffer.WriteSingleByte(0xE8)
 	buffer.WriteD(rev)
 	buffer.WriteSingleByte(0x00)
 	buffer.WriteSingleByte(count)
