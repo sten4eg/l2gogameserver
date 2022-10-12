@@ -1,11 +1,10 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 )
 
-func CharacterSuccess(client interfaces.ReciverAndSender) []byte {
+func CharacterSuccess() *packets.Buffer {
 	buffer := packets.Get()
 
 	buffer.WriteSingleByte(0x0D)
@@ -31,6 +30,5 @@ func CharacterSuccess(client interfaces.ReciverAndSender) []byte {
 	buffer.WriteD(1)
 	buffer.WriteD(0x0A)
 
-	defer packets.Put(buffer)
-	return buffer.Bytes()
+	return buffer
 }

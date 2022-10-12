@@ -5,7 +5,6 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func RequestGoToLobby(client interfaces.ReciverAndSender, data []byte) {
-	pkg := serverpackets.CharSelectionInfo(client)
-	client.SendBuf(pkg)
+func RequestGoToLobby(client interfaces.ReciverAndSender) {
+	client.SendBuf(serverpackets.CharSelectionInfo(client))
 }
