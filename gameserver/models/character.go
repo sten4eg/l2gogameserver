@@ -788,11 +788,12 @@ func (c *Character) GetTitle() string {
 func (c *Character) GetClanId() int32 {
 	return c.ClanId
 }
+
 func (c *Character) GetPaperdoll() []interfaces.MyItemInterface {
 	//TODO гойленг не дает вернуть ссылку на массив
 	paperdoll := make([]interfaces.MyItemInterface, len(c.Paperdoll))
-	for index := range c.Paperdoll {
-		paperdoll[index] = &c.Paperdoll[index]
+	for index, v := range GetPaperdollOrder() {
+		paperdoll[index] = &c.Paperdoll[v]
 	}
 	return paperdoll
 }
