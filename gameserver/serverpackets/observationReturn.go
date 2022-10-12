@@ -7,7 +7,6 @@ import (
 
 func ObservationReturn(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	x, y, z := character.GetXYZ()
 

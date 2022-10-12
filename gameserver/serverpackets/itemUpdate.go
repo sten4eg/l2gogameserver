@@ -13,7 +13,6 @@ func ItemUpdate(clientI interfaces.ReciverAndSender, updateType int16, objId int
 		return []byte{}
 	}
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	items := client.CurrentChar.Inventory.Items
 	var item models.MyItem

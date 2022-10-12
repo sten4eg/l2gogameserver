@@ -7,7 +7,7 @@ import (
 
 func TargetUnselected(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
+
 	character.SetTarget(0)
 
 	x, y, z := character.GetXYZ()

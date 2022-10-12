@@ -15,7 +15,6 @@ func NewMagicSkillUse(clientI interfaces.ReciverAndSender, skill models.Skill, c
 	}
 
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	client.CurrentChar.IsCastingNow = true
 	client.CurrentChar.CurrentSkill = &models.SkillHolder{

@@ -168,8 +168,6 @@ func (ls *LoginServer) Send(buf *packets.Buffer) {
 	data := make([]byte, size)
 	copy(data, buf.Bytes())
 
-	defer packets.Put(buf)
-
 	rs := crypt.AppendCheckSum(data, size)
 
 	for i := 0; i < size; i += 8 {

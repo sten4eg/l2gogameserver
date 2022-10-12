@@ -16,12 +16,10 @@ func Say(client interfaces.ReciverAndSender, data []byte) models.Say {
 	say.Type = packet.ReadInt32()
 	//todo say.Target = реализовать
 
-	buffer := packets.Get()
 	if strings.HasPrefix(say.Text, ".") {
 		say.Type = chat.SpecialCommand
 		say.Text = "tok"
 	}
-	defer packets.Put(buffer)
 
 	switch say.Type {
 	case chat.All:

@@ -7,7 +7,6 @@ import (
 
 func ShowMiniMap(client interfaces.ReciverAndSender) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0xa3)
 	buffer.WriteD(1665)

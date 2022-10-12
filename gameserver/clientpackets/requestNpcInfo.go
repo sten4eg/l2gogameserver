@@ -7,7 +7,7 @@ import (
 
 func RequestNpcInfo(client interfaces.ReciverAndSender) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
+
 	//
 	//pkg1 := serverpackets.NpcInfo(client)
 	//buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg1))

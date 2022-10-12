@@ -10,7 +10,6 @@ import (
 func CreatureSay(say *models.Say, character interfaces.CharacterI) []byte {
 
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x4a)
 	buffer.WriteD(character.GetObjectId()) //objId

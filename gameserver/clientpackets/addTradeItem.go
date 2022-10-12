@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-//AddTradeItem Когда игрок добавляет предмет в трейде
+// AddTradeItem Когда игрок добавляет предмет в трейде
 func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
 	var packet = packets.NewReader(data)
 
@@ -44,7 +44,6 @@ func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
 
 			client.Send(buff.Bytes())
 
-			packets.Put(buff)
 		}
 
 		if canceledTradeForPartner {

@@ -42,7 +42,6 @@ func UseItem(clientI interfaces.CharacterI, data []byte) {
 	}
 
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	if selectedItem.IsEquipable() {
 		// нельзя надевать Formal Wear с проклятым оружием

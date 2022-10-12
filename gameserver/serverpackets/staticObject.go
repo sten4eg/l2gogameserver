@@ -20,6 +20,5 @@ func StaticObject(client interfaces.ReciverAndSender) []byte {
 	buffer.WriteD(0)
 	buffer.WriteD(0)
 
-	defer packets.Put(buffer)
 	return buffer.Bytes()
 }

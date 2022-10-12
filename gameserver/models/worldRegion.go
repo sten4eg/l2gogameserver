@@ -51,7 +51,6 @@ func DropItemChecker(region interfaces.WorldRegioner) {
 				}
 			}
 			pb.Release()
-			packets.Put(buffer)
 		}
 		time.Sleep(time.Second * 5)
 	}

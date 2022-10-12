@@ -121,7 +121,6 @@ func (c *ClientCtx) SendBuf(buffer *packets.Buffer) error {
 	}
 
 	data := buffer.Bytes()
-	defer packets.Put(buffer)
 
 	data = crypt.Encrypt(data, c.OutKey)
 	// Вычисление длинны пакета
@@ -130,7 +129,6 @@ func (c *ClientCtx) SendBuf(buffer *packets.Buffer) error {
 	toSend := packets.Get()
 	toSend.WriteHU(length)
 	toSend.WriteSlice(data) //TODO очень много выделяет
-	defer packets.Put(toSend)
 
 	err := c.sendDataToSocket(toSend.Bytes())
 	if err != nil {

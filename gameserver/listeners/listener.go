@@ -46,7 +46,6 @@ func npcListener(client interfaces.ReciverAndSender) {
 			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 		}
 		client.Send(buff.Bytes())
-		packets.Put(buff)
 	}
 }
 func dropItemListener(client interfaces.ReciverAndSender) {
@@ -61,7 +60,6 @@ func dropItemListener(client interfaces.ReciverAndSender) {
 			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg.Bytes()))
 		}
 		client.Send(buff.Bytes())
-		packets.Put(buff)
 	}
 }
 func moveListener(client interfaces.ReciverAndSender) {

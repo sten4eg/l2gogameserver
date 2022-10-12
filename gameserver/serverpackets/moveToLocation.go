@@ -9,7 +9,6 @@ import (
 // TODO убрать модель
 func MoveToLocation(location *models.BackwardToLocation, character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x2f)
 

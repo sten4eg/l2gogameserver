@@ -56,7 +56,6 @@ func (b *PacketByte) SetDataBuf(v *packets.Buffer) {
 	cl := make([]byte, len(v.Bytes()))
 	b.data = cl
 	copy(b.data, v.Bytes())
-	packets.Put(v)
 }
 
 func Contains[T constraints.Integer](slice []T, need T) bool {

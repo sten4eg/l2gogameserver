@@ -23,7 +23,6 @@ func ActionList(client interfaces.ReciverAndSender) []byte {
 		DefaultActionList[count1+count2+i] = 5000 + i
 	}
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0xfe)
 	buffer.WriteH(0x5f)

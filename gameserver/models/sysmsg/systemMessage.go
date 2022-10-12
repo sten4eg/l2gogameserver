@@ -6,7 +6,6 @@ import (
 
 func SystemMessage(msg SysMsg) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x62)
 	buffer.WriteD(msg.Id)
@@ -40,7 +39,6 @@ func SendCustomSystemMessage(text string) []byte {
 		return []byte{}
 	}
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x62)
 	buffer.WriteD(S1.Id)

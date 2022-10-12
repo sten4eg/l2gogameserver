@@ -7,7 +7,6 @@ import (
 
 func SsqInfo(client interfaces.ReciverAndSender) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x73)
 	buffer.WriteH(256)

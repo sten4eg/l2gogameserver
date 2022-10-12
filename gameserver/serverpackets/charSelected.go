@@ -14,7 +14,6 @@ func CharSelected(user *models.Character, clientI interfaces.ReciverAndSender) [
 	}
 
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	x, y, z := user.GetXYZ()
 	buffer.WriteSingleByte(0x0b) // 1

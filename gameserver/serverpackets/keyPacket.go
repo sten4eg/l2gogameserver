@@ -40,6 +40,5 @@ func KeyPacket(client interfaces.ReciverAndSender) []byte {
 	buffer.WriteSingleByte(0x01)
 	buffer.WriteD(0x00)
 
-	defer packets.Put(buffer)
 	return buffer.Bytes()
 }

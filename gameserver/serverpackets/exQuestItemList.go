@@ -13,6 +13,5 @@ func ExQuestItemList(client interfaces.ReciverAndSender) []byte {
 	buffer.WriteH(0)
 	buffer.WriteH(0)
 
-	defer packets.Put(buffer)
 	return buffer.Bytes()
 }

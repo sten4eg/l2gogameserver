@@ -8,7 +8,6 @@ import (
 
 func ShortCutRegister(shortCut dto.ShortCutDTO, client interfaces.ReciverAndSender) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	buffer.WriteSingleByte(0x44)
 	buffer.WriteD(dto.IndexOfShortTypes(shortCut.ShortcutType))

@@ -8,7 +8,6 @@ import (
 
 func SkillList(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	skills := character.GetSkills()
 

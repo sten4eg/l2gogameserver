@@ -7,7 +7,6 @@ import (
 
 func MoveToPawn(character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
 
 	//writeC(0x72);
 	//
