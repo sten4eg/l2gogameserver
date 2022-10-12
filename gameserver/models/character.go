@@ -834,6 +834,7 @@ func (c *Character) DeleteMacro(id int32) {
 	for i := range c.Macros {
 		if c.Macros[i].Id == id {
 			c.Macros = append(c.Macros[:i], c.Macros[i+1:]...)
+			break
 		}
 	}
 	RemoveMacros(id)
