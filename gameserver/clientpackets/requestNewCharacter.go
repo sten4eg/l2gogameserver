@@ -5,7 +5,6 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func RequestNewCharacter(client interfaces.ReciverAndSender, data []byte) {
-	pkg := serverpackets.CharacterSuccess(client)
-	client.EncryptAndSend(pkg)
+func RequestNewCharacter(client interfaces.ReciverAndSender) {
+	client.SendBuf(serverpackets.CharacterSuccess())
 }

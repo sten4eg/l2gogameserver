@@ -55,15 +55,14 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				clientpackets.CharSelected(data, client)
 				gameserver.AddOnlineChar(client.GetCurrentChar()) //todo проверить зачем еще одна мапа с чарами онлайн, есть мапа с клиентами
 			case 0x13:
-				clientpackets.RequestNewCharacter(client, data)
+				clientpackets.RequestNewCharacter(client)
 			case 0xd0:
-				if len(data) > 2 {
+				if len(data) >= 2 {
 					switch data[0] {
 					default:
 						fmt.Printf("Неопознаный второй опкод %x при state Authed\n", data[0])
 					case 0x36:
-						clientpackets.RequestGoToLobby(client, data)
-
+						clientpackets.RequestGoToLobby(client)
 					}
 				}
 			}
