@@ -305,6 +305,11 @@ type CharacterI interface {
 	SetMultiSocialAction(id, targetId int32)
 	GetMultiSocialAction() int32
 	GetMultiSocialTarget() int32
+
+	LoadCharactersMacros()
+	GetMacrosRevision() int32
+	DeleteMacro(int32)
+	GetMacrosCount() uint8
 }
 
 type ClientInterface interface {

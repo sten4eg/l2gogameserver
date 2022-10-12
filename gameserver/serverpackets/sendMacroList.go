@@ -1,35 +1,34 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
 // TODO убрать модель
-func SendMacroList(client interfaces.ReciverAndSender, macro models.Macro, count uint8, index int) []byte {
+func SendMacroList(rev int32, count uint8, macro models.Macro) *packets.Buffer {
 	buffer := packets.Get()
-	defer packets.Put(buffer)
-	buffer.WriteSingleByte(0xE8)
-	buffer.WriteD(int32(index))       // macro change revision (changes after each macro edition)
-	buffer.WriteSingleByte(0x00)      // unknown
-	buffer.WriteSingleByte(count + 1) // count of Macros
-	buffer.WriteSingleByte(1)         // unknown
 
-	buffer.WriteD(macro.Id)            // Macro ID
-	buffer.WriteS(macro.Name)          // Macro Name
-	buffer.WriteS(macro.Description)   // Description
-	buffer.WriteS(macro.Acronym)       // acronym
-	buffer.WriteSingleByte(macro.Icon) // icon
+	buffer.WriteD(rev)
+	buffer.WriteSingleByte(0x00)
+	buffer.WriteSingleByte(count)
+	buffer.WriteSingleByte(1)
 
-	buffer.WriteSingleByte(uint8(len(macro.Commands))) // count
+	buffer.WriteD(macro.Id)
+	buffer.WriteS(macro.Name)
+	buffer.WriteS(macro.Description)
+	buffer.WriteS(macro.Acronym)
+	buffer.WriteSingleByte(macro.Icon)
 
-	for _, command := range macro.Commands {
-		buffer.WriteSingleByte(command.Index)      // command count
-		buffer.WriteSingleByte(command.Type)       // type 1 = skill, 3 = action, 4 = shortcut
-		buffer.WriteD(command.SkillID)             // skill id
-		buffer.WriteSingleByte(command.ShortcutID) // shortcut id
-		buffer.WriteS(command.Name)                // command name
+	buffer.WriteSingleByte(byte(len(macro.Commands)))
+
+	for i, cmd := range macro.Commands {
+		buffer.WriteSingleByte(byte(i + 1))
+		buffer.WriteSingleByte(cmd.Type)
+		buffer.WriteD(cmd.Id)
+		buffer.WriteSingleByte(cmd.ShortcutID)
+		buffer.WriteS(cmd.Name)
 	}
-	return buffer.Bytes()
+
+	return buffer
 }

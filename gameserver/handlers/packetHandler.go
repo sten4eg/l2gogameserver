@@ -76,7 +76,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				broadcast.SendCharInfoAboutCharactersInRadius(client, 2000)
 				go listeners.StartClientListener(client)
 			case 0xd0:
-				if len(data) > 2 {
+				if len(data) >= 2 {
 					switch data[0] {
 					default:
 						fmt.Printf("Неопознаный второй опкод %x при state Joining\n", data[0])
