@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"fmt"
 	"l2gogameserver/data"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
@@ -95,6 +94,9 @@ type (
 
 		multiSocialAction int32
 		multiSocialTarget int32
+
+		// канал чтобы закрыть все горутины которые прослушивают каналы персонажа
+		EndChannel chan struct{}
 	}
 	SkillHolder struct {
 		Skill        Skill
@@ -148,16 +150,6 @@ func (c *Character) IsSittings() bool {
 	return c.Sit
 }
 
-func (c *Character) ListenSkillQueue() {
-	for {
-		select {
-		case res := <-c.SkillQueue:
-			fmt.Println("SKILL V QUEUE")
-			fmt.Println(res)
-		}
-	}
-}
-
 func (c *Character) SetSkillToQueue(skill Skill, ctrlPressed, shiftPressed bool) {
 	s := SkillHolder{
 		Skill:        skill,
@@ -203,18 +195,18 @@ func (c *Character) Load() {
 	c.DeleteObjectTo = make(chan []int32, 2)
 	c.NpcInfo = make(chan []interfaces.Npcer, 2)
 	c.DropItemsInfo = make(chan []interfaces.MyItemInterface, 2)
+	c.EndChannel = make(chan struct{})
 	c.setWorldRegion(reg)
 
 	reg.AddVisibleChar(c)
 
 	go c.Shadow()
-	go c.ListenSkillQueue()
 	go c.checkRegion()
 
 }
 
 func (c *Character) Shadow() {
-	for {
+	for { //todo какашка
 		for i := range c.Inventory.Items {
 			v := &c.Inventory.Items[i]
 			if v.Item.Durability > 0 && v.Location == PaperdollLoc {
@@ -472,11 +464,12 @@ func (c *Character) GetCurrentRegion() interfaces.WorldRegioner {
 }
 
 func (c *Character) CloseChannels() {
-	c.ChannelUpdateShadowItem = nil
-	c.NpcInfo = nil
-	c.CharInfoTo = nil
-	c.DeleteObjectTo = nil
-	c.DropItemsInfo = nil
+	close(c.EndChannel)
+	close(c.ChannelUpdateShadowItem)
+	close(c.NpcInfo)
+	close(c.CharInfoTo)
+	close(c.DeleteObjectTo)
+	close(c.DropItemsInfo)
 }
 func (c *Character) StartTransactionRequest() {
 	c.RequestExpireTime = time.Now().Add(RequestTimeout).Unix()
