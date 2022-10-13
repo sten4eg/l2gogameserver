@@ -74,7 +74,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				clientpackets.RequestEnterWorld(client, data)
 				broadcast.BroadCastUserInfoInRadius(client, 2000)
 				broadcast.SendCharInfoAboutCharactersInRadius(client, 2000)
-				go listeners.StartClientListener(client)
+				go listeners.StartClientListener(client) //todo  надо зпускать не отсюда
 			case 0xd0:
 				if len(data) >= 2 {
 					switch data[0] {

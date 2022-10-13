@@ -41,17 +41,9 @@ func setup() {
 	models.LoadSkills()
 	items.LoadItems()
 	models.NewWorld()
-	//world := models.World
 	data.Load()
 	models.LoadNpc()
 
 	party.LoadPartyDistributionTypes()
 
-	//for _, x := range world {
-	//	for _, y := range x {
-	//		for _, z := range y {
-	//			go checker.DropItemChecker(z)
-	//		}
-	//	}
-	//}
 }
