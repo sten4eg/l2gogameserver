@@ -308,8 +308,10 @@ type CharacterI interface {
 
 	LoadCharactersMacros()
 	GetMacrosRevision() int32
-	DeleteMacro(int32)
+	DeleteMacros(int32) bool
 	GetMacrosCount() uint8
+	AddMacros(MacrosInterface)
+	GetMacrosList() []MacrosInterface
 }
 
 type ClientInterface interface {
@@ -337,4 +339,23 @@ type ReciverAndSender interface {
 
 	GetObjectIdForSlot(int32) int32
 	MarkToDeleteChar(int32) int8
+}
+
+type MacrosInterface interface {
+	Identifier
+	GetName() string
+	GetDescription() string
+	GetAcronym() string
+	GetIcon() byte
+	GetCount() byte
+	GetCommands() []MacrosCommandInterface
+}
+
+type MacrosCommandInterface interface {
+	Identifier
+	GetIndex() byte
+	GetType() byte
+	GetSkillId() int32
+	GetShortcutId() byte
+	GetName() string
 }

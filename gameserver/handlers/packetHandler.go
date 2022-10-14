@@ -163,6 +163,8 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 				clientpackets.RequestTargetCancel(data, client)
 			case 0xcd:
 				clientpackets.RequestMakeMacro(client, data)
+			case 0xce:
+				clientpackets.RequestDeleteMacro(client, data)
 			case 0x56:
 				clientpackets.RequestActionUse(client, data)
 			case 0xd0:
