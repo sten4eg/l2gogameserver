@@ -26,8 +26,8 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 
 	rev := client.CurrentChar.GetMacrosRevision()
 	count := uint8(len(client.CurrentChar.Macros))
-	for _, macro := range client.CurrentChar.Macros {
-		pkg3 := serverpackets.SendMacroList(rev, count, macro).Bytes()
+	for _, macros := range client.CurrentChar.Macros {
+		pkg3 := serverpackets.SendMacroList(rev, count, &macros).Bytes()
 		buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg3))
 	}
 

@@ -3,42 +3,68 @@ package clientpackets
 import (
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func RequestMakeMacro(clientI interfaces.ReciverAndSender, data []byte) {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
+func RequestMakeMacro(client interfaces.ReciverAndSender, data []byte) {
+	var reader = packets.NewReader(data)
+
+	macros := models.Macro{
+		Id:          reader.ReadInt32(),
+		Name:        reader.ReadString(),
+		Description: reader.ReadString(),
+		Acronym:     reader.ReadString(),
+		Icon:        reader.ReadSingleByte(),
+		Count:       reader.ReadSingleByte(),
+	}
+	var commandsLength int
+	for i := 1; i <= int(macros.Count); i++ {
+		macros.Commands = append(macros.Commands, models.MacroCommand{
+			Index:      reader.ReadSingleByte(), // command count
+			Type:       reader.ReadSingleByte(), // type 1 = skill, 3 = action, 4 = shortcut
+			SkillID:    reader.ReadInt32(),      // skill id
+			ShortcutID: reader.ReadSingleByte(), // shortcut id
+			//Name:       reader.ReadString(),     // command name
+		})
+		name := reader.ReadString()
+		macros.Commands[i-1].Name = name
+		commandsLength += len(name)
+	}
+
+	character := client.GetCurrentChar()
+
+	if character == nil {
 		return
 	}
 
-	var packet = packets.NewReader(data)
-
-	macro := models.Macro{
-		Id:          packet.ReadInt32(),
-		Name:        packet.ReadString(),
-		Description: packet.ReadString(),
-		Acronym:     packet.ReadString(),
-		Icon:        packet.ReadSingleByte(),
-		Count:       packet.ReadSingleByte(),
-	}
-	for i := 1; i <= int(macro.Count); i++ {
-		macro.Commands = append(macro.Commands, models.MacroCommand{
-			Index:      packet.ReadSingleByte(), // command count
-			Type:       packet.ReadSingleByte(), // type 1 = skill, 3 = action, 4 = shortcut
-			SkillID:    packet.ReadInt32(),      // skill id
-			ShortcutID: packet.ReadSingleByte(), // shortcut id
-			Name:       packet.ReadString(),     // command name
-		})
+	if commandsLength > 255 {
+		character.SendSysMsg(sysmsg.InvalidMacro)
+		return
 	}
 
-	client.CurrentChar.AddMacros(macro)
-	count := client.CurrentChar.MacrosesCount()
+	if character.GetMacrosCount() > 48 {
+		character.SendSysMsg(sysmsg.YouMayCreateUpTo48Macros)
+		return
+	}
 
-	rev := client.CurrentChar.GetMacrosRevision()
+	if macros.GetName() == "" {
+		character.SendSysMsg(sysmsg.EnterTheMacroName)
+		return
+	}
 
-	for _, macro := range client.CurrentChar.Macros {
-		client.SendBuf(serverpackets.SendMacroList(rev, count, macro))
+	if len(macros.GetDescription()) > 32 {
+		character.SendSysMsg(sysmsg.MacroDescriptionMax32Chars)
+		return
+	}
+
+	character.AddMacros(&macros)
+
+	count := character.GetMacrosCount()
+	rev := character.GetMacrosRevision()
+
+	for _, macros := range character.GetMacrosList() {
+		client.SendBuf(serverpackets.SendMacroList(rev, count, macros))
 	}
 }

@@ -73,25 +73,27 @@ type (
 		ChannelUpdateShadowItem chan IUP
 		InGame                  bool
 		Target                  int32
-		Macros                  []Macro
-		MacroRevision           int32
-		CharInfoTo              chan []int32
-		DeleteObjectTo          chan []int32
-		NpcInfo                 chan []interfaces.Npcer
-		DropItemsInfo           chan []interfaces.MyItemInterface
-		IsMoving                bool
-		Sit                     bool
-		FirstEnterGame          bool
-		ActiveRequester         interfaces.CharacterI
-		RequestExpireTime       int64
-		ActiveTradeList         *TradeList
-		TradeRefusal            bool
-		ActiveEnchantItemId     int32
-		PrivateStoreType        privateStoreType.PrivateStoreType
-		sellList                *TradeList
-		buyList                 *TradeList
-		party                   interfaces.PartyInterface
-		partyDistributionType   interfaces.PartyDistributionTypeInterface
+		// TODO переделать макросы под структуру
+		Macros                []Macro
+		MacroRevision         int32
+		MacroId               int32
+		CharInfoTo            chan []int32
+		DeleteObjectTo        chan []int32
+		NpcInfo               chan []interfaces.Npcer
+		DropItemsInfo         chan []interfaces.MyItemInterface
+		IsMoving              bool
+		Sit                   bool
+		FirstEnterGame        bool
+		ActiveRequester       interfaces.CharacterI
+		RequestExpireTime     int64
+		ActiveTradeList       *TradeList
+		TradeRefusal          bool
+		ActiveEnchantItemId   int32
+		PrivateStoreType      privateStoreType.PrivateStoreType
+		sellList              *TradeList
+		buyList               *TradeList
+		party                 interfaces.PartyInterface
+		partyDistributionType interfaces.PartyDistributionTypeInterface
 
 		multiSocialAction int32
 		multiSocialTarget int32
@@ -808,10 +810,12 @@ func (c *Character) GetSkills() []interfaces.SkillInterface {
 	}
 	return skills
 }
+
 func (c *Character) SetMultiSocialAction(id, targetId int32) {
 	c.multiSocialAction = id
 	c.multiSocialTarget = targetId
 }
+
 func (c *Character) GetMultiSocialAction() int32 {
 	return c.multiSocialAction
 }
@@ -826,20 +830,48 @@ func (c *Character) GetObjectIdForSlot(slot int32) int32 {
 func (c *Character) MarkToDeleteChar(slot int32) int8 {
 	return c.Conn.MarkToDeleteChar(slot)
 }
+
 func (c *Character) GetMacrosRevision() int32 {
 	c.MacroRevision++
 	return c.MacroRevision
 }
-func (c *Character) DeleteMacro(id int32) {
+
+// DeleteMacros удаляет пользовательский макрос. Возвращает bool, который указывает, нужно ли отправить пакет обновления шортката
+func (c *Character) DeleteMacros(id int32) bool {
+	var flag bool
 	for i := range c.Macros {
 		if c.Macros[i].Id == id {
 			c.Macros = append(c.Macros[:i], c.Macros[i+1:]...)
 			break
 		}
 	}
-	RemoveMacros(id)
+	for key, _ := range c.ShortCut {
+		if c.ShortCut[key].Id == id && c.ShortCut[key].ShortcutType == "MACRO" {
+			deleteShortCutFromDb(c.ShortCut[key], c.ObjectId, c.ClassId)
+			flag = true
+			delete(c.ShortCut, key)
+		}
+	}
+	RemoveMacros(id, c.GetObjectId())
+	return flag
+}
+
+func (c *Character) GetMacrosList() []interfaces.MacrosInterface {
+	macrosList := make([]interfaces.MacrosInterface, len(c.Macros))
+	for index := range c.Macros {
+		macrosList[index] = &c.Macros[index]
+	}
+	return macrosList
 }
 
 func (c *Character) GetMacrosCount() uint8 {
+	if c.Macros == nil {
+		return 0
+	}
 	return uint8(len(c.Macros))
+}
+
+func (c *Character) GetMacroId() int32 {
+	c.MacroId++
+	return c.MacroId
 }
