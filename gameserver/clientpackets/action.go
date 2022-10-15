@@ -208,12 +208,13 @@ func doActionOnNpc(client *models.ClientCtx, npc interfaces.Npcer, interact bool
 	//client.CurrentChar.SetLastFolkNPC(npc)
 
 	if npc.GetObjectId() != client.CurrentChar.Target {
-		x, y, z := npc.GetCoordinates()
+		maxHp := npc.GetMaxHp()
+		attributes := []serverpackets.Attributes{{Id: serverpackets.MaxHp, Value: maxHp}, {Id: serverpackets.CurHp, Value: maxHp}} // TODO поменять на текущее хп
 		client.CurrentChar.Target = npc.GetObjectId()
-		//TODO проверка на авто агр моба
+		//TODO проверка isAutoAttackable
 
-		pkg := serverpackets.TargetSelected(client.CurrentChar.GetObjectId(), npc.GetObjectId(), x, y, z)
-		client.SendBuf(pkg)
+		client.SendBuf(serverpackets.MyTargetSelected(npc.GetObjectId()))
+		client.SendBuf(serverpackets.StatusUpdate(npc.GetObjectId(), attributes))
 
 	} else if interact {
 		//TODO взаимодействие с нпц

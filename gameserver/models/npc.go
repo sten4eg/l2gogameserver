@@ -302,6 +302,10 @@ func (n *Npc) IsAttackable() int32 {
 	return 1
 }
 
+func (n *Npc) GetMaxHp() int32 {
+	return int32(n.OrgHp)
+}
+
 // Медоты Локации
 func (l *Locations) GetCoordinate() (x, y, z int32) {
 	x = l.Locx
