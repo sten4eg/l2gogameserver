@@ -102,6 +102,7 @@ type Npcer interface {
 	GetCollisionHeight() float64
 	GetSlotRhand() int32
 	GetSlotLhand() int32
+	GetMaxHp() int32
 }
 
 type TradableItemInterface interface {
