@@ -109,3 +109,7 @@ func CalculateDistance(ox, oy, oz, mx, my, mz int32, includeZAxis, squared bool)
 func isNeighbour(x1, y1, z1, x2, y2, z2 int32) bool {
 	return (x1 <= x2+1) && (x1 >= x2-1) && (y1 <= y2+1) && (y1 >= y2-1) && (z1 <= z2+1) && (z1 >= z2-1)
 }
+
+func ActivateWorldRegion(w *WorldRegion) {
+
+}

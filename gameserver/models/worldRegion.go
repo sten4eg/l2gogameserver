@@ -9,6 +9,7 @@ import (
 	"l2gogameserver/utils"
 	"math"
 	"strconv"
+	"sync/atomic"
 	"time"
 )
 
@@ -21,6 +22,7 @@ type WorldRegion struct {
 	ItemsInRegion *xsync.MapOf[interfaces.MyItemInterface]
 
 	ItemsExpireTime *haxmap.Map[int32, int64]
+	isActive        atomic.Bool
 }
 
 func NewWorldRegion(x, y, z int32) *WorldRegion {
@@ -75,13 +77,23 @@ func (w *WorldRegion) GetY() int32 {
 func (w *WorldRegion) GetZ() int32 {
 	return w.TileZ
 }
+
 func (w *WorldRegion) AddVisibleChar(character interfaces.CharacterI) {
 	key := strconv.FormatInt(int64(character.GetObjectId()), 10)
 	w.CharsInRegion.Store(key, character)
+
+	if w.CharsInRegion.Size() == 1 {
+		w.activateTask(true)
+	}
 }
 func (w *WorldRegion) DeleteVisibleChar(character interfaces.CharacterI) {
 	key := strconv.FormatInt(int64(character.GetObjectId()), 10)
 	w.CharsInRegion.Delete(key)
+
+	if 0 == w.CharsInRegion.Size() {
+		w.activateTask(false)
+	}
+
 }
 
 func (w *WorldRegion) AddVisibleNpc(npc Npc) {
@@ -339,4 +351,75 @@ func (w *WorldRegion) DropItemChecker() []int32 {
 	})
 
 	return result
+}
+
+func (w *WorldRegion) activateTask(active bool) { //todo delay
+	//w.isActive.Store(active)
+
+	if active {
+		w.activate()
+	} else {
+		w.deactivate()
+	}
+}
+
+func (w *WorldRegion) activate() {
+	x1 := validX(w.GetX() + 1)
+	y0 := validY(w.GetY() - 1)
+	y1 := validY(w.GetY() + 1)
+	z0 := validZ(w.GetZ() - 1)
+	z1 := validZ(w.GetZ() + 1)
+
+	for x := validX(w.GetX() - 1); x <= x1; x++ {
+		for y := y0; y <= y1; y++ {
+			for z := z0; z <= z1; z++ {
+				GetRegion(x, y, z).setActivate(true)
+			}
+		}
+	}
+}
+func (w *WorldRegion) isEmpty() bool {
+	return w.CharsInRegion.Size() == 0
+}
+func (w *WorldRegion) deactivate() {
+	x1 := validX(w.GetX() + 1)
+	y0 := validY(w.GetY() - 1)
+	y1 := validY(w.GetY() + 1)
+	z0 := validZ(w.GetZ() - 1)
+	z1 := validZ(w.GetZ() + 1)
+
+	for x := validX(w.GetX() - 1); x <= x1; x++ {
+		for y := y0; y <= y1; y++ {
+			for z := z0; z <= z1; z++ {
+				if isNeighbourEmpty(GetRegion(x, y, z)) {
+					GetRegion(x, y, z).setActivate(false)
+				}
+			}
+		}
+	}
+}
+
+func isNeighbourEmpty(w *WorldRegion) bool {
+	x1 := validX(w.GetX() + 1)
+	y0 := validY(w.GetY() - 1)
+	y1 := validY(w.GetY() + 1)
+	z0 := validZ(w.GetZ() - 1)
+	z1 := validZ(w.GetZ() + 1)
+
+	for x := validX(w.GetX() - 1); x <= x1; x++ {
+		for y := y0; y <= y1; y++ {
+			for z := z0; z <= z1; z++ {
+				if !GetRegion(x, y, z).isEmpty() {
+					return false
+				}
+			}
+		}
+	}
+	return true
+}
+func (w *WorldRegion) setActivate(active bool) {
+	if w.isActive.CompareAndSwap(!active, active) {
+		return
+	}
+
 }
