@@ -34,6 +34,7 @@ func main() {
 			Host:     cfg.Host,
 			Port:     port,
 			Database: cfg.Name,
+			Scheme:   cfg.Schema,
 		},
 		Fs:     migrations.FS,
 		FsPath: ".",
