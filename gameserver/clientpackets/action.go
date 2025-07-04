@@ -11,7 +11,7 @@ import (
 	"strconv"
 )
 
-func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardToLocation {
+func Action(data []byte, clientI interfaces.ReciverAndSender, f func(client interfaces.ReciverAndSender, l models.BackwardToLocation)) *models.BackwardToLocation {
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return nil
@@ -46,6 +46,7 @@ func Action(data []byte, clientI interfaces.ReciverAndSender) *models.BackwardTo
 
 	_, _ = actionId, reAppeal
 
+	f(client, *MoveToLocation(client, originX, originY, originZ))
 	return MoveToLocation(client, originX, originY, originZ)
 
 	/*

@@ -326,6 +326,7 @@ type ClientInterface interface {
 	GetAccountLogin() string
 	CloseConnection()
 }
+
 type ReciverAndSender interface {
 	Receive() (opcode byte, data []byte, err error)
 	AddLengthAndSand(data []byte)

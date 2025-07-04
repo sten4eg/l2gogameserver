@@ -1,2 +1,2 @@
-alter table gameserver.characters
+alter table characters
     add delete_in timestamp default null;

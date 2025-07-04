@@ -23,6 +23,7 @@ func StartClientListener(client interfaces.ReciverAndSender) {
 	go listenSkillQueue(client)
 
 }
+
 func channelListener(client interfaces.ReciverAndSender) {
 	ch, ok := client.(*models.ClientCtx)
 	if !ok {

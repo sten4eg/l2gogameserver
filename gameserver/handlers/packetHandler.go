@@ -73,7 +73,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 			case 0x11:
 				clientpackets.RequestEnterWorld(client, data)
 				broadcast.BroadCastUserInfoInRadius(client, 2000)
-				broadcast.SendCharInfoAboutCharactersInRadius(client, 2000)
+				//рассылка при входе в игру происходит в setWorldRegion // broadcast.SendCharInfoAboutCharactersInRadius(client, 2000)
 				go listeners.StartClientListener(client) //todo  надо зпускать не отсюда
 			case 0xd0:
 				if len(data) >= 2 {
@@ -155,7 +155,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface) {
 			case 0x50:
 				clientpackets.RequestSkillList(client, data)
 			case 0x1f:
-				pkg := clientpackets.Action(data, client)
+				pkg := clientpackets.Action(data, client, broadcast.Checkaem)
 				if pkg != nil {
 					broadcast.Checkaem(client, *pkg)
 				}
