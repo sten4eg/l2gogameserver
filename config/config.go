@@ -74,7 +74,7 @@ const SHIFT_BY_Z = 11
 //	return configInstance.GameServer
 //}
 
-func read() error {
+func Read() error {
 	file, err := os.Open("./config/config.yaml")
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func read() error {
 
 }
 func LoadAllConfig() error {
-	err := read()
+	err := Read()
 	return err
 }
 
