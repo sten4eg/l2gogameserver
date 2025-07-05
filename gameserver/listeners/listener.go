@@ -90,12 +90,10 @@ func moveListener(client interfaces.ReciverAndSender) {
 		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
 	}
 
-	pkg := utils.GetPacketByte()
-	defer pkg.Release()
-
 	for {
 		select {
 		case to := <-ch.CurrentChar.CharInfoTo:
+			pkg := utils.GetPacketByte()
 			pkg.SetData(serverpackets.CharInfo(ch.CurrentChar))
 			for index := range to {
 				strKey := strconv.Itoa(int(to[index]))
@@ -105,6 +103,20 @@ func moveListener(client interfaces.ReciverAndSender) {
 					continue
 				}
 				char.EncryptAndSend(pkg.GetData())
+			}
+			pkg.Release()
+		case to := <-ch.CurrentChar.CharInfoFrom:
+			for index := range to {
+				strKey := strconv.Itoa(int(to[index]))
+				char, ok := gameserver.OnlineCharacters.Load(strKey)
+				if !ok {
+					log.Println("Персонаж не найден")
+					continue
+				}
+				pkg := utils.GetPacketByte()
+				pkg.SetData(serverpackets.CharInfo(char))
+				ch.CurrentChar.EncryptAndSend(pkg.GetData())
+				pkg.Release()
 			}
 		case _ = <-ch.CurrentChar.EndChannel:
 			return

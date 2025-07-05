@@ -77,6 +77,7 @@ type (
 		MacroRevision         int32
 		MacroId               int32
 		CharInfoTo            chan []int32
+		CharInfoFrom          chan []int32
 		DeleteObjectTo        chan []int32
 		NpcInfo               chan []interfaces.Npcer
 		DropItemsInfo         chan []interfaces.MyItemInterface
@@ -194,6 +195,7 @@ func (c *Character) Load() {
 
 	reg := GetRegion(c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z)
 	c.CharInfoTo = make(chan []int32, 2)
+	c.CharInfoFrom = make(chan []int32, 2)
 	c.DeleteObjectTo = make(chan []int32, 2)
 	c.NpcInfo = make(chan []interfaces.Npcer, 2)
 	c.DropItemsInfo = make(chan []interfaces.MyItemInterface, 2)
@@ -352,6 +354,8 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 	charInfoPkgTo := make([]int32, 0, 64)
 	npcPkgTo := make([]interfaces.Npcer, 0, 64)
 	itemsPkgTo := make([]interfaces.MyItemInterface, 0, 64)
+	// персонажи о которых мне отправиться charInfo
+	charInfoPkgFrom := make([]int32, 0, 64)
 	for _, region := range newAreas {
 		if !Contains(oldAreas, region) {
 			for _, v := range region.GetCharsInRegion() {
@@ -359,6 +363,7 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 					continue
 				}
 				charInfoPkgTo = append(charInfoPkgTo, v.GetObjectId())
+				charInfoPkgFrom = append(charInfoPkgFrom, v.GetObjectId())
 			}
 
 			npcPkgTo = append(npcPkgTo, region.GetNpcInRegion()...)
@@ -370,6 +375,10 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 	if len(charInfoPkgTo) > 0 {
 		c.CharInfoTo <- charInfoPkgTo
 	}
+	if len(charInfoPkgFrom) > 0 {
+		c.CharInfoFrom <- charInfoPkgFrom
+	}
+
 	c.CurrentRegion = newRegion.(*WorldRegion)
 
 	if len(npcPkgTo) > 0 {

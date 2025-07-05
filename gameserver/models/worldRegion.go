@@ -19,7 +19,9 @@ type WorldRegion struct {
 	CharsInRegion *xsync.MapOf[interfaces.CharacterI]
 	NpcInRegion   *xsync.MapOf[interfaces.Npcer]
 	ItemsInRegion *xsync.MapOf[interfaces.MyItemInterface]
-
+	//TODO в это структуре 2 мапы в которой хранятся итемы
+	//в первой хранятся итемы и их данные все
+	//а во второй id и время когда они должны быть удалены можно ли сделать одну мапу
 	ItemsExpireTime *haxmap.Map[int32, int64]
 }
 
