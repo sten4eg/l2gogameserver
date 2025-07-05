@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"database/sql"
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
@@ -11,7 +12,7 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func RequestRestart(clientI interfaces.ReciverAndSender) {
+func RequestRestart(clientI interfaces.ReciverAndSender, db *sql.DB) {
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return
@@ -50,7 +51,7 @@ func RequestRestart(clientI interfaces.ReciverAndSender) {
 	broadcast.BroadCastBufferToAroundPlayersWithoutSelf(client, serverpackets.DeleteObject(character.GetObjectId()))
 	gameserver.CharOffline(client)
 	client.SendBuf(serverpackets.RestartResponse(1))
-	client.SendBuf(serverpackets.CharSelectionInfo(client))
+	client.SendBuf(serverpackets.CharSelectionInfo(client, db))
 	client.SetState(clientStates.Authed)
 
 }

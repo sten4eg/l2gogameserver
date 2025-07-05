@@ -1,6 +1,7 @@
 package interfaces
 
 import (
+	"database/sql"
 	"l2gogameserver/gameserver/models/clientStates"
 	"l2gogameserver/gameserver/models/items/attribute"
 	"l2gogameserver/gameserver/models/race"
@@ -138,13 +139,13 @@ type TradeListInterface interface {
 	IsConfirmed() bool
 	GetOwner() CharacterI
 	InvalidateConfirmation()
-	Confirmed() (bool, bool, bool, bool)
+	Confirmed(*sql.DB) (bool, bool, bool, bool)
 	MuLock()
 	MuUnlock()
 	Validate() bool
 	CalcItemsWeight() int
 	CountItemSlots(CharacterI) int
-	TransferItems() bool
+	TransferItems(*sql.DB) bool
 	AdjustAvailableItem(item MyItemInterface) TradableItemInterface
 	GetItems() []TradableItemInterface
 	SetTitle(string)
@@ -152,11 +153,11 @@ type TradeListInterface interface {
 	Clear()
 	SetPackaged(bool)
 	IsPackaged() bool
-	PrivateStoreBuy(character CharacterI, items []ItemRequestInterface) byte
+	PrivateStoreBuy(CharacterI, []ItemRequestInterface, *sql.DB) byte
 	AddItemByItemId(int32, int64, int64) TradableItemInterface
 	GetAvailableItems(inventory InventoryInterface) []TradableItemInterface
 	UpdateItems()
-	PrivateStoreSell(character CharacterI, items []ItemRequestInterface) bool
+	PrivateStoreSell(character CharacterI, items []ItemRequestInterface, db *sql.DB) bool
 }
 type InventoryInterface interface {
 	sync.Locker
@@ -167,12 +168,12 @@ type InventoryInterface interface {
 	SetAllItemsUpdatedTypeNone()
 	ValidateWeight(int) bool
 	ValidateCapacity(int, CharacterI) bool
-	AddItem(item MyItemInterface) MyItemInterface
-	AddItem2(itemId int32, count int, stackable bool) MyItemInterface
+	AddItem(item MyItemInterface, db *sql.DB) MyItemInterface
+	AddItem2(itemId int32, count int, stackable bool, db *sql.DB) MyItemInterface
 	RefreshWeight()
-	TransferItem(int32, int, InventoryInterface, CharacterI) MyItemInterface
+	TransferItem(int32, int, InventoryInterface, CharacterI, *sql.DB) MyItemInterface
 	RemoveItem(MyItemInterface) bool
-	DestroyItem(MyItemInterface, int) MyItemInterface
+	DestroyItem(MyItemInterface, int, *sql.DB) MyItemInterface
 	GetAdenaCount() int64
 	GetAvailableItems(tradeList TradeListInterface, char CharacterI) []TradableItemInterface
 	GetUniqueItems(character CharacterI, allowAdena, allowAncientAdena, onlyAvailable bool) []MyItemInterface
@@ -200,7 +201,7 @@ type MyItemInterface interface {
 	ChangeCount(int)
 	SetUpdateType(int16)
 	SetCount(int64)
-	UpdateDB()
+	UpdateDB(*sql.DB)
 	GetOwnerId() int32
 	SetOwnerId(ownerId int32)
 	SetCoordinate(x, y, z int32)
@@ -257,7 +258,7 @@ type CharacterI interface {
 	GetInventoryLimit() int16
 	OnTradeFinish()
 	GetAccountLogin() string
-	DropItem(objectId int32, count int64) (MyItemInterface, MyItemInterface)
+	DropItem(objectId int32, count int64, db *sql.DB) (MyItemInterface, MyItemInterface)
 	GetSellList() TradeListInterface
 	SetPrivateStoreType(value privateStoreType.PrivateStoreType)
 	GetPrivateStoreType() privateStoreType.PrivateStoreType

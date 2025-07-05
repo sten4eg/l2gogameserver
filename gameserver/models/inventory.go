@@ -1,11 +1,11 @@
 package models
 
 import (
-	"context"
+	"database/sql"
+	"errors"
 	"github.com/jackc/pgx/v4"
 	"l2gogameserver/config"
 	"l2gogameserver/data/logger"
-	"l2gogameserver/db"
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/items"
@@ -136,7 +136,8 @@ func (i *Inventory) ValidateWeight(weight int) bool {
 func (i *Inventory) ValidateCapacity(slots int, owner interfaces.CharacterI) bool {
 	return len(i.Items)+slots <= int(owner.GetInventoryLimit())
 }
-func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.InventoryInterface, actor interfaces.CharacterI) interfaces.MyItemInterface {
+func (i *Inventory) TransferItem(objectId int32, count int,
+	target interfaces.InventoryInterface, actor interfaces.CharacterI, db *sql.DB) interfaces.MyItemInterface {
 	if target == nil {
 		return nil
 	}
@@ -170,7 +171,7 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 
 	if int(sourceItem.GetCount()) == count && targetItem == nil {
 		i.RemoveItem(sourceItem)
-		sourceItem = target.AddItem(sourceItem)
+		sourceItem = target.AddItem(sourceItem, db)
 		targetItem = sourceItem
 	} else {
 		if int(sourceItem.GetCount()) > count {
@@ -184,13 +185,13 @@ func (i *Inventory) TransferItem(objectId int32, count int, target interfaces.In
 		if targetItem != nil {
 			targetItem.ChangeCount(count)
 		} else {
-			targetItem = target.AddItem2(sourceItem.GetId(), count, sourceItem.IsStackable())
+			targetItem = target.AddItem2(sourceItem.GetId(), count, sourceItem.IsStackable(), db)
 		}
 	}
 
-	sourceItem.UpdateDB()
+	sourceItem.UpdateDB(db)
 	if targetItem != sourceItem && targetItem != nil {
-		targetItem.UpdateDB()
+		targetItem.UpdateDB(db)
 	}
 	//TODO проверка isAugmented
 	i.RefreshWeight()
@@ -207,7 +208,7 @@ func (i *Inventory) RemoveItem(removeItem interfaces.MyItemInterface) bool {
 	}
 	return false
 }
-func (i *Inventory) AddItem(item interfaces.MyItemInterface) interfaces.MyItemInterface {
+func (i *Inventory) AddItem(item interfaces.MyItemInterface, db *sql.DB) interfaces.MyItemInterface {
 	oldItem := i.GetItemByItemId(int(item.GetId()))
 
 	if oldItem != nil && oldItem.IsStackable() {
@@ -216,7 +217,7 @@ func (i *Inventory) AddItem(item interfaces.MyItemInterface) interfaces.MyItemIn
 		oldItem.SetUpdateType(UpdateTypeModify)
 
 		DestroyItem(item)
-		item.UpdateDB()
+		item.UpdateDB(db)
 		item = oldItem
 
 	} else {
@@ -224,18 +225,18 @@ func (i *Inventory) AddItem(item interfaces.MyItemInterface) interfaces.MyItemIn
 		item.SetUpdateType(UpdateTypeAdd)
 		i.Items = append(i.Items, *item.(*MyItem))
 		defer i.GetItemByObjectId(item.GetObjectId()).Unlock()
-		item.UpdateDB()
+		item.UpdateDB(db)
 	}
 	i.RefreshWeight()
 	return item
 }
-func (i *Inventory) AddItem2(itemId int32, count int, stackable bool) interfaces.MyItemInterface {
+func (i *Inventory) AddItem2(itemId int32, count int, stackable bool, db *sql.DB) interfaces.MyItemInterface {
 	item := i.GetItemByItemId(int(itemId))
 
 	if item != nil && item.IsStackable() {
 		item.ChangeCount(count)
 		item.SetUpdateType(UpdateTypeModify)
-		item.UpdateDB()
+		item.UpdateDB(db)
 	} else {
 		for j := 0; j < count; j++ {
 
@@ -248,7 +249,7 @@ func (i *Inventory) AddItem2(itemId int32, count int, stackable bool) interfaces
 			item.SetOwnerId(i.ownerId)
 			item.SetUpdateType(UpdateTypeAdd)
 
-			item.UpdateDB()
+			item.UpdateDB(db)
 			i.Items = append(i.Items, *item.(*MyItem))
 
 			if item.IsStackable() {
@@ -268,14 +269,14 @@ func (i *Inventory) RefreshWeight() {
 	}
 	i.TotalWeight = int32(weight)
 }
-func (i *Inventory) DestroyItem(item interfaces.MyItemInterface, count int) interfaces.MyItemInterface {
+func (i *Inventory) DestroyItem(item interfaces.MyItemInterface, count int, db *sql.DB) interfaces.MyItemInterface {
 	item.Lock()
 	defer item.Unlock()
 
 	if int(item.GetCount()) > count {
 		item.ChangeCount(-count)
 		item.SetUpdateType(UpdateTypeModify)
-		item.UpdateDB()
+		item.UpdateDB(db)
 		i.RefreshWeight()
 	} else {
 		if int(item.GetCount()) < count {
@@ -289,7 +290,7 @@ func (i *Inventory) DestroyItem(item interfaces.MyItemInterface, count int) inte
 
 		DestroyItem(item)
 
-		item.UpdateDB()
+		item.UpdateDB(db)
 		i.RefreshWeight()
 	}
 	return item
@@ -368,18 +369,13 @@ func (i *Inventory) AdjustAvailableItem(item interfaces.TradableItemInterface) {
 	item.SetCount(0)
 }
 
-func RestoreVisibleInventory(charId int32) [26]MyItem {
-	dbConn, err := db.GetConn()
+func RestoreVisibleInventory(charId int32, db *sql.DB) [26]MyItem {
+
+	rows, err := db.Query("SELECT object_id, item, loc_data, enchant_level FROM items WHERE owner_id= $1 AND loc= $2", charId, PaperdollLoc)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
-	defer dbConn.Release()
-
-	rows, err := dbConn.Query(context.Background(), "SELECT object_id, item, loc_data, enchant_level FROM items WHERE owner_id= $1 AND loc= $2", charId, PaperdollLoc)
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-
+	defer rows.Close()
 	var mts [26]MyItem
 
 	for rows.Next() {
@@ -408,18 +404,13 @@ func RestoreVisibleInventory(charId int32) [26]MyItem {
 	return mts
 }
 
-func GetMyItems(charId int32) []MyItem {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
-
+func GetMyItems(charId int32, db *sql.DB) []MyItem {
 	sqlString := "SELECT owner_id ,items.object_id, item, loc_data, enchant_level, count, loc, time, mana_left FROM items WHERE owner_id = $1"
-	rows, err := dbConn.Query(context.Background(), sqlString, charId)
+	rows, err := db.Query(sqlString, charId)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
+	defer rows.Close()
 
 	itemsInInventory := make([]MyItem, 0, LimitSizeInventory)
 	for rows.Next() {
@@ -437,9 +428,9 @@ func GetMyItems(charId int32) []MyItem {
 			itm.existsInDb = true
 			itm.storedInDb = false
 			if itm.IsWeapon() {
-				itm.AttackAttributeType, itm.AttackAttributeVal = getAttributeForWeapon(itm.ObjectId)
+				itm.AttackAttributeType, itm.AttackAttributeVal = getAttributeForWeapon(itm.ObjectId, db)
 			} else if itm.IsArmor() {
-				itm.AttributeDefend = getAttributeForArmor(itm.ObjectId)
+				itm.AttributeDefend = getAttributeForArmor(itm.ObjectId, db)
 			}
 
 			itemsInInventory = append(itemsInInventory, itm)
@@ -449,19 +440,14 @@ func GetMyItems(charId int32) []MyItem {
 	return itemsInInventory
 }
 
-func getAttributeForWeapon(objId int32) (attribute.Attribute, int16) {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
+func getAttributeForWeapon(objId int32, db *sql.DB) (attribute.Attribute, int16) {
 	elementType := attribute.Attribute(-2) // None
 
 	var elementValue int16
-	err = dbConn.QueryRow(context.Background(), "SELECT element_type,element_value FROM item_elementals WHERE item_id = $1", objId).
+	err := db.QueryRow("SELECT element_type,element_value FROM item_elementals WHERE item_id = $1", objId).
 		Scan(&elementType, &elementValue)
 
-	if err == pgx.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return elementType, 0
 	} else if err != nil {
 		logger.Error.Panicln(err)
@@ -470,17 +456,12 @@ func getAttributeForWeapon(objId int32) (attribute.Attribute, int16) {
 	return elementType, elementValue
 }
 
-func getAttributeForArmor(objId int32) [6]int16 {
+func getAttributeForArmor(objId int32, db *sql.DB) [6]int16 {
 	var att [6]int16
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
 
-	rows, err := dbConn.Query(context.Background(), "SELECT element_type,element_value FROM item_elementals WHERE item_id = $1", objId)
+	rows, err := db.Query("SELECT element_type,element_value FROM item_elementals WHERE item_id = $1", objId)
 
-	if err == pgx.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return att
 	} else if err != nil {
 		logger.Error.Panicln(err)
@@ -498,16 +479,10 @@ func getAttributeForArmor(objId int32) [6]int16 {
 	return att
 }
 
-func SaveInventoryInDB(inventory []MyItem) {
+func SaveInventoryInDB(inventory []MyItem, db *sql.DB) {
 	if len(inventory) == 0 {
 		return
 	}
-
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
 
 	var sb strings.Builder
 	sb.WriteString("UPDATE items SET loc_data = mylocdata, loc = myloc FROM ( VALUES ")
@@ -522,7 +497,7 @@ func SaveInventoryInDB(inventory []MyItem) {
 		}
 	}
 	sb.WriteString(") as myval (mylocdata,myloc,myobjid) WHERE items.object_id = myval.myobjid")
-	_, err = dbConn.Exec(context.Background(), sb.String())
+	_, err := db.Exec(sb.String())
 	if err != nil {
 		logger.Info.Println(err.Error())
 	}
@@ -790,11 +765,6 @@ func getFirstEmptySlot(myItems []MyItem) int32 {
 
 func DeleteItem(selectedItem *MyItem, character *Character) {
 	//TODO переделать, не надо создавать новый inventiry
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
 
 	if selectedItem.Location == PaperdollLoc {
 		character.Paperdoll[selectedItem.LocData] = MyItem{}
@@ -808,7 +778,7 @@ func DeleteItem(selectedItem *MyItem, character *Character) {
 	}
 	character.Inventory = inventory
 
-	_, err = dbConn.Exec(context.Background(), "DELETE FROM items WHERE object_id = $1", selectedItem.ObjectId)
+	_, err := character.Conn.db.Exec("DELETE FROM items WHERE object_id = $1", selectedItem.ObjectId)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
@@ -892,11 +862,6 @@ func GetPaperdollOrder() []uint8 {
 // count - сколько надо удалить
 func RemoveItemCharacter(character *Character, item *MyItem, count int64) {
 	logger.Info.Println("Удаление предмета из инвентаря")
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
 
 	if item.Count < count || item.Count == 0 || count == 0 {
 		logger.Info.Println("Неверное количество предметов для удаления")
@@ -907,7 +872,7 @@ func RemoveItemCharacter(character *Character, item *MyItem, count int64) {
 		item = nil
 	} else {
 		newCount := item.Count - count
-		_, err = dbConn.Exec(context.Background(),
+		_, err := character.Conn.db.Exec(
 			`UPDATE "items" SET "count" = $1 WHERE "owner_id" = $2 AND "object_id" = $3 AND "item" = $4`,
 			newCount, character.ObjectId, item.ObjectId, item.Id)
 		if err != nil {
@@ -937,11 +902,6 @@ func ExistItemObject(characterI interfaces.CharacterI, objectId int32, count int
 // 3.Тип обновления/удаления/добавления
 // 4.True если предмет найден
 func AddInventoryItem(character *Character, item MyItem, count int64) (MyItem, int64, int16, bool) {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
 
 	for index, inv := range character.Inventory.Items {
 		if inv.Item.Id == item.Id {
@@ -952,7 +912,7 @@ func AddInventoryItem(character *Character, item MyItem, count int64) (MyItem, i
 			//Если предмет стакуемый, тогда изменим его значение
 			if inv.ConsumeType == consumeType.Stackable || inv.ConsumeType == consumeType.Asset {
 				inv.Count = inv.Count + count
-				_, err = dbConn.Exec(context.Background(), `UPDATE "items" SET "count" = $1, "loc" = 'INVENTORY' WHERE "owner_id" = $2 AND "item" = $3`, inv.Count, character.ObjectId, inv.Item.Id)
+				_, err := character.Conn.db.Exec(`UPDATE "items" SET "count" = $1, "loc" = 'INVENTORY' WHERE "owner_id" = $2 AND "item" = $3`, inv.Count, character.ObjectId, inv.Item.Id)
 				if err != nil {
 					logger.Error.Panicln(err)
 				}
@@ -964,7 +924,7 @@ func AddInventoryItem(character *Character, item MyItem, count int64) (MyItem, i
 				item.Count = count
 				item.LocData = getFirstEmptySlot(character.Inventory.Items)
 				character.Inventory.Items = append(character.Inventory.Items, item)
-				_, err = dbConn.Exec(context.Background(), `INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', 0, 0, 0, 0, '-1', 0, 0)`, character.ObjectId, item.ObjectId, item.Item.Id, item.Count)
+				_, err := character.Conn.db.Exec(`INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', 0, 0, 0, 0, '-1', 0, 0)`, character.ObjectId, item.ObjectId, item.Item.Id, item.Count)
 				if err != nil {
 					logger.Error.Panicln(err)
 				}
@@ -976,7 +936,7 @@ func AddInventoryItem(character *Character, item MyItem, count int64) (MyItem, i
 	item.Count = count
 	item.LocData = getFirstEmptySlot(character.Inventory.Items)
 	character.Inventory.Items = append(character.Inventory.Items, item)
-	_, err = dbConn.Exec(context.Background(), `INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', $5, 0, 0, 0, '-1', 0, 0)`, character.ObjectId, item.ObjectId, item.Item.Id, item.Count, item.LocData)
+	_, err := character.Conn.db.Exec(`INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', $5, 0, 0, 0, '-1', 0, 0)`, character.ObjectId, item.ObjectId, item.Item.Id, item.Count, item.LocData)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
@@ -989,25 +949,19 @@ func AddInventoryItem(character *Character, item MyItem, count int64) (MyItem, i
 // 3.tType удаления (Remove/Update)
 // 4.Возращаемт False если предмет не был найден в инвентаре
 func RemoveItem(character *Character, item *MyItem, count int64) (MyItem, int64, int16, bool) {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
-
 	for index, itm := range character.Inventory.Items {
 		if itm.Id == item.Id {
 			if itm.ConsumeType == consumeType.Stackable || itm.ConsumeType == consumeType.Asset {
 				itm.Count -= count
 				if itm.Count <= 0 {
-					_, err = dbConn.Exec(context.Background(), `DELETE FROM "items" WHERE "owner_id" = $1 AND "object_id" = $2 AND "item" = $3`, character.ObjectId, itm.ObjectId, itm.Id)
+					_, err := character.Conn.db.Exec(`DELETE FROM "items" WHERE "owner_id" = $1 AND "object_id" = $2 AND "item" = $3`, character.ObjectId, itm.ObjectId, itm.Id)
 					if err != nil {
 						logger.Error.Panicln(err)
 					}
 					character.Inventory.Items = append(character.Inventory.Items[:index], character.Inventory.Items[index+1:]...)
 					return MyItem{}, itm.Count, UpdateTypeRemove, true
 				} else {
-					_, err = dbConn.Exec(context.Background(), `UPDATE "items" SET "count" = $1 WHERE "owner_id" = $2 AND "object_id" = $3 AND "item" = $4`, itm.Count, character.ObjectId, itm.ObjectId, itm.Id)
+					_, err := character.Conn.db.Exec(`UPDATE "items" SET "count" = $1 WHERE "owner_id" = $2 AND "object_id" = $3 AND "item" = $4`, itm.Count, character.ObjectId, itm.ObjectId, itm.Id)
 					if err != nil {
 						logger.Error.Panicln(err)
 					}
@@ -1015,7 +969,7 @@ func RemoveItem(character *Character, item *MyItem, count int64) (MyItem, int64,
 					return character.Inventory.Items[index], itm.Count, UpdateTypeModify, true
 				}
 			} else {
-				_, err = dbConn.Exec(context.Background(), `DELETE FROM "items" WHERE "owner_id" = $1 AND "object_id" = $2 AND "item" = $3`, character.ObjectId, itm.ObjectId, itm.Item.Id)
+				_, err := character.Conn.db.Exec(`DELETE FROM "items" WHERE "owner_id" = $1 AND "object_id" = $2 AND "item" = $3`, character.ObjectId, itm.ObjectId, itm.Item.Id)
 				if err != nil {
 					logger.Error.Panicln(err)
 				}
@@ -1027,7 +981,7 @@ func RemoveItem(character *Character, item *MyItem, count int64) (MyItem, int64,
 	return MyItem{}, 0, UpdateTypeModify, false
 }
 
-func (i *Inventory) DropItem(objectId int32, count int64) interfaces.MyItemInterface {
+func (i *Inventory) DropItem(objectId int32, count int64, db *sql.DB) interfaces.MyItemInterface {
 	item := i.GetItemByObjectId(objectId)
 	if item == nil {
 		return nil
@@ -1039,10 +993,10 @@ func (i *Inventory) DropItem(objectId int32, count int64) interfaces.MyItemInter
 	if item.GetCount() > count {
 		item.ChangeCount(int(-count))
 		item.SetUpdateType(UpdateTypeModify)
-		item.UpdateDB()
+		item.UpdateDB(db)
 
 		item = CreateItem(int(item.GetId()), int(count))
-		item.UpdateDB()
+		item.UpdateDB(db)
 		i.RefreshWeight()
 		return item
 	}
@@ -1051,7 +1005,7 @@ func (i *Inventory) DropItem(objectId int32, count int64) interfaces.MyItemInter
 	item.SetOwnerId(0)
 	item.SetUpdateType(UpdateTypeRemove)
 
-	item.UpdateDB()
+	item.UpdateDB(db)
 	i.RefreshWeight()
 	return item
 }

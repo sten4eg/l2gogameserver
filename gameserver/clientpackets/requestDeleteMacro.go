@@ -1,12 +1,13 @@
 package clientpackets
 
 import (
+	"database/sql"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func RequestDeleteMacro(client interfaces.ReciverAndSender, data []byte) {
+func RequestDeleteMacro(client interfaces.ReciverAndSender, data []byte, db *sql.DB) {
 	reader := packets.NewReader(data)
 
 	id := reader.ReadInt32()
@@ -25,6 +26,6 @@ func RequestDeleteMacro(client interfaces.ReciverAndSender, data []byte) {
 	}
 
 	if updateShortcut {
-		client.EncryptAndSend(serverpackets.ShortCutInit(character))
+		client.EncryptAndSend(serverpackets.ShortCutInit(character, db))
 	}
 }

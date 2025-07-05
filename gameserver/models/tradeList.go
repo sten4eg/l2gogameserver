@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"l2gogameserver/config"
 	"l2gogameserver/gameserver/interfaces"
 	items2 "l2gogameserver/gameserver/models/items"
@@ -67,7 +68,7 @@ func (t *TradeList) IsConfirmed() bool {
 func (t *TradeList) InvalidateConfirmation() {
 	t.confirmed = false
 }
-func (t *TradeList) Confirmed() (bool, needSendTradeConfirm bool, tradeDone bool, success bool) {
+func (t *TradeList) Confirmed(db *sql.DB) (bool, needSendTradeConfirm bool, tradeDone bool, success bool) {
 	needSendTradeConfirm = false
 	tradeDone = false
 	success = false
@@ -107,7 +108,7 @@ func (t *TradeList) Confirmed() (bool, needSendTradeConfirm bool, tradeDone bool
 				return false, needSendTradeConfirm, tradeDone, success
 			}
 
-			success = t.doExchange(partnerList)
+			success = t.doExchange(partnerList, db)
 			tradeDone = true
 		} else {
 			//partner.SendSysMsg(sysmsg.AlreadyTrading)
@@ -230,7 +231,7 @@ func (t *TradeList) CalcItemsWeight() int {
 	return int(math.Min(weight, math.MaxInt32))
 }
 
-func (t *TradeList) doExchange(partnerList interfaces.TradeListInterface) bool {
+func (t *TradeList) doExchange(partnerList interfaces.TradeListInterface, db *sql.DB) bool {
 	success := false
 	owner := t.GetOwner()
 	partner := partnerList.GetOwner()
@@ -242,8 +243,8 @@ func (t *TradeList) doExchange(partnerList interfaces.TradeListInterface) bool {
 		owner.SendSysMsg(sysmsg.SlotsFull)
 		partner.SendSysMsg(sysmsg.SlotsFull)
 	} else {
-		partnerList.TransferItems()
-		t.TransferItems()
+		partnerList.TransferItems(db)
+		t.TransferItems(db)
 		success = true
 	}
 
@@ -267,13 +268,13 @@ func (t *TradeList) CountItemSlots(partner interfaces.CharacterI) int {
 	return slots
 }
 
-func (t *TradeList) TransferItems() bool {
+func (t *TradeList) TransferItems(db *sql.DB) bool {
 	for _, tItem := range t.items {
 		oldItem := t.GetOwner().GetInventory().GetItemByObjectId(tItem.GetObjectId())
 		if oldItem == nil {
 			return false
 		}
-		newItem := t.GetOwner().GetInventory().TransferItem(tItem.GetObjectId(), int(tItem.GetCount()), t.partner.GetInventory(), t.partner)
+		newItem := t.GetOwner().GetInventory().TransferItem(tItem.GetObjectId(), int(tItem.GetCount()), t.partner.GetInventory(), t.partner, db)
 		if newItem == nil {
 			return false
 		}
@@ -319,7 +320,10 @@ func (t *TradeList) Clear() {
 }
 
 // PrivateStoreBuy @return byte: результат трейда. 0 - ок, 1 - отменен (недостаточно адены), 2 - неудача (ошибка предмета)
-func (t *TradeList) PrivateStoreBuy(character interfaces.CharacterI, items []interfaces.ItemRequestInterface) byte {
+func (t *TradeList) PrivateStoreBuy(character interfaces.CharacterI,
+	items []interfaces.ItemRequestInterface,
+	db *sql.DB,
+) byte {
 	t.MuLock()
 	defer t.MuUnlock()
 
@@ -418,12 +422,12 @@ func (t *TradeList) PrivateStoreBuy(character interfaces.CharacterI, items []int
 		return 1
 	}
 	adenaItem.ChangeCount(int(-totalPrice))
-	adenaItem.UpdateDB()
+	adenaItem.UpdateDB(db)
 	if adenaItem.GetCount() <= 0 {
 		playerInventory.RemoveItem(adenaItem)
 	}
 
-	ownerInventory.AddItem2(config.AdenaId, int(totalPrice), true)
+	ownerInventory.AddItem2(config.AdenaId, int(totalPrice), true, db)
 
 	ok := true
 
@@ -439,7 +443,7 @@ func (t *TradeList) PrivateStoreBuy(character interfaces.CharacterI, items []int
 			break
 		}
 
-		newItem := ownerInventory.TransferItem(item.GetObjectId(), int(item.GetCount()), playerInventory, nil)
+		newItem := ownerInventory.TransferItem(item.GetObjectId(), int(item.GetCount()), playerInventory, nil, db)
 		if newItem == nil {
 			ok = false
 			break
@@ -524,7 +528,7 @@ func (t *TradeList) UpdateItems() {
 }
 
 // PrivateStoreSell продажа предметов скупщику.
-func (t *TradeList) PrivateStoreSell(character interfaces.CharacterI, items []interfaces.ItemRequestInterface) bool {
+func (t *TradeList) PrivateStoreSell(character interfaces.CharacterI, items []interfaces.ItemRequestInterface, db *sql.DB) bool {
 	t.MuLock()
 	defer t.MuUnlock()
 
@@ -589,7 +593,7 @@ func (t *TradeList) PrivateStoreSell(character interfaces.CharacterI, items []in
 
 		//TODO if (!oldItem.isTradeable())
 
-		newItem := partnerInventory.TransferItem(oldItem.GetObjectId(), int(item.GetCount()), ownerInventory, nil)
+		newItem := partnerInventory.TransferItem(oldItem.GetObjectId(), int(item.GetCount()), ownerInventory, nil, db)
 		if newItem == nil {
 			continue
 		}
@@ -630,17 +634,17 @@ func (t *TradeList) PrivateStoreSell(character interfaces.CharacterI, items []in
 		}
 		ownerAdena := ownerInventory.GetItemByItemId(config.AdenaId)
 		ownerAdena.ChangeCount(int(-totalPrice))
-		ownerAdena.UpdateDB()
+		ownerAdena.UpdateDB(db)
 		if ownerAdena.GetCount() <= 0 {
 			ownerInventory.RemoveItem(ownerAdena)
 		}
 
 		partnerAdena := partnerInventory.GetItemByItemId(config.AdenaId)
 		if partnerAdena == nil {
-			partnerInventory.AddItem2(config.AdenaId, int(totalPrice), true)
+			partnerInventory.AddItem2(config.AdenaId, int(totalPrice), true, db)
 		} else {
 			partnerAdena.ChangeCount(int(totalPrice))
-			partnerAdena.UpdateDB()
+			partnerAdena.UpdateDB(db)
 		}
 	}
 

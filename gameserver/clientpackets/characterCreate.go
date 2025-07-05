@@ -1,9 +1,8 @@
 package clientpackets
 
 import (
-	"context"
+	"database/sql"
 	"l2gogameserver/data/logger"
-	"l2gogameserver/db"
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
@@ -31,7 +30,7 @@ const countCharAndExistName = `SELECT *
 FROM (SELECT COUNT(object_id) FROM characters WHERE login = $1) as countChar,
      (SELECT exists(SELECT char_name from characters WHERE char_name = $2)) as existCharName`
 
-func CharacterCreate(client interfaces.ReciverAndSender, data []byte) {
+func CharacterCreate(client interfaces.ReciverAndSender, data []byte, db *sql.DB) {
 	reader := packets.NewReader(data)
 
 	name := reader.ReadString()
@@ -68,16 +67,10 @@ func CharacterCreate(client interfaces.ReciverAndSender, data []byte) {
 		return
 	}
 
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
-
 	var charCount byte
 	var exist bool
 
-	err = dbConn.QueryRow(context.Background(), countCharAndExistName, client.GetAccountLogin(), name).Scan(&charCount, &exist)
+	err := db.QueryRow(countCharAndExistName, client.GetAccountLogin(), name).Scan(&charCount, &exist)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
@@ -94,12 +87,12 @@ func CharacterCreate(client interfaces.ReciverAndSender, data []byte) {
 	//TODO проверка что пришел норм classId
 
 	x, y, z := models.GetCreationCoordinates(classId)
-	_, err = dbConn.Exec(context.Background(), InsertCharacter, idfactory.GetNext(), name, race, sex, classId, hairStyle, hairColor, face, x, y, z, client.GetAccountLogin(), classId, "")
+	_, err = db.Exec(InsertCharacter, idfactory.GetNext(), name, race, sex, classId, hairStyle, hairColor, face, x, y, z, client.GetAccountLogin(), classId, "")
 	if err != nil {
 		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonCreateNotAllowed))
 	}
 
 	client.SendBuf(serverpackets.CharCreateOk())
 	time.Sleep(250) //todo клиент должен отправить RequestExGetOnAirShip и после этого CharSelectionInfo, иначе клиент крашиться
-	client.SendBuf(serverpackets.CharSelectionInfo(client))
+	client.SendBuf(serverpackets.CharSelectionInfo(client, db))
 }

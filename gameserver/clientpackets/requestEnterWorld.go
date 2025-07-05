@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"database/sql"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 
@@ -10,7 +11,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
+func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte, db *sql.DB) {
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return
@@ -46,7 +47,7 @@ func RequestEnterWorld(clientI interfaces.ReciverAndSender, data []byte) {
 	pkg8 := serverpackets.ExStorageMaxCount(character)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg8))
 
-	pkg9 := serverpackets.ShortCutInit(character)
+	pkg9 := serverpackets.ShortCutInit(character, db)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg9))
 
 	pkg10 := serverpackets.ExBasicActionList(client)

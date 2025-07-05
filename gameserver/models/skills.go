@@ -1,11 +1,10 @@
 package models
 
 import (
-	"context"
+	"database/sql"
 	"encoding/json"
 	"l2gogameserver/config"
 	"l2gogameserver/data/logger"
-	"l2gogameserver/db"
 	"l2gogameserver/gameserver/models/skills"
 	"l2gogameserver/gameserver/models/skills/targets"
 	"os"
@@ -108,18 +107,12 @@ func LoadSkills() {
 	_ = qw
 }
 
-func GetMySkills(charId int32) []Skill {
-	dbConn, err := db.GetConn()
+func GetMySkills(charId int32, db *sql.DB) []Skill {
+	rows, err := db.Query("SELECT skill_id, skill_level FROM character_skills WHERE char_id = $1", charId)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
-	defer dbConn.Release()
-
-	rows, err := dbConn.Query(context.Background(), "SELECT skill_id, skill_level FROM character_skills WHERE char_id = $1", charId)
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-
+	defer rows.Close()
 	var skills []Skill
 	for rows.Next() {
 		var skl Tuple
@@ -139,13 +132,8 @@ func GetMySkills(charId int32) []Skill {
 
 func (c *Character) LoadSkills() {
 	c.Skills = map[int]Skill{}
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
 
-	rows, err := dbConn.Query(context.Background(), "SELECT skill_id,skill_level FROM character_skills WHERE char_id=$1 AND class_id=$2", c.ObjectId, c.ClassId)
+	rows, err := c.Conn.db.Query("SELECT skill_id,skill_level FROM character_skills WHERE char_id=$1 AND class_id=$2", c.ObjectId, c.ClassId)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}

@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"database/sql"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/packets"
@@ -8,16 +9,16 @@ import (
 	"strings"
 )
 
-func BypassToServer(data []byte, client interfaces.ReciverAndSender) {
+func BypassToServer(data []byte, client interfaces.ReciverAndSender, db *sql.DB) {
 	var packet = packets.NewReader(data)
 	command := packet.ReadString()
 
 	if strings.HasPrefix(command, "admin_create_item") {
-		addAdminItem(command, client)
+		addAdminItem(command, client, db)
 	}
 }
 
-func addAdminItem(command string, client interfaces.ReciverAndSender) {
+func addAdminItem(command string, client interfaces.ReciverAndSender, db *sql.DB) {
 	// 0 - префикс(комманда) 1- Id предмета 2 - количество
 	s := strings.Split(command, " ")
 	if len(s) != 3 {
@@ -33,7 +34,7 @@ func addAdminItem(command string, client interfaces.ReciverAndSender) {
 	}
 	item, ok := items.GetItemInfo(itemId)
 	if ok { //todo чекать что влезет в инвентарь
-		client.GetCurrentChar().GetInventory().AddItem2(int32(itemId), count, item.IsStackable())
+		client.GetCurrentChar().GetInventory().AddItem2(int32(itemId), count, item.IsStackable(), db)
 	}
 }
 

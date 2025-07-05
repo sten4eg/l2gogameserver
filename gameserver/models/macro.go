@@ -1,9 +1,8 @@
 package models
 
 import (
-	"context"
+	"database/sql"
 	"l2gogameserver/data/logger"
-	"l2gogameserver/db"
 	"l2gogameserver/gameserver/interfaces"
 )
 
@@ -32,7 +31,7 @@ type Macro struct {
 func (c *Character) AddMacros(macro interfaces.MacrosInterface) {
 	//Если макрос найден, тогда делаем замену параметров его
 	if c.CheckMacros(macro.GetId()) {
-		RemoveMacros(macro.GetId(), c.GetObjectId())
+		RemoveMacros(macro.GetId(), c.GetObjectId(), c.Conn.db)
 		c.saveMacros(macro, macro.GetId())
 		return
 	} else {
@@ -42,20 +41,15 @@ func (c *Character) AddMacros(macro interfaces.MacrosInterface) {
 
 // Удаление макроса
 // todo Временное положение дел, необходимо будет НЕ удалять, а изменять, но пока и так сгодиться.
-func RemoveMacros(id, charId int32) {
+func RemoveMacros(id, charId int32, db *sql.DB) {
 	sqlMacros := `DELETE FROM "macros" WHERE "id" = $1 and char_id = $2`
 	sqlCommands := `DELETE FROM "macros_commands" WHERE "command_id" = $1 and char_id = $2`
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
 
-	_, err = dbConn.Exec(context.Background(), sqlMacros, id, charId)
+	_, err := db.Exec(sqlMacros, id, charId)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
-	_, err = dbConn.Exec(context.Background(), sqlCommands, id, charId)
+	_, err = db.Exec(sqlCommands, id, charId)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
@@ -64,15 +58,10 @@ func RemoveMacros(id, charId int32) {
 // Сохранение макроса
 func (c *Character) saveMacros(macro interfaces.MacrosInterface, id int32) {
 	//Макроса нет, добавляем в базу
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
 
 	sql := `INSERT INTO "macros" ("char_id", "id", "icon", "name", "description", "acronym")
 			VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
-	_, err = dbConn.Exec(context.Background(), sql, c.ObjectId, id, macro.GetIcon(), macro.GetName(), macro.GetDescription(), macro.GetAcronym())
+	_, err := c.Conn.db.Exec(sql, c.ObjectId, id, macro.GetIcon(), macro.GetName(), macro.GetDescription(), macro.GetAcronym())
 
 	if err != nil {
 		logger.Info.Println(err)
@@ -81,7 +70,7 @@ func (c *Character) saveMacros(macro interfaces.MacrosInterface, id int32) {
 
 	sql = `INSERT INTO "macros_commands" ("command_id", "char_id", "index", "type", "skill_id", "shortcut_id", "name") VALUES ($1, $2, $3, $4, $5, $6, $7)`
 	for _, command := range macro.GetCommands() {
-		_, err = dbConn.Exec(context.Background(), sql, id, c.ObjectId, command.GetIndex(), command.GetType(), command.GetSkillId(), command.GetShortcutId(), command.GetName())
+		_, err = c.Conn.db.Exec(sql, id, c.ObjectId, command.GetIndex(), command.GetType(), command.GetSkillId(), command.GetShortcutId(), command.GetName())
 		if err != nil {
 			logger.Info.Println(err)
 			return
@@ -106,18 +95,13 @@ func (c *Character) LoadCharactersMacros() {
 	var MacrosesCommands []MacroCommand
 	c.Macros = nil
 
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
-
 	sql := `SELECT id,icon,name,description,acronym FROM macros WHERE char_id=$1`
-	rows, err := dbConn.Query(context.Background(), sql, c.ObjectId)
+	rows, err := c.Conn.db.Query(sql, c.ObjectId)
 	if err != nil {
 		logger.Info.Println(err.Error())
 		return
 	}
+	defer rows.Close()
 	for rows.Next() {
 		m := Macro{}
 		err = rows.Scan(&m.Id, &m.Icon, &m.Name, &m.Description, &m.Acronym)
@@ -135,7 +119,7 @@ func (c *Character) LoadCharactersMacros() {
 	for index, macros := range Macroses {
 		MacrosesCommands = nil
 		sqlCommand := `SELECT * FROM macros_commands WHERE command_id=$1 and char_id=$2`
-		rowsCommand, err := dbConn.Query(context.Background(), sqlCommand, macros.Id, c.GetObjectId())
+		rowsCommand, err := c.Conn.db.Query(sqlCommand, macros.Id, c.GetObjectId())
 		if err != nil {
 			logger.Info.Println(err.Error())
 			return

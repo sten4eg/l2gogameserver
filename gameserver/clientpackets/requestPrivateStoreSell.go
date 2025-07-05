@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"database/sql"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
@@ -9,7 +10,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestPrivateStoreSell(client interfaces.ReciverAndSender, data []byte) {
+func RequestPrivateStoreSell(client interfaces.ReciverAndSender, data []byte, db *sql.DB) {
 	reader := packets.NewReader(data)
 
 	storeCharacterId := reader.ReadInt32()
@@ -77,7 +78,7 @@ func RequestPrivateStoreSell(client interfaces.ReciverAndSender, data []byte) {
 
 	//TODO if (!player.getAccessLevel().allowTransaction())
 
-	if !storeList.PrivateStoreSell(player, items) {
+	if !storeList.PrivateStoreSell(player, items, db) {
 		pkg := serverpackets.ActionFailed(client)
 		client.EncryptAndSend(pkg)
 		return

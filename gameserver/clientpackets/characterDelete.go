@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"database/sql"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
@@ -12,7 +13,7 @@ const (
 	ReasonClanLeadersMayNotBeDeleted int32 = 0x03
 )
 
-func CharacterDelete(client interfaces.ReciverAndSender, data []byte) {
+func CharacterDelete(client interfaces.ReciverAndSender, data []byte, db *sql.DB) {
 	reader := packets.NewReader(data)
 
 	charSlot := reader.ReadInt32()
@@ -39,6 +40,6 @@ func CharacterDelete(client interfaces.ReciverAndSender, data []byte) {
 
 	}
 
-	client.SendBuf(serverpackets.CharSelectionInfo(client))
+	client.SendBuf(serverpackets.CharSelectionInfo(client, db))
 
 }

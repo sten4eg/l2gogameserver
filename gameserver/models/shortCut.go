@@ -1,9 +1,8 @@
 package models
 
 import (
-	"context"
+	"database/sql"
 	"l2gogameserver/data/logger"
-	"l2gogameserver/db"
 	"l2gogameserver/gameserver/dto"
 )
 
@@ -15,20 +14,15 @@ func RegisterShortCut(sc dto.ShortCutDTO, client *ClientCtx) {
 	s, exist := shorts[sc.Slot+(sc.Page*MaxShortcutsPerBar)]
 
 	if exist {
-		deleteShortCutFromDb(s, client.CurrentChar.ObjectId, client.CurrentChar.ClassId)
+		deleteShortCutFromDb(s, client.CurrentChar.ObjectId, client.CurrentChar.ClassId, client.db)
 	}
-	registerShortCutInDb(sc, client.CurrentChar.ObjectId, client.CurrentChar.ClassId)
+	registerShortCutInDb(sc, client.CurrentChar.ObjectId, client.CurrentChar.ClassId, client.db)
 	client.CurrentChar.ShortCut[sc.Slot+(sc.Page*MaxShortcutsPerBar)] = sc
 }
 
-func registerShortCutInDb(shortCut dto.ShortCutDTO, charId, classId int32) {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
+func registerShortCutInDb(shortCut dto.ShortCutDTO, charId, classId int32, db *sql.DB) {
 
-	_, err = dbConn.Exec(context.Background(), "INSERT INTO character_shortcuts (char_id, slot, page, type,shortcut_id, level, class_index) VALUES($1,$2,$3,$4,$5,$6,$7)",
+	_, err := db.Exec("INSERT INTO character_shortcuts (char_id, slot, page, type,shortcut_id, level, class_index) VALUES($1,$2,$3,$4,$5,$6,$7)",
 		charId,
 		shortCut.Slot,
 		shortCut.Page,
@@ -41,19 +35,14 @@ func registerShortCutInDb(shortCut dto.ShortCutDTO, charId, classId int32) {
 	}
 }
 
-func RestoreMe(charId, classId int32) map[int32]dto.ShortCutDTO {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
+func RestoreMe(charId, classId int32, db *sql.DB) map[int32]dto.ShortCutDTO {
 
 	shorts := make(map[int32]dto.ShortCutDTO)
-	rows, err := dbConn.Query(context.Background(), "SELECT slot, page, type, shortcut_id, level FROM character_shortcuts WHERE char_id = $1 AND class_index = $2", charId, classId)
+	rows, err := db.Query("SELECT slot, page, type, shortcut_id, level FROM character_shortcuts WHERE char_id = $1 AND class_index = $2", charId, classId)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
-
+	defer rows.Close()
 	for rows.Next() {
 		var t dto.ShortCutDTO
 		var shortType int
@@ -76,19 +65,13 @@ func DeleteShortCut(slot, page int32, client *ClientCtx) {
 	if !ok {
 		return
 	}
-	deleteShortCutFromDb(e, client.CurrentChar.ObjectId, client.CurrentChar.ClassId)
+	deleteShortCutFromDb(e, client.CurrentChar.ObjectId, client.CurrentChar.ClassId, client.db)
 	// todo Проверка на соски
 
 }
 
-func deleteShortCutFromDb(shortCut dto.ShortCutDTO, charId int32, classId int32) {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
-
-	_, err = dbConn.Exec(context.Background(), "DELETE FROM character_shortcuts WHERE char_id=$1 AND slot=$2 AND page=$3 AND class_index=$4",
+func deleteShortCutFromDb(shortCut dto.ShortCutDTO, charId int32, classId int32, db *sql.DB) {
+	_, err := db.Exec("DELETE FROM character_shortcuts WHERE char_id=$1 AND slot=$2 AND page=$3 AND class_index=$4",
 		charId,
 		shortCut.Slot,
 		shortCut.Page,

@@ -1,9 +1,8 @@
 package dto
 
 import (
-	"context"
+	"database/sql"
 	"l2gogameserver/data/logger"
-	"l2gogameserver/db"
 )
 
 type ShortCutDTO struct {
@@ -73,19 +72,15 @@ var ShortTypes = [7]string{
 	"BOOKMARK",
 }
 
-func GetAllShortCuts(charId, classId int32) []ShortCutSimpleDTO {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
+func GetAllShortCuts(charId, classId int32, db *sql.DB) []ShortCutSimpleDTO {
 
-	rows, err := dbConn.Query(context.Background(), "SELECT type, slot, page,shortcut_id, level FROM character_shortcuts WHERE char_id = $1 AND class_index = $2",
+	rows, err := db.Query("SELECT type, slot, page,shortcut_id, level FROM character_shortcuts WHERE char_id = $1 AND class_index = $2",
 		charId,
 		classId)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
+	defer rows.Close()
 	var shortCuts []ShortCutSimpleDTO
 	for rows.Next() {
 		var t ShortCutSimpleDTO

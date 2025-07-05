@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"database/sql"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
@@ -10,7 +11,7 @@ import (
 )
 
 // TradeDone Игрок подтвердил сделку
-func TradeDone(data []byte, client interfaces.ReciverAndSender) {
+func TradeDone(data []byte, client interfaces.ReciverAndSender, db *sql.DB) {
 	var packet = packets.NewReader(data)
 	response := packet.ReadInt32() // 1 - пользователь нажал ОК, 0 пользователь отменил трейд
 
@@ -48,7 +49,7 @@ func TradeDone(data []byte, client interfaces.ReciverAndSender) {
 			endTrade(client)
 			return
 		}
-		_, isTradeConfirmed, tradeDone, success := trade.Confirmed()
+		_, isTradeConfirmed, tradeDone, success := trade.Confirmed(db)
 		if isTradeConfirmed {
 			tradeConfirmed(trade.GetPartner(), trade.GetOwner())
 		}

@@ -1,16 +1,15 @@
 package models
 
 import (
-	"context"
+	"database/sql"
 	"l2gogameserver/config"
-	"l2gogameserver/data/logger"
-	"l2gogameserver/db"
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/items/attribute"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
+	"log"
 	"math"
 	"sync"
 )
@@ -164,20 +163,22 @@ func (i *MyItem) ChangeCount(count int) {
 	i.storedInDb = false
 	i.SetUpdateType(UpdateTypeModify)
 }
-func (i *MyItem) UpdateDB() {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
+func (i *MyItem) UpdateDB(db *sql.DB) {
+
 	if i.existsInDb {
 		if i.ownerId == 0 || i.GetCount() == 0 { //TODO добавить проверки для удаления итема из бд
-			_, err = dbConn.Exec(context.Background(), RemoveFromDB, i.GetObjectId())
+			_, err := db.Exec(RemoveFromDB, i.GetObjectId())
+			if err != nil {
+				log.Println(err)
+			}
 			i.existsInDb = false
 			i.storedInDb = false
 		} else {
 			if !i.storedInDb {
-				_, err = dbConn.Exec(context.Background(), UpdateInDB, i.ownerId, i.GetCount(), i.GetObjectId())
+				_, err := db.Exec(UpdateInDB, i.ownerId, i.GetCount(), i.GetObjectId())
+				if err != nil {
+					log.Println(err)
+				}
 				i.storedInDb = true
 			}
 		}
@@ -185,7 +186,10 @@ func (i *MyItem) UpdateDB() {
 		if i.ownerId == 0 || i.GetCount() == 0 {
 			return
 		}
-		_, err = dbConn.Exec(context.Background(), InsertIntoDB, i.ownerId, i.ObjectId, i.Item.Id, i.Count)
+		_, err := db.Exec(InsertIntoDB, i.ownerId, i.ObjectId, i.Item.Id, i.Count)
+		if err != nil {
+			log.Println(err)
+		}
 		i.existsInDb = true
 		i.storedInDb = true
 		//TODO доделать функцию

@@ -1,6 +1,7 @@
 package ls2gs
 
 import (
+	"database/sql"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/clientStates"
 	"l2gogameserver/gameserver/serverpackets"
@@ -18,7 +19,7 @@ type loginServerInterface interface {
 	SendLogoutFromGS(login string)
 }
 
-func PlayerAuthResponse(data []byte, ls loginServerInterface) {
+func PlayerAuthResponse(data []byte, ls loginServerInterface, db *sql.DB) {
 	reader := packets.NewReader(data)
 
 	account := reader.ReadString()
@@ -30,7 +31,7 @@ func PlayerAuthResponse(data []byte, ls loginServerInterface) {
 			ls.Send(gs2ls.PlayerInGame([]string{account}))
 			client.SetState(clientStates.Authed)
 			//todo чекнуть sessionKey
-			pkg := serverpackets.CharSelectionInfo(client)
+			pkg := serverpackets.CharSelectionInfo(client, db)
 			client.SendBuf(pkg)
 		} else {
 			//log

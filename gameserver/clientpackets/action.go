@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"database/sql"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
@@ -11,7 +12,11 @@ import (
 	"strconv"
 )
 
-func Action(data []byte, clientI interfaces.ReciverAndSender, f func(client interfaces.ReciverAndSender, l models.BackwardToLocation)) *models.BackwardToLocation {
+func Action(data []byte, clientI interfaces.ReciverAndSender,
+	f func(client interfaces.ReciverAndSender,
+		l models.BackwardToLocation),
+	db *sql.DB,
+) *models.BackwardToLocation {
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return nil
@@ -35,7 +40,7 @@ func Action(data []byte, clientI interfaces.ReciverAndSender, f func(client inte
 
 	switch target := object.(type) {
 	case interfaces.MyItemInterface:
-		itemAction(client, target, actionId)
+		itemAction(client, target, actionId, db)
 	case interfaces.CharacterI:
 		characterAction(client, target, actionId)
 	case interfaces.Npcer:
@@ -118,10 +123,10 @@ func getTargetByObjectId(objId int32, region interfaces.WorldRegioner) any {
 	return nil
 }
 
-func itemAction(client *models.ClientCtx, item interfaces.MyItemInterface, actionId byte) {
+func itemAction(client *models.ClientCtx, item interfaces.MyItemInterface, actionId byte, db *sql.DB) {
 	switch actionId {
 	case 0:
-		doActionOnItem(client, item)
+		doActionOnItem(client, item, db)
 	case 1:
 		doActionShiftOnItem(client, item)
 	default:
@@ -129,14 +134,14 @@ func itemAction(client *models.ClientCtx, item interfaces.MyItemInterface, actio
 	}
 }
 
-func doActionOnItem(client *models.ClientCtx, item interfaces.MyItemInterface) {
+func doActionOnItem(client *models.ClientCtx, item interfaces.MyItemInterface, db *sql.DB) {
 	buffer := serverpackets.GetItem(item, client.CurrentChar.GetObjectId())
 	broadcast.BroadCastBufferToAroundPlayers(client, buffer)
 
 	buffer2 := serverpackets.DeleteObject(item.GetObjectId())
 	broadcast.BroadCastBufferToAroundPlayers(client, buffer2)
 
-	updateItem := client.CurrentChar.GetInventory().AddItem2(item.GetId(), int(item.GetCount()), item.IsStackable())
+	updateItem := client.CurrentChar.GetInventory().AddItem2(item.GetId(), int(item.GetCount()), item.IsStackable(), db)
 	client.CurrentChar.GetCurrentRegion().DeleteVisibleItem(item)
 
 	items := []interfaces.MyItemInterface{updateItem}

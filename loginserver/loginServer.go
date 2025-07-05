@@ -1,6 +1,7 @@
 package loginserver
 
 import (
+	"database/sql"
 	"fmt"
 	"l2gogameserver/config"
 	"l2gogameserver/gameserver/crypt"
@@ -42,7 +43,7 @@ func GetLoginServerInstance() *LoginServer {
 
 var initBlowfishKey = []byte{95, 59, 118, 46, 93, 48, 53, 45, 51, 49, 33, 124, 43, 45, 37, 120, 84, 33, 94, 91, 36, 0}
 
-func HandlerInit() error {
+func HandlerInit(db *sql.DB) error {
 	loginServerInstance = new(LoginServer)
 
 	loginServerInstance.Lock()
@@ -50,7 +51,7 @@ func HandlerInit() error {
 
 	loginServerInstance.SetConn()
 
-	go loginServerInstance.Run()
+	go loginServerInstance.Run(db)
 
 	return nil
 }
@@ -76,7 +77,7 @@ func (ls *LoginServer) SetConn() {
 	ls.conn = conn
 }
 
-func (ls *LoginServer) tryReconnectToLS() {
+func (ls *LoginServer) tryReconnectToLS(db *sql.DB) {
 	log.Println("попытка реконнекта к логин серверу")
 	ls.Lock()
 	defer ls.Unlock()
@@ -84,18 +85,18 @@ func (ls *LoginServer) tryReconnectToLS() {
 		log.Println("реконнект к логин серверу")
 		ls.SetConn()
 
-		go ls.Run()
+		go ls.Run(db)
 	}
 	return
 }
 
-func (ls *LoginServer) CloseConnAndReconnectLS() {
+func (ls *LoginServer) CloseConnAndReconnectLS(db *sql.DB) {
 	ls.conn = nil
-	ls.tryReconnectToLS()
+	ls.tryReconnectToLS(db)
 }
 
-func (ls *LoginServer) Run() {
-	defer ls.CloseConnAndReconnectLS()
+func (ls *LoginServer) Run(db *sql.DB) {
+	defer ls.CloseConnAndReconnectLS(db)
 
 	ls.setBlowFish(initBlowfishKey)
 
@@ -135,7 +136,7 @@ func (ls *LoginServer) Run() {
 			return
 		}
 
-		ls.HandlePacket(data)
+		ls.HandlePacket(data, db)
 	}
 }
 

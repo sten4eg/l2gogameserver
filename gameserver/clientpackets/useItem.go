@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"database/sql"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
@@ -13,7 +14,7 @@ import (
 const formalWearId = 6408
 const fortFlagId = 9819
 
-func UseItem(clientI interfaces.CharacterI, data []byte) {
+func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB) {
 	client, ok := clientI.(*models.Character)
 	if !ok {
 		return
@@ -105,7 +106,7 @@ func UseItem(clientI interfaces.CharacterI, data []byte) {
 		models.UseEquippableItem(selectedItem, client)
 	}
 
-	models.SaveInventoryInDB(client.Inventory.Items)
+	models.SaveInventoryInDB(client.Inventory.Items, db)
 
 	pkg := serverpackets.InventoryUpdate(clientI.GetCurrentChar().GetInventory().GetItemsWithUpdatedType())
 	clientI.GetCurrentChar().GetInventory().SetAllItemsUpdatedTypeNone()
@@ -113,7 +114,7 @@ func UseItem(clientI interfaces.CharacterI, data []byte) {
 
 	// После каждого use_item будет запрос в бд на восстановление paperdoll,
 	//todo надо бы это сделать в UseEquippableItem
-	client.Paperdoll = models.RestoreVisibleInventory(client.ObjectId)
+	client.Paperdoll = models.RestoreVisibleInventory(client.ObjectId, db)
 
 	pkg2 := serverpackets.UserInfo(client.GetCurrentChar())
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))

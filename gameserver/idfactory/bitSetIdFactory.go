@@ -1,10 +1,9 @@
 package idfactory
 
 import (
-	"context"
+	"database/sql"
 	"github.com/bits-and-blooms/bitset"
 	"l2gogameserver/data/logger"
-	"l2gogameserver/db"
 	"math"
 	"sort"
 	"strings"
@@ -31,7 +30,7 @@ const FreeObjectIdSize = LastOid - FirstOid
 var mu sync.Mutex
 
 // Load загрузка из бд всех занятих objectId
-func Load() {
+func Load(dbConn *sql.DB) {
 	primeInit()
 	//FreeIds = *bitset.New(uint(NextPrime(100000)))
 	FreeIds = *bitset.New(uint(NextPrime(math.MaxInt32)))
@@ -41,7 +40,7 @@ func Load() {
 	s, _ := FreeIds.NextClear(0)
 	NextFreeId = uint64(s)
 
-	for _, usedObjectId := range extractUsedObjectIDTable() {
+	for _, usedObjectId := range extractUsedObjectIDTable(dbConn) {
 		objectId := usedObjectId - FirstOid
 		if objectId < 0 {
 			logger.Error.Panicln("objectId меньше нуля")
@@ -98,23 +97,19 @@ func Release(objectId int32) {
 
 // extractUsedObjectIDTable чтение из БД всех objectId
 // и установка их как занятых
-func extractUsedObjectIDTable() []int {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err.Error())
-	}
-	defer dbConn.Release()
+func extractUsedObjectIDTable(dbConn *sql.DB) []int {
 
-	sqlQuery := ""
+	var sqlQuery string
 	for _, column := range IdExtracts {
 		sqlQuery += "SELECT " + column[1] + " FROM " + column[0] + " UNION "
 	}
 	sqlQuery = strings.TrimRight(sqlQuery, " UNION ")
 
-	rows, err := dbConn.Query(context.Background(), sqlQuery)
+	rows, err := dbConn.Query(sqlQuery)
 	if err != nil {
 		logger.Error.Panicln(err.Error())
 	}
+	defer rows.Close()
 	var tmp []int
 	for rows.Next() {
 		var t int

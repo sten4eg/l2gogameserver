@@ -18,20 +18,17 @@ import (
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	setup()
-	err := loginserver.HandlerInit()
+	cfg, err := config.Read()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	server.New().Start()
+	dbConn, err := db.ConfigureDB(cfg.GameServer.Database)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-}
-
-func setup() {
-	config.LoadAllConfig()
-	db.ConfigureDB()
-	idfactory.Load()
+	idfactory.Load(dbConn)
 	multisell.LoadMultisell()
 	teleport.LoadLocationListTeleport()
 	models.LoadStats()
@@ -42,5 +39,12 @@ func setup() {
 	models.LoadNpc()
 
 	party.LoadPartyDistributionTypes()
+
+	err = loginserver.HandlerInit(dbConn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	server.New().Start(dbConn)
 
 }

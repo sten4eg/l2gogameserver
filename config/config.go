@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-type config struct {
+type Config struct {
 	GameServer   GameServer `yaml:"gameserver"`
 	isConfigInit bool
 }
@@ -46,7 +46,7 @@ type Debug struct {
 	EnabledCacheHTML bool `yaml:"enabled_cache_html"`
 }
 
-var configInstance config
+var configInstance Config
 
 const MaxAdena = 99_900_000_000
 const AdenaId = 57
@@ -74,27 +74,24 @@ const SHIFT_BY_Z = 11
 //	return configInstance.GameServer
 //}
 
-func Read() error {
+func Read() (Config, error) {
+	var conf Config
 	file, err := os.Open("./config/config.yaml")
 	if err != nil {
-		return err
+		return conf, err
 	}
 
 	decoder := yaml.NewDecoder(file)
-	var conf config
+
 	err = decoder.Decode(&conf)
 	if err != nil {
-		return err
+		return conf, err
 	}
 	conf.isConfigInit = true
 	configInstance = conf
 
-	return nil
+	return conf, nil
 
-}
-func LoadAllConfig() error {
-	err := Read()
-	return err
 }
 
 func GetDBConfig() DatabaseConfig {

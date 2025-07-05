@@ -1,10 +1,9 @@
 package models
 
 import (
-	"context"
+	"database/sql"
 	"l2gogameserver/data"
 	"l2gogameserver/data/logger"
-	"l2gogameserver/db"
 	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/clientStates"
@@ -179,11 +178,11 @@ func (c *Character) GetPercentFromCurrentLevel(exp, level int32) float64 {
 // Load загрузка персонажа
 func (c *Character) Load() {
 	c.InGame = true
-	c.ShortCut = RestoreMe(c.ObjectId, c.ClassId)
+	c.ShortCut = RestoreMe(c.ObjectId, c.ClassId, c.Conn.db)
 	c.LoadSkills()
 	c.SkillQueue = make(chan SkillHolder)
-	c.Inventory.Items = GetMyItems(c.ObjectId)
-	c.Paperdoll = RestoreVisibleInventory(c.ObjectId)
+	c.Inventory.Items = GetMyItems(c.ObjectId, c.Conn.db)
+	c.Paperdoll = RestoreVisibleInventory(c.ObjectId, c.Conn.db)
 	c.LoadCharactersMacros()
 	c.MacroRevision = 1
 	for _, v := range &c.Paperdoll {
@@ -407,15 +406,10 @@ func (c *Character) checkRegion() {
 }
 
 // SaveFirstInGamePlayer Сохранение отметки что юзер зашел в игру впервый раз с момента создания игрока
-func (c *Character) SaveFirstInGamePlayer() {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
+func (c *Character) SaveFirstInGamePlayer(db *sql.DB) {
 
 	sql := `UPDATE "characters" SET "first_enter_game" = false WHERE "object_id" = $1`
-	_, err = dbConn.Exec(context.Background(), sql, c.ObjectId)
+	_, err := db.Exec(sql, c.ObjectId)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
@@ -675,9 +669,9 @@ func (c *Character) GetCurrentChar() interfaces.CharacterI { return c }
 
 ///////////
 
-func (c *Character) DropItem(objectId int32, count int64) (dropItem, updateItem interfaces.MyItemInterface) {
+func (c *Character) DropItem(objectId int32, count int64, db *sql.DB) (dropItem, updateItem interfaces.MyItemInterface) {
 	updateItem = c.Inventory.GetItemByObjectId(objectId)
-	dropItem = c.Inventory.DropItem(objectId, count)
+	dropItem = c.Inventory.DropItem(objectId, count, db)
 
 	if dropItem == nil {
 		return
@@ -850,12 +844,12 @@ func (c *Character) DeleteMacros(id int32) bool {
 	}
 	for key, _ := range c.ShortCut {
 		if c.ShortCut[key].Id == id && c.ShortCut[key].ShortcutType == "MACRO" {
-			deleteShortCutFromDb(c.ShortCut[key], c.ObjectId, c.ClassId)
+			deleteShortCutFromDb(c.ShortCut[key], c.ObjectId, c.ClassId, c.Conn.db)
 			flag = true
 			delete(c.ShortCut, key)
 		}
 	}
-	RemoveMacros(id, c.GetObjectId())
+	RemoveMacros(id, c.GetObjectId(), c.Conn.db)
 	return flag
 }
 

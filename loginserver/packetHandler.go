@@ -1,12 +1,13 @@
 package loginserver
 
 import (
+	"database/sql"
 	"fmt"
 	"l2gogameserver/loginserver/network/gs2ls"
 	"l2gogameserver/loginserver/network/ls2gs"
 )
 
-func (ls *LoginServer) HandlePacket(data []byte) {
+func (ls *LoginServer) HandlePacket(data []byte, db *sql.DB) {
 	opCode := data[0]
 	data = data[1:]
 	fmt.Println("логин прислал : ", opCode)
@@ -28,10 +29,10 @@ func (ls *LoginServer) HandlePacket(data []byte) {
 
 		//todo пройтись по серверу и отослать логины которые в игре
 	case 0x03:
-		ls2gs.PlayerAuthResponse(data, ls)
+		ls2gs.PlayerAuthResponse(data, ls, db)
 	case 0x04:
 		ls2gs.KickPlayer(data, ls)
 	case 0x05:
-		ls2gs.RequestCharacters(data, ls)
+		ls2gs.RequestCharacters(data, ls, db)
 	}
 }

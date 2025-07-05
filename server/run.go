@@ -1,6 +1,7 @@
 package server
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/puzpuzpuz/xsync"
 	"l2gogameserver/config"
@@ -32,7 +33,7 @@ func New() *GameServer {
 	return gs
 }
 
-func (g *GameServer) Start() {
+func (g *GameServer) Start(db *sql.DB) {
 	var err error
 
 	addr := new(net.TCPAddr)
@@ -52,7 +53,7 @@ func (g *GameServer) Start() {
 	//go g.Tick()
 
 	for {
-		client := models.NewClient()
+		client := models.NewClient(db)
 		conn, err := g.clientsListener.AcceptTCP()
 		if err != nil {
 			fmt.Println("Couldn't accept the incoming connection.", err)
@@ -61,7 +62,7 @@ func (g *GameServer) Start() {
 		client.SetConn(conn)
 
 		//g.AddClient(client) //todo надо ли добавлять клиентов в отдельную мапу или массив?
-		go handlers.Handler(client, g)
+		go handlers.Handler(client, g, db)
 	}
 }
 

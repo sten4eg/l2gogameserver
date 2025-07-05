@@ -1,6 +1,7 @@
 package serverpackets
 
 import (
+	"database/sql"
 	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
@@ -8,12 +9,12 @@ import (
 )
 
 // TODO убрать модель
-func ShortCutInit(character interfaces.CharacterI) []byte {
+func ShortCutInit(character interfaces.CharacterI, db *sql.DB) []byte {
 	buffer := packets.Get()
 
 	buffer.WriteSingleByte(0x45)
 
-	shortCuts := dto.GetAllShortCuts(character.GetObjectId(), character.GetClassId())
+	shortCuts := dto.GetAllShortCuts(character.GetObjectId(), character.GetClassId(), db)
 	buffer.WriteD(int32(len(shortCuts)))
 
 	for _, v := range shortCuts {

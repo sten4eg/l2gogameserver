@@ -1,10 +1,9 @@
 package models
 
 import (
-	"context"
+	"database/sql"
 	"errors"
 	"l2gogameserver/data/logger"
-	"l2gogameserver/db"
 	"l2gogameserver/gameserver/crypt"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/clientStates"
@@ -33,6 +32,7 @@ type ClientCtx struct {
 	Account     *Account
 	state       clientStates.State
 	sessionKey  SessionKey
+	db          *sql.DB
 }
 type SessionKey struct {
 	PlayOk1  uint32
@@ -41,7 +41,7 @@ type SessionKey struct {
 	LoginOk2 uint32
 }
 
-func NewClient() *ClientCtx {
+func NewClient(dbConn *sql.DB) *ClientCtx {
 	c := &ClientCtx{
 		NeedCrypt: false,
 		OutKey: []int32{
@@ -83,6 +83,7 @@ func NewClient() *ClientCtx {
 		Account:     new(Account),
 		CurrentChar: nil,
 		state:       clientStates.Connected,
+		db:          dbConn,
 	}
 
 	return c
@@ -297,23 +298,17 @@ func (c *ClientCtx) deleteCharByObjId(objId int32) {
 		return
 	}
 
-	dbConn, err := db.GetConn()
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-	defer dbConn.Release()
-
-	_, err = dbConn.Exec(context.Background(), DeleteCharacterShortcuts, objId)
+	_, err := c.db.Exec(DeleteCharacterShortcuts, objId)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
 
-	_, err = dbConn.Exec(context.Background(), DeleteCharacterItems, objId)
+	_, err = c.db.Exec(DeleteCharacterItems, objId)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
 
-	_, err = dbConn.Exec(context.Background(), DeleteCharacter, objId)
+	_, err = c.db.Exec(DeleteCharacter, objId)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}

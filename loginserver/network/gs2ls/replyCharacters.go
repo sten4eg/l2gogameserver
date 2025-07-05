@@ -1,28 +1,22 @@
 package gs2ls
 
 import (
-	"context"
-	"l2gogameserver/db"
+	"database/sql"
 	"l2gogameserver/packets"
 	"log"
 )
 
 const CharsCount = `SELECT COUNT(object_id) FROM characters WHERE login = $1`
 
-func ReplyCharacters(login string) *packets.Buffer {
-	dbConn, err := db.GetConn()
-	if err != nil {
-		return nil
-	}
-	defer dbConn.Release()
-
+func ReplyCharacters(login string, db *sql.DB) *packets.Buffer {
 	var timeToDel []int64
 
-	rows, err := dbConn.Query(context.Background(), `SELECT delete_in FROM characters WHERE login = $1 AND delete_in IS NOT NULL`, login)
+	rows, err := db.Query(`SELECT delete_in FROM characters WHERE login = $1 AND delete_in IS NOT NULL`, login)
 	if err != nil {
 		log.Println("err", err.Error())
 		return nil
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var i int64
@@ -35,7 +29,7 @@ func ReplyCharacters(login string) *packets.Buffer {
 	}
 
 	var charCount byte
-	err = dbConn.QueryRow(context.Background(), CharsCount, login).Scan(&charCount)
+	err = db.QueryRow(CharsCount, login).Scan(&charCount)
 	if err != nil {
 		log.Println("err", err.Error())
 		return nil

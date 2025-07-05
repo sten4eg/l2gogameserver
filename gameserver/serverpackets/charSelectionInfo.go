@@ -1,9 +1,8 @@
 package serverpackets
 
 import (
-	"context"
+	"database/sql"
 	"l2gogameserver/data/logger"
-	"l2gogameserver/db"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
@@ -12,7 +11,7 @@ import (
 const InfoAboutCharsByLogin = `SELECT login,object_id,level,max_hp,cur_hp,max_mp,cur_mp,face,hair_style,hair_color,sex,x,y,z,exp,sp,karma,pvp_kills,pk_kills,clan_id,race,class_id,base_class,title,online_time,nobless,vitality,char_name,first_enter_game FROM characters WHERE Login = $1 ORDER BY object_id`
 
 // TODO убрать модель
-func CharSelectionInfo(clientI interfaces.ReciverAndSender) *packets.Buffer {
+func CharSelectionInfo(clientI interfaces.ReciverAndSender, db *sql.DB) *packets.Buffer {
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return nil
@@ -20,17 +19,11 @@ func CharSelectionInfo(clientI interfaces.ReciverAndSender) *packets.Buffer {
 
 	buffer := packets.Get()
 
-	dbConn, err := db.GetConn()
+	rows, err := db.Query(InfoAboutCharsByLogin, client.Account.Login)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
-	defer dbConn.Release()
-
-	rows, err := dbConn.Query(context.Background(), InfoAboutCharsByLogin, client.Account.Login)
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-
+	defer rows.Close()
 	//
 	client.Account.Char = client.Account.Char[:0]
 	for rows.Next() {
@@ -77,7 +70,7 @@ func CharSelectionInfo(clientI interfaces.ReciverAndSender) *packets.Buffer {
 	}
 
 	for index := range client.Account.Char {
-		client.Account.Char[index].Paperdoll = models.RestoreVisibleInventory(client.Account.Char[index].ObjectId)
+		client.Account.Char[index].Paperdoll = models.RestoreVisibleInventory(client.Account.Char[index].ObjectId, db)
 	}
 
 	buffer.WriteSingleByte(0x09)
@@ -133,7 +126,7 @@ func CharSelectionInfo(clientI interfaces.ReciverAndSender) *packets.Buffer {
 		buffer.WriteD(0)
 		buffer.WriteD(0)
 
-		paperdoll := models.RestoreVisibleInventory(client.Account.Char[index].GetObjectId())
+		paperdoll := models.RestoreVisibleInventory(client.Account.Char[index].GetObjectId(), db)
 		for _, slot := range models.GetPaperdollOrder() {
 			if paperdoll[slot].Item == nil {
 				buffer.WriteD(0)
