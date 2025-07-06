@@ -3,7 +3,6 @@ package models
 import (
 	"database/sql"
 	"errors"
-	"github.com/jackc/pgx/v4"
 	"l2gogameserver/config"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/idfactory"
@@ -461,7 +460,7 @@ func getAttributeForArmor(objId int32, db *sql.DB) [6]int16 {
 
 	rows, err := db.Query("SELECT element_type,element_value FROM item_elementals WHERE item_id = $1", objId)
 
-	if errors.Is(err, pgx.ErrNoRows) {
+	if errors.Is(err, sql.ErrNoRows) {
 		return att
 	} else if err != nil {
 		logger.Error.Panicln(err)

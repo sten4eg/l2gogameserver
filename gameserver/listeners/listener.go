@@ -94,7 +94,11 @@ func moveListener(client interfaces.ReciverAndSender) {
 		select {
 		case to := <-ch.CurrentChar.CharInfoTo:
 			pkg := utils.GetPacketByte()
+			exUi := utils.GetPacketByte()
+
 			pkg.SetData(serverpackets.CharInfo(ch.CurrentChar))
+			exUi.SetData(serverpackets.ExBrExtraUserInfo(ch.CurrentChar))
+
 			for index := range to {
 				strKey := strconv.Itoa(int(to[index]))
 				char, ok := gameserver.OnlineCharacters.Load(strKey)
@@ -102,22 +106,21 @@ func moveListener(client interfaces.ReciverAndSender) {
 					log.Println("Персонаж не найден")
 					continue
 				}
+				exUi2 := utils.GetPacketByte()
+				exUi2.SetData(serverpackets.ExBrExtraUserInfo(char))
+
+				pkg2 := utils.GetPacketByte()
+				pkg2.SetData(serverpackets.CharInfo(char))
+				ch.CurrentChar.EncryptAndSend(pkg2.GetData())
+				ch.CurrentChar.EncryptAndSend(exUi2.GetData())
+				pkg2.Release()
+				exUi2.Release()
+
 				char.EncryptAndSend(pkg.GetData())
+				char.EncryptAndSend(exUi.GetData())
 			}
 			pkg.Release()
-		case to := <-ch.CurrentChar.CharInfoFrom:
-			for index := range to {
-				strKey := strconv.Itoa(int(to[index]))
-				char, ok := gameserver.OnlineCharacters.Load(strKey)
-				if !ok {
-					log.Println("Персонаж не найден")
-					continue
-				}
-				pkg := utils.GetPacketByte()
-				pkg.SetData(serverpackets.CharInfo(char))
-				ch.CurrentChar.EncryptAndSend(pkg.GetData())
-				pkg.Release()
-			}
+			exUi.Release()
 		case _ = <-ch.CurrentChar.EndChannel:
 			return
 		}

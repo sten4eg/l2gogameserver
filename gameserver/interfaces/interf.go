@@ -314,6 +314,7 @@ type CharacterI interface {
 	GetMacrosCount() uint8
 	AddMacros(MacrosInterface)
 	GetMacrosList() []MacrosInterface
+	GetPaperdollCharInfo() []MyItemInterface
 }
 
 type ClientInterface interface {

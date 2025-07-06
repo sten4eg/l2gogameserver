@@ -76,7 +76,6 @@ type (
 		MacroRevision         int32
 		MacroId               int32
 		CharInfoTo            chan []int32
-		CharInfoFrom          chan []int32
 		DeleteObjectTo        chan []int32
 		NpcInfo               chan []interfaces.Npcer
 		DropItemsInfo         chan []interfaces.MyItemInterface
@@ -194,7 +193,6 @@ func (c *Character) Load() {
 
 	reg := GetRegion(c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z)
 	c.CharInfoTo = make(chan []int32, 2)
-	c.CharInfoFrom = make(chan []int32, 2)
 	c.DeleteObjectTo = make(chan []int32, 2)
 	c.NpcInfo = make(chan []interfaces.Npcer, 2)
 	c.DropItemsInfo = make(chan []interfaces.MyItemInterface, 2)
@@ -375,7 +373,7 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 		c.CharInfoTo <- charInfoPkgTo
 	}
 	if len(charInfoPkgFrom) > 0 {
-		c.CharInfoFrom <- charInfoPkgFrom
+		//	c.CharInfoFrom <- charInfoPkgFrom
 	}
 
 	c.CurrentRegion = newRegion.(*WorldRegion)
@@ -794,6 +792,14 @@ func (c *Character) GetPaperdoll() []interfaces.MyItemInterface {
 	paperdoll := make([]interfaces.MyItemInterface, len(c.Paperdoll))
 	for index, v := range GetPaperdollOrder() {
 		paperdoll[index] = &c.Paperdoll[v]
+	}
+	return paperdoll
+}
+func (c *Character) GetPaperdollCharInfo() []interfaces.MyItemInterface {
+	//TODO гойленг не дает вернуть ссылку на массив
+	paperdoll := make([]interfaces.MyItemInterface, len(c.Paperdoll))
+	for _, v := range GetPaperdollOrder() {
+		paperdoll[v] = &c.Paperdoll[v]
 	}
 	return paperdoll
 }

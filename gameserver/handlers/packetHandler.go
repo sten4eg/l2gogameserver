@@ -73,7 +73,7 @@ func Handler(client interfaces.ClientInterface, gs GameServerInterface, db *sql.
 				fmt.Printf("Неопознаный опкод %x при state Joining\n", opcode)
 			case 0x11:
 				clientpackets.RequestEnterWorld(client, data, db)
-				broadcast.BroadCastUserInfoInRadius(client, 2000)
+				//broadcast.BroadCastUserInfoInRadius(client, 2000)
 				//рассылка при входе в игру происходит в setWorldRegion // broadcast.SendCharInfoAboutCharactersInRadius(client, 2000)
 				go listeners.StartClientListener(client) //todo  надо зпускать не отсюда
 			case 0xd0:
