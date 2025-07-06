@@ -128,6 +128,8 @@ type TradableItemInterface interface {
 	SetPrice(int64)
 	SetObjectId(int32)
 	SetEnchant(int16)
+	GetMana() int32
+	GetTime() int
 }
 
 type TradeListInterface interface {
@@ -159,6 +161,7 @@ type TradeListInterface interface {
 	UpdateItems()
 	PrivateStoreSell(character CharacterI, items []ItemRequestInterface, db *sql.DB) bool
 }
+
 type InventoryInterface interface {
 	sync.Locker
 	GetItemByObjectId(id int32) MyItemInterface
