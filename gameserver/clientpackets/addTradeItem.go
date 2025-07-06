@@ -72,6 +72,7 @@ func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
 	tItem := trade.AddItem(objectId, count, client.GetCurrentChar(), 0)
 	if tItem != nil {
 		client.EncryptAndSend(serverpackets.TradeOwnOAdd(tItem))
+		client.EncryptAndSend(serverpackets.TradeUpdate(client.GetCurrentChar(), tItem))
 		trade.GetPartner().EncryptAndSend(serverpackets.TradeOtherAdd(tItem))
 	}
 

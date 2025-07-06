@@ -23,6 +23,8 @@ type TradeItem struct {
 	StoreCount          int64
 	Count               int64
 	EnchantedOption     [3]int32
+	Mana				int32
+	Time				int
 }
 
 func NewTradeItem(item interfaces.MyItemInterface, count, price int64) interfaces.TradableItemInterface {
@@ -158,6 +160,14 @@ func (i *TradeItem) WriteItem(buffer *packets.Buffer) {
 	buffer.WriteD(0)
 
 	i.writeItemElementalAndEnchant(buffer)
+}
+
+func (i *TradeItem) GetMana() int32 {
+	return i.Mana
+}
+
+func (i *TradeItem) GetTime() int {
+	return i.Time
 }
 
 func (i *TradeItem) writeItemElementalAndEnchant(buffer *packets.Buffer) {
