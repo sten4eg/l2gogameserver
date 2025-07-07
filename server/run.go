@@ -17,23 +17,24 @@ import (
 
 type GameServer struct {
 	clientsListener *net.TCPListener
-	clients         *xsync.MapOf[interfaces.ClientInterface]
-	waitingClients  *xsync.MapOf[interfaces.ClientInterface]
+	clients         *xsync.MapOf[interfaces.ClientCtxInterface]
+	waitingClients  *xsync.MapOf[string]
 	loginServer     *loginserver.LoginServer
+	db              *sql.DB
 }
 
-func New() *GameServer {
+func New(db *sql.DB) *GameServer {
 	gs := new(GameServer)
-	gs.clients = xsync.NewMapOf[interfaces.ClientInterface]()
-	gs.waitingClients = xsync.NewMapOf[interfaces.ClientInterface]()
+	gs.clients = xsync.NewMapOf[interfaces.ClientCtxInterface]()
+	gs.waitingClients = xsync.NewMapOf[string]()
 	ls := loginserver.GetLoginServerInstance()
 	gs.loginServer = ls
-
+	gs.db = db
 	ls.AttachGs(gs)
 	return gs
 }
 
-func (g *GameServer) Start(db *sql.DB) {
+func (g *GameServer) Start() {
 	var err error
 
 	addr := new(net.TCPAddr)
@@ -53,7 +54,7 @@ func (g *GameServer) Start(db *sql.DB) {
 	//go g.Tick()
 
 	for {
-		client := models.NewClient(db)
+		client := models.NewClient(g.db)
 		conn, err := g.clientsListener.AcceptTCP()
 		if err != nil {
 			fmt.Println("Couldn't accept the incoming connection.", err)
@@ -62,20 +63,20 @@ func (g *GameServer) Start(db *sql.DB) {
 		client.SetConn(conn)
 
 		//g.AddClient(client) //todo надо ли добавлять клиентов в отдельную мапу или массив?
-		go handlers.Handler(client, g, db)
+		go handlers.Handler(client, g)
 	}
 }
 
 // AddClient вернёт true если клинта небыло в мапе, false если клиент был обновлен в мапе
-func (g *GameServer) AddClient(login string, clientI interfaces.ClientInterface) bool {
+func (g *GameServer) AddClient(login string, clientI interfaces.ClientCtxInterface) bool {
 	_, loaded := g.clients.LoadOrStore(login, clientI)
 	return !loaded
 }
 
-func (g *GameServer) AddWaitClient(login string, clientI interfaces.ClientInterface) {
-	playOk1, playOk2, loginOk1, loginOk2 := clientI.GetSessionKey()
+func (g *GameServer) AddWaitClient(login string, playOk1, playOk2, loginOk1, loginOk2 uint32) {
+	//playOk1, playOk2, loginOk1, loginOk2 := clientI.GetSessionKey()
 	g.loginServer.Send(gs2ls.PlayerAuthRequest(login, playOk1, playOk2, loginOk1, loginOk2))
-	g.waitingClients.Store(login, clientI)
+	g.waitingClients.Store(login, login)
 }
 
 func (g *GameServer) ExistsWaitClient(login string) bool {
@@ -83,7 +84,7 @@ func (g *GameServer) ExistsWaitClient(login string) bool {
 	return exist
 }
 
-func (g *GameServer) GetClient(login string) interfaces.ClientInterface {
+func (g *GameServer) GetClient(login string) interfaces.ClientCtxInterface {
 	v, ok := g.clients.Load(login)
 	if !ok {
 		return nil
@@ -100,4 +101,8 @@ func (g *GameServer) RemoveClient(login string) {
 func (g *GameServer) SendLogout(login string) {
 	msg := gs2ls.PlayerLogout(login)
 	g.loginServer.Send(msg)
+}
+
+func (g *GameServer) GetDbConn() *sql.DB {
+	return g.db
 }

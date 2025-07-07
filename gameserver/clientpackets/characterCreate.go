@@ -30,6 +30,12 @@ const countCharAndExistName = `SELECT *
 FROM (SELECT COUNT(object_id) FROM characters WHERE login = $1) as countChar,
      (SELECT exists(SELECT char_name from characters WHERE char_name = $2)) as existCharName`
 
+type charCreateClientInterface interface {
+	EncryptAndSend([]byte) error
+	GetAccountLogin() string
+	SendBuf(*packets.Buffer) error
+}
+
 func CharacterCreate(client interfaces.ReciverAndSender, data []byte, db *sql.DB) {
 	reader := packets.NewReader(data)
 
@@ -48,22 +54,22 @@ func CharacterCreate(client interfaces.ReciverAndSender, data []byte, db *sql.DB
 	face := byte(reader.ReadInt32())
 
 	if len(name) < 1 || len(name) > CharacterNameMaxLength {
-		client.EncryptAndSend(serverpackets.CharCreateFail(client, Reason16EngChars))
+		client.EncryptAndSend(serverpackets.CharCreateFail(Reason16EngChars))
 		return
 	}
 
 	if face > 2 || face < 0 {
-		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonCreationFailed))
+		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonCreationFailed))
 		return
 	}
 
 	if hairStyle < 0 || (sex == 0 && hairStyle > 4) || (sex != 0 && hairStyle > 6) {
-		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonCreationFailed))
+		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonCreationFailed))
 		return
 	}
 
 	if hairColor > 3 || hairColor < 0 {
-		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonCreationFailed))
+		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonCreationFailed))
 		return
 	}
 
@@ -76,11 +82,11 @@ func CharacterCreate(client interfaces.ReciverAndSender, data []byte, db *sql.DB
 	}
 
 	if charCount > CharacterMaxNumber {
-		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonTooManyCharacters))
+		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonTooManyCharacters))
 		return
 	}
 	if exist {
-		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonNameAlreadyExists))
+		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonNameAlreadyExists))
 		return
 	}
 
@@ -89,10 +95,11 @@ func CharacterCreate(client interfaces.ReciverAndSender, data []byte, db *sql.DB
 	x, y, z := models.GetCreationCoordinates(classId)
 	_, err = db.Exec(InsertCharacter, idfactory.GetNext(), name, race, sex, classId, hairStyle, hairColor, face, x, y, z, client.GetAccountLogin(), classId, "")
 	if err != nil {
-		client.EncryptAndSend(serverpackets.CharCreateFail(client, ReasonCreateNotAllowed))
+		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonCreateNotAllowed))
 	}
 
 	client.SendBuf(serverpackets.CharCreateOk())
 	time.Sleep(250) //todo клиент должен отправить RequestExGetOnAirShip и после этого CharSelectionInfo, иначе клиент крашиться
 	client.SendBuf(serverpackets.CharSelectionInfo(client, db))
+
 }

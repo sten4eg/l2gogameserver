@@ -7,6 +7,7 @@ import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/trade/privateStoreType"
 	"l2gogameserver/gameserver/serverpackets"
+	"l2gogameserver/gameserver/world"
 	"l2gogameserver/packets"
 )
 
@@ -59,7 +60,7 @@ func RequestPrivateStoreSell(client interfaces.ReciverAndSender, data []byte, db
 
 	ox, oy, oz := player.GetXYZ()
 	mx, my, mz := storeCharacter.GetXYZ()
-	if models.CalculateDistance(ox, oy, oz, mx, my, mz, true, false) > 150.0 {
+	if world.CalculateDistance(ox, oy, oz, mx, my, mz, true, false) > 150.0 {
 		return
 	}
 

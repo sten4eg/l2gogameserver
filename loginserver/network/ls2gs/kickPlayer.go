@@ -2,12 +2,19 @@ package ls2gs
 
 import (
 	"l2gogameserver/data/logger"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func KickPlayer(data []byte, ls loginServerInterface) {
+type kickPlayerInterface interface {
+	GetClientFromGS(string) interfaces.ClientCtxInterface
+	SendLogoutFromGS(string)
+	RemoveClientFromGS(string)
+}
+
+func KickPlayer(data []byte, ls kickPlayerInterface) {
 	reader := packets.NewReader(data)
 
 	account := reader.ReadString()

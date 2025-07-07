@@ -3,9 +3,9 @@ package clientpackets
 import (
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/gameserver/serverpackets"
+	"l2gogameserver/gameserver/world"
 	"l2gogameserver/packets"
 	"math"
 )
@@ -38,7 +38,7 @@ func AnswerCoupleAction(client interfaces.ReciverAndSender, data []byte) {
 		} else if answer == 1 {
 			ox, oy, oz := character.GetXYZ()
 			mx, my, mz := target.GetXYZ()
-			distance := models.CalculateDistance(ox, oy, oz, mx, my, mz, false, false)
+			distance := world.CalculateDistance(ox, oy, oz, mx, my, mz, false, false)
 
 			if distance > 125 || distance < 15 || character.GetObjectId() == target.GetObjectId() {
 				character.SendSysMsg(sysmsg.TargetDoNotMeetLocRequirements)

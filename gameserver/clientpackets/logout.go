@@ -5,12 +5,16 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-type logoutInterface interface {
+type logoutClientInterface interface {
 	EncryptAndSend(data []byte) error
 	GetAccountLogin() string
 }
+type logoutGameServerInterface interface {
+	SendLogout(string)
+	RemoveClient(string)
+}
 
-func Logout(client logoutInterface, state clientStates.State, gs gameServerInterface) {
+func Logout(client logoutClientInterface, state clientStates.State, gs logoutGameServerInterface) {
 	var pkg []byte
 	if state == clientStates.InGame {
 		pkg = serverpackets.LogoutWithInGameState()

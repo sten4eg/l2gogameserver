@@ -1,10 +1,11 @@
-package models
+package world
 
 import (
 	"github.com/alphadose/haxmap"
 	"github.com/puzpuzpuz/xsync"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
+	"l2gogameserver/gameserver/npc"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
 	"math"
@@ -86,7 +87,7 @@ func (w *WorldRegion) DeleteVisibleChar(character interfaces.CharacterI) {
 	w.CharsInRegion.Delete(key)
 }
 
-func (w *WorldRegion) AddVisibleNpc(npc Npc) {
+func (w *WorldRegion) AddVisibleNpc(npc npc.Npc) {
 	key := strconv.FormatInt(int64(npc.GetObjectId()), 10)
 	w.NpcInRegion.Store(key, &npc)
 }
@@ -103,7 +104,7 @@ func (w *WorldRegion) GetChar(objectId int32) (interfaces.CharacterI, bool) {
 func (w *WorldRegion) GetCharsInRegion() []interfaces.CharacterI {
 	result := make([]interfaces.CharacterI, 0, 64)
 	w.CharsInRegion.Range(func(key string, value interfaces.CharacterI) bool {
-		result = append(result, value.(*Character))
+		result = append(result, value)
 		return true
 	})
 
@@ -118,7 +119,7 @@ func (w *WorldRegion) GetNpc(objectId int32) (interfaces.Npcer, bool) {
 func (w *WorldRegion) GetNpcInRegion() []interfaces.Npcer {
 	result := make([]interfaces.Npcer, 0, 64)
 	w.NpcInRegion.Range(func(key string, value interfaces.Npcer) bool {
-		result = append(result, value.(*Npc))
+		result = append(result, value)
 		return true
 	})
 
@@ -264,60 +265,61 @@ func regionZ(z int32) int32 {
 	return (z >> ShiftByZ) + int32(OffsetZ)
 }
 
-func GetAroundPlayersObjIdInRadius(c *Character, radius int32) []int32 {
-	currentRegion := c.CurrentRegion
-	if nil == currentRegion {
-		return nil
-	}
-	result := make([]int32, 0, 64)
+//func GetAroundPlayersObjIdInRadius(c *models.Character, radius int32) []int32 {
+//	currentRegion := c.CurrentRegion
+//	if nil == currentRegion {
+//		return nil
+//	}
+//	result := make([]int32, 0, 64)
+//
+//	sqrad := radius * radius
+//
+//	for _, v := range currentRegion.GetNeighbors() {
+//		charInRegion := v.GetCharsInRegion()
+//		for _, vv := range charInRegion {
+//			char, ok := vv.(*models.Character)
+//			if !ok {
+//				continue
+//			}
+//			if char.ObjectId == c.ObjectId {
+//				continue
+//			}
+//			dx := math.Abs(float64(char.Coordinates.X - c.Coordinates.X))
+//			if dx > float64(radius) {
+//				continue
+//			}
+//
+//			dy := math.Abs(float64(char.Coordinates.Y - c.Coordinates.Y))
+//			if dy > float64(radius) {
+//				continue
+//			}
+//
+//			if dx*dx+dy*dy > float64(sqrad) {
+//				continue
+//			}
+//
+//			result = append(result, char.ObjectId)
+//
+//		}
+//	}
+//	return result
+//}
 
-	sqrad := radius * radius
-
-	for _, v := range currentRegion.GetNeighbors() {
-		charInRegion := v.GetCharsInRegion()
-		for _, vv := range charInRegion {
-			char, ok := vv.(*Character)
-			if !ok {
-				continue
-			}
-			if char.ObjectId == c.ObjectId {
-				continue
-			}
-			dx := math.Abs(float64(char.Coordinates.X - c.Coordinates.X))
-			if dx > float64(radius) {
-				continue
-			}
-
-			dy := math.Abs(float64(char.Coordinates.Y - c.Coordinates.Y))
-			if dy > float64(radius) {
-				continue
-			}
-
-			if dx*dx+dy*dy > float64(sqrad) {
-				continue
-			}
-
-			result = append(result, char.ObjectId)
-
-		}
-	}
-	return result
-}
-func GetAroundPlayerObjId(c *Character) []int32 {
-	currentRegion := c.GetCurrentRegion()
-	if nil == currentRegion {
-		return nil
-	}
-	result := make([]int32, 0, 64)
-	for _, v := range currentRegion.GetNeighbors() {
-		for _, vv := range v.GetCharsInRegion() {
-			result = append(result, vv.GetObjectId())
-		}
-
-	}
-
-	return result
-}
+//	func GetAroundPlayerObjId(c *models.Character) []int32 {
+//		currentRegion := c.GetCurrentRegion()
+//		if nil == currentRegion {
+//			return nil
+//		}
+//		result := make([]int32, 0, 64)
+//		for _, v := range currentRegion.GetNeighbors() {
+//			for _, vv := range v.GetCharsInRegion() {
+//				result = append(result, vv.GetObjectId())
+//			}
+//
+//		}
+//
+//		return result
+//	}
 func (w *WorldRegion) DropItemChecker() []int32 {
 	var result []int32
 

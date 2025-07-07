@@ -12,7 +12,7 @@ import (
 type loginServerInterface interface {
 	ExistsWaitClientOnGameServer(login string) bool
 	Send(buffer *packets.Buffer)
-	GetClientFromGS(login string) interfaces.ClientInterface
+	GetClientFromGS(login string) interfaces.ClientCtxInterface
 	RemoveWaitingClientFromGS(login string)
 	RemoveClientFromGS(login string)
 

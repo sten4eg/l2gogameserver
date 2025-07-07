@@ -10,6 +10,8 @@ import (
 	"l2gogameserver/gameserver/models/multisell"
 	"l2gogameserver/gameserver/models/party"
 	"l2gogameserver/gameserver/models/teleport"
+	"l2gogameserver/gameserver/npc"
+	"l2gogameserver/gameserver/world"
 	"l2gogameserver/loginserver"
 	"l2gogameserver/server"
 	"log"
@@ -34,9 +36,10 @@ func main() {
 	models.LoadStats()
 	models.LoadSkills()
 	items.LoadItems()
-	models.NewWorld()
 	data.Load()
-	models.LoadNpc()
+	npcs := npc.LoadNpc()
+	worldS := world.NewWorld()
+	worldS.AddNpc(npcs)
 
 	party.LoadPartyDistributionTypes()
 
@@ -45,6 +48,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	server.New().Start(dbConn)
+	server.New(dbConn).Start()
 
 }

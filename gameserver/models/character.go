@@ -11,6 +11,7 @@ import (
 	"l2gogameserver/gameserver/models/race"
 	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/gameserver/models/trade/privateStoreType"
+	"l2gogameserver/gameserver/world"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
 	"net"
@@ -48,7 +49,7 @@ type (
 		Nobless       int32
 		Vitality      int32
 		CharName      string
-		CurrentRegion *WorldRegion
+		CurrentRegion *world.WorldRegion
 		Conn          *ClientCtx
 		SockConn      *net.TCPConn
 		AttackEndTime int64
@@ -191,7 +192,7 @@ func (c *Character) Load() {
 	}
 	c.Stats = AllStats[int(c.ClassId)].StaticData //todo а для чего BaseClass ??
 
-	reg := GetRegion(c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z)
+	reg := world.GetRegion(c.Coordinates.X, c.Coordinates.Y, c.Coordinates.Z)
 	c.CharInfoTo = make(chan []int32, 2)
 	c.DeleteObjectTo = make(chan []int32, 2)
 	c.NpcInfo = make(chan []interfaces.Npcer, 2)
@@ -318,7 +319,7 @@ func (c *Character) GetInventoryLimit() int16 {
 func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 	var oldAreas []interfaces.WorldRegioner
 
-	currReg := c.GetCurrentRegion().(*WorldRegion)
+	currReg := c.GetCurrentRegion().(*world.WorldRegion)
 	if currReg != nil {
 		c.CurrentRegion.DeleteVisibleChar(c)
 		oldAreas = currReg.GetNeighbors()
@@ -327,13 +328,13 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 	var newAreas []interfaces.WorldRegioner
 	if newRegion != nil {
 		newRegion.AddVisibleChar(c)
-		newAreas = GetNeighbors(newRegion.GetX(), newRegion.GetY(), newRegion.GetZ())
+		newAreas = world.GetNeighbors(newRegion.GetX(), newRegion.GetY(), newRegion.GetZ())
 	}
 
 	// кому отправить charInfo
 	deleteObjectPkgTo := make([]int32, 0, 64)
 	for _, region := range oldAreas {
-		if !Contains(newAreas, region) {
+		if !world.Contains(newAreas, region) {
 
 			for _, v := range region.GetCharsInRegion() {
 				if v.GetObjectId() == c.GetObjectId() {
@@ -354,7 +355,7 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 	// персонажи о которых мне отправиться charInfo
 	charInfoPkgFrom := make([]int32, 0, 64)
 	for _, region := range newAreas {
-		if !Contains(oldAreas, region) {
+		if !world.Contains(oldAreas, region) {
 			for _, v := range region.GetCharsInRegion() {
 				if v.GetObjectId() == c.GetObjectId() {
 					continue
@@ -376,7 +377,7 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 		//	c.CharInfoFrom <- charInfoPkgFrom
 	}
 
-	c.CurrentRegion = newRegion.(*WorldRegion)
+	c.CurrentRegion = newRegion.(*world.WorldRegion)
 
 	if len(npcPkgTo) > 0 {
 		c.NpcInfo <- npcPkgTo
@@ -394,7 +395,7 @@ func (c *Character) checkRegion() {
 		if c.CurrentRegion != nil {
 			curReg := c.CurrentRegion
 			x, y, z := c.GetXYZ()
-			ncurReg := GetRegion(x, y, z)
+			ncurReg := world.GetRegion(x, y, z)
 			if curReg != ncurReg {
 				c.setWorldRegion(ncurReg)
 			}
@@ -488,7 +489,7 @@ func (c *Character) GetClassId() int32 {
 	return c.ClassId
 }
 func (c *Character) CalculateDistanceTo(ox, oy, oz int32, includeZAxis, squared bool) float64 {
-	return CalculateDistance(c.GetX(), c.GetY(), c.GetZ(), ox, oy, oz, includeZAxis, squared)
+	return world.CalculateDistance(c.GetX(), c.GetY(), c.GetZ(), ox, oy, oz, includeZAxis, squared)
 }
 func (c *Character) GetTradeRefusal() bool {
 	return c.TradeRefusal
@@ -642,7 +643,7 @@ func (c *Character) SendSysMsg(num interface{}, options ...string) error {
 	return c.EncryptAndSend(sysmsg.SystemMessage(smsg))
 }
 
-// методы для реализации ClientInterface, не нужно их заполнять
+// методы для реализации ClientCtxInterface, не нужно их заполнять
 func (c *Character) SetLogin(login string)                                     { panic("нельзя") }
 func (c *Character) RemoveCurrentChar()                                        { panic("нельзя") }
 func (c *Character) SetState(state clientStates.State)                         { panic("нельзя") }
@@ -650,6 +651,9 @@ func (c *Character) GetState() clientStates.State                              {
 func (c *Character) SetSessionKey(playOk1, playOk2, loginOk1, loginOk2 uint32) { panic("нельзя") }
 func (c *Character) GetSessionKey() (playOk1, playOk2, loginOk1, loginOk2 uint32) {
 	panic("нельзя")
+}
+func (c *Character) GetRemoteAddr() net.Addr {
+	panic("Нельзя")
 }
 
 ///////////

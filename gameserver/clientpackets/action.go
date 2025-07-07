@@ -8,15 +8,16 @@ import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/trade/privateStoreType"
 	"l2gogameserver/gameserver/serverpackets"
+	"l2gogameserver/gameserver/world"
 	"l2gogameserver/packets"
 	"strconv"
 )
 
 func Action(data []byte, clientI interfaces.ReciverAndSender,
 	f func(client interfaces.ReciverAndSender,
-		l models.BackwardToLocation),
+		l world.BackwardToLocation),
 	db *sql.DB,
-) *models.BackwardToLocation {
+) *world.BackwardToLocation {
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return nil

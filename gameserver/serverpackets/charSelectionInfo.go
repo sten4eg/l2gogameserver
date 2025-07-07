@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
+
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )

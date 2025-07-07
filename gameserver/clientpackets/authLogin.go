@@ -6,13 +6,18 @@ import (
 )
 
 type gameServerInterface interface {
-	AddWaitClient(string, interfaces.ClientInterface)
-	AddClient(string, interfaces.ClientInterface) bool
+	AddWaitClient(string, uint32, uint32, uint32, uint32)
+	AddClient(string, interfaces.ClientCtxInterface) bool
 	RemoveClient(string)
 	SendLogout(string)
 }
+type authLoginClientInterface interface {
+	SetLogin(string)
+	GetCurrentChar() interfaces.CharacterI
+	SetSessionKey(uint32, uint32, uint32, uint32)
+}
 
-func AuthLogin(data []byte, client interfaces.ClientInterface, gs gameServerInterface) {
+func AuthLogin(data []byte, client interfaces.ClientCtxInterface, gs gameServerInterface) {
 	var packet = packets.NewReader(data)
 
 	login := packet.ReadString()
@@ -23,12 +28,10 @@ func AuthLogin(data []byte, client interfaces.ClientInterface, gs gameServerInte
 	loginKey2 := packet.ReadUInt32()
 	//TODO проверить что они приходят в правильном порядке
 
-	_, _, _, _ = playKey1, playKey2, loginKey1, loginKey2
-
 	if client.GetCurrentChar() == nil {
 		if gs.AddClient(login, client) {
 			client.SetSessionKey(playKey1, playKey2, loginKey1, loginKey2)
-			gs.AddWaitClient(login, client)
+			gs.AddWaitClient(login, playKey1, playKey2, loginKey1, loginKey2)
 		} else {
 			//TODO client.CLOSE()
 		}

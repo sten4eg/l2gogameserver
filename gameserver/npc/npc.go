@@ -1,4 +1,4 @@
-package models
+package npc
 
 import (
 	"encoding/json"
@@ -96,6 +96,20 @@ type Npc struct {
 	Spawn                   Locations
 }
 
+type Npcer interface {
+	GetObjectId() int32
+	GetId() int32
+	IsTargetable() bool
+	GetCoordinates() (x, y, z int32)
+	IsAttackable() int32
+	GetHeading() int32
+	GetCollisionRadius() float64
+	GetCollisionHeight() float64
+	GetSlotRhand() int32
+	GetSlotLhand() int32
+	GetMaxHp() int32
+}
+
 /*
 *
 Структуры NPC пока пусты ибо не подготовил их реализацию и содержимое в правильном формате
@@ -136,9 +150,9 @@ var NpcObject map[int32]Locations
 
 // Временное функция подгрузки листа с спаунами NPC
 // Парсит из json npc. Итерируется по каждому npc и полю Locations(массив спавн точек npc), за каждую локацию создает npc с spawn текущей локации, добавляет npc в глобальную мапу
-func LoadNpc() {
+func LoadNpc() map[int32]map[int32]Npc {
 	if !config.IsEnableNPC() {
-		return
+		return nil
 	}
 	Npcs = make(map[int32]map[int32]Npc)
 	NpcObject = make(map[int32]Locations)
@@ -188,7 +202,7 @@ func LoadNpc() {
 	logger.Info.Printf("Загружено %d Npc Object", len(NpcObject))
 
 	if !config.IsEnableSpawnList() {
-		return
+		return nil
 	}
 	file, err = os.Open("./datapack/data/stats/npcData/spawnList.json")
 	if err != nil {
@@ -196,17 +210,12 @@ func LoadNpc() {
 	}
 	var npcSpawn []Locations
 	jsonParser = json.NewDecoder(file)
-	if err = jsonParser.Decode(&npcSpawn); err != nil {
+	err = jsonParser.Decode(&npcSpawn)
+	if err != nil {
 		logger.Error.Panicln("parsing config file" + err.Error())
 	}
 
-	for _, v := range Npcs {
-		for _, vv := range v {
-			reg := GetRegion(vv.Spawn.Locx, vv.Spawn.Locy, vv.Spawn.Locz)
-			reg.AddVisibleNpc(vv)
-		}
-	}
-
+	return Npcs
 }
 
 // 0 - нпц с диалогом

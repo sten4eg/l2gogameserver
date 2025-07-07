@@ -2,15 +2,14 @@ package clientpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/chat"
 	"l2gogameserver/packets"
 	"strings"
 )
 
-func Say(client interfaces.ReciverAndSender, data []byte) models.Say {
+func Say(client interfaces.ReciverAndSender, data []byte) chat.Say {
 	var packet = packets.NewReader(data)
-	var say models.Say
+	var say chat.Say
 
 	say.Text = packet.ReadString()
 	say.Type = packet.ReadInt32()

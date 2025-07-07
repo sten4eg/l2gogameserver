@@ -313,3 +313,7 @@ func (c *ClientCtx) deleteCharByObjId(objId int32) {
 		logger.Error.Panicln(err)
 	}
 }
+
+func (c *ClientCtx) GetAccount() *Account {
+	return c.Account
+}

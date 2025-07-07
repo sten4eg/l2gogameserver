@@ -1,8 +1,9 @@
-package models
+package world
 
 import (
 	"l2gogameserver/config"
 	"l2gogameserver/gameserver/interfaces"
+	"l2gogameserver/gameserver/npc"
 	"math"
 )
 
@@ -46,10 +47,12 @@ var RegionsX = int32((MapMaxX >> ShiftBy) + OffsetX)
 var RegionsY = int32((MapMaxY >> ShiftBy) + OffsetY)
 var RegionsZ = int32((MapMaxZ >> ShiftByZ) + OffsetZ)
 
-var World [][][]*WorldRegion
+type WWorld [][][]*WorldRegion
 
-func NewWorld() {
-	World = make([][][]*WorldRegion, RegionsX+1)
+var worldData WWorld
+
+func NewWorld() WWorld {
+	w := make(WWorld, RegionsX+1)
 
 	for i := 0; i <= int(RegionsX); i++ {
 		wj := make([][]*WorldRegion, RegionsY+1)
@@ -60,9 +63,10 @@ func NewWorld() {
 			}
 			wj[j] = wz
 		}
-		World[i] = wj
+		w[i] = wj
 	}
-
+	worldData = w
+	return w
 }
 
 // GetNeighbors x,y,z - координаты региона
@@ -85,10 +89,10 @@ func GetRegion(x, y, z int32) *WorldRegion {
 
 // getRegion x,y,z - координаты региона
 func getRegion(x, y, z int32) *WorldRegion {
-	if World[x][y][z] == nil {
-		World[x][y][z] = NewWorldRegion(x, y, z)
+	if worldData[x][y][z] == nil {
+		worldData[x][y][z] = NewWorldRegion(x, y, z)
 	}
-	return World[x][y][z]
+	return worldData[x][y][z]
 }
 
 func CalculateDistance(ox, oy, oz, mx, my, mz int32, includeZAxis, squared bool) float64 {
@@ -108,4 +112,13 @@ func CalculateDistance(ox, oy, oz, mx, my, mz int32, includeZAxis, squared bool)
 
 func isNeighbour(x1, y1, z1, x2, y2, z2 int32) bool {
 	return (x1 <= x2+1) && (x1 >= x2-1) && (y1 <= y2+1) && (y1 >= y2-1) && (z1 <= z2+1) && (z1 >= z2-1)
+}
+
+func (w *WWorld) AddNpc(Npcs map[int32]map[int32]npc.Npc) {
+	for _, v := range Npcs {
+		for _, vv := range v {
+			reg := GetRegion(vv.Spawn.Locx, vv.Spawn.Locy, vv.Spawn.Locz)
+			reg.AddVisibleNpc(vv)
+		}
+	}
 }

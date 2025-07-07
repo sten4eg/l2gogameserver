@@ -4,7 +4,6 @@ import (
 	"github.com/puzpuzpuz/xsync"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"strconv"
 )
 
@@ -34,15 +33,11 @@ func GetNetConnByCharObjectId(objectId int32) interfaces.CharacterI {
 }
 
 func AddOnlineChar(character interfaces.CharacterI) {
-	ch, ok := character.(*models.Character)
-	if !ok {
-		logger.Error.Panicln("addOnlineCharlogger.Error.Panicln")
-	}
 	strKey := strconv.Itoa(int(character.GetObjectId()))
-	OnlineCharacters.Store(strKey, ch)
+	OnlineCharacters.Store(strKey, character)
 }
 
-func CharOffline(client interfaces.ClientInterface) {
+func CharOffline(client interfaces.ClientCtxInterface) {
 	currentChar := client.GetCurrentChar()
 	if currentChar != nil {
 		strKey := strconv.Itoa(int(currentChar.GetObjectId()))

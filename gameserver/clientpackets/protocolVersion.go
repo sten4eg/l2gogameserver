@@ -2,17 +2,17 @@ package clientpackets
 
 import (
 	"l2gogameserver/data/logger"
-	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
+	"net"
 )
 
-func ProtocolVersion(clientI interfaces.ClientInterface, data []byte) {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return
-	}
+type protocolVersionInterface interface {
+	AddLengthAndSand([]byte)
+	GetRemoteAddr() net.Addr
+}
+
+func ProtocolVersion(client protocolVersionInterface, data []byte) {
 
 	var packet = packets.NewReader(data)
 	protocolVersion := packet.ReadUInt16()
@@ -22,5 +22,5 @@ func ProtocolVersion(clientI interfaces.ClientInterface, data []byte) {
 		return
 	}
 
-	clientI.AddLengthAndSand(serverpackets.KeyPacket(client))
+	client.AddLengthAndSand(serverpackets.KeyPacket())
 }

@@ -2,12 +2,12 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/chat"
 	"l2gogameserver/packets"
 )
 
 // TODO убрать модель
-func CreatureSay(say *models.Say, character interfaces.CharacterI) []byte {
+func CreatureSay(say chat.Say, character interfaces.CharacterI) []byte {
 
 	buffer := packets.Get()
 

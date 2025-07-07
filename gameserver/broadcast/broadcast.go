@@ -3,9 +3,9 @@ package broadcast
 import (
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/chat"
 	"l2gogameserver/gameserver/serverpackets"
+	"l2gogameserver/gameserver/world"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
 	"log"
@@ -15,7 +15,7 @@ import (
 // ToAroundPlayerInRadius отправляет всем персонажам в радиусе radius
 // информацию из пакета pkg
 func ToAroundPlayerInRadius(my interfaces.ReciverAndSender, pkg *utils.PacketByte, radius int32) {
-	charsIds := models.GetAroundPlayersInRadius(my.GetCurrentChar(), radius, float64(radius))
+	charsIds := world.GetAroundPlayersInRadius(my.GetCurrentChar(), radius, float64(radius))
 	for i := range charsIds {
 		charsIds[i].EncryptAndSend(pkg.GetData())
 	}
@@ -29,14 +29,14 @@ func BroadCastPkgToAroundPlayer(my interfaces.ReciverAndSender, pkg []byte) {
 }
 
 func BroadCastToAroundPlayers(my interfaces.ReciverAndSender, pkg *utils.PacketByte) {
-	charsIds := models.GetAroundPlayer(my.GetCurrentChar())
+	charsIds := world.GetAroundPlayer(my.GetCurrentChar())
 	for i := range charsIds {
 		charsIds[i].EncryptAndSend(pkg.GetData())
 	}
 }
 
 func BroadCastToAroundPlayersWithoutSelf(my interfaces.ReciverAndSender, pkg *utils.PacketByte) {
-	chardIds := models.GetAroundPlayer(my.GetCurrentChar())
+	chardIds := world.GetAroundPlayer(my.GetCurrentChar())
 	for i := range chardIds {
 		if chardIds[i].GetObjectId() != my.GetCurrentChar().GetObjectId() {
 			chardIds[i].EncryptAndSend(pkg.GetData())
@@ -75,7 +75,7 @@ func BroadCastUserInfoInRadius(me interfaces.ReciverAndSender, radius int32) {
 	ui := serverpackets.UserInfo(me.GetCurrentChar())
 	me.EncryptAndSend(ui)
 
-	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius, float64(radius))
+	charsIds := world.GetAroundPlayersInRadius(me.GetCurrentChar(), radius, float64(radius))
 	if len(charsIds) == 0 {
 		return
 	}
@@ -113,18 +113,18 @@ func BroadcastUserInfo(client interfaces.ReciverAndSender) {
 	BroadCastPkgToAroundPlayer(client, pkg3)
 }
 
-func BroadCastChat(me interfaces.ReciverAndSender, say models.Say) {
+func BroadCastChat(me interfaces.ReciverAndSender, say chat.Say) {
 	pb := utils.GetPacketByte()
 	defer pb.Release()
 
 	switch say.Type {
 	case chat.All:
-		cs := serverpackets.CreatureSay(&say, me.GetCurrentChar())
+		cs := serverpackets.CreatureSay(say, me.GetCurrentChar())
 		pb.SetData(cs)
 		me.EncryptAndSend(pb.GetData())
 		ToAroundPlayerInRadius(me, pb, chat.AllChatRange)
 	case chat.Tell:
-		cs := serverpackets.CreatureSay(&say, me.GetCurrentChar())
+		cs := serverpackets.CreatureSay(say, me.GetCurrentChar())
 		pb.SetData(cs)
 		ok := BroadCastToCharacterByName(pb, say.To)
 		if ok {
@@ -133,7 +133,7 @@ func BroadCastChat(me interfaces.ReciverAndSender, say models.Say) {
 			// systemMSG что не найден перс
 		}
 	case chat.Shout:
-		cs := serverpackets.CreatureSay(&say, me.GetCurrentChar())
+		cs := serverpackets.CreatureSay(say, me.GetCurrentChar())
 		pb.SetData(cs)
 		me.EncryptAndSend(pb.GetData())
 
@@ -171,21 +171,21 @@ func BroadCastToCharacterByName(pkg *utils.PacketByte, to string) bool {
 // SendCharInfoAboutCharactersInRadius отправляет me CharInfo персонажей
 // в радиусе radius
 func SendCharInfoAboutCharactersInRadius(me interfaces.ReciverAndSender, radius int32) {
-	charsIds := models.GetAroundPlayersInRadius(me.GetCurrentChar(), radius, float64(radius))
+	charsIds := world.GetAroundPlayersInRadius(me.GetCurrentChar(), radius, float64(radius))
 	for i := range charsIds {
 		me.EncryptAndSend(serverpackets.CharInfo(charsIds[i]))
 	}
 }
 
 // SendCharInfoAboutCharactersAround отправляет me CharInfo персонажей
-func SendCharInfoAboutCharactersAround(me *models.ClientCtx) {
-	charsIds := models.GetAroundPlayer(me.CurrentChar)
+func SendCharInfoAboutCharactersAround(me interfaces.ClientCtxInterface) {
+	charsIds := world.GetAroundPlayer(me.GetCurrentChar())
 	for i := range charsIds {
 		me.EncryptAndSend(serverpackets.CharInfo(charsIds[i]))
 	}
 }
 
-func Checkaem(client interfaces.ReciverAndSender, l models.BackwardToLocation) {
+func Checkaem(client interfaces.ReciverAndSender, l world.BackwardToLocation) {
 	ut := utils.GetPacketByte()
 	ut.SetData(serverpackets.MoveToLocation(&l, client.GetCurrentChar()))
 

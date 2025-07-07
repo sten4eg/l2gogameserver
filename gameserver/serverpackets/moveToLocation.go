@@ -2,12 +2,12 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/world"
 	"l2gogameserver/packets"
 )
 
 // TODO убрать модель
-func MoveToLocation(location *models.BackwardToLocation, character interfaces.CharacterI) []byte {
+func MoveToLocation(location *world.BackwardToLocation, character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
 
 	buffer.WriteSingleByte(0x2f)

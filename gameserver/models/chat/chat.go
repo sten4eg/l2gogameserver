@@ -23,3 +23,10 @@ const (
 	BATTLEFIELD              int32 = 20 //^
 	SpecialCommand           int32 = 21
 )
+
+type Say struct {
+	Text  string
+	Type  int32
+	Range int32
+	To    string
+}
