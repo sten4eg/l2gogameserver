@@ -7,12 +7,12 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestDeleteMacro(client interfaces.ReciverAndSender, data []byte, db *sql.DB) {
+func RequestDeleteMacro(client interfaces.NewClientCtxInterface, data []byte, db *sql.DB) {
 	reader := packets.NewReader(data)
 
 	id := reader.ReadInt32()
 
-	character := client.GetCurrentChar()
+	character := client.GetAccount().GetCurrentChar()
 	if character == nil {
 		return
 	}

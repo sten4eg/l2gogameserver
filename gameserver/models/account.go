@@ -54,6 +54,9 @@ func (a *Account) MarkToDeleteChar(slot int32, db *sql.DB) int8 {
 }
 
 func (a *Account) GetCurrentChar() interfaces.CharacterI {
+	if len(a.Char) == 0 {
+		return nil
+	}
 	return a.Char[a.CharSlotSelected]
 }
 func (a *Account) SetSelectedChar(slot int) {

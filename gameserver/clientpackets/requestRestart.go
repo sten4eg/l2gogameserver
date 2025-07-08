@@ -5,22 +5,17 @@ import (
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/clientStates"
 	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/gameserver/models/trade/privateStoreType"
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func RequestRestart(clientI interfaces.ReciverAndSender, db *sql.DB) {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return
-	}
+func RequestRestart(client interfaces.NewClientCtxInterface, db *sql.DB) {
 
-	client.SaveUser()
+	character := client.GetAccount().GetCurrentChar()
+	character.SaveUser(db)
 
-	character := client.GetCurrentChar()
 	if character == nil {
 		return
 	}
@@ -49,7 +44,7 @@ func RequestRestart(clientI interfaces.ReciverAndSender, db *sql.DB) {
 	//TODO удалить персонажа из заны с боссом
 
 	broadcast.BroadCastBufferToAroundPlayersWithoutSelf(client, serverpackets.DeleteObject(character.GetObjectId()))
-	gameserver.CharOffline(client.CurrentChar)
+	gameserver.CharOffline(client)
 	client.SendBuf(serverpackets.RestartResponse(1))
 	client.SendBuf(serverpackets.CharSelectionInfo(client, db))
 	client.SetState(clientStates.Authed)

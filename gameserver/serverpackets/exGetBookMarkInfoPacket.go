@@ -1,11 +1,10 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 )
 
-func ExGetBookMarkInfoPacket(client interfaces.ReciverAndSender) []byte {
+func ExGetBookMarkInfoPacket() []byte {
 	buffer := packets.Get()
 
 	buffer.WriteSingleByte(0xFE)

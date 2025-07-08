@@ -6,12 +6,12 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestTargetCancel(data []byte, client interfaces.ReciverAndSender) {
+func RequestTargetCancel(data []byte, client interfaces.NewClientCtxInterface) {
 
 	var packet = packets.NewReader(data)
 	unselect := packet.ReadUInt16()
 	_ = unselect
 
-	pkg := serverpackets.TargetUnselected(client.GetCurrentChar())
+	pkg := serverpackets.TargetUnselected(client.GetAccount().GetCurrentChar())
 	client.EncryptAndSend(pkg)
 }

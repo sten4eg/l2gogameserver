@@ -7,11 +7,7 @@ import (
 )
 
 const limit = 125 // client limit
-func RequestSaveInventoryOrder(clientI interfaces.ReciverAndSender, data []byte) {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return
-	}
+func RequestSaveInventoryOrder(clientI interfaces.NewClientCtxInterface, data []byte) {
 
 	var reader = packets.NewReader(data[2:])
 	size := reader.ReadInt32()
@@ -32,14 +28,12 @@ func RequestSaveInventoryOrder(clientI interfaces.ReciverAndSender, data []byte)
 		newOrder = append(newOrder, io)
 	}
 
-	items := client.CurrentChar.Inventory.Items
-
+	newItems := clientI.GetAccount().GetCurrentChar().GetInventory().GetItems()
 	//todo переделать без n^2
 	for _, io := range newOrder {
-		for i := range items {
-			item := &items[i]
-			if io.ObjId == item.ObjectId && item.Location == models.InventoryLoc {
-				items[i].LocData = io.Order
+		for _, i := range newItems {
+			if io.ObjId == i.GetObjectId() && i.GetLocation() == models.InventoryLoc {
+				i.SetLocData(io.Order)
 			}
 		}
 	}

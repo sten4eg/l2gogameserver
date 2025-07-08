@@ -12,7 +12,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestPrivateStoreBuy(client interfaces.ReciverAndSender, data []byte, db *sql.DB) {
+func RequestPrivateStoreBuy(client interfaces.NewClientCtxInterface, data []byte, db *sql.DB) {
 	reader := packets.NewReader(data)
 
 	storeCharacterId := reader.ReadInt32()
@@ -37,13 +37,13 @@ func RequestPrivateStoreBuy(client interfaces.ReciverAndSender, data []byte, db 
 		items[i] = models.NewItemRequestWithoutItemId(objectId, cnt, price)
 	}
 
-	character := client.GetCurrentChar()
+	character := client.GetAccount().GetCurrentChar()
 	if character == nil {
 		return
 	}
 
 	if items == nil {
-		pkg := serverpackets.ActionFailed(client)
+		pkg := serverpackets.ActionFailed()
 		client.EncryptAndSend(pkg)
 		return
 	}
@@ -83,7 +83,7 @@ func RequestPrivateStoreBuy(client interfaces.ReciverAndSender, data []byte, db 
 
 	result := storeList.PrivateStoreBuy(character, items, db)
 	if result > 0 {
-		pkg := serverpackets.ActionFailed(client)
+		pkg := serverpackets.ActionFailed()
 		client.EncryptAndSend(pkg)
 		if result > 1 {
 			fmt.Println("failed")
@@ -93,7 +93,7 @@ func RequestPrivateStoreBuy(client interfaces.ReciverAndSender, data []byte, db 
 
 	if len(storeList.GetItems()) == 0 {
 		storeCharacter.SetPrivateStoreType(privateStoreType.NONE)
-		broadcast.BroadcastUserInfo(storeCharacter)
+		broadcast.BroadcastUserInfo(client)
 	}
 
 }

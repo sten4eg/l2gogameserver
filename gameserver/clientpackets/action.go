@@ -5,7 +5,6 @@ import (
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/trade/privateStoreType"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/gameserver/world"
@@ -13,15 +12,12 @@ import (
 	"strconv"
 )
 
-func Action(data []byte, clientI interfaces.ReciverAndSender,
-	f func(client interfaces.ReciverAndSender,
+func Action(data []byte, client interfaces.NewClientCtxInterface,
+	f func(client interfaces.NewClientCtxInterface,
 		l world.BackwardToLocation),
 	db *sql.DB,
 ) *world.BackwardToLocation {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return nil
-	}
+
 	reAppeal := false // повторное обращение к объекту
 	var packet = packets.NewReader(data)
 	objectId := packet.ReadInt32() //Target
@@ -30,14 +26,14 @@ func Action(data []byte, clientI interfaces.ReciverAndSender,
 	originZ := packet.ReadInt32()
 	actionId := packet.ReadSingleByte() // Action identifier : 0-Simple click, 1-Shift click
 
-	if objectId == client.CurrentChar.Target {
+	if objectId == client.GetAccount().GetCurrentChar().GetTarget() {
 		reAppeal = true
 	}
 	//else {
 	//	client.CurrentChar.Target = objectId
 	//}
 
-	object := getTargetByObjectId(objectId, client.CurrentChar.GetCurrentRegion())
+	object := getTargetByObjectId(objectId, client.GetAccount().GetCurrentChar().GetCurrentRegion())
 
 	switch target := object.(type) {
 	case interfaces.MyItemInterface:
@@ -124,7 +120,7 @@ func getTargetByObjectId(objId int32, region interfaces.WorldRegioner) any {
 	return nil
 }
 
-func itemAction(client *models.ClientCtx, item interfaces.MyItemInterface, actionId byte, db *sql.DB) {
+func itemAction(client interfaces.NewClientCtxInterface, item interfaces.MyItemInterface, actionId byte, db *sql.DB) {
 	switch actionId {
 	case 0:
 		doActionOnItem(client, item, db)
@@ -135,22 +131,22 @@ func itemAction(client *models.ClientCtx, item interfaces.MyItemInterface, actio
 	}
 }
 
-func doActionOnItem(client *models.ClientCtx, item interfaces.MyItemInterface, db *sql.DB) {
-	buffer := serverpackets.GetItem(item, client.CurrentChar.GetObjectId())
+func doActionOnItem(client interfaces.NewClientCtxInterface, item interfaces.MyItemInterface, db *sql.DB) {
+	buffer := serverpackets.GetItem(item, client.GetAccount().GetCurrentChar().GetObjectId())
 	broadcast.BroadCastBufferToAroundPlayers(client, buffer)
 
 	buffer2 := serverpackets.DeleteObject(item.GetObjectId())
 	broadcast.BroadCastBufferToAroundPlayers(client, buffer2)
 
-	updateItem := client.CurrentChar.GetInventory().AddItem2(item.GetId(), int(item.GetCount()), item.IsStackable(), db)
-	client.CurrentChar.GetCurrentRegion().DeleteVisibleItem(item)
+	updateItem := client.GetAccount().GetCurrentChar().GetInventory().AddItem2(item.GetId(), int(item.GetCount()), item.IsStackable(), db)
+	client.GetAccount().GetCurrentChar().GetCurrentRegion().DeleteVisibleItem(item)
 
 	items := []interfaces.MyItemInterface{updateItem}
 	msg := serverpackets.InventoryUpdate(items)
 	client.EncryptAndSend(msg)
 }
 
-func doActionShiftOnItem(client *models.ClientCtx, item interfaces.MyItemInterface) {
+func doActionShiftOnItem(client interfaces.NewClientCtxInterface, item interfaces.MyItemInterface) {
 	//TODO Генерировать html нормальный образом
 	//html := "<html><body><center><font color=\"LEVEL\">Item Info</font></center><br></body></html>"
 
@@ -167,7 +163,7 @@ func doActionShiftOnItem(client *models.ClientCtx, item interfaces.MyItemInterfa
 
 }
 
-func characterAction(client *models.ClientCtx, char interfaces.CharacterI, actionId byte) {
+func characterAction(client interfaces.NewClientCtxInterface, char interfaces.CharacterI, actionId byte) {
 	switch actionId {
 	case 0:
 		doActionOnCharacter(client, char)
@@ -179,24 +175,24 @@ func characterAction(client *models.ClientCtx, char interfaces.CharacterI, actio
 	}
 }
 
-func doActionOnCharacter(client *models.ClientCtx, targetChar interfaces.CharacterI) {
-	if client.GetCurrentChar().GetTarget() != targetChar.GetObjectId() {
-		client.GetCurrentChar().SetTarget(targetChar.GetObjectId())
+func doActionOnCharacter(client interfaces.NewClientCtxInterface, targetChar interfaces.CharacterI) {
+	if client.GetAccount().GetCurrentChar().GetTarget() != targetChar.GetObjectId() {
+		client.GetAccount().GetCurrentChar().SetTarget(targetChar.GetObjectId())
 		x, y, z := targetChar.GetXYZ()
-		pkg := serverpackets.TargetSelected(client.CurrentChar.ObjectId, targetChar.GetObjectId(), x, y, z)
+		pkg := serverpackets.TargetSelected(client.GetAccount().GetCurrentChar().GetObjectId(), targetChar.GetObjectId(), x, y, z)
 		client.SendBuf(pkg)
 	} else {
 		if targetChar.GetPrivateStoreType() == privateStoreType.SELL || targetChar.GetPrivateStoreType() == privateStoreType.PACKAGE_SELL {
-			pkg := serverpackets.PrivateStoreListSell(client.GetCurrentChar(), targetChar)
+			pkg := serverpackets.PrivateStoreListSell(client.GetAccount().GetCurrentChar(), targetChar)
 			client.SendBuf(pkg)
 		} else if targetChar.GetPrivateStoreType() == privateStoreType.BUY {
-			pkg := serverpackets.PrivateStoreListBuy(client.GetCurrentChar(), targetChar)
+			pkg := serverpackets.PrivateStoreListBuy(client.GetAccount().GetCurrentChar(), targetChar)
 			client.SendBuf(pkg)
 		}
 	}
 }
 
-func npcAction(client *models.ClientCtx, npc interfaces.Npcer, actionId byte) {
+func npcAction(client interfaces.NewClientCtxInterface, npc interfaces.Npcer, actionId byte) {
 	switch actionId {
 	case 0:
 		doActionOnNpc(client, npc, true)
@@ -207,17 +203,17 @@ func npcAction(client *models.ClientCtx, npc interfaces.Npcer, actionId byte) {
 	}
 }
 
-func doActionOnNpc(client *models.ClientCtx, npc interfaces.Npcer, interact bool) {
+func doActionOnNpc(client interfaces.NewClientCtxInterface, npc interfaces.Npcer, interact bool) {
 	if !npc.IsTargetable() {
 		return
 	}
 
 	//client.CurrentChar.SetLastFolkNPC(npc)
 
-	if npc.GetObjectId() != client.CurrentChar.Target {
+	if npc.GetObjectId() != client.GetAccount().GetCurrentChar().GetTarget() {
 		maxHp := npc.GetMaxHp()
 		attributes := []serverpackets.Attributes{{Id: serverpackets.MaxHp, Value: maxHp}, {Id: serverpackets.CurHp, Value: maxHp}} // TODO поменять на текущее хп
-		client.CurrentChar.Target = npc.GetObjectId()
+		client.GetAccount().GetCurrentChar().SetTarget(npc.GetObjectId())
 		//TODO проверка isAutoAttackable
 
 		client.SendBuf(serverpackets.MyTargetSelected(npc.GetObjectId()))

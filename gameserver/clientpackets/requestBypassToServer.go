@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func BypassToServer(data []byte, client interfaces.ReciverAndSender, db *sql.DB) {
+func BypassToServer(data []byte, client interfaces.NewClientCtxInterface, db *sql.DB) {
 	var packet = packets.NewReader(data)
 	command := packet.ReadString()
 
@@ -18,7 +18,7 @@ func BypassToServer(data []byte, client interfaces.ReciverAndSender, db *sql.DB)
 	}
 }
 
-func addAdminItem(command string, client interfaces.ReciverAndSender, db *sql.DB) {
+func addAdminItem(command string, client interfaces.NewClientCtxInterface, db *sql.DB) {
 	// 0 - префикс(комманда) 1- Id предмета 2 - количество
 	s := strings.Split(command, " ")
 	if len(s) != 3 {
@@ -34,7 +34,7 @@ func addAdminItem(command string, client interfaces.ReciverAndSender, db *sql.DB
 	}
 	item, ok := items.GetItemInfo(itemId)
 	if ok { //todo чекать что влезет в инвентарь
-		client.GetCurrentChar().GetInventory().AddItem2(int32(itemId), count, item.IsStackable(), db)
+		client.GetAccount().GetCurrentChar().GetInventory().AddItem2(int32(itemId), count, item.IsStackable(), db)
 	}
 }
 

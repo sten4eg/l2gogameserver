@@ -1,8 +1,6 @@
 package listeners
 
 import (
-	"fmt"
-	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
@@ -14,7 +12,7 @@ import (
 	"strconv"
 )
 
-func StartClientListener(client interfaces.ReciverAndSender) {
+func StartClientListener(client interfaces.NewClientCtxInterface) {
 	go channelListener(client)
 	go npcListener(client)
 	go moveListener(client)
@@ -24,80 +22,69 @@ func StartClientListener(client interfaces.ReciverAndSender) {
 
 }
 
-func channelListener(client interfaces.ReciverAndSender) {
-	ch, ok := client.(*models.ClientCtx)
-	if !ok {
-		logger.Error.Panicln("ChannelListenerlogger.Error.Panicln")
-	}
+func channelListener(client interfaces.NewClientCtxInterface) {
+	currChar := client.GetAccount().GetCurrentChar()
 	for {
 		select {
-		case q := <-ch.CurrentChar.ChannelUpdateShadowItem:
+		case q := <-currChar.GetChannelUpdateShadowItem():
 			pkg := serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
 			client.EncryptAndSend(pkg)
 			if q.UpdateType == models.UpdateTypeRemove {
 				broadcast.BroadCastUserInfoInRadius(client, 2000)
 			}
-		case _ = <-ch.CurrentChar.EndChannel:
+		case _ = <-currChar.GetChannelEndChannel():
 			return
 		}
 	}
 
 }
 
-func npcListener(client interfaces.ReciverAndSender) {
-	ch, ok := client.(*models.ClientCtx)
-	if !ok {
-		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
-	}
+func npcListener(client interfaces.NewClientCtxInterface) {
+	currChar := client.GetAccount().GetCurrentChar()
 	for {
 		select {
-		case q := <-ch.CurrentChar.NpcInfo:
+		case q := <-currChar.GetChannelNpcInfo():
 			buff := packets.Get()
 			for i := range q {
 				pkg := serverpackets.NpcInfo(q[i])
 				buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 			}
 			client.Send(buff.Bytes())
-		case _ = <-ch.CurrentChar.EndChannel:
+		case _ = <-currChar.GetChannelEndChannel():
 			return
 		}
 	}
 
 }
-func dropItemListener(client interfaces.ReciverAndSender) {
-	ch, ok := client.(*models.ClientCtx)
-	if !ok {
-		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
-	}
+func dropItemListener(client interfaces.NewClientCtxInterface) {
+	currChar := client.GetAccount().GetCurrentChar()
+
 	for {
 		select {
-		case q := <-ch.CurrentChar.DropItemsInfo:
+		case q := <-currChar.GetChannelDropItemsInfo():
 			buff := packets.Get()
 			for i := range q {
 				pkg := serverpackets.DropItem(q[i], 0)
 				buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg.Bytes()))
 			}
 			client.Send(buff.Bytes())
-		case _ = <-ch.CurrentChar.EndChannel:
+		case _ = <-currChar.GetChannelEndChannel():
 			return
 		}
 	}
 
 }
-func moveListener(client interfaces.ReciverAndSender) {
-	ch, ok := client.(*models.ClientCtx)
-	if !ok {
-		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
-	}
+func moveListener(client interfaces.NewClientCtxInterface) {
 
+	currChar := client.GetAccount().GetCurrentChar()
 	for {
 		select {
-		case to := <-ch.CurrentChar.CharInfoTo:
+		case to := <-currChar.GetChannelCharInfoTo():
 			pkg := utils.GetPacketByte()
 			exUi := utils.GetPacketByte()
 
-			pkg.SetData(serverpackets.CharInfo(ch.CurrentChar))
-			exUi.SetData(serverpackets.ExBrExtraUserInfo(ch.CurrentChar))
+			pkg.SetData(serverpackets.CharInfo(currChar))
+			exUi.SetData(serverpackets.ExBrExtraUserInfo(currChar))
 
 			for index := range to {
 				strKey := strconv.Itoa(int(to[index]))
@@ -111,8 +98,8 @@ func moveListener(client interfaces.ReciverAndSender) {
 
 				pkg2 := utils.GetPacketByte()
 				pkg2.SetData(serverpackets.CharInfo(char))
-				ch.CurrentChar.EncryptAndSend(pkg2.GetData())
-				ch.CurrentChar.EncryptAndSend(exUi2.GetData())
+				client.EncryptAndSend(pkg2.GetData())
+				client.EncryptAndSend(exUi2.GetData())
 				pkg2.Release()
 				exUi2.Release()
 
@@ -121,25 +108,21 @@ func moveListener(client interfaces.ReciverAndSender) {
 			}
 			pkg.Release()
 			exUi.Release()
-		case _ = <-ch.CurrentChar.EndChannel:
+		case _ = <-currChar.GetChannelEndChannel():
 			return
 		}
 	}
 }
 
-func deleteObjectListener(client interfaces.ReciverAndSender) {
-	ch, ok := client.(*models.ClientCtx)
-	if !ok {
-		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
-	}
+func deleteObjectListener(client interfaces.NewClientCtxInterface) {
 
 	pkg := utils.GetPacketByte()
 	defer pkg.Release()
-
+	currChar := client.GetAccount().GetCurrentChar()
 	for {
 		select {
-		case to := <-ch.CurrentChar.DeleteObjectTo:
-			pkg.SetDataBuf(serverpackets.DeleteObject(ch.CurrentChar.GetObjectId()))
+		case to := <-currChar.GetChannelDeleteObjectTo():
+			pkg.SetDataBuf(serverpackets.DeleteObject(currChar.GetObjectId()))
 			for index := range to {
 
 				strKey := strconv.Itoa(int(to[index]))
@@ -151,26 +134,22 @@ func deleteObjectListener(client interfaces.ReciverAndSender) {
 				char.EncryptAndSend(pkg.GetData())
 
 			}
-		case _ = <-ch.CurrentChar.EndChannel:
+		case _ = <-currChar.GetChannelEndChannel():
 			return
 		}
 	}
 
 }
 
-func listenSkillQueue(client interfaces.ReciverAndSender) {
-	ch, ok := client.(*models.ClientCtx)
-	if !ok {
-		logger.Error.Panicln("NpcListenerlogger.Error.Panicln")
-	}
+func listenSkillQueue(client interfaces.NewClientCtxInterface) {
 
-	for {
-		select {
-		case res := <-ch.CurrentChar.SkillQueue:
-			fmt.Println("SKILL V QUEUE")
-			fmt.Println(res)
-		case _ = <-ch.CurrentChar.EndChannel:
-			return
-		}
-	}
+	//for {
+	//	select {
+	//	case res := <-ch.CurrentChar.SkillQueue:
+	//		fmt.Println("SKILL V QUEUE")
+	//		fmt.Println(res)
+	//	case _ = <-ch.CurrentChar.EndChannel:
+	//		return
+	//	}
+	//}
 }

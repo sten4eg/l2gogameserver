@@ -59,27 +59,32 @@ type (
 		pvpFlag         bool
 		ShortCut        map[int32]dto.ShortCutDTO
 		ActiveSoulShots []int32
-		IsDead          bool
-		IsFakeDeath     bool
+		isDead          bool
+		isFakeDead      bool
 		// Skills todo: проверить слайс или мапа лучше для скилов
-		Skills                  map[int]Skill
-		IsCastingNow            bool
-		SkillQueue              chan SkillHolder
-		CurrentSkill            *SkillHolder // todo А может быть без * попробовать?
-		Inventory               Inventory
-		CursedWeaponEquippedId  int
-		BonusStats              []items.ItemBonusStat
-		ChannelUpdateShadowItem chan IUP
-		InGame                  bool
-		Target                  int32
+		Skills                 map[int]Skill
+		isCastingNow           bool
+		CurrentSkill           interfaces.SkillHolderInterface // todo А может быть без * попробовать?
+		Inventory              Inventory
+		CursedWeaponEquippedId int
+		BonusStats             []items.ItemBonusStat
+		//
+		ChannelUpdateShadowItem chan dto.IUP
+		// SkillQueue              chan SkillHolder //TODO Надо сделать (
+		CharInfoTo     chan []int32
+		DeleteObjectTo chan []int32
+		NpcInfo        chan []interfaces.Npcer
+		DropItemsInfo  chan []interfaces.MyItemInterface
+		// канал чтобы закрыть все горутины которые прослушивают каналы персонажа
+		EndChannel chan struct{}
+		//
+		InGame bool
+		Target int32
 		// TODO переделать макросы под структуру
-		Macros                []Macro
-		MacroRevision         int32
-		MacroId               int32
-		CharInfoTo            chan []int32
-		DeleteObjectTo        chan []int32
-		NpcInfo               chan []interfaces.Npcer
-		DropItemsInfo         chan []interfaces.MyItemInterface
+		Macros        []Macro
+		MacroRevision int32
+		MacroId       int32
+
 		IsMoving              bool
 		Sit                   bool
 		FirstEnterGame        bool
@@ -96,15 +101,8 @@ type (
 
 		multiSocialAction int32
 		multiSocialTarget int32
+	}
 
-		// канал чтобы закрыть все горутины которые прослушивают каналы персонажа
-		EndChannel chan struct{}
-	}
-	SkillHolder struct {
-		Skill        Skill
-		CtrlPressed  bool
-		ShiftPressed bool
-	}
 	Coordinates struct {
 		mu sync.Mutex
 		X  int32
@@ -115,12 +113,50 @@ type (
 		To   []int32
 		Info utils.PacketByte
 	}
-
-	IUP struct {
-		ObjId      int32
-		UpdateType int16
-	}
 )
+
+func (c *Character) SaveUser(db *sql.DB) {
+	c.saveLocation(db)
+}
+
+func (c *Character) saveLocation(db *sql.DB) {
+	sql := `UPDATE "characters" SET "x" = $1, "y" = $2, "z" = $3 WHERE "object_id" = $4`
+	currChar := c.GetAccount().GetCurrentChar()
+	x, y, z := currChar.GetXYZ()
+	_, err := db.Exec(sql, x, y, z, currChar.GetObjectId())
+	if err != nil {
+		logger.Error.Panicln(err)
+	}
+}
+
+func (c *Character) GetCurrentSkill() interfaces.SkillHolderInterface {
+	return c.CurrentSkill
+}
+func (c *Character) IsCastingNow() bool {
+	return c.isCastingNow
+}
+func (c *Character) GetSkillById(id int32) (interfaces.SkillInterface, bool) {
+	q, exist := c.Skills[int(id)]
+	return &q, exist
+}
+func (c *Character) GetChannelUpdateShadowItem() chan dto.IUP {
+	return c.ChannelUpdateShadowItem
+}
+func (c *Character) GetChannelCharInfoTo() chan []int32 {
+	return c.CharInfoTo
+}
+func (c *Character) GetChannelDeleteObjectTo() chan []int32 {
+	return c.DeleteObjectTo
+}
+func (c *Character) GetChannelNpcInfo() chan []interfaces.Npcer {
+	return c.NpcInfo
+}
+func (c *Character) GetChannelDropItemsInfo() chan []interfaces.MyItemInterface {
+	return c.DropItemsInfo
+}
+func (c *Character) GetChannelEndChannel() chan struct{} {
+	return c.EndChannel
+}
 
 const (
 	RequestTimeout = time.Second * 10
@@ -131,7 +167,7 @@ func GetNewCharacterModel() *Character {
 	character := new(Character)
 	sk := make(map[int]Skill)
 	character.Skills = sk
-	character.ChannelUpdateShadowItem = make(chan IUP, 10)
+	character.ChannelUpdateShadowItem = make(chan dto.IUP, 10)
 	character.InGame = false
 	character.ActiveEnchantItemId = IdNone
 	return character
@@ -154,13 +190,14 @@ func (c *Character) IsSittings() bool {
 func (c *Character) GetOnlineTime() int32 {
 	return c.OnlineTime
 }
-func (c *Character) SetSkillToQueue(skill Skill, ctrlPressed, shiftPressed bool) {
-	s := SkillHolder{
-		Skill:        skill,
-		CtrlPressed:  ctrlPressed,
-		ShiftPressed: shiftPressed,
-	}
-	c.SkillQueue <- s
+
+func (c *Character) SetSkillToQueue(skill interfaces.SkillInterface, ctrlPressed, shiftPressed bool) {
+	//s := SkillHolder{
+	//	Skill:        skill,
+	//	CtrlPressed:  ctrlPressed,
+	//	ShiftPressed: shiftPressed,
+	//}
+	//c.SkillQueue <- s
 }
 
 // IsActiveWeapon есть ли у персонажа оружие в руках
@@ -176,13 +213,22 @@ func (c *Character) GetPercentFromCurrentLevel(exp, level int32) float64 {
 	expPerLevel, expPerLevel2 := data.GetExpData(level)
 	return float64(int64(exp)-expPerLevel) / float64(expPerLevel2-expPerLevel)
 }
+func (c *Character) AddActiveSoulShots(itemId int32) {
+	c.ActiveSoulShots = append(c.ActiveSoulShots, itemId)
+}
+func (c *Character) IsDead() bool {
+	return c.isDead //TODO Ide пишет что тут рекурсия
+}
+func (c *Character) IsFakeDead() bool {
+	return c.isFakeDead //TODO Ide пишет что тут рекурсия
+}
 
 // Load загрузка персонажа
 func (c *Character) Load() {
 	c.InGame = true
 	c.ShortCut = RestoreMe(c.ObjectId, c.ClassId, c.Conn.db)
 	c.LoadSkills()
-	c.SkillQueue = make(chan SkillHolder)
+	//c.SkillQueue = make(chan SkillHolder)
 	c.Inventory.Items = GetMyItems(c.ObjectId, c.Conn.db)
 	c.Paperdoll = RestoreVisibleInventory(c.ObjectId, c.Conn.db)
 	c.LoadCharactersMacros()
@@ -214,7 +260,7 @@ func (c *Character) Shadow() {
 		for i := range c.Inventory.Items {
 			v := &c.Inventory.Items[i]
 			if v.Item.Durability > 0 && v.Location == PaperdollLoc {
-				var iup IUP
+				var iup dto.IUP
 				iup.ObjId = v.ObjectId
 				switch c.Inventory.Items[i].Mana {
 

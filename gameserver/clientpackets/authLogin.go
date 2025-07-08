@@ -21,14 +21,14 @@ func AuthLogin(data []byte, client interfaces.NewClientCtxInterface, gs gameServ
 	var packet = packets.NewReader(data)
 
 	login := packet.ReadString()
-	client.SetLogin(login)
+	client.GetAccount().SetLogin(login)
 	playKey1 := packet.ReadUInt32()
 	playKey2 := packet.ReadUInt32()
 	loginKey1 := packet.ReadUInt32()
 	loginKey2 := packet.ReadUInt32()
 	//TODO проверить что они приходят в правильном порядке
 
-	if client.GetCurrentChar() == nil {
+	if client.GetAccount().GetCurrentChar() == nil {
 		if gs.AddClient(login, client) {
 			client.SetSessionKey(playKey1, playKey2, loginKey1, loginKey2)
 			gs.AddWaitClient(login, playKey1, playKey2, loginKey1, loginKey2)

@@ -14,44 +14,45 @@ import (
 
 // ToAroundPlayerInRadius отправляет всем персонажам в радиусе radius
 // информацию из пакета pkg
-func ToAroundPlayerInRadius(my interfaces.ReciverAndSender, pkg *utils.PacketByte, radius int32) {
-	charsIds := world.GetAroundPlayersInRadius(my.GetCurrentChar(), radius, float64(radius))
+func ToAroundPlayerInRadius(my interfaces.NewClientCtxInterface, pkg *utils.PacketByte, radius int32) {
+
+	charsIds := world.GetAroundPlayersInRadius(my.GetAccount().GetCurrentChar(), radius, float64(radius))
 	for i := range charsIds {
 		charsIds[i].EncryptAndSend(pkg.GetData())
 	}
 }
 
-func BroadCastPkgToAroundPlayer(my interfaces.ReciverAndSender, pkg []byte) {
+func BroadCastPkgToAroundPlayer(my interfaces.NewClientCtxInterface, pkg []byte) {
 	pb := utils.GetPacketByte()
 	pb.SetData(pkg)
 	BroadCastToAroundPlayers(my, pb)
 	pb.Release()
 }
 
-func BroadCastToAroundPlayers(my interfaces.ReciverAndSender, pkg *utils.PacketByte) {
-	charsIds := world.GetAroundPlayer(my.GetCurrentChar())
+func BroadCastToAroundPlayers(my interfaces.NewClientCtxInterface, pkg *utils.PacketByte) {
+	charsIds := world.GetAroundPlayer(my.GetAccount().GetCurrentChar())
 	for i := range charsIds {
 		charsIds[i].EncryptAndSend(pkg.GetData())
 	}
 }
 
-func BroadCastToAroundPlayersWithoutSelf(my interfaces.ReciverAndSender, pkg *utils.PacketByte) {
-	chardIds := world.GetAroundPlayer(my.GetCurrentChar())
+func BroadCastToAroundPlayersWithoutSelf(my interfaces.NewClientCtxInterface, pkg *utils.PacketByte) {
+	chardIds := world.GetAroundPlayer(my.GetAccount().GetCurrentChar())
 	for i := range chardIds {
-		if chardIds[i].GetObjectId() != my.GetCurrentChar().GetObjectId() {
+		if chardIds[i].GetObjectId() != my.GetAccount().GetCurrentChar().GetObjectId() {
 			chardIds[i].EncryptAndSend(pkg.GetData())
 		}
 	}
 }
 
-func BroadCastPkgToAroundPlayersWithoutSelf(my interfaces.ReciverAndSender, pkg []byte) {
+func BroadCastPkgToAroundPlayersWithoutSelf(my interfaces.NewClientCtxInterface, pkg []byte) {
 	pb := utils.GetPacketByte()
 	pb.SetData(pkg)
 	BroadCastToAroundPlayersWithoutSelf(my, pb)
 	pb.Release()
 }
 
-func BroadCastBufferToAroundPlayers(my interfaces.ReciverAndSender, buffer *packets.Buffer) {
+func BroadCastBufferToAroundPlayers(my interfaces.NewClientCtxInterface, buffer *packets.Buffer) {
 	pb := utils.GetPacketByte()
 	pb.SetData(buffer.Bytes())
 
@@ -60,7 +61,7 @@ func BroadCastBufferToAroundPlayers(my interfaces.ReciverAndSender, buffer *pack
 	pb.Release()
 }
 
-func BroadCastBufferToAroundPlayersWithoutSelf(my interfaces.ReciverAndSender, buffer *packets.Buffer) {
+func BroadCastBufferToAroundPlayersWithoutSelf(my interfaces.NewClientCtxInterface, buffer *packets.Buffer) {
 	pb := utils.GetPacketByte()
 	pb.SetData(buffer.Bytes())
 
@@ -71,11 +72,11 @@ func BroadCastBufferToAroundPlayersWithoutSelf(my interfaces.ReciverAndSender, b
 
 // BroadCastUserInfoInRadius отправляет всем персонажам в радиусе radius
 // информацию о персонаже, Самому персонажу отправляет полный UserInfo
-func BroadCastUserInfoInRadius(me interfaces.ReciverAndSender, radius int32) {
-	ui := serverpackets.UserInfo(me.GetCurrentChar())
+func BroadCastUserInfoInRadius(me interfaces.NewClientCtxInterface, radius int32) {
+	ui := serverpackets.UserInfo(me.GetAccount().GetCurrentChar())
 	me.EncryptAndSend(ui)
 
-	charsIds := world.GetAroundPlayersInRadius(me.GetCurrentChar(), radius, float64(radius))
+	charsIds := world.GetAroundPlayersInRadius(me.GetAccount().GetCurrentChar(), radius, float64(radius))
 	if len(charsIds) == 0 {
 		return
 	}
@@ -83,11 +84,11 @@ func BroadCastUserInfoInRadius(me interfaces.ReciverAndSender, radius int32) {
 	ci := utils.GetPacketByte()
 	defer ci.Release()
 
-	ci.SetData(serverpackets.CharInfo(me.GetCurrentChar()))
+	ci.SetData(serverpackets.CharInfo(me.GetAccount().GetCurrentChar()))
 
 	exUi := utils.GetPacketByte()
 	defer exUi.Release()
-	exUi.SetData(serverpackets.ExBrExtraUserInfo(me.GetCurrentChar()))
+	exUi.SetData(serverpackets.ExBrExtraUserInfo(me.GetAccount().GetCurrentChar()))
 
 	for i := range charsIds {
 		strKey := strconv.Itoa(int(charsIds[i].GetObjectId()))
@@ -102,29 +103,29 @@ func BroadCastUserInfoInRadius(me interfaces.ReciverAndSender, radius int32) {
 
 }
 
-func BroadcastUserInfo(client interfaces.ReciverAndSender) {
-	pkg := serverpackets.UserInfo(client.GetCurrentChar())
+func BroadcastUserInfo(client interfaces.NewClientCtxInterface) {
+	pkg := serverpackets.UserInfo(client.GetAccount().GetCurrentChar())
 	client.EncryptAndSend(pkg)
 
-	pkg2 := serverpackets.CharInfo(client.GetCurrentChar())
+	pkg2 := serverpackets.CharInfo(client.GetAccount().GetCurrentChar())
 	BroadCastPkgToAroundPlayersWithoutSelf(client, pkg2)
 
-	pkg3 := serverpackets.ExBrExtraUserInfo(client.GetCurrentChar())
+	pkg3 := serverpackets.ExBrExtraUserInfo(client.GetAccount().GetCurrentChar())
 	BroadCastPkgToAroundPlayer(client, pkg3)
 }
 
-func BroadCastChat(me interfaces.ReciverAndSender, say chat.Say) {
+func BroadCastChat(me interfaces.NewClientCtxInterface, say chat.Say) {
 	pb := utils.GetPacketByte()
 	defer pb.Release()
 
 	switch say.Type {
 	case chat.All:
-		cs := serverpackets.CreatureSay(say, me.GetCurrentChar())
+		cs := serverpackets.CreatureSay(say, me.GetAccount().GetCurrentChar())
 		pb.SetData(cs)
 		me.EncryptAndSend(pb.GetData())
 		ToAroundPlayerInRadius(me, pb, chat.AllChatRange)
 	case chat.Tell:
-		cs := serverpackets.CreatureSay(say, me.GetCurrentChar())
+		cs := serverpackets.CreatureSay(say, me.GetAccount().GetCurrentChar())
 		pb.SetData(cs)
 		ok := BroadCastToCharacterByName(pb, say.To)
 		if ok {
@@ -133,7 +134,7 @@ func BroadCastChat(me interfaces.ReciverAndSender, say chat.Say) {
 			// systemMSG что не найден перс
 		}
 	case chat.Shout:
-		cs := serverpackets.CreatureSay(say, me.GetCurrentChar())
+		cs := serverpackets.CreatureSay(say, me.GetAccount().GetCurrentChar())
 		pb.SetData(cs)
 		me.EncryptAndSend(pb.GetData())
 
@@ -170,24 +171,24 @@ func BroadCastToCharacterByName(pkg *utils.PacketByte, to string) bool {
 
 // SendCharInfoAboutCharactersInRadius отправляет me CharInfo персонажей
 // в радиусе radius
-func SendCharInfoAboutCharactersInRadius(me interfaces.ReciverAndSender, radius int32) {
-	charsIds := world.GetAroundPlayersInRadius(me.GetCurrentChar(), radius, float64(radius))
+func SendCharInfoAboutCharactersInRadius(me interfaces.NewClientCtxInterface, radius int32) {
+	charsIds := world.GetAroundPlayersInRadius(me.GetAccount().GetCurrentChar(), radius, float64(radius))
 	for i := range charsIds {
 		me.EncryptAndSend(serverpackets.CharInfo(charsIds[i]))
 	}
 }
 
 // SendCharInfoAboutCharactersAround отправляет me CharInfo персонажей
-func SendCharInfoAboutCharactersAround(me interfaces.ClientCtxInterface) {
-	charsIds := world.GetAroundPlayer(me.GetCurrentChar())
+func SendCharInfoAboutCharactersAround(me interfaces.NewClientCtxInterface) {
+	charsIds := world.GetAroundPlayer(me.GetAccount().GetCurrentChar())
 	for i := range charsIds {
 		me.EncryptAndSend(serverpackets.CharInfo(charsIds[i]))
 	}
 }
 
-func Checkaem(client interfaces.ReciverAndSender, l world.BackwardToLocation) {
+func Checkaem(client interfaces.NewClientCtxInterface, l world.BackwardToLocation) {
 	ut := utils.GetPacketByte()
-	ut.SetData(serverpackets.MoveToLocation(&l, client.GetCurrentChar()))
+	ut.SetData(serverpackets.MoveToLocation(&l, client.GetAccount().GetCurrentChar()))
 
 	client.EncryptAndSend(ut.GetData())
 	BroadCastToAroundPlayers(client, ut)

@@ -6,6 +6,6 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func RequestGoToLobby(client interfaces.ReciverAndSender, db *sql.DB) {
+func RequestGoToLobby(client interfaces.NewClientCtxInterface, db *sql.DB) {
 	client.SendBuf(serverpackets.CharSelectionInfo(client, db))
 }

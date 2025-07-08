@@ -7,7 +7,7 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func UserTeleport(client interfaces.ReciverAndSender, teleportID int) []byte {
+func UserTeleport(client interfaces.NewClientCtxInterface, teleportID int) []byte {
 	logger.Info.Println("Телепортация юзера...")
 	locx, ok := teleport.GetTeleportID(teleportID)
 	if !ok {
@@ -16,5 +16,5 @@ func UserTeleport(client interfaces.ReciverAndSender, teleportID int) []byte {
 	}
 	x, y, z, h := locx.X, locx.Y, locx.Z, 0
 
-	return serverpackets.TeleportToLocation(client.GetCurrentChar(), x, y, z, h)
+	return serverpackets.TeleportToLocation(client.GetAccount().GetCurrentChar(), x, y, z, h)
 }

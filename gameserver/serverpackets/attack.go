@@ -5,14 +5,15 @@ import (
 	"l2gogameserver/packets"
 )
 
-func Attack(client interfaces.CharacterI, targetObjId, targetX, targetY, targetZ int32) []byte {
+func Attack(client interfaces.NewClientCtxInterface, targetObjId, targetX, targetY, targetZ int32) []byte {
+	character := client.GetAccount().GetCurrentChar()
 	buffer := packets.Get()
 
-	x, y, z := client.GetXYZ()
+	x, y, z := character.GetXYZ()
 
 	buffer.WriteSingleByte(0x33)
 
-	buffer.WriteD(client.GetObjectId())
+	buffer.WriteD(character.GetObjectId())
 
 	buffer.WriteD(targetObjId)
 	buffer.WriteD(4)

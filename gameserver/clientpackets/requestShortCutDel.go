@@ -8,11 +8,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestShortCutDel(data []byte, clientI interfaces.ReciverAndSender, db *sql.DB) {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return
-	}
+func RequestShortCutDel(data []byte, client interfaces.NewClientCtxInterface, db *sql.DB) {
 
 	var packet = packets.NewReader(data)
 	id := packet.ReadInt32()
@@ -23,9 +19,9 @@ func RequestShortCutDel(data []byte, clientI interfaces.ReciverAndSender, db *sq
 		return
 	}
 
-	models.DeleteShortCut(slot, page, client)
+	models.DeleteShortCut(slot, page, client, db)
 
-	pkg := serverpackets.ShortCutInit(client.GetCurrentChar(), db)
+	pkg := serverpackets.ShortCutInit(client.GetAccount().GetCurrentChar(), db)
 	client.EncryptAndSend(pkg)
 
 }

@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func ExSendManorList(client interfaces.ReciverAndSender) []byte {
+func ExSendManorList(client interfaces.NewClientCtxInterface) []byte {
 	buffer := packets.Get()
 
 	buffer.WriteSingleByte(0xFE)

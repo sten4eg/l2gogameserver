@@ -1,7 +1,6 @@
 package clientpackets
 
 import (
-	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/party/messageType"
 	"l2gogameserver/gameserver/models/sysmsg"
@@ -9,8 +8,8 @@ import (
 	"l2gogameserver/utils"
 )
 
-func RequestWithDrawalParty(client interfaces.ReciverAndSender) {
-	character := client.GetCurrentChar()
+func RequestWithDrawalParty(client interfaces.NewClientCtxInterface) {
+	character := client.GetAccount().GetCurrentChar()
 	if character == nil {
 		return
 	}
@@ -111,7 +110,7 @@ func broadcastToPartyMembersNewLeader(p interfaces.PartyInterface) {
 		if member != nil {
 			member.SendBuf(serverpackets.PartySmallWindowDeleteAll())
 			member.SendBuf(serverpackets.PartySmallWindowAll(member, p))
-			broadcast.BroadcastUserInfo(member)
+			//TODO надо передавать что туда	broadcast.BroadcastUserInfo(member)
 		}
 	}
 }

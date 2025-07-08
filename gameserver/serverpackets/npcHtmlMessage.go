@@ -1,12 +1,11 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 	"strconv"
 )
 
-func NpcHtmlMessage(client interfaces.ReciverAndSender, npcid int32) []byte {
+func NpcHtmlMessage(npcid int32) []byte {
 
 	buffer := packets.Get()
 

@@ -1,11 +1,10 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 )
 
-func PledgeInfo(client interfaces.ReciverAndSender) []byte {
+func PledgeInfo() []byte {
 	buffer := packets.Get()
 
 	buffer.WriteSingleByte(0x89)

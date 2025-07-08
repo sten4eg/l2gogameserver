@@ -8,7 +8,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestMakeMacro(client interfaces.ReciverAndSender, data []byte) {
+func RequestMakeMacro(client interfaces.NewClientCtxInterface, data []byte) {
 	var reader = packets.NewReader(data)
 
 	macros := models.Macro{
@@ -33,7 +33,7 @@ func RequestMakeMacro(client interfaces.ReciverAndSender, data []byte) {
 		commandsLength += len(name)
 	}
 
-	character := client.GetCurrentChar()
+	character := client.GetAccount().GetCurrentChar()
 
 	if character == nil {
 		return

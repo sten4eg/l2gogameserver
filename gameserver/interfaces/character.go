@@ -100,4 +100,21 @@ type CharacterI interface {
 	GetMacrosList() []MacrosInterface
 	GetPaperdollCharInfo() []MyItemInterface
 	GetShortCut() map[int32]dto.ShortCutDTO
+	Load()
+
+	GetChannelUpdateShadowItem() chan dto.IUP
+	GetChannelCharInfoTo() chan []int32
+	GetChannelDeleteObjectTo() chan []int32
+	GetChannelNpcInfo() chan []Npcer
+	GetChannelDropItemsInfo() chan []MyItemInterface
+	GetChannelEndChannel() chan struct{}
+	AddActiveSoulShots(int32)
+	ExistItemInInventory(objectItemId int32) MyItemInterface
+	IsDead() bool
+	IsFakeDead() bool
+	SetSkillToQueue(skill SkillInterface, ctrlPressed, shiftPressed bool)
+	GetSkillById(int32) (SkillInterface, bool)
+	IsCastingNow() bool
+	GetCurrentSkill() SkillHolderInterface
+	SaveUser(db *sql.DB)
 }

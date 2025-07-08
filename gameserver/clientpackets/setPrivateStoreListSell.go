@@ -39,7 +39,7 @@ func (i *Item) getPrice() int64 {
 	return i.count * i.price
 }
 
-func SetPrivateStoreListSell(client interfaces.ReciverAndSender, data []byte) {
+func SetPrivateStoreListSell(client interfaces.NewClientCtxInterface, data []byte) {
 	packet := packets.NewReader(data)
 
 	packageSale := packet.ReadInt32() == 1
@@ -64,7 +64,7 @@ func SetPrivateStoreListSell(client interfaces.ReciverAndSender, data []byte) {
 		items[i] = Item{itemId: itemId, count: cnt, price: price}
 	}
 
-	character := client.GetCurrentChar()
+	character := client.GetAccount().GetCurrentChar()
 	if character == nil {
 		return
 	}

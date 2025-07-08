@@ -2,33 +2,29 @@ package serverpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
+
 	"l2gogameserver/gameserver/models/skills/targets"
 	"l2gogameserver/packets"
 )
 
-// TODO убрать модель
-func NewMagicSkillUse(clientI interfaces.ReciverAndSender, skill models.Skill, ctrlPressed, shiftPressed bool) []byte {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return []byte{}
-	}
+func NewMagicSkillUse(client interfaces.NewClientCtxInterface, skill interfaces.SkillInterface, ctrlPressed, shiftPressed bool) []byte {
 
 	buffer := packets.Get()
+	currChar := client.GetAccount().GetCurrentChar()
 
-	client.CurrentChar.IsCastingNow = true
-	client.CurrentChar.CurrentSkill = &models.SkillHolder{
-		Skill:        skill,
-		CtrlPressed:  ctrlPressed,
-		ShiftPressed: shiftPressed,
-	}
+	//currChar.IsCastingNow = true
+	//client.CurrentChar.CurrentSkill = &models.SkillHolder{
+	//	Skill:        skill,
+	//	CtrlPressed:  ctrlPressed,
+	//	ShiftPressed: shiftPressed,
+	//}
 
 	var target int32
-	switch skill.TargetType {
-	case targets.AURA, targets.FRONT_AURA, targets.BEHIND_AURA, targets.GROUND, targets.SELF, targets.AURA_CORPSE_MOB, targets.COMMAND_CHANNEL, targets.AURA_FRIENDLY, targets.AURA_UNDEAD_ENEMY:
+	switch skill.GetTargetType() {
+	case int(targets.AURA), int(targets.FRONT_AURA), int(targets.BEHIND_AURA), int(targets.GROUND), int(targets.SELF), int(targets.AURA_CORPSE_MOB), int(targets.COMMAND_CHANNEL), int(targets.AURA_FRIENDLY), int(targets.AURA_UNDEAD_ENEMY):
 		target = 0
 	default:
-		target = client.CurrentChar.Target
+		target = currChar.GetTarget()
 	}
 
 	// запускаем обработчик скилла
@@ -36,14 +32,14 @@ func NewMagicSkillUse(clientI interfaces.ReciverAndSender, skill models.Skill, c
 
 	/////////////////////////////////////////////////////////////////////////////////
 	buffer.WriteSingleByte(0x48)
-	buffer.WriteD(client.CurrentChar.ObjectId) // activeChar id
-	buffer.WriteD(client.CurrentChar.ObjectId) // targetChar id
-	buffer.WriteD(int32(skill.ID))             // skillId
-	buffer.WriteD(int32(skill.Levels))         // skillLevel
-	buffer.WriteD(int32(skill.HitTime))        // hitTime
-	buffer.WriteD(int32(skill.ReuseDelay))     // reuseDelay
+	buffer.WriteD(currChar.GetObjectId())       // activeChar id
+	buffer.WriteD(currChar.GetObjectId())       // targetChar id
+	buffer.WriteD(int32(skill.GetId()))         // skillId
+	buffer.WriteD(int32(skill.GetLevel()))      // skillLevel
+	buffer.WriteD(int32(skill.GetHitTime()))    // hitTime
+	buffer.WriteD(int32(skill.GetReuseDelay())) // reuseDelay
 
-	x, y, z := client.CurrentChar.GetXYZ()
+	x, y, z := currChar.GetXYZ()
 	buffer.WriteD(x)
 	buffer.WriteD(y)
 	buffer.WriteD(z)

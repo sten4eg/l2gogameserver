@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"l2gogameserver/config"
 	"l2gogameserver/data/logger"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/skills"
 	"l2gogameserver/gameserver/models/skills/targets"
 	"os"
@@ -53,7 +54,15 @@ type Tuple struct {
 	Id  int
 	Lvl int
 }
+type SkillHolder struct {
+	Skill        Skill
+	CtrlPressed  bool
+	ShiftPressed bool
+}
 
+func (sh *SkillHolder) GetSkill() interfaces.SkillInterface {
+	return &sh.Skill
+}
 func LoadSkills() {
 	if !config.IsEnableSkills() {
 		return
@@ -154,6 +163,7 @@ func (c *Character) LoadSkills() {
 
 }
 
+// Геттеры
 func (s *Skill) GetId() int32 {
 	return int32(s.ID)
 }
@@ -164,4 +174,112 @@ func (s *Skill) IsPassive() bool {
 
 func (s *Skill) GetLevel() int {
 	return s.Levels
+}
+
+func (s *Skill) GetName() string {
+	return s.Name
+}
+
+func (s *Skill) GetPower() int {
+	return s.Power
+}
+
+func (s *Skill) GetCastRange() int {
+	return s.CastRange
+}
+
+func (s *Skill) GetCoolTime() int {
+	return s.CoolTime
+}
+
+func (s *Skill) GetHitTime() int {
+	return s.HitTime
+}
+
+func (s *Skill) GetOverHit() bool {
+	return s.OverHit
+}
+
+func (s *Skill) GetReuseDelay() int {
+	return s.ReuseDelay
+}
+
+func (s *Skill) GetOperateType() int {
+	return int(s.OperateType)
+}
+
+func (s *Skill) GetTargetType() int {
+	return int(s.TargetType)
+}
+
+func (s *Skill) GetIsMagic() int {
+	return s.IsMagic
+}
+
+func (s *Skill) GetMagicLvl() int {
+	return s.MagicLvl
+}
+
+func (s *Skill) GetMpConsume1() int {
+	return s.MpConsume1
+}
+
+func (s *Skill) GetMpConsume2() int {
+	return s.MpConsume2
+}
+
+func (s *Skill) SetLevels(levels int) {
+	s.Levels = levels
+}
+
+func (s *Skill) SetName(name string) {
+	s.Name = name
+}
+
+func (s *Skill) SetPower(power int) {
+	s.Power = power
+}
+
+func (s *Skill) SetCastRange(castRange int) {
+	s.CastRange = castRange
+}
+
+func (s *Skill) SetCoolTime(coolTime int) {
+	s.CoolTime = coolTime
+}
+
+func (s *Skill) SetHitTime(hitTime int) {
+	s.HitTime = hitTime
+}
+
+func (s *Skill) SetOverHit(overHit bool) {
+	s.OverHit = overHit
+}
+
+func (s *Skill) SetReuseDelay(reuseDelay int) {
+	s.ReuseDelay = reuseDelay
+}
+
+func (s *Skill) SetOperateType(opType skills.OperateType) {
+	s.OperateType = opType
+}
+
+func (s *Skill) SetTargetType(targetType targets.TargetType) {
+	s.TargetType = targetType
+}
+
+func (s *Skill) SetIsMagic(isMagic int) {
+	s.IsMagic = isMagic
+}
+
+func (s *Skill) SetMagicLvl(magicLvl int) {
+	s.MagicLvl = magicLvl
+}
+
+func (s *Skill) SetMpConsume1(mpConsume int) {
+	s.MpConsume1 = mpConsume
+}
+
+func (s *Skill) SetMpConsume2(mpConsume int) {
+	s.MpConsume2 = mpConsume
 }

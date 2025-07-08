@@ -4,17 +4,14 @@ import (
 	"database/sql"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
+
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 )
 
-func DestroyItem(data []byte, clientI interfaces.ReciverAndSender, db *sql.DB) {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return
-	}
-	char := client.GetCurrentChar()
+func DestroyItem(data []byte, client interfaces.NewClientCtxInterface, db *sql.DB) {
+
+	char := client.GetAccount().GetCurrentChar()
 	var packet = packets.NewReader(data)
 
 	objectId := packet.ReadInt32()
@@ -25,7 +22,7 @@ func DestroyItem(data []byte, clientI interfaces.ReciverAndSender, db *sql.DB) {
 		return
 	}
 
-	item := client.CurrentChar.ExistItemInInventory(objectId)
+	item := char.ExistItemInInventory(objectId)
 	if item == nil {
 		logger.Info.Println("Не найден предмет")
 		return

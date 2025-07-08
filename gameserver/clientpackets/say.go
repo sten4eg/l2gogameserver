@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Say(client interfaces.ReciverAndSender, data []byte) chat.Say {
+func Say(client interfaces.NewClientCtxInterface, data []byte) chat.Say {
 	var packet = packets.NewReader(data)
 	var say chat.Say
 

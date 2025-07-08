@@ -23,8 +23,8 @@ type TradeItem struct {
 	StoreCount          int64
 	Count               int64
 	EnchantedOption     [3]int32
-	Mana				int32
-	Time				int
+	Mana                int32
+	Time                int
 }
 
 func NewTradeItem(item interfaces.MyItemInterface, count, price int64) interfaces.TradableItemInterface {
@@ -117,6 +117,9 @@ func (i *TradeItem) GetCount() int64 {
 }
 func (i *TradeItem) GetLocData() int32 {
 	return i.LocData
+}
+func (i *TradeItem) SetLocData(locData int32) {
+	i.LocData = locData
 }
 func (i *TradeItem) IsEquipped() int16 {
 	if i.Location == InventoryLoc {

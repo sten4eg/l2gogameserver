@@ -117,6 +117,9 @@ func (i *MyItem) SetUpdateType(lastChange int16) {
 func (i *MyItem) GetLocData() int32 {
 	return i.LocData
 }
+func (i *MyItem) SetLocData(loc int32) {
+	i.LocData = loc
+}
 func (i *MyItem) GetMana() int32 {
 	return i.Mana
 }

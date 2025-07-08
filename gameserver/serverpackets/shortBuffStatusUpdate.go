@@ -1,11 +1,10 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 )
 
-func ShortBuffStatusUpdate(client interfaces.ReciverAndSender) []byte {
+func ShortBuffStatusUpdate() []byte {
 	buffer := packets.Get()
 	buffer.WriteSingleByte(0xfa)
 	buffer.WriteD(1242)

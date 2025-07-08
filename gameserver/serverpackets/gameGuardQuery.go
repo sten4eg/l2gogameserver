@@ -1,11 +1,10 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 )
 
-func GameGuardQuery(client interfaces.ReciverAndSender) []byte {
+func GameGuardQuery() []byte {
 	buffer := packets.Get()
 
 	buffer.WriteSingleByte(0x74)

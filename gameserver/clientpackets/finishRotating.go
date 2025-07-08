@@ -7,13 +7,13 @@ import (
 	"l2gogameserver/packets"
 )
 
-func FinishRotating(client interfaces.ReciverAndSender, data []byte) {
+func FinishRotating(client interfaces.NewClientCtxInterface, data []byte) {
 	reader := packets.NewReader(data)
 
 	degree := reader.ReadInt32()
 	_ = reader.ReadInt32() // unknown
 
-	character := client.GetCurrentChar()
+	character := client.GetAccount().GetCurrentChar()
 	if character == nil {
 		return
 	}

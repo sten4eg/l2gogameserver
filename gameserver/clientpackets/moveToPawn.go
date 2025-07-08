@@ -6,7 +6,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func MoveToPawn(client interfaces.ReciverAndSender, data []byte) {
+func MoveToPawn(client interfaces.NewClientCtxInterface, data []byte) {
 	var packet = packets.NewReader(data)
 	charId := packet.ReadInt32()
 	targetId := packet.ReadInt32()

@@ -9,8 +9,8 @@ import (
 	"l2gogameserver/packets"
 )
 
-//AnswerTradeRequest Если пользователь отвечает на запрос трейда
-func AnswerTradeRequest(data []byte, sender interfaces.ReciverAndSender) {
+// AnswerTradeRequest Если пользователь отвечает на запрос трейда
+func AnswerTradeRequest(data []byte, sender interfaces.NewClientCtxInterface) {
 	var packet = packets.NewReader(data)
 	response := packet.ReadInt32() // 0-отказ,1-принял
 	if response == 0 {
@@ -18,40 +18,40 @@ func AnswerTradeRequest(data []byte, sender interfaces.ReciverAndSender) {
 		return
 	}
 
-	partner := sender.GetCurrentChar().GetActiveRequester()
+	partner := sender.GetAccount().GetCurrentChar().GetActiveRequester()
 	if partner == nil {
 		sender.EncryptAndSend(serverpackets.TradeDone(0))
 		sender.EncryptAndSend(sysmsg.SystemMessage(sysmsg.TargetIsNotFoundInTheGame))
-		sender.GetCurrentChar().SetActiveRequester(nil)
+		sender.GetAccount().GetCurrentChar().SetActiveRequester(nil)
 		return
 	}
 
 	if broadcast.GetCharacterByObjectId(partner.GetObjectId()) == nil {
 		sender.EncryptAndSend(serverpackets.TradeDone(0))
 		sender.EncryptAndSend(sysmsg.SystemMessage(sysmsg.TargetIsNotFoundInTheGame))
-		sender.GetCurrentChar().SetActiveRequester(nil)
+		sender.GetAccount().GetCurrentChar().SetActiveRequester(nil)
 		return
 	}
 
 	if response == 1 && !partner.IsRequestExpired() {
-		sender.GetCurrentChar().StartTrade(partner)
+		sender.GetAccount().GetCurrentChar().StartTrade(partner)
 		msg := sysmsg.BeginTradeWithC1
 		msg.AddString(partner.GetName())
 		sender.EncryptAndSend(sysmsg.SystemMessage(msg))
 
 		msg1 := sysmsg.BeginTradeWithC1
-		msg1.AddString(sender.GetCurrentChar().GetName())
+		msg1.AddString(sender.GetAccount().GetCurrentChar().GetName())
 		partner.EncryptAndSend(sysmsg.SystemMessage(msg1))
 
-		sender.EncryptAndSend(serverpackets.TradeStart(sender.GetCurrentChar()))
+		sender.EncryptAndSend(serverpackets.TradeStart(sender.GetAccount().GetCurrentChar()))
 		partner.EncryptAndSend(serverpackets.TradeStart(partner))
 	} else {
 		sm := sysmsg.C1DeniedTradeRequest
-		sm.AddString(sender.GetCurrentChar().GetName())
+		sm.AddString(sender.GetAccount().GetCurrentChar().GetName())
 		partner.EncryptAndSend(sysmsg.SystemMessage(sm))
 	}
 
-	sender.GetCurrentChar().SetActiveRequester(nil)
+	sender.GetAccount().GetCurrentChar().SetActiveRequester(nil)
 	partner.OnTransactionResponse()
 
 }

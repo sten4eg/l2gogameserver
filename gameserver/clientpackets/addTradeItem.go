@@ -11,27 +11,27 @@ import (
 )
 
 // AddTradeItem Когда игрок добавляет предмет в трейде
-func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
+func AddTradeItem(data []byte, client interfaces.NewClientCtxInterface) {
 	var packet = packets.NewReader(data)
 
 	tradeId := packet.ReadInt32()
 	objectId := packet.ReadInt32() // objectId предмета
 	count := packet.ReadInt64()
 
-	trade := client.GetCurrentChar().GetActiveTradeList()
+	trade := client.GetAccount().GetCurrentChar().GetActiveTradeList()
 	if trade == nil {
-		logger.Warning.Println("Character: " + client.GetCurrentChar().GetName() + " requested item:" + strconv.Itoa(int(objectId)) + " add without active tradelist:" + strconv.Itoa(int(tradeId)))
+		logger.Warning.Println("Character: " + client.GetAccount().GetCurrentChar().GetName() + " requested item:" + strconv.Itoa(int(objectId)) + " add without active tradelist:" + strconv.Itoa(int(tradeId)))
 		return
 	}
 	partner := trade.GetPartner()
 	if partner == nil || broadcast.GetCharacterByObjectId(partner.GetObjectId()) == nil || partner.GetActiveTradeList() == nil {
 		if partner == nil {
-			logger.Warning.Println("Character:" + client.GetCurrentChar().GetName() + " requested invalid trade object: " + strconv.Itoa(int(objectId)))
+			logger.Warning.Println("Character:" + client.GetAccount().GetCurrentChar().GetName() + " requested invalid trade object: " + strconv.Itoa(int(objectId)))
 		}
 		sm := sysmsg.TargetIsNotFoundInTheGame
 		client.EncryptAndSend(sysmsg.SystemMessage(sm))
 
-		canceledTradeForMe, canceledTradeForPartner := client.GetCurrentChar().CancelActiveTrade()
+		canceledTradeForMe, canceledTradeForPartner := client.GetAccount().GetCurrentChar().CancelActiveTrade()
 		if canceledTradeForMe {
 			buff := packets.Get()
 
@@ -39,7 +39,7 @@ func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
 			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
 			smg := sysmsg.C1CanceledTrade
-			smg.AddString(client.GetCurrentChar().GetActiveTradeList().GetPartner().GetName())
+			smg.AddString(client.GetAccount().GetCurrentChar().GetActiveTradeList().GetPartner().GetName())
 			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(sysmsg.SystemMessage(smg)))
 
 			client.Send(buff.Bytes())
@@ -47,7 +47,7 @@ func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
 		}
 
 		if canceledTradeForPartner {
-			realPartner := client.GetCurrentChar().GetActiveTradeList().GetPartner()
+			realPartner := client.GetAccount().GetCurrentChar().GetActiveTradeList().GetPartner()
 
 			pkg := serverpackets.TradeDone(0)
 			realPartner.EncryptAndSend(pkg)
@@ -64,15 +64,15 @@ func AddTradeItem(data []byte, client interfaces.ReciverAndSender) {
 		client.EncryptAndSend(sysmsg.SystemMessage(sysmsg.CannotAdjustItemsAfterTradeConfirmed))
 		return
 	}
-	if !client.GetCurrentChar().ValidateItemManipulation(objectId) {
+	if !client.GetAccount().GetCurrentChar().ValidateItemManipulation(objectId) {
 		client.EncryptAndSend(sysmsg.SystemMessage(sysmsg.NothingHappened))
 		return
 	}
 
-	tItem := trade.AddItem(objectId, count, client.GetCurrentChar(), 0)
+	tItem := trade.AddItem(objectId, count, client.GetAccount().GetCurrentChar(), 0)
 	if tItem != nil {
 		client.EncryptAndSend(serverpackets.TradeOwnOAdd(tItem))
-		client.EncryptAndSend(serverpackets.TradeUpdate(client.GetCurrentChar(), tItem))
+		client.EncryptAndSend(serverpackets.TradeUpdate(client.GetAccount().GetCurrentChar(), tItem))
 		trade.GetPartner().EncryptAndSend(serverpackets.TradeOtherAdd(tItem))
 	}
 

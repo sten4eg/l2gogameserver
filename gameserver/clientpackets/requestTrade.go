@@ -9,17 +9,16 @@ import (
 	"l2gogameserver/packets"
 )
 
-//interfaces.ReciverAndSender
-
 type TradeRequestInterface interface {
 	EncryptAndSend([]byte) error
 	GetCurrentChar() interfaces.CharacterI
 }
 
-func TradeRequest(data []byte, client TradeRequestInterface) {
+func TradeRequest(data []byte, client interfaces.NewClientCtxInterface) {
 	var packet = packets.NewReader(data)
 	targetObjectId := packet.ReadInt32()
 
+	currChar := client.GetAccount().GetCurrentChar()
 	target := broadcast.GetCharacterByObjectId(targetObjectId)
 
 	if target == nil {
@@ -27,7 +26,7 @@ func TradeRequest(data []byte, client TradeRequestInterface) {
 		client.EncryptAndSend(pkg)
 		return
 	}
-	if target.GetObjectId() == client.GetCurrentChar().GetObjectId() {
+	if target.GetObjectId() == currChar.GetObjectId() {
 		pkg := sysmsg.SystemMessage(sysmsg.TargetIsIncorrect)
 		client.EncryptAndSend(pkg)
 		return
@@ -42,7 +41,7 @@ func TradeRequest(data []byte, client TradeRequestInterface) {
 		return
 	}
 
-	if client.GetCurrentChar().IsProcessingTransaction() {
+	if currChar.IsProcessingTransaction() {
 		client.EncryptAndSend(sysmsg.SystemMessage(sysmsg.AlreadyTrading))
 		return
 	}
@@ -52,12 +51,12 @@ func TradeRequest(data []byte, client TradeRequestInterface) {
 		return
 	}
 
-	if client.GetCurrentChar().CalculateDistanceTo(target.GetX(), target.GetY(), target.GetZ(), false, false) > 150 {
+	if currChar.CalculateDistanceTo(target.GetX(), target.GetY(), target.GetZ(), false, false) > 150 {
 		client.EncryptAndSend(sysmsg.SystemMessage(sysmsg.TargetTooFar))
 		return
 	}
 
-	client.GetCurrentChar().OnTransactionRequest(target)
+	currChar.OnTransactionRequest(target)
 	pkg := serverpackets.TradeSendRequest(target)
 	target.EncryptAndSend(pkg)
 	sm := sysmsg.RequestC1ForTrade

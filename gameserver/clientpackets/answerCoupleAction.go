@@ -12,14 +12,14 @@ import (
 
 const RadiansToDegrees = 57.29577951308232
 
-func AnswerCoupleAction(client interfaces.ReciverAndSender, data []byte) {
+func AnswerCoupleAction(client interfaces.NewClientCtxInterface, data []byte) {
 	reader := packets.NewReader(data[2:])
 
 	actionId := reader.ReadInt32()
 	answer := reader.ReadInt32()
 	charObjId := reader.ReadInt32()
 
-	character := client.GetCurrentChar()
+	character := client.GetAccount().GetCurrentChar()
 	targetObject := getTargetByObjectId(charObjId, character.GetCurrentRegion())
 
 	if character == nil || targetObject == nil {
@@ -52,10 +52,10 @@ func AnswerCoupleAction(client interfaces.ReciverAndSender, data []byte) {
 
 			heading = calculateHeadingFrom(target, character)
 			target.SetHeading(heading)
-			broadcast.BroadCastBufferToAroundPlayers(target, serverpackets.ExRotation(target.GetObjectId(), heading))
+			//TODO раскоменитить 08,07,25 broadcast.BroadCastBufferToAroundPlayers(target, serverpackets.ExRotation(target.GetObjectId(), heading))
 
 			broadcast.BroadCastPkgToAroundPlayer(client, serverpackets.SocialAction(character, actionId))
-			broadcast.BroadCastPkgToAroundPlayer(target, serverpackets.SocialAction(target, actionId))
+			//TODO раскоменитить 08,07,25 broadcast.BroadCastPkgToAroundPlayer(target, serverpackets.SocialAction(target, actionId))
 
 		} else if answer == -1 {
 			msg := sysmsg.C1IsSetToRefuseCoupleActions

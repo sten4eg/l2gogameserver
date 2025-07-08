@@ -1,11 +1,10 @@
 package serverpackets
 
 import (
-	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 )
 
-func ActionList(client interfaces.ReciverAndSender) []byte {
+func ActionList() []byte {
 	const (
 		count1 = 74
 		count2 = 99

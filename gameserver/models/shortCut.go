@@ -4,20 +4,21 @@ import (
 	"database/sql"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/dto"
+	"l2gogameserver/gameserver/interfaces"
 )
 
 const MaxShortcutsPerBar = 12
 
-func RegisterShortCut(sc dto.ShortCutDTO, client *ClientCtx) {
+func RegisterShortCut(sc dto.ShortCutDTO, client interfaces.NewClientCtxInterface, db *sql.DB) {
 	currChar := client.GetAccount().GetCurrentChar()
 	shorts := currChar.GetShortCut()
 	//todo пересмотреть, тут есть еще проверки
 	s, exist := shorts[sc.Slot+(sc.Page*MaxShortcutsPerBar)]
 
 	if exist {
-		deleteShortCutFromDb(s, currChar.GetObjectId(), currChar.GetClassId(), client.db)
+		deleteShortCutFromDb(s, currChar.GetObjectId(), currChar.GetClassId(), db)
 	}
-	registerShortCutInDb(sc, currChar.GetObjectId(), currChar.GetClassId(), client.db)
+	registerShortCutInDb(sc, currChar.GetObjectId(), currChar.GetClassId(), db)
 	shorts[sc.Slot+(sc.Page*MaxShortcutsPerBar)] = sc
 }
 
@@ -60,14 +61,14 @@ func RestoreMe(charId, classId int32, db *sql.DB) map[int32]dto.ShortCutDTO {
 	return shorts
 }
 
-func DeleteShortCut(slot, page int32, client *ClientCtx) {
+func DeleteShortCut(slot, page int32, client interfaces.NewClientCtxInterface, db *sql.DB) {
 	currChar := client.GetAccount().GetCurrentChar()
 	all := currChar.GetShortCut()
 	e, ok := all[slot+(page*MaxShortcutsPerBar)]
 	if !ok {
 		return
 	}
-	deleteShortCutFromDb(e, currChar.GetObjectId(), currChar.GetClassId(), client.db)
+	deleteShortCutFromDb(e, currChar.GetObjectId(), currChar.GetClassId(), db)
 	// todo Проверка на соски
 
 }

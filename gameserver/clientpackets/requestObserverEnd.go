@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func RequestObserverEnd(client interfaces.ReciverAndSender, data []byte) {
-	pkg := serverpackets.ObservationReturn(client.GetCurrentChar())
+func RequestObserverEnd(client interfaces.NewClientCtxInterface, data []byte) {
+	pkg := serverpackets.ObservationReturn(client.GetAccount().GetCurrentChar())
 	client.EncryptAndSend(pkg)
 }

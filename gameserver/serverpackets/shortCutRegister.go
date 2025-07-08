@@ -6,7 +6,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func ShortCutRegister(shortCut dto.ShortCutDTO, client interfaces.ReciverAndSender) []byte {
+func ShortCutRegister(shortCut dto.ShortCutDTO, client interfaces.NewClientCtxInterface) []byte {
 	buffer := packets.Get()
 
 	buffer.WriteSingleByte(0x44)

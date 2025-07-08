@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"database/sql"
 	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
@@ -8,11 +9,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestShortCutReg(data []byte, clientI interfaces.ReciverAndSender) {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return
-	}
+func RequestShortCutReg(data []byte, client interfaces.NewClientCtxInterface, db *sql.DB) {
 
 	var packet = packets.NewReader(data)
 
@@ -36,7 +33,7 @@ func RequestShortCutReg(data []byte, clientI interfaces.ReciverAndSender) {
 	}
 	sc := dto.GetShortCutDTO(slot, page, id, lvl, characterType, shortType)
 
-	models.RegisterShortCut(sc, client)
+	models.RegisterShortCut(sc, client, db)
 
 	pkg := serverpackets.ShortCutRegister(sc, client)
 	client.EncryptAndSend(pkg)

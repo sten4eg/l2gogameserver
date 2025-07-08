@@ -199,3 +199,6 @@ func GetItemFromStorage(itemId int) (item Item, ok bool) {
 func (i *Item) GetWeight() int {
 	return i.Weight
 }
+func (i *Item) GetSlotBitType() int32 {
+	return int32(i.SlotBitType)
+}

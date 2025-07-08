@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func ShowMiniMap(client interfaces.ReciverAndSender) []byte {
+func ShowMiniMap(client interfaces.NewClientCtxInterface) []byte {
 	buffer := packets.Get()
 
 	buffer.WriteSingleByte(0xa3)

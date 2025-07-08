@@ -8,13 +8,13 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestJoinParty(client interfaces.ReciverAndSender, data []byte) {
+func RequestJoinParty(client interfaces.NewClientCtxInterface, data []byte) {
 	reader := packets.NewReader(data)
 
 	name := reader.ReadString()
 	partyDistributionTypeId := reader.ReadInt32()
 
-	character := client.GetCurrentChar()
+	character := client.GetAccount().GetCurrentChar()
 	target := getCharacterByName(character.GetCurrentRegion(), name)
 
 	if character == nil {

@@ -2,21 +2,16 @@ package clientpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-func RequestAutoSoulShot(data []byte, clientI interfaces.ReciverAndSender) {
-	client, ok := clientI.(*models.ClientCtx)
-	if !ok {
-		return
-	}
+func RequestAutoSoulShot(data []byte, client interfaces.NewClientCtxInterface) {
 
 	var packet = packets.NewReader(data[2:])
 	itemId := packet.ReadInt32()
 	typee := packet.ReadInt32()
 
-	client.CurrentChar.ActiveSoulShots = append(client.CurrentChar.ActiveSoulShots, itemId)
+	client.GetAccount().GetCurrentChar().AddActiveSoulShots(itemId)
 	//todo реализцая должна быть в serverPackets
 	buffer := packets.Get()
 

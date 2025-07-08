@@ -6,7 +6,7 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func ChangeWaitType(client interfaces.ReciverAndSender) {
-	pkg := serverpackets.ChangeWaitType(client.GetCurrentChar())
+func ChangeWaitType(client interfaces.NewClientCtxInterface) {
+	pkg := serverpackets.ChangeWaitType(client.GetAccount().GetCurrentChar())
 	broadcast.BroadCastPkgToAroundPlayer(client, pkg)
 }

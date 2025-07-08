@@ -5,6 +5,6 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func RequestNewCharacter(client interfaces.ReciverAndSender) {
+func RequestNewCharacter(client interfaces.NewClientCtxInterface) {
 	client.SendBuf(serverpackets.CharacterSuccess())
 }

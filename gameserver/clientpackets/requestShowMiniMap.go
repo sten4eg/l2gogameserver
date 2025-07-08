@@ -5,7 +5,7 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func RequestShowMiniMap(client interfaces.ReciverAndSender, data []byte) {
+func RequestShowMiniMap(client interfaces.NewClientCtxInterface, data []byte) {
 	pkg := serverpackets.ShowMiniMap(client)
 	client.EncryptAndSend(pkg)
 }

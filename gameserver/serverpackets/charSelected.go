@@ -7,12 +7,12 @@ import (
 )
 
 // TODO убрать модель
-func CharSelected(user interfaces.NewClientCtxInterface, clientI interfaces.ReciverAndSender) []byte {
+func CharSelected(client interfaces.CharacterI) []byte {
 	//client, ok := clientI.(*models.ClientCtx)
 	//if !ok {
 	//	return []byte{}
 	//}
-
+	user := client.GetAccount().GetCurrentChar()
 	buffer := packets.Get()
 
 	x, y, z := user.GetXYZ()
@@ -63,11 +63,11 @@ func CharSelected(user interfaces.NewClientCtxInterface, clientI interfaces.Reci
 
 	buffer.WriteD(0) // 221
 
-	client.SetCurrentChar(client.GetAccount().GetChar(int(client.Account.CharSlotSelected)))
+	//	client.SetCurrentChar(client.GetAccount().GetChar(int(client.Account.CharSlotSelected)))
 	//client.CurrentChar = client.Account.Char[client.Account.CharSlotSelected]
-	client.CurrentChar.SockConn = client.GetConn()
+	//	client.CurrentChar.SockConn = client.GetConn()
 	//TODO Load загрузка всех данных выбранного чара
-	client.CurrentChar.Load()
+	user.Load()
 
 	return buffer.Bytes()
 

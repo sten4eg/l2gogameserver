@@ -1,11 +1,10 @@
 package clientpackets
 
 import (
-	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/packets"
 )
 
-func RequestNpcInfo(client interfaces.ReciverAndSender) []byte {
+func RequestNpcInfo() []byte {
 	buffer := packets.Get()
 
 	//

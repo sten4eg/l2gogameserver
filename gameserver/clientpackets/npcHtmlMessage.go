@@ -6,10 +6,10 @@ import (
 	"l2gogameserver/packets"
 )
 
-func NpcHtmlMessage(client interfaces.ReciverAndSender, npcid int32) []byte {
+func NpcHtmlMessage(client interfaces.NewClientCtxInterface, npcid int32) []byte {
 	buffer := packets.Get()
 
-	pkg := serverpackets.NpcHtmlMessage(client, npcid)
+	pkg := serverpackets.NpcHtmlMessage(npcid)
 	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
 	return buffer.Bytes()

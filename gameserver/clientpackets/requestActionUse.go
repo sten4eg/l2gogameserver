@@ -11,7 +11,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestActionUse(client interfaces.ReciverAndSender, data []byte) {
+func RequestActionUse(client interfaces.NewClientCtxInterface, data []byte) {
 	packet := packets.NewReader(data)
 
 	actionId := packet.ReadInt32()
@@ -20,7 +20,7 @@ func RequestActionUse(client interfaces.ReciverAndSender, data []byte) {
 
 	_, _ = ctrlPressed, shiftPressed
 
-	character := client.GetCurrentChar()
+	character := client.GetAccount().GetCurrentChar()
 	if character == nil {
 		return
 	}
@@ -33,37 +33,37 @@ func RequestActionUse(client interfaces.ReciverAndSender, data []byte) {
 	case 10:
 		tryOpenPrivateSellShop(client, false)
 	case 12:
-		tryBroadcastSocial(character, 2) // Greeting
+		tryBroadcastSocial(client, 2) // Greeting
 	case 13:
-		tryBroadcastSocial(character, 3) // Victory
+		tryBroadcastSocial(client, 3) // Victory
 	case 14:
-		tryBroadcastSocial(character, 4) // Advance
+		tryBroadcastSocial(client, 4) // Advance
 	case 24:
-		tryBroadcastSocial(character, 6) // Yes
+		tryBroadcastSocial(client, 6) // Yes
 	case 25:
-		tryBroadcastSocial(character, 5) // No
+		tryBroadcastSocial(client, 5) // No
 	case 26:
-		tryBroadcastSocial(character, 7) // Bow
+		tryBroadcastSocial(client, 7) // Bow
 	case 28:
 		tryOpenPrivateBuyStore(client)
 	case 29:
-		tryBroadcastSocial(character, 8) // Unaware
+		tryBroadcastSocial(client, 8) // Unaware
 	case 30:
-		tryBroadcastSocial(character, 9) // Social Waiting
+		tryBroadcastSocial(client, 9) // Social Waiting
 	case 31:
-		tryBroadcastSocial(character, 10) // Laugh
+		tryBroadcastSocial(client, 10) // Laugh
 	case 33:
-		tryBroadcastSocial(character, 11) // Applaud
+		tryBroadcastSocial(client, 11) // Applaud
 	case 34:
-		tryBroadcastSocial(character, 12) // Dance
+		tryBroadcastSocial(client, 12) // Dance
 	case 35:
-		tryBroadcastSocial(character, 13) // Sorrow
+		tryBroadcastSocial(client, 13) // Sorrow
 	case 61:
 		tryOpenPrivateSellShop(client, true)
 	case 62:
-		tryBroadcastSocial(character, 14) // Charm
+		tryBroadcastSocial(client, 14) // Charm
 	case 66:
-		tryBroadcastSocial(character, 15) // Shyness
+		tryBroadcastSocial(client, 15) // Shyness
 	case 71, 72, 73:
 		useCoupleSocial(character, actionId-55)
 
@@ -71,8 +71,8 @@ func RequestActionUse(client interfaces.ReciverAndSender, data []byte) {
 
 }
 
-func tryOpenPrivateSellShop(client interfaces.ReciverAndSender, isPackageSale bool) {
-	c := client.GetCurrentChar()
+func tryOpenPrivateSellShop(client interfaces.NewClientCtxInterface, isPackageSale bool) {
+	c := client.GetAccount().GetCurrentChar()
 	if true { //TODO проверка на возможность создания магазина
 		if c.GetPrivateStoreType() == privateStoreType.SELL || c.GetPrivateStoreType() == privateStoreType.SELL_MANAGE || c.GetPrivateStoreType() == privateStoreType.PACKAGE_SELL {
 			c.SetPrivateStoreType(privateStoreType.NONE)
@@ -91,14 +91,14 @@ func tryOpenPrivateSellShop(client interfaces.ReciverAndSender, isPackageSale bo
 		if false { //TODO проверка что персонаж находится в зоне, в которой нельзя торговать
 			c.SendSysMsg(sysmsg.NoPrivateStoreHere)
 		}
-		pkg := serverpackets.ActionFailed(client)
+		pkg := serverpackets.ActionFailed()
 		client.EncryptAndSend(pkg)
 
 	}
 }
 
-func tryOpenPrivateBuyStore(client interfaces.ReciverAndSender) {
-	c := client.GetCurrentChar()
+func tryOpenPrivateBuyStore(client interfaces.NewClientCtxInterface) {
+	c := client.GetAccount().GetCurrentChar()
 	if true { //TODO проверка на возможность создания магазина
 		if c.GetPrivateStoreType() == privateStoreType.BUY || c.GetPrivateStoreType() == privateStoreType.BUY_MANAGE {
 			c.SetPrivateStoreType(privateStoreType.NONE)
@@ -115,16 +115,16 @@ func tryOpenPrivateBuyStore(client interfaces.ReciverAndSender) {
 		if false { //TODO проверка что персонаж находится в зоне, в которой нельзя торговать
 			c.SendSysMsg(sysmsg.NoPrivateStoreHere)
 		}
-		pkg := serverpackets.ActionFailed(client)
+		pkg := serverpackets.ActionFailed()
 		client.EncryptAndSend(pkg)
 	}
 }
 
-func tryBroadcastSocial(character interfaces.CharacterI, id int32) {
+func tryBroadcastSocial(character interfaces.NewClientCtxInterface, id int32) {
 	//TODO isFishing()
 
 	if true { //TODO canMakeSocialAction
-		broadcast.BroadCastPkgToAroundPlayer(character, serverpackets.SocialAction(character, id))
+		broadcast.BroadCastPkgToAroundPlayer(character, serverpackets.SocialAction(character.GetAccount().GetCurrentChar(), id))
 	}
 }
 

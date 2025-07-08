@@ -6,8 +6,8 @@ import (
 	"l2gogameserver/gameserver/models/trade/privateStoreType"
 )
 
-func RequestPrivateStoreQuitBuy(client interfaces.ReciverAndSender) {
-	character := client.GetCurrentChar()
+func RequestPrivateStoreQuitBuy(client interfaces.NewClientCtxInterface) {
+	character := client.GetAccount().GetCurrentChar()
 	if character == nil {
 		return
 	}

@@ -7,14 +7,14 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func RequestPrivateStoreQuitSell(client interfaces.ReciverAndSender) {
-	character := client.GetCurrentChar()
+func RequestPrivateStoreQuitSell(client interfaces.NewClientCtxInterface) {
+	character := client.GetAccount().GetCurrentChar()
 	if character == nil {
 		return
 	}
 
 	character.SetPrivateStoreType(privateStoreType.NONE)
-	if client.GetCurrentChar().IsSittings() {
+	if character.IsSittings() {
 		ChangeWaitType(client)
 	}
 	pkg := serverpackets.UserInfo(character)

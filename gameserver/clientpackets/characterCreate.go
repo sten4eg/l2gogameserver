@@ -77,7 +77,7 @@ func CharacterCreate(clientI interfaces.NewClientCtxInterface, data []byte, db *
 	var charCount byte
 	var exist bool
 
-	err := db.QueryRow(countCharAndExistName, client.GetAccountLogin(), name).Scan(&charCount, &exist)
+	err := db.QueryRow(countCharAndExistName, client.GetAccount().GetLogin(), name).Scan(&charCount, &exist)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}
@@ -94,7 +94,7 @@ func CharacterCreate(clientI interfaces.NewClientCtxInterface, data []byte, db *
 	//TODO проверка что пришел норм classId
 
 	x, y, z := models.GetCreationCoordinates(classId)
-	_, err = db.Exec(InsertCharacter, idfactory.GetNext(), name, race, sex, classId, hairStyle, hairColor, face, x, y, z, client.GetAccountLogin(), classId, "")
+	_, err = db.Exec(InsertCharacter, idfactory.GetNext(), name, race, sex, classId, hairStyle, hairColor, face, x, y, z, client.GetAccount().GetLogin(), classId, "")
 	if err != nil {
 		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonCreateNotAllowed))
 	}

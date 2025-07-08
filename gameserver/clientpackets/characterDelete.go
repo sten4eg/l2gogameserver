@@ -23,7 +23,7 @@ func CharacterDelete(client interfaces.NewClientCtxInterface, data []byte, db *s
 		return
 	}
 
-	answer := client.MarkToDeleteChar(charSlot)
+	answer := client.GetAccount().MarkToDeleteChar(charSlot, db)
 
 	switch answer {
 	default:

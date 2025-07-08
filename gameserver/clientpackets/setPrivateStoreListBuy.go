@@ -12,7 +12,7 @@ import (
 
 const BuyItemBatchLength = 40
 
-func SetPrivateStoreListBuy(client interfaces.ReciverAndSender, data []byte) {
+func SetPrivateStoreListBuy(client interfaces.NewClientCtxInterface, data []byte) {
 	reader := packets.NewReader(data)
 
 	count := reader.ReadInt32()
@@ -46,7 +46,7 @@ func SetPrivateStoreListBuy(client interfaces.ReciverAndSender, data []byte) {
 		items[i] = Item{itemId: itemId, count: cnt, price: price}
 	}
 
-	character := client.GetCurrentChar()
+	character := client.GetAccount().GetCurrentChar()
 	if character == nil {
 		return
 	}

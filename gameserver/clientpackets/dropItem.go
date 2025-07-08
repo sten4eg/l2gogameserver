@@ -8,7 +8,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func DropItem(client interfaces.ReciverAndSender, data []byte, db *sql.DB) {
+func DropItem(client interfaces.NewClientCtxInterface, data []byte, db *sql.DB) {
 	var read = packets.NewReader(data)
 	objectId := read.ReadInt32()
 	count := read.ReadInt64()
@@ -16,7 +16,7 @@ func DropItem(client interfaces.ReciverAndSender, data []byte, db *sql.DB) {
 	y := read.ReadInt32()
 	z := read.ReadInt32()
 
-	character := client.GetCurrentChar()
+	character := client.GetAccount().GetCurrentChar()
 
 	dropItem, updateItem := character.DropItem(objectId, count, db)
 

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"l2gogameserver/data"
 	"l2gogameserver/data/logger"
-	"l2gogameserver/gameserver/interfaces"
+
 	"os"
 	"strconv"
 )
@@ -77,7 +77,7 @@ func LoadMultisell() {
 	}
 }
 
-func Get(client interfaces.ReciverAndSender, id int) (MultiList, bool) {
+func Get(id int) (MultiList, bool) {
 	logger.Info.Println("Чтение GMShop", id)
 	for _, multisell := range Multisells {
 		if multisell.ID == id {

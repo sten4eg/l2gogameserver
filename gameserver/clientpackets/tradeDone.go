@@ -11,11 +11,11 @@ import (
 )
 
 // TradeDone Игрок подтвердил сделку
-func TradeDone(data []byte, client interfaces.ReciverAndSender, db *sql.DB) {
+func TradeDone(data []byte, client interfaces.NewClientCtxInterface, db *sql.DB) {
 	var packet = packets.NewReader(data)
 	response := packet.ReadInt32() // 1 - пользователь нажал ОК, 0 пользователь отменил трейд
 
-	player := client.GetCurrentChar()
+	player := client.GetAccount().GetCurrentChar()
 	if player == nil {
 		return
 	}
@@ -59,7 +59,7 @@ func TradeDone(data []byte, client interfaces.ReciverAndSender, db *sql.DB) {
 		}
 	} else {
 		partner := player.GetActiveTradeList().GetPartner()
-		needSendCancelToMe, _ := client.GetCurrentChar().CancelActiveTrade()
+		needSendCancelToMe, _ := client.GetAccount().GetCurrentChar().CancelActiveTrade()
 		if needSendCancelToMe {
 			cancelTrade(player, partner)
 			cancelTrade(partner, player)
@@ -76,14 +76,14 @@ func tradeConfirmed(client interfaces.CharacterI, partner interfaces.CharacterI)
 	client.Send(buff.Bytes())
 	client.EncryptAndSend(serverpackets.TradeOtherDone())
 }
-func endTrade(client interfaces.ReciverAndSender) {
+func endTrade(client interfaces.NewClientCtxInterface) {
 	buff := packets.Get()
 
 	pkg := serverpackets.TradeDone(0)
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
 	smg := sysmsg.C1CanceledTrade
-	smg.AddString(client.GetCurrentChar().GetActiveTradeList().GetPartner().GetName())
+	smg.AddString(client.GetAccount().GetCurrentChar().GetActiveTradeList().GetPartner().GetName())
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(sysmsg.SystemMessage(smg)))
 
 	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(sysmsg.SystemMessage(sysmsg.TargetIsNotFoundInTheGame)))

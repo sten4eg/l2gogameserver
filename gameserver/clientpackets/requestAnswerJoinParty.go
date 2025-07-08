@@ -9,12 +9,12 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestAnswerJoinParty(client interfaces.ReciverAndSender, data []byte) {
+func RequestAnswerJoinParty(client interfaces.NewClientCtxInterface, data []byte) {
 	reader := packets.NewReader(data)
 
 	respose := reader.ReadInt32()
 
-	character := client.GetCurrentChar()
+	character := client.GetAccount().GetCurrentChar()
 	if character == nil {
 		return
 	}
@@ -56,8 +56,8 @@ func RequestAnswerJoinParty(client interfaces.ReciverAndSender, data []byte) {
 }
 
 // Отпавка пакетов для обновления UI при успешном присоединений к группе
-func onJoinParty(character interfaces.CharacterI, party interfaces.PartyInterface) {
-	buffer := serverpackets.PartySmallWindowAll(character, party)
+func onJoinParty(character interfaces.NewClientCtxInterface, party interfaces.PartyInterface) {
+	buffer := serverpackets.PartySmallWindowAll(character.GetAccount().GetCurrentChar(), party)
 	character.SendBuf(buffer)
 
 	for _, member := range party.GetMembers() {
@@ -72,15 +72,15 @@ func onJoinParty(character interfaces.CharacterI, party interfaces.PartyInterfac
 	character.SendSysMsg(msg)
 
 	msg = sysmsg.C1JoinedParty
-	msg.AddString(character.GetName())
+	msg.AddString(character.GetAccount().GetCurrentChar().GetName())
 	//TODO сделать функцию бродкаст
 	for _, member := range party.GetMembers() {
 		member.SendSysMsg(msg)
 	}
 
-	party.AddPartyMember(character)
+	party.AddPartyMember(character.GetAccount().GetCurrentChar())
 
-	buffer2 := serverpackets.PartySmallWindowAdd(character, party)
+	buffer2 := serverpackets.PartySmallWindowAdd(character.GetAccount().GetCurrentChar(), party)
 	broadcast.BroadCastBufferToAroundPlayersWithoutSelf(character, buffer2)
 
 	if false { //TODO hasSummon

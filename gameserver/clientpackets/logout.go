@@ -15,7 +15,7 @@ type logoutGameServerInterface interface {
 	RemoveClient(string)
 }
 
-func Logout(client interfaces.ClientCtxInterface, state clientStates.State, gs logoutGameServerInterface) {
+func Logout(client interfaces.NewClientCtxInterface, state clientStates.State, gs logoutGameServerInterface) {
 	var pkg []byte
 	if state == clientStates.InGame {
 		pkg = serverpackets.LogoutWithInGameState()

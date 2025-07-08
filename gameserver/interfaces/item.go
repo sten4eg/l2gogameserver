@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	"database/sql"
+
 	"l2gogameserver/gameserver/models/items/attribute"
 	"l2gogameserver/packets"
 	"sync"
@@ -22,6 +23,7 @@ type MyItemInterface interface {
 	GetEnchantedOption() [3]int32
 	GetUpdateType() int16
 	GetLocData() int32
+	SetLocData(int32)
 	GetMana() int32
 	ChangeCount(int)
 	SetUpdateType(int16)
@@ -57,6 +59,7 @@ type BaseItemInterface interface {
 	GetItemType1() int
 	GetItemType2() int16
 	GetWeight() int
+	GetSlotBitType() int32
 }
 
 type TradableItemInterface interface {
