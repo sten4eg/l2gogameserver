@@ -49,7 +49,7 @@ func RequestRestart(clientI interfaces.ReciverAndSender, db *sql.DB) {
 	//TODO удалить персонажа из заны с боссом
 
 	broadcast.BroadCastBufferToAroundPlayersWithoutSelf(client, serverpackets.DeleteObject(character.GetObjectId()))
-	gameserver.CharOffline(client)
+	gameserver.CharOffline(client.CurrentChar)
 	client.SendBuf(serverpackets.RestartResponse(1))
 	client.SendBuf(serverpackets.CharSelectionInfo(client, db))
 	client.SetState(clientStates.Authed)

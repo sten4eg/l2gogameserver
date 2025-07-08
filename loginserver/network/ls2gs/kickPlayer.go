@@ -9,7 +9,7 @@ import (
 )
 
 type kickPlayerInterface interface {
-	GetClientFromGS(string) interfaces.ClientCtxInterface
+	GetClientFromGS(string) interfaces.NewClientCtxInterface
 	SendLogoutFromGS(string)
 	RemoveClientFromGS(string)
 }

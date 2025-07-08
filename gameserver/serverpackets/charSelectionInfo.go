@@ -12,7 +12,7 @@ import (
 const InfoAboutCharsByLogin = `SELECT login,object_id,level,max_hp,cur_hp,max_mp,cur_mp,face,hair_style,hair_color,sex,x,y,z,exp,sp,karma,pvp_kills,pk_kills,clan_id,race,class_id,base_class,title,online_time,nobless,vitality,char_name,first_enter_game FROM characters WHERE Login = $1 ORDER BY object_id`
 
 // TODO убрать модель
-func CharSelectionInfo(clientI interfaces.ReciverAndSender, db *sql.DB) *packets.Buffer {
+func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *packets.Buffer {
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return nil
@@ -71,7 +71,9 @@ func CharSelectionInfo(clientI interfaces.ReciverAndSender, db *sql.DB) *packets
 	}
 
 	for index := range client.Account.Char {
-		client.Account.Char[index].Paperdoll = models.RestoreVisibleInventory(client.Account.Char[index].ObjectId, db)
+		//TODO чё бля сделать надо раскоментить и чтобы работало
+		_ = index
+		//client.Account.Char[index].SetPaperdoll(models.RestoreVisibleInventory(client.Account.Char[index].GetObjectId(), db))
 	}
 
 	buffer.WriteSingleByte(0x09)
@@ -88,11 +90,11 @@ func CharSelectionInfo(clientI interfaces.ReciverAndSender, db *sql.DB) *packets
 		buffer.WriteS(client.Account.Char[index].GetName()) // Pers name
 
 		buffer.WriteD(client.Account.Char[index].GetObjectId()) // objId
-		buffer.WriteS(client.Account.Char[index].Login)         // loginName
+		buffer.WriteS(client.Account.Login)                     // loginName
 
-		buffer.WriteD(0)                                 //TODO sessionId
-		buffer.WriteD(client.Account.Char[index].ClanId) //clanId
-		buffer.WriteD(0)                                 // Builder Level
+		buffer.WriteD(0)                                      //TODO sessionId
+		buffer.WriteD(client.Account.Char[index].GetClanId()) //clanId
+		buffer.WriteD(0)                                      // Builder Level
 
 		buffer.WriteD(client.Account.Char[index].GetSex())         //sex
 		buffer.WriteD(int32(client.Account.Char[index].GetRace())) // race

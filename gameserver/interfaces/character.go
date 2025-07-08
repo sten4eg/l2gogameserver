@@ -2,7 +2,9 @@ package interfaces
 
 import (
 	"database/sql"
+	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/models/race"
+	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/gameserver/models/trade/privateStoreType"
 )
 
@@ -33,7 +35,7 @@ type CharacterI interface {
 	CheckItemManipulation(int32, int64) MyItemInterface
 	ValidateWeight(int32) bool
 	GetMaxLoad() int32
-	SendSysMsg(q interface{}, options ...string) error
+	SendSysMsg(msg sysmsg.SysMsg) error
 	GetActiveEnchantItemId() int32
 	GetInventoryLimit() int16
 	OnTradeFinish()
@@ -81,8 +83,10 @@ type CharacterI interface {
 	GetPDef() int32
 	GetPercentFromCurrentLevel(exp, level int32) float64
 	GetPaperdoll() []MyItemInterface
+	SetPaperdoll([26]MyItemInterface)
 	GetSkills() []SkillInterface
 	SetSitStandPose() int32
+	GetOnlineTime() int32
 
 	SetMultiSocialAction(id, targetId int32)
 	GetMultiSocialAction() int32
@@ -95,4 +99,5 @@ type CharacterI interface {
 	AddMacros(MacrosInterface)
 	GetMacrosList() []MacrosInterface
 	GetPaperdollCharInfo() []MyItemInterface
+	GetShortCut() map[int32]dto.ShortCutDTO
 }

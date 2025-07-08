@@ -8,7 +8,7 @@ import (
 )
 
 type protocolVersionInterface interface {
-	AddLengthAndSand([]byte)
+	AddLengthAndSend([]byte)
 	GetRemoteAddr() net.Addr
 }
 
@@ -22,5 +22,5 @@ func ProtocolVersion(client protocolVersionInterface, data []byte) {
 		return
 	}
 
-	client.AddLengthAndSand(serverpackets.KeyPacket())
+	client.AddLengthAndSend(serverpackets.KeyPacket())
 }

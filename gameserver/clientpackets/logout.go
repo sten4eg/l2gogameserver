@@ -1,6 +1,7 @@
 package clientpackets
 
 import (
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/clientStates"
 	"l2gogameserver/gameserver/serverpackets"
 )
@@ -14,7 +15,7 @@ type logoutGameServerInterface interface {
 	RemoveClient(string)
 }
 
-func Logout(client logoutClientInterface, state clientStates.State, gs logoutGameServerInterface) {
+func Logout(client interfaces.ClientCtxInterface, state clientStates.State, gs logoutGameServerInterface) {
 	var pkg []byte
 	if state == clientStates.InGame {
 		pkg = serverpackets.LogoutWithInGameState()
@@ -23,7 +24,7 @@ func Logout(client logoutClientInterface, state clientStates.State, gs logoutGam
 	}
 
 	client.EncryptAndSend(pkg)
-	login := client.GetAccountLogin()
+	login := client.GetAccount().GetLogin()
 
 	gs.SendLogout(login)
 	gs.RemoveClient(login)

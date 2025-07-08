@@ -17,7 +17,7 @@ import (
 
 type GameServer struct {
 	clientsListener *net.TCPListener
-	clients         *xsync.MapOf[interfaces.ClientCtxInterface]
+	clients         *xsync.MapOf[interfaces.NewClientCtxInterface]
 	waitingClients  *xsync.MapOf[string]
 	loginServer     *loginserver.LoginServer
 	db              *sql.DB
@@ -25,7 +25,7 @@ type GameServer struct {
 
 func New(db *sql.DB) *GameServer {
 	gs := new(GameServer)
-	gs.clients = xsync.NewMapOf[interfaces.ClientCtxInterface]()
+	gs.clients = xsync.NewMapOf[interfaces.NewClientCtxInterface]()
 	gs.waitingClients = xsync.NewMapOf[string]()
 	ls := loginserver.GetLoginServerInstance()
 	gs.loginServer = ls
@@ -68,7 +68,7 @@ func (g *GameServer) Start() {
 }
 
 // AddClient вернёт true если клинта небыло в мапе, false если клиент был обновлен в мапе
-func (g *GameServer) AddClient(login string, clientI interfaces.ClientCtxInterface) bool {
+func (g *GameServer) AddClient(login string, clientI interfaces.NewClientCtxInterface) bool {
 	_, loaded := g.clients.LoadOrStore(login, clientI)
 	return !loaded
 }
@@ -84,7 +84,7 @@ func (g *GameServer) ExistsWaitClient(login string) bool {
 	return exist
 }
 
-func (g *GameServer) GetClient(login string) interfaces.ClientCtxInterface {
+func (g *GameServer) GetClient(login string) interfaces.NewClientCtxInterface {
 	v, ok := g.clients.Load(login)
 	if !ok {
 		return nil

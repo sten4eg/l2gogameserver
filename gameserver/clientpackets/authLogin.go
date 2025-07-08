@@ -7,7 +7,7 @@ import (
 
 type gameServerInterface interface {
 	AddWaitClient(string, uint32, uint32, uint32, uint32)
-	AddClient(string, interfaces.ClientCtxInterface) bool
+	AddClient(string, interfaces.NewClientCtxInterface) bool
 	RemoveClient(string)
 	SendLogout(string)
 }
@@ -17,7 +17,7 @@ type authLoginClientInterface interface {
 	SetSessionKey(uint32, uint32, uint32, uint32)
 }
 
-func AuthLogin(data []byte, client interfaces.ClientCtxInterface, gs gameServerInterface) {
+func AuthLogin(data []byte, client interfaces.NewClientCtxInterface, gs gameServerInterface) {
 	var packet = packets.NewReader(data)
 
 	login := packet.ReadString()

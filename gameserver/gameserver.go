@@ -8,7 +8,7 @@ import (
 )
 
 // OnlineCharacters - мапа со всеми чарами которые онлайн
-var OnlineCharacters *xsync.MapOf[interfaces.CharacterI]
+var OnlineCharacters *xsync.MapOf[interfaces.CharacterI] //TODO что она тут делает ? мб сделать ее в структуре GameServer
 
 func GetNetConnByCharacterName(name string) interfaces.ReciverAndSender {
 	var result interfaces.ReciverAndSender
@@ -37,19 +37,19 @@ func AddOnlineChar(character interfaces.CharacterI) {
 	OnlineCharacters.Store(strKey, character)
 }
 
-func CharOffline(client interfaces.ClientCtxInterface) {
-	currentChar := client.GetCurrentChar()
+func CharOffline(client interfaces.NewClientCtxInterface) {
+	currentChar := client.GetAccount().GetCurrentChar()
 	if currentChar != nil {
 		strKey := strconv.Itoa(int(currentChar.GetObjectId()))
 		OnlineCharacters.Delete(strKey)
-		currentRegion := client.GetCurrentChar().GetCurrentRegion()
+		currentRegion := currentChar.GetCurrentRegion()
 		if currentRegion != nil {
-			currentRegion.DeleteVisibleChar(client.GetCurrentChar())
+			currentRegion.DeleteVisibleChar(currentChar)
 		}
-		client.GetCurrentChar().CloseChannels()
+		currentChar.CloseChannels()
 		//todo close all character goroutine, save info in DB
-		logger.Info.Println("Socket Close For: ", client.GetCurrentChar().GetName())
-		client.RemoveCurrentChar()
+		logger.Info.Println("Socket Close For: ", currentChar.GetName())
+		//client.RemoveCurrentChar()
 	}
 
 }

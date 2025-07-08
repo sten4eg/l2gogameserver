@@ -402,7 +402,13 @@ func RestoreVisibleInventory(charId int32, db *sql.DB) [26]MyItem {
 	}
 	return mts
 }
-
+func convertToIfaceArray(src [26]MyItem) [26]interfaces.MyItemInterface {
+	var dst [26]interfaces.MyItemInterface
+	for i := range src {
+		dst[i] = &src[i]
+	}
+	return dst
+}
 func GetMyItems(charId int32, db *sql.DB) []MyItem {
 	sqlString := "SELECT owner_id ,items.object_id, item, loc_data, enchant_level, count, loc, time, mana_left FROM items WHERE owner_id = $1"
 	rows, err := db.Query(sqlString, charId)

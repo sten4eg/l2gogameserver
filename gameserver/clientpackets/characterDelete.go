@@ -13,7 +13,7 @@ const (
 	ReasonClanLeadersMayNotBeDeleted int32 = 0x03
 )
 
-func CharacterDelete(client interfaces.ReciverAndSender, data []byte, db *sql.DB) {
+func CharacterDelete(client interfaces.NewClientCtxInterface, data []byte, db *sql.DB) {
 	reader := packets.NewReader(data)
 
 	charSlot := reader.ReadInt32()

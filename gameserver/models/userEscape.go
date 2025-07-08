@@ -10,8 +10,9 @@ func (c *ClientCtx) SaveUser() {
 
 func (c *ClientCtx) saveLocation() {
 	sql := `UPDATE "characters" SET "x" = $1, "y" = $2, "z" = $3 WHERE "object_id" = $4`
-	x, y, z := c.CurrentChar.GetXYZ()
-	_, err := c.db.Exec(sql, x, y, z, c.CurrentChar.ObjectId)
+	currChar := c.GetAccount().GetCurrentChar()
+	x, y, z := currChar.GetXYZ()
+	_, err := c.db.Exec(sql, x, y, z, currChar.GetObjectId())
 	if err != nil {
 		logger.Error.Panicln(err)
 	}

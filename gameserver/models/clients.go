@@ -13,11 +13,6 @@ import (
 	"sync"
 )
 
-const DeleteCharacterShortcuts = `DELETE FROM character_shortcuts WHERE char_id = $1`
-const DeleteCharacterSkills = `DELETE FROM character_skills WHERE char_id = $1`
-const DeleteCharacter = `DELETE FROM characters WHERE object_id = $1`
-const DeleteCharacterItems = `DELETE FROM items WHERE owner_id = $1`
-
 type ClientCtx struct {
 	m               sync.RWMutex
 	conn            *net.TCPConn
@@ -25,14 +20,14 @@ type ClientCtx struct {
 	// NeedCrypt - флаг, при создании клиента false
 	// первый пакет пришедший от клиента не нужно расшифровывать, после 1 пакета NeedCrypt = true
 	// костыль
-	NeedCrypt   bool
-	OutKey      []int32
-	InKey       []int32
-	CurrentChar *Character
-	Account     *Account
-	state       clientStates.State
-	sessionKey  SessionKey
-	db          *sql.DB
+	NeedCrypt bool
+	OutKey    []int32
+	InKey     []int32
+	//CurrentChar *Character
+	Account    *Account
+	state      clientStates.State
+	sessionKey SessionKey
+	db         *sql.DB
 }
 type SessionKey struct {
 	PlayOk1  uint32
@@ -80,17 +75,61 @@ func NewClient(dbConn *sql.DB) *ClientCtx {
 			0x31,
 			0x97,
 		},
-		Account:     new(Account),
-		CurrentChar: nil,
-		state:       clientStates.Connected,
-		db:          dbConn,
+		Account: new(Account),
+		//CurrentChar: nil,
+		state: clientStates.Connected,
+		db:    dbConn,
 	}
 
 	return c
 }
 
+func (c *ClientCtx) Receive() (opcode byte, data []byte, e error) {
+	// чтение первых 2 байта для определения размера всего пакета
+	header := make([]byte, 2)
+
+	n, err := c.conn.Read(header)
+
+	if err != nil {
+		return 0, nil, err
+	}
+
+	if n != 2 {
+		return 0, nil, errors.New("байтов длинны пакета должно быть 2")
+	}
+
+	// длинна пакета
+	dataSize := (int(header[0]) | int(header[1])<<8) - 2
+
+	// аллокация требуемого массива байт для входящего пакета
+	data = make([]byte, dataSize)
+
+	n, err = c.conn.Read(data)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	if n != dataSize {
+		return 0, nil, errors.New("длинна прочитанного пакета не соответствует требуемому размеру")
+	}
+
+	// Если это первый пакет от юзера то его не расшифровываем
+	// todo можно ли приудмать что нибудь лучше?
+	if c.NeedCrypt {
+		data = crypt.Decrypt(data, c.InKey)
+	} else {
+		c.NeedCrypt = true
+	}
+
+	// первый байт opcode, остальные полезная нагрузка
+	opcode = data[0]
+	data = data[1:]
+	e = nil
+	return
+}
+
 // AddLengthAndSand добавляет 2 байта длинны и отправляет клиенту
-func (c *ClientCtx) AddLengthAndSand(data []byte) {
+func (c *ClientCtx) AddLengthAndSend(data []byte) {
 	// вычисление длинны пакета, 2 первых байта - размер пакета
 	length := int16(len(data) + 2)
 
@@ -99,7 +138,6 @@ func (c *ClientCtx) AddLengthAndSand(data []byte) {
 	data = append([]byte{f, s}, data...)
 	c.Send(data)
 }
-
 func (c *ClientCtx) EncryptAndSend(data []byte) error {
 	data = crypt.Encrypt(data, c.OutKey)
 	// вычисление длинны пакета, 2 первых байта - размер пакета
@@ -148,13 +186,6 @@ func (c *ClientCtx) Send(d []byte) {
 		logger.Error.Panicln("Пакет не отправлен, ошибка: " + err.Error())
 	}
 }
-
-func (c *ClientCtx) SendSysMsg(num interface{}, options ...string) error {
-	smsg := num.(sysmsg.SysMsg)
-
-	return c.EncryptAndSend(sysmsg.SystemMessage(smsg))
-}
-
 func (c *ClientCtx) CryptAndReturnPackageReadyToShip(data []byte) []byte {
 	data = crypt.Encrypt(data, c.OutKey)
 	// вычисление длинны пакета, 2 первых байта - размер пакета
@@ -166,51 +197,9 @@ func (c *ClientCtx) CryptAndReturnPackageReadyToShip(data []byte) []byte {
 
 	return data
 }
-
-func (c *ClientCtx) Receive() (opcode byte, data []byte, e error) {
-	// чтение первых 2 байта для определения размера всего пакета
-	header := make([]byte, 2)
-
-	n, err := c.conn.Read(header)
-
-	if err != nil {
-		return 0, nil, err
-	}
-
-	if n != 2 {
-		return 0, nil, errors.New("байтов длинны пакета должно быть 2")
-	}
-
-	// длинна пакета
-	dataSize := (int(header[0]) | int(header[1])<<8) - 2
-
-	// аллокация требуемого массива байт для входящего пакета
-	data = make([]byte, dataSize)
-
-	n, err = c.conn.Read(data)
-	if err != nil {
-		return 0, nil, err
-	}
-
-	if n != dataSize {
-		return 0, nil, errors.New("длинна прочитанного пакета не соответствует требуемому размеру")
-	}
-
-	// Если это первый пакет от юзера то его не расшифровываем
-	// todo можно ли приудмать что нибудь лучше?
-	if c.NeedCrypt {
-		data = crypt.Decrypt(data, c.InKey)
-	} else {
-		c.NeedCrypt = true
-	}
-
-	// первый байт opcode, остальные полезная нагрузка
-	opcode = data[0]
-	data = data[1:]
-	e = nil
-	return
+func (c *ClientCtx) SendSysMsg(num sysmsg.SysMsg) error {
+	return c.EncryptAndSend(sysmsg.SystemMessage(num))
 }
-
 func (c *ClientCtx) sendDataToSocket(data []byte) error {
 	c.m.Lock()
 	_, err := c.conn.Write(data)
@@ -218,102 +207,34 @@ func (c *ClientCtx) sendDataToSocket(data []byte) error {
 	return err
 }
 
-func (c *ClientCtx) GetCurrentChar() interfaces.CharacterI {
-	if c.CurrentChar == nil {
-		return nil
-	}
-	return c.CurrentChar
-}
-
 func (c *ClientCtx) SetConn(conn *net.TCPConn) {
 	c.conn = conn
 }
-
 func (c *ClientCtx) GetConn() *net.TCPConn {
 	return c.conn
 }
-
 func (c *ClientCtx) GetRemoteAddr() net.Addr {
 	return c.conn.RemoteAddr()
-}
-
-func (c *ClientCtx) SetLogin(login string) {
-	c.Account.Login = login
-}
-
-func (c *ClientCtx) RemoveCurrentChar() {
-	c.CurrentChar = nil
 }
 
 func (c *ClientCtx) SetState(state clientStates.State) {
 	c.state = state
 }
-
 func (c *ClientCtx) GetState() clientStates.State {
 	return c.state
 }
-
 func (c *ClientCtx) SetSessionKey(playOk1, playOk2, loginOk1, loginOk2 uint32) {
 	c.sessionKey.PlayOk1 = playOk1
 	c.sessionKey.PlayOk2 = playOk2
 	c.sessionKey.LoginOk1 = loginOk1
 	c.sessionKey.LoginOk2 = loginOk2
 }
-
 func (c *ClientCtx) GetSessionKey() (playOk1, playOk2, loginOk1, loginOk2 uint32) {
 	return c.sessionKey.PlayOk1, c.sessionKey.PlayOk2, c.sessionKey.LoginOk1, c.sessionKey.LoginOk2
 }
-
-func (c *ClientCtx) GetAccountLogin() string {
-	return c.Account.Login
-}
-
 func (c *ClientCtx) CloseConnection() {
 	c.conn.Close()
 }
-
-func (c *ClientCtx) GetObjectIdForSlot(slot int32) int32 {
-	return c.Account.Char[slot].GetObjectId()
-}
-
-func (c *ClientCtx) MarkToDeleteChar(slot int32) int8 {
-	objId := c.GetObjectIdForSlot(slot)
-
-	if objId < 0 {
-		return -1
-	}
-
-	// TODO чекнуть в бд клан персонажа
-	var answer int8
-
-	if answer == 0 { // clan == nil
-		c.deleteCharByObjId(objId)
-	}
-
-	return answer
-}
-
-func (c *ClientCtx) deleteCharByObjId(objId int32) {
-	if objId < 0 {
-		return
-	}
-
-	_, err := c.db.Exec(DeleteCharacterShortcuts, objId)
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-
-	_, err = c.db.Exec(DeleteCharacterItems, objId)
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-
-	_, err = c.db.Exec(DeleteCharacter, objId)
-	if err != nil {
-		logger.Error.Panicln(err)
-	}
-}
-
-func (c *ClientCtx) GetAccount() *Account {
+func (c *ClientCtx) GetAccount() interfaces.AccountInterface {
 	return c.Account
 }

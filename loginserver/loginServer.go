@@ -27,7 +27,7 @@ var loginServerInstance *LoginServer
 
 type gameServerInterface interface {
 	ExistsWaitClient(login string) bool
-	GetClient(login string) interfaces.ClientCtxInterface
+	GetClient(login string) interfaces.NewClientCtxInterface
 	RemoveWaitingClient(login string)
 	RemoveClient(login string)
 	SendLogout(login string)
@@ -202,7 +202,7 @@ func howLongNeedSleep() time.Duration {
 func (ls *LoginServer) ExistsWaitClientOnGameServer(login string) bool {
 	return ls.gameServer.ExistsWaitClient(login)
 }
-func (ls *LoginServer) GetClientFromGS(login string) interfaces.ClientCtxInterface {
+func (ls *LoginServer) GetClientFromGS(login string) interfaces.NewClientCtxInterface {
 	return ls.gameServer.GetClient(login)
 }
 func (ls *LoginServer) RemoveWaitingClientFromGS(login string) {

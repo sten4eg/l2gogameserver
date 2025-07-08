@@ -9,15 +9,16 @@ import (
 const MaxShortcutsPerBar = 12
 
 func RegisterShortCut(sc dto.ShortCutDTO, client *ClientCtx) {
-	shorts := client.CurrentChar.ShortCut
+	currChar := client.GetAccount().GetCurrentChar()
+	shorts := currChar.GetShortCut()
 	//todo пересмотреть, тут есть еще проверки
 	s, exist := shorts[sc.Slot+(sc.Page*MaxShortcutsPerBar)]
 
 	if exist {
-		deleteShortCutFromDb(s, client.CurrentChar.ObjectId, client.CurrentChar.ClassId, client.db)
+		deleteShortCutFromDb(s, currChar.GetObjectId(), currChar.GetClassId(), client.db)
 	}
-	registerShortCutInDb(sc, client.CurrentChar.ObjectId, client.CurrentChar.ClassId, client.db)
-	client.CurrentChar.ShortCut[sc.Slot+(sc.Page*MaxShortcutsPerBar)] = sc
+	registerShortCutInDb(sc, currChar.GetObjectId(), currChar.GetClassId(), client.db)
+	shorts[sc.Slot+(sc.Page*MaxShortcutsPerBar)] = sc
 }
 
 func registerShortCutInDb(shortCut dto.ShortCutDTO, charId, classId int32, db *sql.DB) {
@@ -60,12 +61,13 @@ func RestoreMe(charId, classId int32, db *sql.DB) map[int32]dto.ShortCutDTO {
 }
 
 func DeleteShortCut(slot, page int32, client *ClientCtx) {
-	all := client.CurrentChar.ShortCut
+	currChar := client.GetAccount().GetCurrentChar()
+	all := currChar.GetShortCut()
 	e, ok := all[slot+(page*MaxShortcutsPerBar)]
 	if !ok {
 		return
 	}
-	deleteShortCutFromDb(e, client.CurrentChar.ObjectId, client.CurrentChar.ClassId, client.db)
+	deleteShortCutFromDb(e, currChar.GetObjectId(), currChar.GetClassId(), client.db)
 	// todo Проверка на соски
 
 }

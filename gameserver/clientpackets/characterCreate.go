@@ -36,7 +36,8 @@ type charCreateClientInterface interface {
 	SendBuf(*packets.Buffer) error
 }
 
-func CharacterCreate(client interfaces.ReciverAndSender, data []byte, db *sql.DB) {
+func CharacterCreate(clientI interfaces.NewClientCtxInterface, data []byte, db *sql.DB) {
+	client := clientI
 	reader := packets.NewReader(data)
 
 	name := reader.ReadString()
@@ -100,6 +101,6 @@ func CharacterCreate(client interfaces.ReciverAndSender, data []byte, db *sql.DB
 
 	client.SendBuf(serverpackets.CharCreateOk())
 	time.Sleep(250) //todo клиент должен отправить RequestExGetOnAirShip и после этого CharSelectionInfo, иначе клиент крашиться
-	client.SendBuf(serverpackets.CharSelectionInfo(client, db))
+	client.SendBuf(serverpackets.CharSelectionInfo(clientI, db))
 
 }

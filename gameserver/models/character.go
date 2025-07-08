@@ -151,7 +151,9 @@ func (c *Character) SetSitStandPose() int32 {
 func (c *Character) IsSittings() bool {
 	return c.Sit
 }
-
+func (c *Character) GetOnlineTime() int32 {
+	return c.OnlineTime
+}
 func (c *Character) SetSkillToQueue(skill Skill, ctrlPressed, shiftPressed bool) {
 	s := SkillHolder{
 		Skill:        skill,
@@ -637,10 +639,9 @@ func (c *Character) GetTarget() int32 {
 	return c.Target
 }
 
-func (c *Character) SendSysMsg(num interface{}, options ...string) error {
-	smsg := num.(sysmsg.SysMsg)
+func (c *Character) SendSysMsg(num sysmsg.SysMsg) error {
 
-	return c.EncryptAndSend(sysmsg.SystemMessage(smsg))
+	return c.EncryptAndSend(sysmsg.SystemMessage(num))
 }
 
 // методы для реализации ClientCtxInterface, не нужно их заполнять
@@ -660,7 +661,7 @@ func (c *Character) GetRemoteAddr() net.Addr {
 
 // методлы для реализации ReciverAndSender
 func (c *Character) Receive() (opcode byte, data []byte, err error) { panic("нельзя") }
-func (c *Character) AddLengthAndSand(data []byte)                   { c.Conn.AddLengthAndSand(data) }
+func (c *Character) AddLengthAndSend(data []byte)                   { c.Conn.AddLengthAndSend(data) }
 func (c *Character) Send(data []byte)                               { c.Conn.Send(data) }
 func (c *Character) SendBuf(buffer *packets.Buffer) error           { return c.Conn.SendBuf(buffer) }
 func (c *Character) EncryptAndSend(data []byte) error               { return c.Conn.EncryptAndSend(data) }
@@ -668,6 +669,9 @@ func (c *Character) CryptAndReturnPackageReadyToShip(data []byte) []byte {
 	return c.Conn.CryptAndReturnPackageReadyToShip(data)
 }
 func (c *Character) GetCurrentChar() interfaces.CharacterI { return c }
+func (c *Character) GetAccount() interfaces.AccountInterface {
+	return c.Conn.Account
+}
 
 ///////////
 
@@ -807,6 +811,20 @@ func (c *Character) GetPaperdollCharInfo() []interfaces.MyItemInterface {
 	}
 	return paperdoll
 }
+func (c *Character) SetPaperdoll(a [26]interfaces.MyItemInterface) {
+	for i, v := range a {
+		if v == nil {
+			c.Paperdoll[i] = MyItem{}
+			continue
+		}
+		item, ok := v.(*MyItem)
+		if ok {
+			c.Paperdoll[i] = *item
+		} else {
+			c.Paperdoll[i] = MyItem{}
+		}
+	}
+}
 func (c *Character) GetSkills() []interfaces.SkillInterface {
 	skills := make([]interfaces.SkillInterface, len(c.Skills))
 	var i int
@@ -828,14 +846,6 @@ func (c *Character) GetMultiSocialAction() int32 {
 }
 func (c *Character) GetMultiSocialTarget() int32 {
 	return c.multiSocialTarget
-}
-
-func (c *Character) GetObjectIdForSlot(slot int32) int32 {
-	return c.Conn.GetObjectIdForSlot(slot)
-}
-
-func (c *Character) MarkToDeleteChar(slot int32) int8 {
-	return c.Conn.MarkToDeleteChar(slot)
 }
 
 func (c *Character) GetMacrosRevision() int32 {
@@ -881,4 +891,8 @@ func (c *Character) GetMacrosCount() uint8 {
 func (c *Character) GetMacroId() int32 {
 	c.MacroId++
 	return c.MacroId
+}
+
+func (c *Character) GetShortCut() map[int32]dto.ShortCutDTO {
+	return c.ShortCut
 }
