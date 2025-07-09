@@ -10,7 +10,7 @@ import (
 	"l2gogameserver/gameserver/serverpackets"
 )
 
-func RequestRestart(client interfaces.NewClientCtxInterface, gs GsInterf, db *sql.DB) {
+func RequestRestart(client interfaces.NewClientCtxInterface, gs GsInterfNew, db *sql.DB) {
 
 	character := client.GetAccount().GetCurrentChar()
 	character.SaveUser(db)

@@ -7,28 +7,6 @@ import (
 	"net"
 )
 
-type ReciverAndSender interface {
-	Receive() (opcode byte, data []byte, err error)
-	AddLengthAndSend(data []byte)
-	Send(data []byte)
-	SendBuf(buffer *packets.Buffer) error
-	EncryptAndSend(data []byte) error
-	SendSysMsg(msg sysmsg.SysMsg) error
-	CryptAndReturnPackageReadyToShip(data []byte) []byte
-	GetCurrentChar() CharacterI
-}
-
-type ClientCtxInterface interface {
-	ReciverAndSender
-	SetState(state clientStates.State)
-	GetState() clientStates.State
-	SetSessionKey(playOk1, playOk2, loginOk1, loginOk2 uint32)
-	GetSessionKey() (playOk1, playOk2, loginOk1, loginOk2 uint32)
-	CloseConnection()
-	GetRemoteAddr() net.Addr
-	GetAccount() AccountInterface
-}
-
 type NewClientCtxInterface interface {
 	AddLengthAndSend(data []byte)
 	EncryptAndSend(data []byte) error

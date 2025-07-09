@@ -10,7 +10,7 @@ import (
 )
 
 // AnswerTradeRequest Если пользователь отвечает на запрос трейда
-func AnswerTradeRequest(data []byte, sender interfaces.NewClientCtxInterface, gs GsInterf) {
+func AnswerTradeRequest(data []byte, sender interfaces.NewClientCtxInterface, gs GsInterfNew) {
 	var packet = packets.NewReader(data)
 	response := packet.ReadInt32() // 0-отказ,1-принял
 	if response == 0 {

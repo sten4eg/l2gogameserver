@@ -11,7 +11,7 @@ import (
 )
 
 // AddTradeItem Когда игрок добавляет предмет в трейде
-func AddTradeItem(data []byte, client interfaces.NewClientCtxInterface, gs GsInterf) {
+func AddTradeItem(data []byte, client interfaces.NewClientCtxInterface, gs GsInterfNew) {
 	var packet = packets.NewReader(data)
 
 	tradeId := packet.ReadInt32()

@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func SendBypassBuildCmd(client interfaces.CharacterI, data []byte) {
+func SendBypassBuildCmd(character interfaces.CharacterI, data []byte, gs GsInterfNew) {
 	var packet = packets.NewReader(data)
 	command := packet.ReadString()
 	_ = command
@@ -17,5 +17,5 @@ func SendBypassBuildCmd(client interfaces.CharacterI, data []byte) {
 		return
 	}
 	d := utils.B2s(data)
-	client.SendBuf(serverpackets.NpcHtmlMessage2(0, d, 0))
+	gs.GetClientByLogin(character.GetAccountLogin()).SendBuf(serverpackets.NpcHtmlMessage2(0, d, 0))
 }

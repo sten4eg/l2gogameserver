@@ -9,7 +9,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestAnswerJoinParty(client interfaces.NewClientCtxInterface, data []byte) {
+func RequestAnswerJoinParty(client interfaces.NewClientCtxInterface, data []byte, gs GsInterfNew) {
 	reader := packets.NewReader(data)
 
 	respose := reader.ReadInt32()
@@ -25,7 +25,8 @@ func RequestAnswerJoinParty(client interfaces.NewClientCtxInterface, data []byte
 	}
 
 	buffer := serverpackets.JoinParty(respose)
-	requester.SendBuf(buffer)
+
+	gs.GetClientByLogin(requester.GetAccountLogin()).SendBuf(buffer)
 
 	switch respose {
 	case -1:
@@ -41,11 +42,11 @@ func RequestAnswerJoinParty(client interfaces.NewClientCtxInterface, data []byte
 				requester.SendSysMsg(sysmsg.PartyFull)
 				return
 			}
-			joinParty(character, requester.GetParty())
+			joinParty(character, requester.GetParty(), gs)
 		} else {
 			party := models.NewParty(requester, requester.GetPartyDistributionType())
 			requester.SetParty(party)
-			joinParty(character, requester.GetParty())
+			joinParty(character, requester.GetParty(), gs)
 		}
 
 		//TODO какие то проверки и настройки
@@ -105,19 +106,18 @@ func onJoinParty(character interfaces.NewClientCtxInterface, party interfaces.Pa
 
 }
 
-func joinParty(character interfaces.CharacterI, party interfaces.PartyInterface) {
+func joinParty(character interfaces.CharacterI, party interfaces.PartyInterface, gs GsInterfNew) {
 	if party != nil {
 		character.SetParty(party)
-		addPartyMember(character, party)
+		addPartyMember(character, party, gs)
 	}
 }
 
-func addPartyMember(character interfaces.CharacterI, party interfaces.PartyInterface) {
+func addPartyMember(character interfaces.CharacterI, party interfaces.PartyInterface, gs GsInterfNew) {
 	if party.IsMemberInParty(character) {
 		return
 	}
-
-	character.SendBuf(serverpackets.PartySmallWindowAll(character, party))
+	gs.GetClientByLogin(character.GetAccountLogin()).SendBuf(serverpackets.PartySmallWindowAll(character, party))
 
 	msg := sysmsg.YouJoinedS1Party
 	msg.AddString(party.GetLeader().GetName())
@@ -127,7 +127,7 @@ func addPartyMember(character interfaces.CharacterI, party interfaces.PartyInter
 		msg2 := sysmsg.C1JoinedParty
 		msg2.AddString(character.GetName())
 		member.SendSysMsg(msg2)
-		member.SendBuf(serverpackets.PartySmallWindowAdd(character, party))
+		gs.GetClientByLogin(member.GetAccountLogin()).SendBuf(serverpackets.PartySmallWindowAdd(character, party))
 	}
 
 	party.AddMember(character)

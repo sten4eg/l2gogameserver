@@ -8,7 +8,7 @@ import (
 	"l2gogameserver/utils"
 )
 
-func RequestWithDrawalParty(client interfaces.NewClientCtxInterface) {
+func RequestWithDrawalParty(client interfaces.NewClientCtxInterface, gs GsInterfNew) {
 	character := client.GetAccount().GetCurrentChar()
 	if character == nil {
 		return
@@ -19,7 +19,7 @@ func RequestWithDrawalParty(client interfaces.NewClientCtxInterface) {
 		if false { //TOPO party.isInDimensionalRift() && !party.getDimensionalRift().getRevivedAtWaitingRoom().contains(player)
 			return
 		} else {
-			RemovePartyMember(character, party, messageType.Left)
+			RemovePartyMember(character, party, messageType.Left, gs)
 
 		}
 
@@ -27,12 +27,12 @@ func RequestWithDrawalParty(client interfaces.NewClientCtxInterface) {
 	}
 }
 
-func RemovePartyMember(character interfaces.CharacterI, party interfaces.PartyInterface, reason messageType.MessageType) {
+func RemovePartyMember(character interfaces.CharacterI, party interfaces.PartyInterface, reason messageType.MessageType, gs GsInterfNew) {
 	if party.IsMemberInParty(character) {
 		isLeader := party.IsLeader(character)
 		if !party.IsDisbanding() {
 			if len(party.GetMembers()) == 2 {
-				disbandParty(party)
+				disbandParty(party, gs)
 			}
 		}
 
@@ -55,7 +55,7 @@ func RemovePartyMember(character interfaces.CharacterI, party interfaces.PartyIn
 			party.BroadcastParty(sysmsg.SystemMessage(msg))
 		}
 
-		character.SendBuf(serverpackets.PartySmallWindowDeleteAll())
+		gs.GetClientByLogin(character.GetAccountLogin()).SendBuf(serverpackets.PartySmallWindowDeleteAll())
 		character.SetParty(nil)
 		party.BroadcastParty(serverpackets.PartySmallWindowDelete(character).Bytes())
 		if false { //TODO hasSummon
@@ -74,7 +74,7 @@ func RemovePartyMember(character interfaces.CharacterI, party interfaces.PartyIn
 			msg := sysmsg.C1HasBecomeAPartyLeader
 			msg.AddString(party.GetLeader().GetName())
 			party.BroadcastParty(sysmsg.SystemMessage(msg))
-			broadcastToPartyMembersNewLeader(party)
+			broadcastToPartyMembersNewLeader(party, gs)
 		} else if len(party.GetMembers()) == 1 {
 			if false { //TODO isInCommandChannel()
 				return
@@ -89,7 +89,7 @@ func RemovePartyMember(character interfaces.CharacterI, party interfaces.PartyIn
 	}
 }
 
-func disbandParty(party interfaces.PartyInterface) {
+func disbandParty(party interfaces.PartyInterface, gs GsInterfNew) {
 	party.SetDisbanding(true)
 	msg := sysmsg.PartyDispersed
 	pb := utils.GetPacketByte()
@@ -97,7 +97,7 @@ func disbandParty(party interfaces.PartyInterface) {
 
 	for _, member := range party.GetMembers() {
 		if member != nil {
-			RemovePartyMember(member, party, messageType.None)
+			RemovePartyMember(member, party, messageType.None, gs)
 			member.EncryptAndSend(pb.GetData())
 		}
 	}
@@ -105,11 +105,13 @@ func disbandParty(party interfaces.PartyInterface) {
 	pb.Release()
 }
 
-func broadcastToPartyMembersNewLeader(p interfaces.PartyInterface) {
+func broadcastToPartyMembersNewLeader(p interfaces.PartyInterface, gs GsInterfNew) {
 	for _, member := range p.GetMembers() {
 		if member != nil {
-			member.SendBuf(serverpackets.PartySmallWindowDeleteAll())
-			member.SendBuf(serverpackets.PartySmallWindowAll(member, p))
+			clientMemer := gs.GetClientByLogin(member.GetAccountLogin())
+
+			clientMemer.SendBuf(serverpackets.PartySmallWindowDeleteAll())
+			clientMemer.SendBuf(serverpackets.PartySmallWindowAll(member, p))
 			//TODO надо передавать что туда	broadcast.BroadcastUserInfo(member)
 		}
 	}

@@ -13,8 +13,8 @@ import (
 
 type GsInterf interface {
 	GetChar(string) (interfaces.CharacterI, bool)
-	GetNetConnByCharacterName(name string) interfaces.ReciverAndSender
 	GetNetConnByCharObjectId(objectId int32) interfaces.CharacterI
+	GetClientByLogin(login string) interfaces.NewClientCtxInterface
 }
 
 func StartClientListener(client interfaces.NewClientCtxInterface, g GsInterf) {
@@ -45,20 +45,21 @@ func channelListener(client interfaces.NewClientCtxInterface, g GsInterf) {
 }
 
 func npcListener(client interfaces.NewClientCtxInterface) {
-	currChar := client.GetAccount().GetCurrentChar()
-	for {
-		select {
-		case q := <-currChar.GetChannelNpcInfo():
-			buff := packets.Get()
-			for i := range q {
-				pkg := serverpackets.NpcInfo(q[i])
-				buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-			}
-			client.Send(buff.Bytes())
-		case _ = <-currChar.GetChannelEndChannel():
-			return
-		}
-	}
+	//currChar := client.GetAccount().GetCurrentChar()
+	//for {
+	//	select {
+	//	case q := <-currChar.GetChannelNpcInfo():
+	//		buff := packets.Get()
+	//		for i := range q {
+	//			pkg := serverpackets.NpcInfo(q[i])
+	//			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+	//		}
+	//		client.Send(buff.Bytes())
+	//
+	//	case _ = <-currChar.GetChannelEndChannel():
+	//		return
+	//	}
+	//}
 
 }
 func dropItemListener(client interfaces.NewClientCtxInterface) {
@@ -84,35 +85,46 @@ func moveListener(client interfaces.NewClientCtxInterface, g GsInterf) {
 	currChar := client.GetAccount().GetCurrentChar()
 	for {
 		select {
-		case to := <-currChar.GetChannelCharInfoTo():
-			pkg := utils.GetPacketByte()
-			exUi := utils.GetPacketByte()
+		case charsAround := <-currChar.GetChannelCharInfoTo():
 
-			pkg.SetData(serverpackets.CharInfo(currChar))
-			exUi.SetData(serverpackets.ExBrExtraUserInfo(currChar))
+			charInfoAboutMe := utils.GetPacketByte()
+			extraUserInfoAboutMe := utils.GetPacketByte()
 
-			for index := range to {
-				strKey := strconv.Itoa(int(to[index]))
-				char, ok := g.GetChar(strKey)
+			charInfoAboutMe.SetData(serverpackets.CharInfo(currChar))
+			extraUserInfoAboutMe.SetData(serverpackets.ExBrExtraUserInfo(currChar))
+
+			for index := range charsAround {
+				strKey := strconv.Itoa(int(charsAround[index]))
+				charAround, ok := g.GetChar(strKey)
 				if !ok {
 					log.Println("Персонаж не найден")
 					continue
 				}
-				exUi2 := utils.GetPacketByte()
-				exUi2.SetData(serverpackets.ExBrExtraUserInfo(char))
-
 				pkg2 := utils.GetPacketByte()
-				pkg2.SetData(serverpackets.CharInfo(char))
+				exUi2 := utils.GetPacketByte()
+
+				pkg2.SetData(serverpackets.CharInfo(charAround))
+				exUi2.SetData(serverpackets.ExBrExtraUserInfo(charAround))
+
 				client.EncryptAndSend(pkg2.GetData())
 				client.EncryptAndSend(exUi2.GetData())
+
 				pkg2.Release()
 				exUi2.Release()
 
-				char.EncryptAndSend(pkg.GetData())
-				char.EncryptAndSend(exUi.GetData())
+				charAround.EncryptAndSend(charInfoAboutMe.GetData())
+				charAround.EncryptAndSend(extraUserInfoAboutMe.GetData())
 			}
-			pkg.Release()
-			exUi.Release()
+			charInfoAboutMe.Release()
+			extraUserInfoAboutMe.Release()
+
+		case q := <-currChar.GetChannelNpcInfo():
+			buff := packets.Get()
+			for i := range q {
+				pkg := serverpackets.NpcInfo(q[i])
+				buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+			}
+			client.Send(buff.Bytes())
 		case _ = <-currChar.GetChannelEndChannel():
 			return
 		}

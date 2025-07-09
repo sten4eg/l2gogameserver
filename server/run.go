@@ -9,6 +9,7 @@ import (
 	"l2gogameserver/gameserver/handlers"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/clientStates"
 	"l2gogameserver/loginserver"
 	"l2gogameserver/loginserver/network/gs2ls"
 	"net"
@@ -113,19 +114,6 @@ func (g *GameServer) GetDbConn() *sql.DB {
 	return g.db
 }
 
-func (g *GameServer) GetNetConnByCharacterName(name string) interfaces.ReciverAndSender {
-	var result interfaces.ReciverAndSender
-	g.OnlineCharacters.Range(func(key string, value interfaces.CharacterI) bool {
-		if value.GetName() == name {
-			result = value
-			return false
-		}
-		return true
-	})
-
-	return result
-}
-
 func (g *GameServer) GetNetConnByCharObjectId(objectId int32) interfaces.CharacterI {
 	strKey := strconv.Itoa(int(objectId))
 	result, ok := g.OnlineCharacters.Load(strKey)
@@ -135,19 +123,29 @@ func (g *GameServer) GetNetConnByCharObjectId(objectId int32) interfaces.Charact
 	return result
 }
 
+func (g *GameServer) GetClientByLogin(login string) interfaces.NewClientCtxInterface {
+	result, ok := g.clients.Load(login)
+	if !ok {
+		return nil
+	}
+	return result
+}
 func (g *GameServer) CharOffline(client interfaces.NewClientCtxInterface) {
 	currentChar := client.GetAccount().GetCurrentChar()
 	if currentChar != nil {
-		strKey := strconv.Itoa(int(currentChar.GetObjectId()))
-		g.OnlineCharacters.Delete(strKey)
-		currentRegion := currentChar.GetCurrentRegion()
-		if currentRegion != nil {
-			currentRegion.DeleteVisibleChar(currentChar)
+		if client.GetState() == clientStates.InGame {
+			strKey := strconv.Itoa(int(currentChar.GetObjectId()))
+			g.OnlineCharacters.Delete(strKey)
+			currentRegion := currentChar.GetCurrentRegion()
+			if currentRegion != nil {
+				currentRegion.DeleteVisibleChar(currentChar)
+			}
+			currentChar.CloseChannels()
+			//todo close all character goroutine, save info in DB
+			logger.Info.Println("Socket Close For: ", currentChar.GetName())
+			//client.RemoveCurrentChar()
 		}
-		currentChar.CloseChannels()
-		//todo close all character goroutine, save info in DB
-		logger.Info.Println("Socket Close For: ", currentChar.GetName())
-		//client.RemoveCurrentChar()
+
 	}
 
 }

@@ -21,7 +21,7 @@ type ClientCtx struct {
 	// первый пакет пришедший от клиента не нужно расшифровывать, после 1 пакета NeedCrypt = true
 	// костыль
 	NeedCrypt bool
-	OutKey    []int32
+	OutKey    []int32 //TODO надо защищать мьютексом
 	InKey     []int32
 	//CurrentChar *Character
 	Account    *Account
@@ -139,7 +139,9 @@ func (c *ClientCtx) AddLengthAndSend(data []byte) {
 	c.Send(data)
 }
 func (c *ClientCtx) EncryptAndSend(data []byte) error {
+	c.m.Lock()
 	data = crypt.Encrypt(data, c.OutKey)
+	c.m.Unlock()
 	// вычисление длинны пакета, 2 первых байта - размер пакета
 	length := int16(len(data) + 2)
 
@@ -160,8 +162,9 @@ func (c *ClientCtx) SendBuf(buffer *packets.Buffer) error {
 	}
 
 	data := buffer.Bytes()
-
+	c.m.Lock()
 	data = crypt.Encrypt(data, c.OutKey)
+	c.m.Unlock()
 	// Вычисление длинны пакета
 	length := uint16(len(data) + 2)
 
@@ -187,7 +190,9 @@ func (c *ClientCtx) Send(d []byte) {
 	}
 }
 func (c *ClientCtx) CryptAndReturnPackageReadyToShip(data []byte) []byte {
+	c.m.Lock()
 	data = crypt.Encrypt(data, c.OutKey)
+	c.m.Unlock()
 	// вычисление длинны пакета, 2 первых байта - размер пакета
 	length := int16(len(data) + 2)
 

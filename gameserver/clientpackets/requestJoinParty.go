@@ -8,7 +8,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestJoinParty(client interfaces.NewClientCtxInterface, data []byte) {
+func RequestJoinParty(client interfaces.NewClientCtxInterface, data []byte, gs GsInterfNew) {
 	reader := packets.NewReader(data)
 
 	name := reader.ReadString()
@@ -59,12 +59,12 @@ func RequestJoinParty(client interfaces.NewClientCtxInterface, data []byte) {
 	character.SendSysMsg(msg)
 
 	if !character.IsinParty() {
-		createNewParty(character, target, partyDistributionTypeId)
+		createNewParty(character, target, partyDistributionTypeId, gs)
 	} else {
 		if false { //TODO isInDimensionalRift()
 			// requestor.sendMessage("You cannot invite a player when you are in the Dimensional Rift.")
 		} else {
-			addTargetToParty(target, character)
+			addTargetToParty(target, character, gs)
 		}
 	}
 }
@@ -80,7 +80,7 @@ func getCharacterByName(region interfaces.WorldRegioner, name string) interfaces
 	return nil
 }
 
-func createNewParty(leader, target interfaces.CharacterI, partyDistributionTypeId int32) {
+func createNewParty(leader, target interfaces.CharacterI, partyDistributionTypeId int32, gs GsInterfNew) {
 	partyDistributionType, _ := party.GetPartyDistributionTypeById(partyDistributionTypeId)
 	if partyDistributionType == nil {
 		return
@@ -88,7 +88,7 @@ func createNewParty(leader, target interfaces.CharacterI, partyDistributionTypeI
 
 	if true { //TODO (!target.isProcessingRequest())
 		buffer := serverpackets.AskJoinParty(leader.GetName(), partyDistributionType)
-		target.SendBuf(buffer)
+		gs.GetClientByLogin(target.GetAccountLogin()).SendBuf(buffer)
 		target.SetActiveRequester(leader)
 		//TODO
 		leader.SetPartyDistributionType(partyDistributionType)
@@ -97,7 +97,7 @@ func createNewParty(leader, target interfaces.CharacterI, partyDistributionTypeI
 	}
 }
 
-func addTargetToParty(target, requester interfaces.CharacterI) {
+func addTargetToParty(target, requester interfaces.CharacterI, gs GsInterfNew) {
 	party := requester.GetParty()
 
 	if party.GetLeader().GetObjectId() != requester.GetObjectId() {
@@ -115,7 +115,7 @@ func addTargetToParty(target, requester interfaces.CharacterI) {
 	//TODO проверка что у таргета нет активного приглашения в другую группу
 	if true {
 		requester.OnTransactionRequest(target)
-		target.SendBuf(serverpackets.AskJoinParty(requester.GetName(), party.GetDistributionType()))
+		gs.GetClientByLogin(target.GetAccountLogin()).SendBuf(serverpackets.AskJoinParty(requester.GetName(), party.GetDistributionType()))
 		//TODO party.setPendingInvitation(true)
 	} else {
 		msg := sysmsg.C1IsBusyTryLater

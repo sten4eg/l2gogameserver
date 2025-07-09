@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"l2gogameserver/config"
 	"l2gogameserver/data"
 	"l2gogameserver/db"
@@ -15,10 +16,33 @@ import (
 	"l2gogameserver/loginserver"
 	"l2gogameserver/server"
 	"log"
+	"os"
+	"runtime/pprof"
+	"time"
 )
 
+func stp(file *os.File) {
+	time.Sleep(5 * time.Minute)
+	pprof.StopCPUProfile()
+	_ = file.Close()
+	fmt.Println("cpu profiling STOPPED")
+	fmt.Println("cpu profiling STOPPED")
+	fmt.Println("cpu profiling STOPPED")
+	fmt.Println("cpu profiling STOPPED")
+	fmt.Println("cpu profiling STOPPED")
+}
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	f, err := os.OpenFile("test", os.O_RDONLY|os.O_CREATE, 0666)
+	if err != nil {
+		panic(err)
+	}
+	err = pprof.StartCPUProfile(f)
+	if err != nil {
+		panic(err)
+	}
+	go stp(f)
 
 	cfg, err := config.Read()
 	if err != nil {

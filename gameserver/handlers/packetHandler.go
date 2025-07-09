@@ -21,8 +21,8 @@ type GameServerInterface interface {
 	CharOffline(ctxInterface interfaces.NewClientCtxInterface)
 	AddOnlineChar(character interfaces.CharacterI)
 	GetChar(string) (interfaces.CharacterI, bool)
-	GetNetConnByCharacterName(name string) interfaces.ReciverAndSender
 	GetNetConnByCharObjectId(objectId int32) interfaces.CharacterI
+	GetClientByLogin(login string) interfaces.NewClientCtxInterface
 }
 
 func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
@@ -58,7 +58,7 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 			case 0x0d:
 				clientpackets.CharacterDelete(client, data, gs.GetDbConn())
 			case 0x12:
-				clientpackets.CharSelected(data, client)
+				clientpackets.CharSelected(data, client, gs.GetDbConn())
 				gs.AddOnlineChar(client.GetAccount().GetCurrentChar()) //todo проверить зачем еще одна мапа с чарами онлайн, есть мапа с клиентами
 			case 0x13:
 				clientpackets.RequestNewCharacter(client)
@@ -108,7 +108,7 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 			case 0x1b: //AddTradeItem
 				clientpackets.AddTradeItem(data, client, gs)
 			case 0x1c: //tradeDone
-				clientpackets.TradeDone(data, client, gs.GetDbConn())
+				clientpackets.TradeDone(data, client, gs.GetDbConn(), gs)
 			case 0x17:
 				clientpackets.DropItem(client, data, gs.GetDbConn())
 			//client.Send(pkg)
@@ -116,13 +116,13 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 			//pkgInventoryUpdate := clientpackets.InventoryUpdate(client, &item, models.UpdateTypeRemove)
 			//client.Send(pkgInventoryUpdate)
 			case 0x14:
-				clientpackets.RequestItemList(data, character)
+				clientpackets.RequestItemList(data, client)
 			case 0x23: //todo пересмотреть
 				clientpackets.BypassToServer(data, client, gs.GetDbConn())
 			case 0x19:
-				clientpackets.UseItem(character, data, gs.GetDbConn())
+				clientpackets.UseItem(character, data, gs.GetDbConn(), gs)
 			case 0x31:
-				clientpackets.SetPrivateStoreListSell(client, data)
+				clientpackets.SetPrivateStoreListSell(client, data, gs)
 			case 0x39:
 				clientpackets.RequestMagicSkillUse(data, client)
 			case 0x3d:
@@ -146,11 +146,11 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 				pkg := clientpackets.MoveBackwardToLocation(client, data)
 				broadcast.Checkaem(client, pkg)
 			case 0x42:
-				clientpackets.RequestJoinParty(client, data)
+				clientpackets.RequestJoinParty(client, data, gs)
 			case 0x43:
-				clientpackets.RequestAnswerJoinParty(client, data)
+				clientpackets.RequestAnswerJoinParty(client, data, gs)
 			case 0x44:
-				clientpackets.RequestWithDrawalParty(client)
+				clientpackets.RequestWithDrawalParty(client, gs)
 			case 0x49:
 				say := clientpackets.Say(client, data)
 				broadcast.BroadCastChat(client, say, gs)
@@ -172,7 +172,7 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 			case 0xce:
 				clientpackets.RequestDeleteMacro(client, data, gs.GetDbConn())
 			case 0x56:
-				clientpackets.RequestActionUse(client, data)
+				clientpackets.RequestActionUse(client, data, gs)
 			case 0xd0:
 				switch data[0] {
 				default:
@@ -186,7 +186,7 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 
 				}
 			case 0x74:
-				clientpackets.SendBypassBuildCmd(character, data)
+				clientpackets.SendBypassBuildCmd(character, data, gs)
 			case 0x83:
 				clientpackets.RequestPrivateStoreBuy(client, data, gs.GetDbConn())
 			case 0x96:

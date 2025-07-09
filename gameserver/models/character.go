@@ -224,13 +224,14 @@ func (c *Character) IsFakeDead() bool {
 }
 
 // Load загрузка персонажа
-func (c *Character) Load() {
+func (c *Character) Load(db *sql.DB, login string) {
+	c.Login = login
 	c.InGame = true
-	c.ShortCut = RestoreMe(c.ObjectId, c.ClassId, c.Conn.db)
+	c.ShortCut = RestoreMe(c.ObjectId, c.ClassId, db)
 	c.LoadSkills()
 	//c.SkillQueue = make(chan SkillHolder)
-	c.Inventory.Items = GetMyItems(c.ObjectId, c.Conn.db)
-	c.Paperdoll = RestoreVisibleInventory(c.ObjectId, c.Conn.db)
+	c.Inventory.Items = GetMyItems(c.ObjectId, db)
+	c.Paperdoll = RestoreVisibleInventory(c.ObjectId, db)
 	c.LoadCharactersMacros()
 	c.MacroRevision = 1
 	for _, v := range &c.Paperdoll {

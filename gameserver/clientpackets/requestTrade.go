@@ -13,14 +13,14 @@ type TradeRequestInterface interface {
 	EncryptAndSend([]byte) error
 	GetCurrentChar() interfaces.CharacterI
 }
-type GsInterf interface {
+type GsInterfNew interface {
 	GetChar(string) (interfaces.CharacterI, bool)
-	GetNetConnByCharacterName(name string) interfaces.ReciverAndSender
 	GetNetConnByCharObjectId(objectId int32) interfaces.CharacterI
 	CharOffline(i interfaces.NewClientCtxInterface)
+	GetClientByLogin(login string) interfaces.NewClientCtxInterface
 }
 
-func TradeRequest(data []byte, client interfaces.NewClientCtxInterface, gs GsInterf) {
+func TradeRequest(data []byte, client interfaces.NewClientCtxInterface, gs GsInterfNew) {
 	var packet = packets.NewReader(data)
 	targetObjectId := packet.ReadInt32()
 

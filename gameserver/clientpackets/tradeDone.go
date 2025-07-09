@@ -11,7 +11,7 @@ import (
 )
 
 // TradeDone Игрок подтвердил сделку
-func TradeDone(data []byte, client interfaces.NewClientCtxInterface, db *sql.DB) {
+func TradeDone(data []byte, client interfaces.NewClientCtxInterface, db *sql.DB, gs GsInterfNew) {
 	var packet = packets.NewReader(data)
 	response := packet.ReadInt32() // 1 - пользователь нажал ОК, 0 пользователь отменил трейд
 
@@ -51,7 +51,7 @@ func TradeDone(data []byte, client interfaces.NewClientCtxInterface, db *sql.DB)
 		}
 		_, isTradeConfirmed, tradeDone, success := trade.Confirmed(db)
 		if isTradeConfirmed {
-			tradeConfirmed(trade.GetPartner(), trade.GetOwner())
+			tradeConfirmed(trade.GetPartner(), trade.GetOwner(), gs)
 		}
 		if tradeDone {
 			finishTrade(player, success)
@@ -61,18 +61,19 @@ func TradeDone(data []byte, client interfaces.NewClientCtxInterface, db *sql.DB)
 		partner := player.GetActiveTradeList().GetPartner()
 		needSendCancelToMe, _ := client.GetAccount().GetCurrentChar().CancelActiveTrade()
 		if needSendCancelToMe {
-			cancelTrade(player, partner)
-			cancelTrade(partner, player)
+			cancelTrade(player, partner, gs)
+			cancelTrade(partner, player, gs)
 		}
 	}
 
 }
 
-func tradeConfirmed(client interfaces.CharacterI, partner interfaces.CharacterI) {
+func tradeConfirmed(character interfaces.CharacterI, partner interfaces.CharacterI, gs GsInterfNew) {
 	buff := packets.Get()
 	msg := sysmsg.C1ConfirmedTrade
 	msg.AddString(partner.GetName())
-	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(sysmsg.SystemMessage(msg)))
+	client := gs.GetClientByLogin(character.GetAccountLogin())
+	buff.WriteSlice(gs.GetClientByLogin(character.GetAccountLogin()).CryptAndReturnPackageReadyToShip(sysmsg.SystemMessage(msg)))
 	client.Send(buff.Bytes())
 	client.EncryptAndSend(serverpackets.TradeOtherDone())
 }
@@ -101,15 +102,16 @@ func finishTrade(c interfaces.CharacterI, successful bool) {
 	}
 }
 
-func cancelTrade(c interfaces.CharacterI, partner interfaces.CharacterI) {
+func cancelTrade(c interfaces.CharacterI, partner interfaces.CharacterI, gs GsInterfNew) {
 	buff := packets.Get()
 
 	pkg := serverpackets.TradeDone(0)
-	buff.WriteSlice(c.CryptAndReturnPackageReadyToShip(pkg))
+	client := gs.GetClientByLogin(c.GetAccountLogin())
+	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 
 	msg := sysmsg.C1CanceledTrade
 	msg.AddString(partner.GetName())
-	buff.WriteSlice(c.CryptAndReturnPackageReadyToShip(sysmsg.SystemMessage(msg)))
-	c.Send(buff.Bytes())
+	buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(sysmsg.SystemMessage(msg)))
+	client.Send(buff.Bytes())
 
 }

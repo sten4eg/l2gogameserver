@@ -13,8 +13,8 @@ import (
 
 type gameServerInterface interface {
 	GetChar(string) (interfaces.CharacterI, bool)
-	GetNetConnByCharacterName(name string) interfaces.ReciverAndSender
 	GetNetConnByCharObjectId(objectId int32) interfaces.CharacterI
+	GetClientByLogin(string) interfaces.NewClientCtxInterface
 }
 
 // ToAroundPlayerInRadius отправляет всем персонажам в радиусе radius
@@ -165,7 +165,7 @@ func BroadCastChat(me interfaces.NewClientCtxInterface, say chat.Say, gs gameSer
 // true если отправлен, false если персонаж не найден
 func BroadCastToCharacterByName(pkg *utils.PacketByte, to string, gs gameServerInterface) bool {
 
-	conn := gs.GetNetConnByCharacterName(to)
+	conn := gs.GetClientByLogin(to)
 	if conn != nil {
 		conn.EncryptAndSend(pkg.GetData())
 		return true

@@ -14,8 +14,8 @@ import (
 const formalWearId = 6408
 const fortFlagId = 9819
 
-func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB) {
-	client, ok := clientI.(*models.Character)
+func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB, gs GsInterfNew) {
+	character, ok := clientI.(*models.Character)
 	if !ok {
 		return
 	}
@@ -28,8 +28,8 @@ func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB) {
 	var selectedItem *models.MyItem
 
 	find := false
-	for i := range client.Inventory.Items {
-		item := &client.Inventory.Items[i]
+	for i := range character.Inventory.Items {
+		item := &character.Inventory.Items[i]
 		if item.ObjectId == objId {
 			selectedItem = item
 			find = true
@@ -46,7 +46,7 @@ func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB) {
 
 	if selectedItem.IsEquipable() {
 		// нельзя надевать Formal Wear с проклятым оружием
-		if client.IsCursedWeaponEquipped() && objId == formalWearId {
+		if character.IsCursedWeaponEquipped() && objId == formalWearId {
 			return
 		}
 
@@ -56,35 +56,35 @@ func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB) {
 		case items.SlotLrHand, items.SlotLHand, items.SlotRHand:
 
 			// если в руке Combat flag
-			if client.IsActiveWeapon() && models.GetActiveWeapon(client.Inventory.Items, client.Paperdoll).Item.Id == fortFlagId {
+			if character.IsActiveWeapon() && models.GetActiveWeapon(character.Inventory.Items, character.Paperdoll).Item.Id == fortFlagId {
 				pkg := sysmsg.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
-				buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-				client.Send(buffer.Bytes())
+				buffer.WriteSlice(character.CryptAndReturnPackageReadyToShip(pkg))
+				character.Send(buffer.Bytes())
 				return
 			}
 			//todo тут 2 проврки на  isMounted  и isDisarmed
 
 			// нельзя менять оружие/щит если в руках проклятое оружие
-			if client.IsCursedWeaponEquipped() {
+			if character.IsCursedWeaponEquipped() {
 				return
 			}
 
 			//  запрет носить НЕ камаелям эксклюзивное оружие  камаелей
 			if selectedItem.IsEquipped() == 0 && selectedItem.IsWeapon() { // todo еще проверка && !activeChar.canOverrideCond(ITEM_CONDITIONS))
 
-				switch client.Race {
+				switch character.Race {
 				case race.KAMAEL:
 					if selectedItem.IsWeaponTypeNone() {
 						pkg := sysmsg.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
-						buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-						client.Send(buffer.Bytes())
+						buffer.WriteSlice(character.CryptAndReturnPackageReadyToShip(pkg))
+						character.Send(buffer.Bytes())
 						return
 					}
 				case race.HUMAN, race.DWARF, race.ELF, race.DARK_ELF, race.ORC:
 					if selectedItem.IsOnlyKamaelWeapon() {
 						pkg := sysmsg.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
-						buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-						client.Send(buffer.Bytes())
+						buffer.WriteSlice(character.CryptAndReturnPackageReadyToShip(pkg))
+						character.Send(buffer.Bytes())
 						return
 					}
 				}
@@ -92,10 +92,10 @@ func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB) {
 		// камаель не может носить тяжелую или маг броню
 		// они могут носить только лайт, может проверять на !LIGHT ?
 		case items.SlotChest, items.SlotBack, items.SlotGloves, items.SlotFeet, items.SlotHead, items.SlotFullArmor, items.SlotLegs:
-			if client.Race == race.KAMAEL && (selectedItem.IsHeavyArmor() || selectedItem.IsMagicArmor()) {
+			if character.Race == race.KAMAEL && (selectedItem.IsHeavyArmor() || selectedItem.IsMagicArmor()) {
 				pkg := sysmsg.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
-				buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-				client.Send(buffer.Bytes())
+				buffer.WriteSlice(character.CryptAndReturnPackageReadyToShip(pkg))
+				character.Send(buffer.Bytes())
 				return
 			}
 		case items.SlotDeco:
@@ -103,21 +103,22 @@ func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB) {
 
 		}
 
-		models.UseEquippableItem(selectedItem, client)
+		models.UseEquippableItem(selectedItem, character)
 	}
 
-	models.SaveInventoryInDB(client.Inventory.Items, db)
+	models.SaveInventoryInDB(character.Inventory.Items, db)
 
-	pkg := serverpackets.InventoryUpdate(clientI.GetCurrentChar().GetInventory().GetItemsWithUpdatedType())
-	clientI.GetCurrentChar().GetInventory().SetAllItemsUpdatedTypeNone()
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
+	pkg := serverpackets.InventoryUpdate(character.GetInventory().GetItemsWithUpdatedType())
+	character.GetInventory().SetAllItemsUpdatedTypeNone()
+	buffer.WriteSlice(character.CryptAndReturnPackageReadyToShip(pkg))
 
 	// После каждого use_item будет запрос в бд на восстановление paperdoll,
 	//todo надо бы это сделать в UseEquippableItem
-	client.Paperdoll = models.RestoreVisibleInventory(client.ObjectId, db)
+	character.Paperdoll = models.RestoreVisibleInventory(character.ObjectId, db)
 
-	pkg2 := serverpackets.UserInfo(client.GetCurrentChar())
-	buffer.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg2))
+	pkg2 := serverpackets.UserInfo(character.GetCurrentChar())
+	buffer.WriteSlice(character.CryptAndReturnPackageReadyToShip(pkg2))
 
+	client := gs.GetClientByLogin(character.GetAccountLogin())
 	client.Send(buffer.Bytes())
 }

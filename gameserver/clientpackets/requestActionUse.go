@@ -11,7 +11,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func RequestActionUse(client interfaces.NewClientCtxInterface, data []byte) {
+func RequestActionUse(client interfaces.NewClientCtxInterface, data []byte, gs GsInterfNew) {
 	packet := packets.NewReader(data)
 
 	actionId := packet.ReadInt32()
@@ -65,7 +65,7 @@ func RequestActionUse(client interfaces.NewClientCtxInterface, data []byte) {
 	case 66:
 		tryBroadcastSocial(client, 15) // Shyness
 	case 71, 72, 73:
-		useCoupleSocial(character, actionId-55)
+		useCoupleSocial(character, actionId-55, gs)
 
 	}
 
@@ -128,7 +128,7 @@ func tryBroadcastSocial(character interfaces.NewClientCtxInterface, id int32) {
 	}
 }
 
-func useCoupleSocial(character interfaces.CharacterI, id int32) {
+func useCoupleSocial(character interfaces.CharacterI, id int32, gs GsInterfNew) {
 	targetObject := getTargetByObjectId(character.GetTarget(), character.GetCurrentRegion())
 	if targetObject == nil {
 		character.SendSysMsg(sysmsg.IncorrectTarget)
@@ -226,7 +226,6 @@ func useCoupleSocial(character interfaces.CharacterI, id int32) {
 		character.SendSysMsg(msg)
 
 		// TODO проверки
-
-		target.SendBuf(serverpackets.ExAskCoupleAction(character.GetObjectId(), id))
+		gs.GetClientByLogin(target.GetAccountLogin()).SendBuf(serverpackets.ExAskCoupleAction(character.GetObjectId(), id))
 	}
 }

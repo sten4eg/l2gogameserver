@@ -39,7 +39,7 @@ func (i *Item) getPrice() int64 {
 	return i.count * i.price
 }
 
-func SetPrivateStoreListSell(client interfaces.NewClientCtxInterface, data []byte) {
+func SetPrivateStoreListSell(client interfaces.NewClientCtxInterface, data []byte, gs GsInterfNew) {
 	packet := packets.NewReader(data)
 
 	packageSale := packet.ReadInt32() == 1
@@ -80,7 +80,7 @@ func SetPrivateStoreListSell(client interfaces.NewClientCtxInterface, data []byt
 
 	if len(items) > 3 { //TODO > getPrivateSellStoreLimit()
 		pkg := serverpackets.PrivateStoreManageListSell(character, packageSale)
-		character.SendBuf(pkg)
+		gs.GetClientByLogin(character.GetAccountLogin()).SendBuf(pkg)
 		character.EncryptAndSend(sysmsg.SystemMessage(sysmsg.YouHaveExceededQuantityThatCanBeInputted))
 		return
 	}

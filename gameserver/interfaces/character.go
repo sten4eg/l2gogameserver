@@ -12,7 +12,7 @@ type CharacterI interface {
 	Positionable
 	Namer
 	UniquerId
-	ClientCtxInterface
+
 	EncryptAndSend(data []byte) error
 	CloseChannels()
 	GetClassId() int32
@@ -100,7 +100,7 @@ type CharacterI interface {
 	GetMacrosList() []MacrosInterface
 	GetPaperdollCharInfo() []MyItemInterface
 	GetShortCut() map[int32]dto.ShortCutDTO
-	Load()
+	Load(*sql.DB, string)
 
 	GetChannelUpdateShadowItem() chan dto.IUP
 	GetChannelCharInfoTo() chan []int32
