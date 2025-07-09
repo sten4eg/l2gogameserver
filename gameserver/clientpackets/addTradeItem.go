@@ -11,7 +11,7 @@ import (
 )
 
 // AddTradeItem Когда игрок добавляет предмет в трейде
-func AddTradeItem(data []byte, client interfaces.NewClientCtxInterface) {
+func AddTradeItem(data []byte, client interfaces.NewClientCtxInterface, gs GsInterf) {
 	var packet = packets.NewReader(data)
 
 	tradeId := packet.ReadInt32()
@@ -24,7 +24,7 @@ func AddTradeItem(data []byte, client interfaces.NewClientCtxInterface) {
 		return
 	}
 	partner := trade.GetPartner()
-	if partner == nil || broadcast.GetCharacterByObjectId(partner.GetObjectId()) == nil || partner.GetActiveTradeList() == nil {
+	if partner == nil || broadcast.GetCharacterByObjectId(partner.GetObjectId(), gs) == nil || partner.GetActiveTradeList() == nil {
 		if partner == nil {
 			logger.Warning.Println("Character:" + client.GetAccount().GetCurrentChar().GetName() + " requested invalid trade object: " + strconv.Itoa(int(objectId)))
 		}

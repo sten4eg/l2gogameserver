@@ -8,7 +8,6 @@ import (
 	"l2gogameserver/packets"
 )
 
-// TODO убрать модель
 func ShortCutInit(character interfaces.CharacterI, db *sql.DB) []byte {
 	buffer := packets.Get()
 

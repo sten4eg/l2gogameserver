@@ -10,7 +10,7 @@ import (
 )
 
 // AnswerTradeRequest Если пользователь отвечает на запрос трейда
-func AnswerTradeRequest(data []byte, sender interfaces.NewClientCtxInterface) {
+func AnswerTradeRequest(data []byte, sender interfaces.NewClientCtxInterface, gs GsInterf) {
 	var packet = packets.NewReader(data)
 	response := packet.ReadInt32() // 0-отказ,1-принял
 	if response == 0 {
@@ -26,7 +26,7 @@ func AnswerTradeRequest(data []byte, sender interfaces.NewClientCtxInterface) {
 		return
 	}
 
-	if broadcast.GetCharacterByObjectId(partner.GetObjectId()) == nil {
+	if broadcast.GetCharacterByObjectId(partner.GetObjectId(), gs) == nil {
 		sender.EncryptAndSend(serverpackets.TradeDone(0))
 		sender.EncryptAndSend(sysmsg.SystemMessage(sysmsg.TargetIsNotFoundInTheGame))
 		sender.GetAccount().GetCurrentChar().SetActiveRequester(nil)

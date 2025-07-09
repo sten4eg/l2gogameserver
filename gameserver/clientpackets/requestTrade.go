@@ -13,13 +13,19 @@ type TradeRequestInterface interface {
 	EncryptAndSend([]byte) error
 	GetCurrentChar() interfaces.CharacterI
 }
+type GsInterf interface {
+	GetChar(string) (interfaces.CharacterI, bool)
+	GetNetConnByCharacterName(name string) interfaces.ReciverAndSender
+	GetNetConnByCharObjectId(objectId int32) interfaces.CharacterI
+	CharOffline(i interfaces.NewClientCtxInterface)
+}
 
-func TradeRequest(data []byte, client interfaces.NewClientCtxInterface) {
+func TradeRequest(data []byte, client interfaces.NewClientCtxInterface, gs GsInterf) {
 	var packet = packets.NewReader(data)
 	targetObjectId := packet.ReadInt32()
 
 	currChar := client.GetAccount().GetCurrentChar()
-	target := broadcast.GetCharacterByObjectId(targetObjectId)
+	target := broadcast.GetCharacterByObjectId(targetObjectId, gs)
 
 	if target == nil {
 		pkg := sysmsg.SystemMessage(sysmsg.TargetIsIncorrect)

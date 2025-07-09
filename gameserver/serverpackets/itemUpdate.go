@@ -5,7 +5,6 @@ import (
 	"l2gogameserver/packets"
 )
 
-// TODO убрать модель
 func ItemUpdate(client interfaces.NewClientCtxInterface, updateType int16, objId int32) []byte {
 	buffer := packets.Get()
 

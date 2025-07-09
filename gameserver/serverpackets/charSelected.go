@@ -6,7 +6,6 @@ import (
 	"l2gogameserver/packets"
 )
 
-// TODO убрать модель
 func CharSelected(client interfaces.CharacterI) []byte {
 	//client, ok := clientI.(*models.ClientCtx)
 	//if !ok {

@@ -31,10 +31,15 @@ func main() {
 	}
 
 	idfactory.Load(dbConn)
+
 	multisell.LoadMultisell()
+
 	teleport.LoadLocationListTeleport()
+
 	models.LoadStats()
+
 	models.LoadSkills()
+
 	items.LoadItems()
 	data.Load()
 	npcs := npc.LoadNpc()

@@ -1,7 +1,6 @@
 package listeners
 
 import (
-	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
@@ -12,17 +11,23 @@ import (
 	"strconv"
 )
 
-func StartClientListener(client interfaces.NewClientCtxInterface) {
-	go channelListener(client)
+type GsInterf interface {
+	GetChar(string) (interfaces.CharacterI, bool)
+	GetNetConnByCharacterName(name string) interfaces.ReciverAndSender
+	GetNetConnByCharObjectId(objectId int32) interfaces.CharacterI
+}
+
+func StartClientListener(client interfaces.NewClientCtxInterface, g GsInterf) {
+	go channelListener(client, g)
 	go npcListener(client)
-	go moveListener(client)
+	go moveListener(client, g)
 	go dropItemListener(client)
-	go deleteObjectListener(client)
+	go deleteObjectListener(client, g)
 	go listenSkillQueue(client)
 
 }
 
-func channelListener(client interfaces.NewClientCtxInterface) {
+func channelListener(client interfaces.NewClientCtxInterface, g GsInterf) {
 	currChar := client.GetAccount().GetCurrentChar()
 	for {
 		select {
@@ -30,7 +35,7 @@ func channelListener(client interfaces.NewClientCtxInterface) {
 			pkg := serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
 			client.EncryptAndSend(pkg)
 			if q.UpdateType == models.UpdateTypeRemove {
-				broadcast.BroadCastUserInfoInRadius(client, 2000)
+				broadcast.BroadCastUserInfoInRadius(client, 2000, g)
 			}
 		case _ = <-currChar.GetChannelEndChannel():
 			return
@@ -74,7 +79,7 @@ func dropItemListener(client interfaces.NewClientCtxInterface) {
 	}
 
 }
-func moveListener(client interfaces.NewClientCtxInterface) {
+func moveListener(client interfaces.NewClientCtxInterface, g GsInterf) {
 
 	currChar := client.GetAccount().GetCurrentChar()
 	for {
@@ -88,7 +93,7 @@ func moveListener(client interfaces.NewClientCtxInterface) {
 
 			for index := range to {
 				strKey := strconv.Itoa(int(to[index]))
-				char, ok := gameserver.OnlineCharacters.Load(strKey)
+				char, ok := g.GetChar(strKey)
 				if !ok {
 					log.Println("Персонаж не найден")
 					continue
@@ -114,7 +119,7 @@ func moveListener(client interfaces.NewClientCtxInterface) {
 	}
 }
 
-func deleteObjectListener(client interfaces.NewClientCtxInterface) {
+func deleteObjectListener(client interfaces.NewClientCtxInterface, g GsInterf) {
 
 	pkg := utils.GetPacketByte()
 	defer pkg.Release()
@@ -126,7 +131,7 @@ func deleteObjectListener(client interfaces.NewClientCtxInterface) {
 			for index := range to {
 
 				strKey := strconv.Itoa(int(to[index]))
-				char, ok := gameserver.OnlineCharacters.Load(strKey)
+				char, ok := g.GetChar(strKey)
 				if !ok {
 					log.Println("Персонаж не найден")
 					continue

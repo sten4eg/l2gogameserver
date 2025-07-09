@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"l2gogameserver/data/logger"
-	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/clientpackets"
 	"l2gogameserver/gameserver/interfaces"
@@ -19,6 +18,11 @@ type GameServerInterface interface {
 	RemoveClient(string)
 	SendLogout(string)
 	GetDbConn() *sql.DB
+	CharOffline(ctxInterface interfaces.NewClientCtxInterface)
+	AddOnlineChar(character interfaces.CharacterI)
+	GetChar(string) (interfaces.CharacterI, bool)
+	GetNetConnByCharacterName(name string) interfaces.ReciverAndSender
+	GetNetConnByCharObjectId(objectId int32) interfaces.CharacterI
 }
 
 func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
@@ -27,8 +31,8 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 		opcode, data, err := client.Receive()
 		if err != nil {
 			fmt.Println(err)
-			gameserver.CharOffline(client) //todo если чар офф то надо менять state
-			return                         // todo  return ?
+			gs.CharOffline(client) //todo если чар офф то надо менять state
+			return                 // todo  return ?
 		}
 		logger.Info.Println("Client->Server: #", opcode, packets.GetNamePacket(opcode))
 
@@ -55,7 +59,7 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 				clientpackets.CharacterDelete(client, data, gs.GetDbConn())
 			case 0x12:
 				clientpackets.CharSelected(data, client)
-				gameserver.AddOnlineChar(client.GetAccount().GetCurrentChar()) //todo проверить зачем еще одна мапа с чарами онлайн, есть мапа с клиентами
+				gs.AddOnlineChar(client.GetAccount().GetCurrentChar()) //todo проверить зачем еще одна мапа с чарами онлайн, есть мапа с клиентами
 			case 0x13:
 				clientpackets.RequestNewCharacter(client)
 			case 0xd0:
@@ -76,7 +80,7 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 				clientpackets.RequestEnterWorld(client, data, gs.GetDbConn())
 				//broadcast.BroadCastUserInfoInRadius(client, 2000)
 				//рассылка при входе в игру происходит в setWorldRegion // broadcast.SendCharInfoAboutCharactersInRadius(client, 2000)
-				go listeners.StartClientListener(client) //todo  надо зпускать не отсюда
+				go listeners.StartClientListener(client, gs) //todo  надо зпускать не отсюда
 			case 0xd0:
 				if len(data) >= 2 {
 					switch data[0] {
@@ -98,11 +102,11 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 			case 0x01:
 				clientpackets.Attack(data, client)
 			case 0x1a: //Запрос другому персонажу на желание торговать
-				clientpackets.TradeRequest(data, client)
+				clientpackets.TradeRequest(data, client, gs)
 			case 0x55: //AnswerTradeRequest (если пользователь отвечает Да/Нет на предложение торговли)
-				clientpackets.AnswerTradeRequest(data, client)
+				clientpackets.AnswerTradeRequest(data, client, gs)
 			case 0x1b: //AddTradeItem
-				clientpackets.AddTradeItem(data, client)
+				clientpackets.AddTradeItem(data, client, gs)
 			case 0x1c: //tradeDone
 				clientpackets.TradeDone(data, client, gs.GetDbConn())
 			case 0x17:
@@ -126,7 +130,7 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 			case 0x3f:
 				clientpackets.RequestShortCutDel(data, client, gs.GetDbConn())
 			case 0x57:
-				clientpackets.RequestRestart(client, gs.GetDbConn())
+				clientpackets.RequestRestart(client, gs, gs.GetDbConn())
 				//gameserver.CharOffline(client)
 			case 0x60:
 				clientpackets.DestroyItem(data, client, gs.GetDbConn())
@@ -149,7 +153,7 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 				clientpackets.RequestWithDrawalParty(client)
 			case 0x49:
 				say := clientpackets.Say(client, data)
-				broadcast.BroadCastChat(client, say)
+				broadcast.BroadCastChat(client, say, gs)
 
 			case 0x59:
 				clientpackets.ValidationPosition(data, client.GetAccount().GetCurrentChar())

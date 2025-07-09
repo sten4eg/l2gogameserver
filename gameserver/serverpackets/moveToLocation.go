@@ -6,7 +6,6 @@ import (
 	"l2gogameserver/packets"
 )
 
-// TODO убрать модель
 func MoveToLocation(location *world.BackwardToLocation, character interfaces.CharacterI) []byte {
 	buffer := packets.Get()
 

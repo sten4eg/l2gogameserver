@@ -67,22 +67,14 @@ func (b *Buffer) WriteSingleByte(value byte) {
 	b.b = append(b.b, value)
 }
 
-const EmptyByte byte = 0
-
 func (b *Buffer) WriteS(value string) {
-	utf16Slice := utf16.Encode([]rune(value))
+	runes := []rune(value)
+	// Предварительное выделение памяти
+	b.b = append(b.b, make([]byte, len(runes)*2+2)...)
 
-	var buf []byte
-	for _, v := range utf16Slice {
-		if v < math.MaxInt8 {
-			buf = append(buf, byte(v), 0)
-		} else {
-			f, s := uint8(v&0xff), uint8(v>>8)
-			buf = append(buf, f, s)
-		}
+	offset := len(b.b) - len(runes)*2 - 2
+	for i, r := range runes {
+		v := utf16.Encode([]rune{r})[0]
+		binary.LittleEndian.PutUint16(b.b[offset+i*2:], v)
 	}
-
-	buf = append(buf, EmptyByte, EmptyByte)
-
-	b.b = append(b.b, buf...)
 }

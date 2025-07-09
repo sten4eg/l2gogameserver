@@ -6,7 +6,6 @@ import (
 	"l2gogameserver/packets"
 )
 
-// TODO убрать модель
 func CreatureSay(say chat.Say, character interfaces.CharacterI) []byte {
 
 	buffer := packets.Get()

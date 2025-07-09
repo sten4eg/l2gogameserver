@@ -1,7 +1,6 @@
 package broadcast
 
 import (
-	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/chat"
 	"l2gogameserver/gameserver/serverpackets"
@@ -11,6 +10,12 @@ import (
 	"log"
 	"strconv"
 )
+
+type gameServerInterface interface {
+	GetChar(string) (interfaces.CharacterI, bool)
+	GetNetConnByCharacterName(name string) interfaces.ReciverAndSender
+	GetNetConnByCharObjectId(objectId int32) interfaces.CharacterI
+}
 
 // ToAroundPlayerInRadius отправляет всем персонажам в радиусе radius
 // информацию из пакета pkg
@@ -72,7 +77,7 @@ func BroadCastBufferToAroundPlayersWithoutSelf(my interfaces.NewClientCtxInterfa
 
 // BroadCastUserInfoInRadius отправляет всем персонажам в радиусе radius
 // информацию о персонаже, Самому персонажу отправляет полный UserInfo
-func BroadCastUserInfoInRadius(me interfaces.NewClientCtxInterface, radius int32) {
+func BroadCastUserInfoInRadius(me interfaces.NewClientCtxInterface, radius int32, gs gameServerInterface) {
 	ui := serverpackets.UserInfo(me.GetAccount().GetCurrentChar())
 	me.EncryptAndSend(ui)
 
@@ -92,7 +97,7 @@ func BroadCastUserInfoInRadius(me interfaces.NewClientCtxInterface, radius int32
 
 	for i := range charsIds {
 		strKey := strconv.Itoa(int(charsIds[i].GetObjectId()))
-		char, ok := gameserver.OnlineCharacters.Load(strKey)
+		char, ok := gs.GetChar(strKey)
 		if !ok {
 			log.Println("Персонаж не найден")
 			continue
@@ -114,7 +119,7 @@ func BroadcastUserInfo(client interfaces.NewClientCtxInterface) {
 	BroadCastPkgToAroundPlayer(client, pkg3)
 }
 
-func BroadCastChat(me interfaces.NewClientCtxInterface, say chat.Say) {
+func BroadCastChat(me interfaces.NewClientCtxInterface, say chat.Say, gs gameServerInterface) {
 	pb := utils.GetPacketByte()
 	defer pb.Release()
 
@@ -127,7 +132,7 @@ func BroadCastChat(me interfaces.NewClientCtxInterface, say chat.Say) {
 	case chat.Tell:
 		cs := serverpackets.CreatureSay(say, me.GetAccount().GetCurrentChar())
 		pb.SetData(cs)
-		ok := BroadCastToCharacterByName(pb, say.To)
+		ok := BroadCastToCharacterByName(pb, say.To, gs)
 		if ok {
 			me.EncryptAndSend(pb.GetData())
 		} else {
@@ -158,9 +163,9 @@ func BroadCastChat(me interfaces.NewClientCtxInterface, say chat.Say) {
 
 // BroadCastToCharacterByName отправляет pkg персонажу с ником to
 // true если отправлен, false если персонаж не найден
-func BroadCastToCharacterByName(pkg *utils.PacketByte, to string) bool {
+func BroadCastToCharacterByName(pkg *utils.PacketByte, to string, gs gameServerInterface) bool {
 
-	conn := gameserver.GetNetConnByCharacterName(to)
+	conn := gs.GetNetConnByCharacterName(to)
 	if conn != nil {
 		conn.EncryptAndSend(pkg.GetData())
 		return true
@@ -194,6 +199,6 @@ func Checkaem(client interfaces.NewClientCtxInterface, l world.BackwardToLocatio
 	BroadCastToAroundPlayers(client, ut)
 }
 
-func GetCharacterByObjectId(id int32) interfaces.CharacterI {
-	return gameserver.GetNetConnByCharObjectId(id)
+func GetCharacterByObjectId(id int32, gs gameServerInterface) interfaces.CharacterI {
+	return gs.GetNetConnByCharObjectId(id)
 }

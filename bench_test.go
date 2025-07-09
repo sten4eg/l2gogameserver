@@ -1,65 +1,58 @@
 package main
 
 import (
-	"errors"
-	"math/rand"
+	"encoding/binary"
+	"math"
 	"testing"
+	"unicode/utf16"
 )
 
-var notPositive = errors.New("not Positive!")
-
-const size = 10000
-
-var myDataForTest []int
-
-func init() {
-	myDataForTest = make([]int, 0, size)
-	for i := 0; i < size; i++ {
-		myDataForTest = append(myDataForTest, (rand.Int()%1000)-500)
-	}
-}
-
 func BenchmarkNew(b *testing.B) {
+	var bu Buffer
 	for i := 0; i < b.N; i++ {
-		sum_abs_value_exception(myDataForTest)
+		bu.WriteSOld("test")
 	}
 }
 func BenchmarkSum(b *testing.B) {
+	var bu Buffer
 	for i := 0; i < b.N; i++ {
-		sum_abs_value(myDataForTest)
+		bu.WriteSNew("test")
 	}
 }
 
-func sum_abs_value_exception(a []int) int {
-	var sum int
-	for _, x := range a {
-		err := get_positive_value(x)
-		if err != nil {
-			sum += -x
+const EmptyByte byte = 0
+
+type Buffer struct {
+	b []byte
+}
+
+func (b *Buffer) WriteSOld(value string) {
+	utf16Slice := utf16.Encode([]rune(value))
+
+	var buf []byte
+	for _, v := range utf16Slice {
+		if v < math.MaxInt8 {
+			buf = append(buf, byte(v), 0)
 		} else {
-			sum += x
-		}
-
-	}
-
-	return sum
-}
-
-func get_positive_value(a int) error {
-	if a < 0 {
-		return notPositive
-	}
-	return nil
-}
-func sum_abs_value(a []int) int {
-	var sum int
-	for _, x := range a {
-		if x < 0 {
-			sum += -x
-		} else {
-			sum += x
+			f, s := uint8(v&0xff), uint8(v>>8)
+			buf = append(buf, f, s)
 		}
 	}
 
-	return sum
+	buf = append(buf, EmptyByte, EmptyByte)
+
+	b.b = append(b.b, buf...)
+}
+
+func (b *Buffer) WriteSNew(value string) {
+	runes := []rune(value)
+	// Предварительное выделение памяти
+	b.b = append(b.b, make([]byte, len(runes)*2+2)...)
+
+	offset := len(b.b) - len(runes)*2 - 2
+	for i, r := range runes {
+		v := utf16.Encode([]rune{r})[0]
+		binary.LittleEndian.PutUint16(b.b[offset+i*2:], v)
+	}
+	// Последние 2 байта уже 0
 }
