@@ -17,8 +17,11 @@ import (
 
 func main() {
 
-	err := config.Read()
-	cfg := config.GetDBConfig()
+	config, err := config.Read()
+	if err != nil {
+		log.Fatal(err)
+	}
+	cfg := config.GameServer.Database
 	if err != nil {
 		panic(err)
 	}

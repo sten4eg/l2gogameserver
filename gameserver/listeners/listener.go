@@ -18,70 +18,10 @@ type GsInterf interface {
 }
 
 func StartClientListener(client interfaces.NewClientCtxInterface, g GsInterf) {
-	go channelListener(client, g)
-	go npcListener(client)
-	go moveListener(client, g)
-	go dropItemListener(client)
-	go deleteObjectListener(client, g)
-	go listenSkillQueue(client)
-
+	go startListener(client, g)
 }
 
-func channelListener(client interfaces.NewClientCtxInterface, g GsInterf) {
-	currChar := client.GetAccount().GetCurrentChar()
-	for {
-		select {
-		case q := <-currChar.GetChannelUpdateShadowItem():
-			pkg := serverpackets.ItemUpdate(client, q.UpdateType, q.ObjId)
-			client.EncryptAndSend(pkg)
-			if q.UpdateType == models.UpdateTypeRemove {
-				broadcast.BroadCastUserInfoInRadius(client, 2000, g)
-			}
-		case _ = <-currChar.GetChannelEndChannel():
-			return
-		}
-	}
-
-}
-
-func npcListener(client interfaces.NewClientCtxInterface) {
-	//currChar := client.GetAccount().GetCurrentChar()
-	//for {
-	//	select {
-	//	case q := <-currChar.GetChannelNpcInfo():
-	//		buff := packets.Get()
-	//		for i := range q {
-	//			pkg := serverpackets.NpcInfo(q[i])
-	//			buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
-	//		}
-	//		client.Send(buff.Bytes())
-	//
-	//	case _ = <-currChar.GetChannelEndChannel():
-	//		return
-	//	}
-	//}
-
-}
-func dropItemListener(client interfaces.NewClientCtxInterface) {
-	currChar := client.GetAccount().GetCurrentChar()
-
-	for {
-		select {
-		case q := <-currChar.GetChannelDropItemsInfo():
-			buff := packets.Get()
-			for i := range q {
-				pkg := serverpackets.DropItem(q[i], 0)
-				buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg.Bytes()))
-			}
-			client.Send(buff.Bytes())
-		case _ = <-currChar.GetChannelEndChannel():
-			return
-		}
-	}
-
-}
-func moveListener(client interfaces.NewClientCtxInterface, g GsInterf) {
-
+func startListener(client interfaces.NewClientCtxInterface, g GsInterf) {
 	currChar := client.GetAccount().GetCurrentChar()
 	for {
 		select {
@@ -118,31 +58,32 @@ func moveListener(client interfaces.NewClientCtxInterface, g GsInterf) {
 			charInfoAboutMe.Release()
 			extraUserInfoAboutMe.Release()
 
-		case q := <-currChar.GetChannelNpcInfo():
+		case npcsList := <-currChar.GetChannelNpcInfo():
 			buff := packets.Get()
-			for i := range q {
-				pkg := serverpackets.NpcInfo(q[i])
+			for npcInfo := range npcsList {
+				pkg := serverpackets.NpcInfo(npcsList[npcInfo])
 				buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 			}
 			client.Send(buff.Bytes())
-		case _ = <-currChar.GetChannelEndChannel():
-			return
-		}
-	}
-}
-
-func deleteObjectListener(client interfaces.NewClientCtxInterface, g GsInterf) {
-
-	pkg := utils.GetPacketByte()
-	defer pkg.Release()
-	currChar := client.GetAccount().GetCurrentChar()
-	for {
-		select {
-		case to := <-currChar.GetChannelDeleteObjectTo():
+		case shadowItemInfo := <-currChar.GetChannelUpdateShadowItem():
+			pkg := serverpackets.ItemUpdate(client, shadowItemInfo.UpdateType, shadowItemInfo.ObjId)
+			client.EncryptAndSend(pkg)
+			if shadowItemInfo.UpdateType == models.UpdateTypeRemove {
+				broadcast.BroadCastUserInfoInRadius(client, 2000, g)
+			}
+		case droppedItems := <-currChar.GetChannelDropItemsInfo():
+			buff := packets.Get()
+			for droppedItem := range droppedItems {
+				pkg := serverpackets.DropItem(droppedItems[droppedItem], 0)
+				buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg.Bytes()))
+			}
+			client.Send(buff.Bytes())
+		case deleteObjects := <-currChar.GetChannelDeleteObjectTo():
+			pkg := utils.GetPacketByte()
 			pkg.SetDataBuf(serverpackets.DeleteObject(currChar.GetObjectId()))
-			for index := range to {
+			for index := range deleteObjects {
 
-				strKey := strconv.Itoa(int(to[index]))
+				strKey := strconv.Itoa(int(deleteObjects[index]))
 				char, ok := g.GetChar(strKey)
 				if !ok {
 					log.Println("Персонаж не найден")
@@ -151,22 +92,12 @@ func deleteObjectListener(client interfaces.NewClientCtxInterface, g GsInterf) {
 				char.EncryptAndSend(pkg.GetData())
 
 			}
+			pkg.Release()
+		//case res := <-currChar.SkillQueue:
+		//	fmt.Println("SKILL V QUEUE")
+		//	fmt.Println(res)
 		case _ = <-currChar.GetChannelEndChannel():
 			return
 		}
 	}
-
-}
-
-func listenSkillQueue(client interfaces.NewClientCtxInterface) {
-
-	//for {
-	//	select {
-	//	case res := <-ch.CurrentChar.SkillQueue:
-	//		fmt.Println("SKILL V QUEUE")
-	//		fmt.Println(res)
-	//	case _ = <-ch.CurrentChar.EndChannel:
-	//		return
-	//	}
-	//}
 }

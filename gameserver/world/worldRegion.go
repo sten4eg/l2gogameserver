@@ -2,7 +2,7 @@ package world
 
 import (
 	"github.com/alphadose/haxmap"
-	"github.com/puzpuzpuz/xsync"
+	"github.com/puzpuzpuz/xsync/v4"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/npc"
@@ -17,13 +17,14 @@ type WorldRegion struct {
 	TileX         int32
 	TileY         int32
 	TileZ         int32
-	CharsInRegion *xsync.MapOf[interfaces.CharacterI]
-	NpcInRegion   *xsync.MapOf[interfaces.Npcer]
-	ItemsInRegion *xsync.MapOf[interfaces.MyItemInterface]
+	CharsInRegion *xsync.Map[string, interfaces.CharacterI]
+	NpcInRegion   *xsync.Map[string, interfaces.Npcer]
+	ItemsInRegion *xsync.Map[string, interfaces.MyItemInterface]
 	//TODO в это структуре 2 мапы в которой хранятся итемы
 	//в первой хранятся итемы и их данные все
 	//а во второй id и время когда они должны быть удалены можно ли сделать одну мапу
 	ItemsExpireTime *haxmap.Map[int32, int64]
+	xsync.Map[int32, int64]
 }
 
 func NewWorldRegion(x, y, z int32) *WorldRegion {
@@ -31,9 +32,9 @@ func NewWorldRegion(x, y, z int32) *WorldRegion {
 	newRegion.TileX = x
 	newRegion.TileY = y
 	newRegion.TileZ = z
-	newRegion.CharsInRegion = xsync.NewMapOf[interfaces.CharacterI]()
-	newRegion.NpcInRegion = xsync.NewMapOf[interfaces.Npcer]()
-	newRegion.ItemsInRegion = xsync.NewMapOf[interfaces.MyItemInterface]()
+	newRegion.CharsInRegion = xsync.NewMap[string, interfaces.CharacterI]()
+	newRegion.NpcInRegion = xsync.NewMap[string, interfaces.Npcer]()
+	newRegion.ItemsInRegion = xsync.NewMap[string, interfaces.MyItemInterface]()
 	newRegion.ItemsExpireTime = haxmap.New[int32, int64]()
 
 	go DropItemChecker(&newRegion)
