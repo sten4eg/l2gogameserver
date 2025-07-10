@@ -1,58 +1,74 @@
 package main
 
 import (
-	"encoding/binary"
-	"math"
+	"math/rand"
 	"testing"
-	"unicode/utf16"
+	"time"
+
+	"github.com/alphadose/haxmap"
+	"github.com/puzpuzpuz/xsync/v4"
 )
 
-func BenchmarkNew(b *testing.B) {
-	var bu Buffer
-	for i := 0; i < b.N; i++ {
-		bu.WriteSOld("test")
+const (
+	numKeys      = 100000 // Количество элементов в мапе
+	updatePeriod = time.Millisecond * 10
+)
+
+func BenchmarkHaxMap(b *testing.B) {
+	m := haxmap.New[int32, int64]()
+
+	// Инициализация мапы
+	for i := 0; i < numKeys; i++ {
+		m.Set(int32(i), time.Now().Unix())
 	}
-}
-func BenchmarkSum(b *testing.B) {
-	var bu Buffer
-	for i := 0; i < b.N; i++ {
-		bu.WriteSNew("test")
-	}
-}
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-const EmptyByte byte = 0
-
-type Buffer struct {
-	b []byte
-}
-
-func (b *Buffer) WriteSOld(value string) {
-	utf16Slice := utf16.Encode([]rune(value))
-
-	var buf []byte
-	for _, v := range utf16Slice {
-		if v < math.MaxInt8 {
-			buf = append(buf, byte(v), 0)
-		} else {
-			f, s := uint8(v&0xff), uint8(v>>8)
-			buf = append(buf, f, s)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			key := int32(r.Intn(numKeys))
+			m.Set(key, time.Now().Unix()+int64(r.Intn(60)))
+			time.Sleep(updatePeriod)
 		}
+
+	})
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		now := time.Now().Unix()
+		m.ForEach(func(key int32, value int64) bool {
+			// Здесь происходит сравнение
+			if value < now {
+				m.Del(key)
+			}
+			return true
+		})
 	}
-
-	buf = append(buf, EmptyByte, EmptyByte)
-
-	b.b = append(b.b, buf...)
 }
 
-func (b *Buffer) WriteSNew(value string) {
-	runes := []rune(value)
-	// Предварительное выделение памяти
-	b.b = append(b.b, make([]byte, len(runes)*2+2)...)
+func BenchmarkXsyncMap(b *testing.B) {
+	m := xsync.NewMap[int32, int64]()
 
-	offset := len(b.b) - len(runes)*2 - 2
-	for i, r := range runes {
-		v := utf16.Encode([]rune{r})[0]
-		binary.LittleEndian.PutUint16(b.b[offset+i*2:], v)
+	// Инициализация мапы
+	for i := 0; i < numKeys; i++ {
+		m.Store(int32(i), time.Now().Unix())
 	}
-	// Последние 2 байта уже 0
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	b.RunParallel(func(pb *testing.PB) {
+		key := int32(r.Intn(numKeys))
+		m.Store(key, time.Now().Unix()+int64(r.Intn(60)))
+		time.Sleep(updatePeriod)
+	})
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		now := time.Now().Unix()
+		m.Range(func(key int32, value int64) bool {
+			if value < now {
+				m.Delete(key)
+			}
+			return true
+		})
+
+	}
 }
