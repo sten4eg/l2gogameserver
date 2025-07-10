@@ -28,9 +28,10 @@ var TileYMax = 26
 const WORLD_SIZE_X = config.GeoLastX - config.GeoFirstX + 1
 const WORLD_SIZE_Y = config.GeoLastY - config.GeoFirstY + 1
 
+// на форуме есть инфа что не надо в конце делать -1 в maxX и maxY
 const MapMinX = (config.GeoFirstX - 20) << 15
 const MapMaxX = ((config.GeoLastX - 19) << 15) - 1
-const MapMinY = (config.GeoFirstY - 18 + 1) << 15
+const MapMinY = (config.GeoFirstY - 18) << 15
 const MapMaxY = ((config.GeoLastY - 18 + 1) << 15) - 1
 
 const MapMinZ = -16384
@@ -121,4 +122,19 @@ func (w *WWorld) AddNpc(Npcs map[int32]map[int32]npc.Npc) {
 			reg.AddVisibleNpc(vv)
 		}
 	}
+}
+
+func GetRegionFromXY(x, y int) (int, int) {
+
+	regionXNew := (((x - MapMinX) >> 4) >> 11) + 11
+	regionXOld := regionX(int32(x))
+	regionYNew := (((y - MapMinY) >> 4) >> 11) + 10
+	regionYOld := regionY(int32(y))
+
+	BLOCK_X := (((x - MapMinX) >> 4) >> 3) % 256
+	BLOCK_Y := (((y - MapMinY) >> 4) >> 3) % 256
+	_, _, _, _ = regionXNew, regionYNew, regionXOld, regionYOld
+	_, _ = BLOCK_Y, BLOCK_X
+	return 2 + 11, 1 + 10
+
 }

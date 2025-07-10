@@ -34,6 +34,8 @@ func stp(file *os.File) {
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
+	world.GetRegionFromXY(12446, 16683)
+
 	f, err := os.OpenFile("test", os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		panic(err)

@@ -178,7 +178,9 @@ func LoadNpc() map[int32]map[int32]Npc {
 			p.ObjId = objId
 			p.Spawn = vv
 			tmp[objId] = p
+			if vv.Locx == 0 { //todo в npcdata у некоторых мобов loc_x вместо locx поэтому координаты в 0 ставятся
 
+			}
 			NpcObject[objId] = Locations{
 				NpcId:         p.NpcId,
 				Locx:          vv.Locx,
