@@ -3,7 +3,7 @@ package server
 import (
 	"database/sql"
 	"fmt"
-	"github.com/puzpuzpuz/xsync"
+	"github.com/puzpuzpuz/xsync/v4"
 	"l2gogameserver/config"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/handlers"
@@ -18,9 +18,9 @@ import (
 
 type GameServer struct {
 	clientsListener  *net.TCPListener
-	clients          *xsync.MapOf[interfaces.NewClientCtxInterface]
-	waitingClients   *xsync.MapOf[string]
-	OnlineCharacters *xsync.MapOf[interfaces.CharacterI] //TODO что она тут делает ? мб сделать ее в структуре GameServer
+	clients          *xsync.Map[string, interfaces.NewClientCtxInterface]
+	waitingClients   *xsync.Map[string, string]
+	OnlineCharacters *xsync.Map[string, interfaces.CharacterI]
 
 	loginServer *loginserver.LoginServer
 	db          *sql.DB
@@ -28,9 +28,9 @@ type GameServer struct {
 
 func New(db *sql.DB) *GameServer {
 	gs := new(GameServer)
-	gs.clients = xsync.NewMapOf[interfaces.NewClientCtxInterface]()
-	gs.waitingClients = xsync.NewMapOf[string]()
-	gs.OnlineCharacters = xsync.NewMapOf[interfaces.CharacterI]()
+	gs.clients = xsync.NewMap[string, interfaces.NewClientCtxInterface]()
+	gs.waitingClients = xsync.NewMap[string, string]()
+	gs.OnlineCharacters = xsync.NewMap[string, interfaces.CharacterI]()
 	ls := loginserver.GetLoginServerInstance()
 	gs.loginServer = ls
 	gs.db = db
