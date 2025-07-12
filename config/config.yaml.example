@@ -39,6 +39,9 @@ gameserver:
     pool_max_conns: '100'
   debug:
     show_packets: true
+    ignore_packets:
+      - 0x00
+      - 0x01
     enable_load_npc: true
     enabled_spawnlist: true
     enabled_load_skills: true

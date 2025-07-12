@@ -47,10 +47,13 @@ func main() {
 	}
 	go stp(f)
 
-	cfg, err := config.Read()
-	if err != nil {
-		log.Fatal(err)
+	// Инициализируем конфигурацию
+	configManager := config.GetConfigManager()
+	if err := configManager.Load("./config/config.yaml"); err != nil {
+		log.Fatal("Ошибка загрузки конфигурации:", err)
 	}
+
+	cfg := configManager.Get()
 
 	if cfg.GameServer.Debug.IsShowPackets() {
 		logger.Info.Println("Показ пакетов включен")

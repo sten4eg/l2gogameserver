@@ -72,12 +72,12 @@ func (b *Buffer) WriteSingleByte(value byte) {
 	if config.GetDebug().IsShowPackets() {
 		// Получаем информацию о вызывающей функции
 		pc, file, line, ok := runtime.Caller(1)
-		if ok && value != 0x00 {
+		if ok && !config.GetDebug().IsIgnorePackets(value) {
 			funcName := runtime.FuncForPC(pc).Name()
 			parts := strings.Split(funcName, ".")
 			shortFuncName := parts[len(parts)-1]
 			fileName := filepath.Base(file)
-			logger.Info.Printf("Server->Client: %s (%s:%d) (опкод: 0x%02X)",
+			logger.LogServerToClient("Server->Client: %s (%s:%d) (опкод: 0x%02X)",
 				shortFuncName, fileName, line, value)
 		}
 	}
