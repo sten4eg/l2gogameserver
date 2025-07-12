@@ -1,8 +1,9 @@
 package config
 
 import (
-	"gopkg.in/yaml.v3"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -155,4 +156,13 @@ func IsEnableSpawnList() bool {
 }
 func IsEnableSkills() bool {
 	return configInstance.GameServer.Debug.EnabledSkills
+}
+
+func GetDebug() Debug {
+	return configInstance.GameServer.Debug
+}
+
+// IsShowPackets возвращает true если включен показ пакетов
+func (d Debug) IsShowPackets() bool {
+	return d.ShowPackets
 }

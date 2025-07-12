@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
+	"l2gogameserver/config"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/broadcast"
 	"l2gogameserver/gameserver/clientpackets"
@@ -34,7 +35,10 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 			gs.CharOffline(client) //todo если чар офф то надо менять state
 			return                 // todo  return ?
 		}
-		logger.Info.Println("Client->Server: #", opcode, packets.GetNamePacket(opcode))
+
+		if config.GetDebug().IsShowPackets() {
+			logger.Info.Println("Client->Server: #", opcode, packets.GetNamePacket(opcode))
+		}
 
 		state := client.GetState()
 		switch state {
@@ -93,7 +97,6 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 			}
 		case clientStates.InGame:
 			character := client.GetAccount().GetCurrentChar()
-
 			switch opcode {
 			default:
 				fmt.Printf("Неопознаный опкод {%x} при state InGame\n", opcode)
@@ -186,7 +189,9 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 
 				}
 			case 0x74:
-				clientpackets.SendBypassBuildCmd(character, data, gs)
+				fmt.Println("Получен пакет SendBypassBuildCmd (0x74)")
+				logger.Info.Println("Получен пакет SendBypassBuildCmd (0x74)")
+				clientpackets.SendBypassBuildCmd(character, data, client)
 			case 0x83:
 				clientpackets.RequestPrivateStoreBuy(client, data, gs.GetDbConn())
 			case 0x96:

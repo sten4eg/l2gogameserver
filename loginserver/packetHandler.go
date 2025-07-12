@@ -3,6 +3,8 @@ package loginserver
 import (
 	"database/sql"
 	"fmt"
+	"l2gogameserver/config"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/loginserver/network/gs2ls"
 	"l2gogameserver/loginserver/network/ls2gs"
 )
@@ -10,7 +12,10 @@ import (
 func (ls *LoginServer) HandlePacket(data []byte, db *sql.DB) {
 	opCode := data[0]
 	data = data[1:]
-	fmt.Println("логин прислал : ", opCode)
+
+	if config.GetDebug().IsShowPackets() {
+		logger.Info.Println("LoginServer->GameServer : ", opCode)
+	}
 
 	switch opCode {
 	default:

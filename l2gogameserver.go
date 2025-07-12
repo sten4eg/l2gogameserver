@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"l2gogameserver/config"
 	"l2gogameserver/data"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/models"
@@ -32,7 +33,7 @@ func stp(file *os.File) {
 	fmt.Println("cpu profiling STOPPED")
 }
 func main() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	// log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	world.GetRegionFromXY(12446, 16683)
 
@@ -49,6 +50,10 @@ func main() {
 	cfg, err := config.Read()
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if cfg.GameServer.Debug.IsShowPackets() {
+		logger.Info.Println("Показ пакетов включен")
 	}
 
 	dbConn, err := db.ConfigureDB(cfg.GameServer.Database)

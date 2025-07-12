@@ -18,4 +18,7 @@ func init() {
 	Info = log.New(os.Stdout, "INFO: ", log.Ltime|log.Lshortfile)
 	Warning = log.New(os.Stdout, "WARNING: ", log.Ltime|log.Lshortfile)
 	Error = log.New(os.Stdout, "ERROR: ", log.Ltime|log.Lshortfile)
+
+	// Тестовое сообщение для проверки инициализации логгера
+	Info.Println("Логгер инициализирован")
 }

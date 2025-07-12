@@ -2,7 +2,12 @@ package packets
 
 import (
 	"encoding/binary"
+	"l2gogameserver/config"
+	"l2gogameserver/data/logger"
 	"math"
+	"path/filepath"
+	"runtime"
+	"strings"
 	"unicode/utf16"
 )
 
@@ -64,6 +69,18 @@ func (b *Buffer) WriteSlice(value []byte) {
 }
 
 func (b *Buffer) WriteSingleByte(value byte) {
+	if config.GetDebug().IsShowPackets() {
+		// Получаем информацию о вызывающей функции
+		pc, file, line, ok := runtime.Caller(1)
+		if ok && value != 0x00 {
+			funcName := runtime.FuncForPC(pc).Name()
+			parts := strings.Split(funcName, ".")
+			shortFuncName := parts[len(parts)-1]
+			fileName := filepath.Base(file)
+			logger.Info.Printf("Server->Client: %s (%s:%d) (опкод: 0x%02X)",
+				shortFuncName, fileName, line, value)
+		}
+	}
 	b.b = append(b.b, value)
 }
 
