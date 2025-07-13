@@ -3,6 +3,8 @@ package trader
 import (
 	"encoding/json"
 	"l2gogameserver/data/logger"
+	"l2gogameserver/gameserver/interfaces"
+	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/items"
 	"os"
 )
@@ -12,13 +14,34 @@ var ADMIN_SHOP_FILE = "./datapack/data/trader/gmshop.json"
 var globalGmShopManager *GmShopManager
 
 type GmShopItem struct {
-	ItemID int        `json:"item_id"`
-	Item   items.Item `json:"item,omitempty"`
+	ItemID int                        `json:"item_id"`
+	Item   interfaces.MyItemInterface `json:"item,omitempty"`
+}
+
+// Реализация интерфейса TraderGmShopItem
+func (gsi *GmShopItem) GetItemID() int {
+	return gsi.ItemID
+}
+
+func (gsi *GmShopItem) GetItem() interfaces.MyItemInterface {
+	return gsi.Item
 }
 
 type GmShopData struct {
 	ShopID int          `json:"shop"`
 	Items  []GmShopItem `json:"items"`
+}
+
+func (gsd *GmShopData) GetShopID() int {
+	return gsd.ShopID
+}
+
+func (gsd *GmShopData) GetItems() []interfaces.TraderGmShopItem {
+	shopItems := make([]interfaces.TraderGmShopItem, len(gsd.Items))
+	for i := range gsd.Items {
+		shopItems[i] = &gsd.Items[i]
+	}
+	return shopItems
 }
 
 type GmShopList []GmShopData
@@ -27,20 +50,6 @@ type GmShopManager struct {
 	shops       GmShopList
 	shopByID    map[int]*GmShopData
 	shopByNpcID map[int]*GmShopData
-}
-
-type RawGmShopData struct {
-	NpcID  int   `json:"npc"`
-	ShopID int   `json:"shop"`
-	Items  []int `json:"items"`
-}
-
-func NewGmShopManager() *GmShopManager {
-	return &GmShopManager{
-		shops:       make(GmShopList, 0),
-		shopByID:    make(map[int]*GmShopData),
-		shopByNpcID: make(map[int]*GmShopData),
-	}
 }
 
 func (gm *GmShopManager) LoadFromFile(filename string) error {
@@ -66,9 +75,11 @@ func (gm *GmShopManager) LoadFromFile(filename string) error {
 				logger.LogError("Ошибка загрузки itemID: %d", itemID)
 				continue
 			}
+			myItem := &models.MyItem{Item: itemData}
+
 			shopItems = append(shopItems, GmShopItem{
 				ItemID: itemID,
-				Item:   *itemData,
+				Item:   myItem,
 			})
 		}
 
@@ -79,12 +90,51 @@ func (gm *GmShopManager) LoadFromFile(filename string) error {
 
 		shops = append(shops, shop)
 		shopByID[shop.ShopID] = &shops[len(shops)-1]
+		gm.shopByNpcID[rawShop.NpcID] = &shops[len(shops)-1]
 	}
 
 	gm.shops = shops
 	gm.shopByID = shopByID
 
 	return nil
+}
+
+func (gm *GmShopManager) GetShopByID(shopID int) interfaces.TraderGmShopData {
+	shop := gm.shopByID[shopID]
+	if shop == nil {
+		return nil
+	}
+	return shop
+}
+
+func (gm *GmShopManager) GetShopsCount() int {
+	return len(gm.shops)
+}
+
+func (gm *GmShopManager) ClearShops() {
+	gm.shops = make(GmShopList, 0)
+	gm.shopByID = make(map[int]*GmShopData)
+}
+
+func (gm *GmShopManager) ReloadShops() {
+	gm.ClearShops()
+	if err := gm.LoadFromFile(ADMIN_SHOP_FILE); err != nil {
+		logger.LogError("Ошибка при перезагрузке магазинов: %v", err)
+	}
+}
+
+type RawGmShopData struct {
+	NpcID  int   `json:"npc"`
+	ShopID int   `json:"shop"`
+	Items  []int `json:"items"`
+}
+
+func NewGmShopManager() *GmShopManager {
+	return &GmShopManager{
+		shops:       make(GmShopList, 0),
+		shopByID:    make(map[int]*GmShopData),
+		shopByNpcID: make(map[int]*GmShopData),
+	}
 }
 
 func LoadShops() {
@@ -102,27 +152,9 @@ func GetGmShopManager() *GmShopManager {
 	return globalGmShopManager
 }
 
-func (gm *GmShopManager) GetShopByID(shopID int) *GmShopData {
-	return gm.shopByID[shopID]
-}
-
-func (gm *GmShopManager) GetShopsCount() int {
-	return len(gm.shops)
-}
-
-func (gm *GmShopManager) ClearShops() {
-	gm.shops = make(GmShopList, 0)
-	gm.shopByID = make(map[int]*GmShopData)
-}
-
-func (gm *GmShopManager) ReloadShops() {
-	gm.ClearShops()
-	_ = gm.LoadFromFile(ADMIN_SHOP_FILE)
-}
-
 // Обёртки
 
-func GetShopByID(shopID int) (*GmShopData, bool) {
+func GetShopByID(shopID int) (interfaces.TraderGmShopData, bool) {
 	if globalGmShopManager == nil {
 		return nil, false
 	}

@@ -18,8 +18,8 @@ func BuyList(trader trader.GmShopData, listId int, player interfaces.CharacterI)
 	buffer.WriteH(int16(len(trader.Items)))              // Size
 
 	for _, item := range trader.Items {
-		buffer.WriteD(int32(item.Item.Id))
-		buffer.WriteD(int32(item.Item.Id))
+		buffer.WriteD(item.Item.GetId())
+		buffer.WriteD(item.Item.GetId())
 		buffer.WriteD(0)
 		buffer.WriteQ(-1)
 		buffer.WriteH(item.Item.GetItemType2())
@@ -40,7 +40,7 @@ func BuyList(trader trader.GmShopData, listId int, player interfaces.CharacterI)
 		buffer.WriteH(0x00)
 		buffer.WriteH(0x00)
 
-		buffer.WriteQ(item.Item.Price)
+		buffer.WriteQ(item.Item.GetPrice())
 	}
 
 	return buffer
