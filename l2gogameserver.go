@@ -12,6 +12,7 @@ import (
 	"l2gogameserver/gameserver/models/multisell"
 	"l2gogameserver/gameserver/models/party"
 	"l2gogameserver/gameserver/models/teleport"
+	"l2gogameserver/gameserver/models/trader"
 	"l2gogameserver/gameserver/npc"
 	"l2gogameserver/gameserver/world"
 	"l2gogameserver/loginserver"
@@ -65,8 +66,11 @@ func main() {
 	}
 
 	idfactory.Load(dbConn)
+	items.LoadItems()
 
 	multisell.LoadMultisell()
+
+	trader.LoadShops()
 
 	teleport.LoadLocationListTeleport()
 
@@ -74,7 +78,6 @@ func main() {
 
 	models.LoadSkills()
 
-	items.LoadItems()
 	data.Load()
 	npcs := npc.LoadNpc()
 	worldS := world.NewWorld()

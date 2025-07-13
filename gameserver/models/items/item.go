@@ -80,7 +80,7 @@ type Item struct {
 	UseSkillDistime        int                       `json:"use_skill_distime"`
 	Period                 int                       `json:"period"`
 	EquipReuseDelay        int                       `json:"equip_reuse_delay"`
-	Price                  int                       `json:"price"`
+	Price                  int64                     `json:"price"`
 }
 
 //var _ Item = interfaces.BaseItemInterface{}
