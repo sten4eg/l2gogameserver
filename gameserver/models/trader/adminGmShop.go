@@ -99,12 +99,12 @@ func (gm *GmShopManager) LoadFromFile(filename string) error {
 	return nil
 }
 
-func (gm *GmShopManager) GetShopByID(shopID int) interfaces.TraderGmShopData {
+func (gm *GmShopManager) GetShopByID(shopID int) (interfaces.TraderGmShopData, bool) {
 	shop := gm.shopByID[shopID]
 	if shop == nil {
-		return nil
+		return nil, false
 	}
-	return shop
+	return shop, true
 }
 
 func (gm *GmShopManager) GetShopsCount() int {
@@ -150,21 +150,4 @@ func LoadShops() {
 
 func GetGmShopManager() *GmShopManager {
 	return globalGmShopManager
-}
-
-// Обёртки
-
-func GetShopByID(shopID int) (interfaces.TraderGmShopData, bool) {
-	if globalGmShopManager == nil {
-		return nil, false
-	}
-	shop := globalGmShopManager.GetShopByID(shopID)
-	return shop, shop != nil
-}
-
-func GetShopsCount() int {
-	if globalGmShopManager == nil {
-		return 0
-	}
-	return globalGmShopManager.GetShopsCount()
 }

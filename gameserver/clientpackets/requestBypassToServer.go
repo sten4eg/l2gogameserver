@@ -41,19 +41,13 @@ func buyAdminItem(command string, client interfaces.NewClientCtxInterface, db *s
 		return
 	}
 
-	shopItemList, ok := trader.GetShopByID(shopID)
+	shopItemList, ok := trader.GetGmShopManager().GetShopByID(shopID)
 	if !ok {
-		logger.LogError("Invalid shop ID: %v", shopID)
+		logger.LogError("Invalid item ID: %v", shopID)
 		return
 	}
 
-	shopData, ok := shopItemList.(*trader.GmShopData)
-	if !ok {
-		logger.LogError("Failed to convert shop data to concrete type")
-		return
-	}
-
-	pkg := serverpackets.BuyList(*shopData, shopID, client.GetAccount().GetCurrentChar())
+	pkg := serverpackets.BuyList(shopItemList.GetItems(), shopID, client.GetAccount().GetCurrentChar())
 	client.SendBuf(pkg)
 
 	//Не работает, что-то там неверно, вероятно всё неверно с закрытием окна
