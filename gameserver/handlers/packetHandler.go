@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -123,21 +122,13 @@ func (h *PacketHandler) handleClient(client interfaces.NewClientCtxInterface) {
 		h.gs.CharOffline(client)
 	}()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			if err := h.processPacket(client); err != nil {
-				if errors.Is(err, ErrClientDisconnected) {
-					logger.Info.Println("Клиент отключен")
-					return
-				}
-				logger.LogError("Ошибка обработки пакета: %v", err)
+		if err := h.processPacket(client); err != nil {
+			if errors.Is(err, ErrClientDisconnected) {
+				logger.Info.Println("Клиент отключен")
+				return
 			}
+			logger.LogError("Ошибка обработки пакета: %v", err)
 		}
 	}
 }
