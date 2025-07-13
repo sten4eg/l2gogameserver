@@ -17,7 +17,7 @@ func RequestBuyItem(client interfaces.NewClientCtxInterface, data []byte, db *sq
 	size := packet.ReadInt32()
 	// TODO: тут не помещает защита от большого size пакета потому что могут флудить :D
 
-	for range make([]struct{}, size) {
+	for i := 0; i < int(size); i++ {
 		itemID := packet.ReadInt32()
 		count := packet.ReadInt64()
 		item, ok := items.GetItemInfo(int(itemID))
