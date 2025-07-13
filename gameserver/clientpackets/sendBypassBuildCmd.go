@@ -23,7 +23,7 @@ const (
 	DefaultH = 0
 
 	// Пути к файлам
-	AdminMainHTMLPath = "./datapack/html/admin/main.html"
+	AdminMainHTMLPath = "./datapack/html/admin/main_menu.htm"
 )
 
 var (
@@ -129,14 +129,4 @@ func (h *CommandHandler) teleport(locX, locY int) {
 	if err := h.client.EncryptAndSend(pkg); err != nil {
 		logger.Info.Printf("Ошибка отправки пакета телепортации: %v", err)
 	}
-}
-
-// teleport телепортирует персонажа в указанные координаты (устаревшая функция)
-// Deprecated: используйте CommandHandler.teleport
-func teleport(character interfaces.CharacterI, client interfaces.NewClientCtxInterface, locX int, locY int) {
-	handler := &CommandHandler{
-		character: character,
-		client:    client,
-	}
-	handler.teleport(locX, locY)
 }

@@ -2,9 +2,14 @@ package clientpackets
 
 import (
 	"database/sql"
+	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/items"
+	"l2gogameserver/gameserver/models/trader"
+	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
+	"l2gogameserver/utils"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -12,29 +17,169 @@ import (
 func BypassToServer(data []byte, client interfaces.NewClientCtxInterface, db *sql.DB) {
 	var packet = packets.NewReader(data)
 	command := packet.ReadString()
-
+	logger.LogInfo("BypassToServer: %s", command)
 	if strings.HasPrefix(command, "admin_create_item") {
 		addAdminItem(command, client, db)
+	} else if strings.HasPrefix(command, "admin_gmshop") {
+		openGmShop(client)
+	} else if strings.HasPrefix(command, "admin_move_to") {
+		moveAdminTo(command, client, db)
+	} else if strings.HasPrefix(command, "admin_help") || strings.HasPrefix(command, "admin_html") || strings.HasPrefix(command, "admin_show_html") {
+		openHelp(command, client)
+	} else if strings.HasPrefix(command, "admin_buy") {
+		buyAdminItem(command, client, db)
 	}
 }
 
+func buyAdminItem(command string, client interfaces.NewClientCtxInterface, db *sql.DB) {
+	args := strings.Fields(command)
+	logger.LogInfo("buyAdminItem: args=%v", args)
+
+	shopID, err := strconv.Atoi(args[1])
+	if err != nil {
+		logger.LogError("Invalid item ID: %v", err)
+		return
+	}
+
+	shopItemList, ok := trader.GetShopByID(shopID)
+	if !ok {
+		logger.LogError("Invalid shop ID: %v", shopID)
+		return
+	}
+
+	pkg := serverpackets.BuyList(*shopItemList, shopID, client.GetAccount().GetCurrentChar())
+	client.SendBuf(pkg)
+
+	//Не работает, что-то там неверно, вероятно всё неверно с закрытием окна
+	//pkg = serverpackets.CloseBuyList(client.GetAccount().GetCurrentChar().GetInventory().GetAdenaCount(), int32(shopID))
+	//client.SendBuf(pkg)
+}
+
+func openHelp(command string, client interfaces.NewClientCtxInterface) {
+	args := strings.Fields(command) // split by any whitespace
+	logger.LogInfo("openHelp: args=%v", args)
+
+	page := args[1]
+
+	data, err := os.ReadFile("./datapack/html/admin/" + page)
+	if err != nil {
+		logger.LogError("Error reading file: %v", err)
+		return
+	}
+	htmlContent := utils.B2s(data)
+	client.SendBuf(serverpackets.NpcHtmlMessage2(0, htmlContent, 0))
+}
+
+// Мб потом нужно сделать сохранение в БД координат игрока или удалить db ибо пока не знаю как сохрениня состояний перса реализовано
+func moveAdminTo(command string, client interfaces.NewClientCtxInterface, db *sql.DB) {
+	args := strings.Fields(command) // split by any whitespace
+	logger.LogInfo("moveAdminTo: args=%v", args)
+
+	if len(args) == 4 {
+		locX, err := strconv.Atoi(args[1])
+		if err != nil {
+			logger.LogError("Invalid X coordinate: %v", err)
+			return
+		}
+		locY, err := strconv.Atoi(args[2])
+		if err != nil {
+			logger.LogError("Invalid Y coordinate: %v", err)
+			return
+		}
+		locZ, err := strconv.Atoi(args[3])
+		if err != nil {
+			logger.LogError("Invalid Z coordinate: %v", err)
+			return
+		}
+
+		pkg := serverpackets.TeleportToLocation(client.GetAccount().GetCurrentChar(), locX, locY, locZ, 0)
+
+		if err := client.EncryptAndSend(pkg); err != nil {
+			logger.Info.Printf("Ошибка отправки пакета телепортации: %v", err)
+		}
+		return
+	}
+
+	data, err := os.ReadFile("./datapack/html/admin/teleports/WorldAreas.htm")
+	if err != nil {
+		logger.LogError("Error reading file: %v", err)
+		return
+	}
+	htmlContent := utils.B2s(data)
+	client.SendBuf(serverpackets.NpcHtmlMessage2(0, htmlContent, 0))
+
+}
+
+func openGmShop(client interfaces.NewClientCtxInterface) {
+	data, err := os.ReadFile("./datapack/html/admin/gmshop.htm")
+	if err != nil {
+		logger.LogError("Error reading file: %v", err)
+		return
+	}
+	htmlContent := utils.B2s(data)
+	client.SendBuf(serverpackets.NpcHtmlMessage2(0, htmlContent, 0))
+}
+
 func addAdminItem(command string, client interfaces.NewClientCtxInterface, db *sql.DB) {
-	// 0 - префикс(комманда) 1- Id предмета 2 - количество
-	s := strings.Split(command, " ")
-	if len(s) != 3 {
+	args := strings.Fields(command) // split by any whitespace
+	logger.LogInfo("addAdminItem: args=%v", args)
+
+	switch len(args) {
+	case 1:
+		// Только команда без параметров — показываем HTML
+		htmlPath := "./datapack/html/admin/create_item.htm"
+		data, err := os.ReadFile(htmlPath)
+		if err != nil {
+			logger.LogError("Failed to read HTML file '%s': %v", htmlPath, err)
+			return
+		}
+		client.SendBuf(serverpackets.NpcHtmlMessage2(0, utils.B2s(data), 0))
 		return
-	}
-	itemId, err := strconv.Atoi(s[1])
-	if err != nil {
+
+	case 2, 3:
+		// Есть ID предмета и, возможно, количество
+		itemID, err := strconv.Atoi(args[1])
+		if err != nil {
+			logger.LogError("Invalid item ID: %v", err)
+			return
+		}
+
+		count := 1
+		if len(args) == 3 {
+			count, err = strconv.Atoi(args[2])
+			if err != nil {
+				logger.LogError("Invalid count value: %v", err)
+				return
+			}
+			if count <= 0 {
+				logger.LogError("Count must be positive: %d", count)
+				return
+			}
+		}
+
+		item, found := items.GetItemInfo(itemID)
+		if !found {
+			logger.LogError("Item not found: ID=%d", itemID)
+			return
+		}
+
+		char := client.GetAccount().GetCurrentChar()
+		if char == nil {
+			logger.LogError("No current character")
+			return
+		}
+
+		char.GetInventory().AddItem2(int32(itemID), count, item.IsStackable(), db)
+
+		pkg := serverpackets.ItemList(client.GetAccount().GetCurrentChar())
+		client.EncryptAndSend(pkg)
+
+		logger.LogInfo("Item added: ID=%d, count=%d", itemID, count)
 		return
-	}
-	count, err := strconv.Atoi(s[2])
-	if err != nil {
+
+	default:
+		logger.LogError("Too many parameters: got %d, expected 1–3", len(args))
 		return
-	}
-	item, ok := items.GetItemInfo(itemId)
-	if ok { //todo чекать что влезет в инвентарь
-		client.GetAccount().GetCurrentChar().GetInventory().AddItem2(int32(itemId), count, item.IsStackable(), db)
 	}
 }
 

@@ -252,65 +252,6 @@ func (dm *DatabaseManager) Close() error {
 	return nil
 }
 
-// HealthCheck проверяет состояние базы данных
-func (dm *DatabaseManager) HealthCheck() error {
-	dm.mu.RLock()
-	defer dm.mu.RUnlock()
-
-	if dm.pool == nil {
-		return errors.New("пул соединений не инициализирован")
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	return dm.pool.Ping(ctx)
-}
-
-// ExecuteWithRetry выполняет запрос с повторными попытками
-func (dm *DatabaseManager) ExecuteWithRetry(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	var result sql.Result
-	var err error
-
-	maxRetries := 3
-	for i := 0; i < maxRetries; i++ {
-		result, err = dm.db.ExecContext(ctx, query, args...)
-		if err == nil {
-			return result, nil
-		}
-
-		dm.metrics.IncrementQueryErrors()
-
-		if i < maxRetries-1 {
-			time.Sleep(time.Duration(i+1) * time.Second)
-		}
-	}
-
-	return result, fmt.Errorf("запрос не выполнен после %d попыток: %w", maxRetries, err)
-}
-
-// QueryWithRetry выполняет запрос с повторными попытками
-func (dm *DatabaseManager) QueryWithRetry(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	var rows *sql.Rows
-	var err error
-
-	maxRetries := 3
-	for i := 0; i < maxRetries; i++ {
-		rows, err = dm.db.QueryContext(ctx, query, args...)
-		if err == nil {
-			return rows, nil
-		}
-
-		dm.metrics.IncrementQueryErrors()
-
-		if i < maxRetries-1 {
-			time.Sleep(time.Duration(i+1) * time.Second)
-		}
-	}
-
-	return rows, fmt.Errorf("запрос не выполнен после %d попыток: %w", maxRetries, err)
-}
-
 // Transaction выполняет транзакцию
 func (dm *DatabaseManager) Transaction(ctx context.Context, fn func(*sql.Tx) error) error {
 	tx, err := dm.db.BeginTx(ctx, nil)

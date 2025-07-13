@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -13,7 +12,6 @@ import (
 	"l2gogameserver/gameserver/listeners"
 	"l2gogameserver/gameserver/models/clientStates"
 	"l2gogameserver/packets"
-	"sync"
 )
 
 // Константы для опкодов
@@ -47,6 +45,7 @@ const (
 	OpcodeRequestShowMiniMap          = 0x6c
 	OpcodeRequestSkillCoolTime        = 0xa6
 	OpcodeMoveBackwardToLocation      = 0x0f
+	OpcodeRequestBuyItem              = 0x40
 	OpcodeRequestJoinParty            = 0x42
 	OpcodeRequestAnswerJoinParty      = 0x43
 	OpcodeRequestWithDrawalParty      = 0x44
@@ -99,7 +98,6 @@ type GameServerInterface interface {
 // PacketHandler обрабатывает пакеты от клиентов
 type PacketHandler struct {
 	gs GameServerInterface
-	mu sync.RWMutex
 }
 
 // NewPacketHandler создает новый обработчик пакетов
@@ -119,26 +117,18 @@ func Handler(client interfaces.NewClientCtxInterface, gs GameServerInterface) {
 func (h *PacketHandler) handleClient(client interfaces.NewClientCtxInterface) {
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Info.Printf("Паника в обработчике пакетов: %v", r)
+			logger.LogError("Паника в обработчике пакетов: %v", r)
 		}
 		h.gs.CharOffline(client)
 	}()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			if err := h.processPacket(client); err != nil {
-				if errors.Is(err, ErrClientDisconnected) {
-					logger.Info.Println("Клиент отключен")
-					return
-				}
-				logger.LogError("Ошибка обработки пакета: %v", err)
+		if err := h.processPacket(client); err != nil {
+			if errors.Is(err, ErrClientDisconnected) {
+				logger.Info.Println("Клиент отключен")
+				return
 			}
+			logger.LogError("Ошибка обработки пакета: %v", err)
 		}
 	}
 }
@@ -274,6 +264,8 @@ func (h *PacketHandler) handleInGameState(client interfaces.NewClientCtxInterfac
 	case OpcodeMoveBackwardToLocation:
 		pkg := clientpackets.MoveBackwardToLocation(client, data)
 		broadcast.Checkaem(client, pkg)
+	case OpcodeRequestBuyItem:
+		clientpackets.RequestBuyItem(client, data, h.gs.GetDbConn())
 	case OpcodeRequestJoinParty:
 		clientpackets.RequestJoinParty(client, data, h.gs)
 	case OpcodeRequestAnswerJoinParty:

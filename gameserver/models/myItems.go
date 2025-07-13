@@ -127,10 +127,10 @@ func (i *MyItem) GetDefaultPrice() int {
 	return i.Item.DefaultPrice
 }
 func (i *MyItem) SetPrice(value int64) {
-	i.Price = int(value)
+	i.Price = value
 }
 func (i *MyItem) GetPrice() int64 {
-	return int64(i.Item.Price)
+	return i.Item.Price
 }
 func (i *MyItem) IsAvailable(character interfaces.CharacterI, allowAdena, allowNonTradable bool) bool {
 	return !utils.I2B(i.IsEquipped()) &&
