@@ -6,6 +6,8 @@ import (
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/initial"
+	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"time"
@@ -100,7 +102,19 @@ func CharacterCreate(clientI interfaces.NewClientCtxInterface, data []byte, db *
 	}
 
 	client.SendBuf(serverpackets.CharCreateOk())
+
 	time.Sleep(250) //todo клиент должен отправить RequestExGetOnAirShip и после этого CharSelectionInfo, иначе клиент крашиться
 	client.SendBuf(serverpackets.CharSelectionInfo(clientI, db))
 
+	// Выдача предметов после создания персонажа
+	eq := initial.GetEquipmentByClass(clientI.GetAccount().GetCurrentChar().GetBaseClass())
+	if eq != nil {
+		for _, item := range eq.Items {
+			itemData, _ := items.GetItemInfo(item.Id)
+			clientI.GetAccount().GetCurrentChar().GetInventory().AddItem2(int32(item.Id), item.Count, itemData.IsStackable(), db)
+			if item.Equipped {
+				//TODO: напялить после создания перса
+			}
+		}
+	}
 }

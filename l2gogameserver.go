@@ -8,6 +8,7 @@ import (
 	"l2gogameserver/db"
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/initial"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/models/multisell"
 	"l2gogameserver/gameserver/models/party"
@@ -77,6 +78,8 @@ func main() {
 	models.LoadStats()
 
 	models.LoadSkills()
+
+	initial.LoadItemsEquipment()
 
 	data.Load()
 	npcs := npc.LoadNpc()

@@ -1,0 +1,704 @@
+[
+  {
+    "classId": 0,
+    "name": "Human Fighter",
+    "items": [
+      {
+        "id": 20635,
+        "count": 1,
+        "equipped": false,
+        "name": "No Grade Beginner's Adventurer Support Pack"
+      },
+      {
+        "id": 20636,
+        "count": 1,
+        "equipped": false,
+        "name": "D-Grade Fighter Support Pack"
+      },
+      {
+        "id": 20638,
+        "count": 1,
+        "equipped": false,
+        "name": "Beginner's Adventurer Reinforcement Pack"
+      },
+      {
+        "id": 2369,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Sword"
+      },
+      {
+        "id": 10,
+        "count": 1,
+        "equipped": false,
+        "name": "Dagger"
+      },
+      {
+        "id": 1146,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Shirt"
+      },
+      {
+        "id": 1147,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Pants"
+      },
+      {
+        "id": 5588,
+        "count": 1,
+        "equipped": false,
+        "name": "Tutorial Guide"
+      },
+      {
+        "id": 10650,
+        "count": 5,
+        "equipped": false,
+        "name": "Adventurer's Scroll of Escape"
+      },
+      {
+        "id": 12753,
+        "count": 10,
+        "equipped": false,
+        "name": "Kamael Village Teleportation Scroll"
+      }
+    ]
+  },
+  {
+    "classId": 10,
+    "name": "Human Mystic",
+    "items": [
+      {
+        "id": 20635,
+        "count": 1,
+        "equipped": false,
+        "name": "No Grade Beginner's Adventurer Support Pack"
+      },
+      {
+        "id": 20637,
+        "count": 1,
+        "equipped": false,
+        "name": "D-Grade Mage Support Pack"
+      },
+      {
+        "id": 20638,
+        "count": 1,
+        "equipped": false,
+        "name": "Beginner's Adventurer Reinforcement Pack"
+      },
+      {
+        "id": 6,
+        "count": 1,
+        "equipped": true,
+        "name": "Apprentice's Wand"
+      },
+      {
+        "id": 425,
+        "count": 1,
+        "equipped": true,
+        "name": "Apprentice's Tunic"
+      },
+      {
+        "id": 461,
+        "count": 1,
+        "equipped": true,
+        "name": "Apprentice's Stockings"
+      },
+      {
+        "id": 5588,
+        "count": 1,
+        "equipped": false,
+        "name": "Tutorial Guide"
+      },
+      {
+        "id": 10650,
+        "count": 5,
+        "equipped": false,
+        "name": "Adventurer's Scroll of Escape"
+      },
+      {
+        "id": 12753,
+        "count": 10,
+        "equipped": false,
+        "name": "Kamael Village Teleportation Scroll"
+      }
+    ]
+  },
+  {
+    "classId": 18,
+    "name": "Elven Fighter",
+    "items": [
+      {
+        "id": 20635,
+        "count": 1,
+        "equipped": false,
+        "name": "No Grade Beginner's Adventurer Support Pack"
+      },
+      {
+        "id": 20636,
+        "count": 1,
+        "equipped": false,
+        "name": "D-Grade Fighter Support Pack"
+      },
+      {
+        "id": 20638,
+        "count": 1,
+        "equipped": false,
+        "name": "Beginner's Adventurer Reinforcement Pack"
+      },
+      {
+        "id": 2369,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Sword"
+      },
+      {
+        "id": 10,
+        "count": 1,
+        "equipped": false,
+        "name": "Dagger"
+      },
+      {
+        "id": 1146,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Shirt"
+      },
+      {
+        "id": 1147,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Pants"
+      },
+      {
+        "id": 5588,
+        "count": 1,
+        "equipped": false,
+        "name": "Tutorial Guide"
+      },
+      {
+        "id": 10650,
+        "count": 5,
+        "equipped": false,
+        "name": "Adventurer's Scroll of Escape"
+      },
+      {
+        "id": 12753,
+        "count": 10,
+        "equipped": false,
+        "name": "Kamael Village Teleportation Scroll"
+      }
+    ]
+  },
+  {
+    "classId": 25,
+    "name": "Elven Mystic",
+    "items": [
+      {
+        "id": 20635,
+        "count": 1,
+        "equipped": false,
+        "name": "No Grade Beginner's Adventurer Support Pack"
+      },
+      {
+        "id": 20637,
+        "count": 1,
+        "equipped": false,
+        "name": "D-Grade Mage Support Pack"
+      },
+      {
+        "id": 20638,
+        "count": 1,
+        "equipped": false,
+        "name": "Beginner's Adventurer Reinforcement Pack"
+      },
+      {
+        "id": 6,
+        "count": 1,
+        "equipped": true,
+        "name": "Apprentice's Wand"
+      },
+      {
+        "id": 425,
+        "count": 1,
+        "equipped": true,
+        "name": "Apprentice's Tunic"
+      },
+      {
+        "id": 461,
+        "count": 1,
+        "equipped": true,
+        "name": "Apprentice's Stockings"
+      },
+      {
+        "id": 5588,
+        "count": 1,
+        "equipped": false,
+        "name": "Tutorial Guide"
+      },
+      {
+        "id": 10650,
+        "count": 5,
+        "equipped": false,
+        "name": "Adventurer's Scroll of Escape"
+      },
+      {
+        "id": 12753,
+        "count": 10,
+        "equipped": false,
+        "name": "Kamael Village Teleportation Scroll"
+      }
+    ]
+  },
+  {
+    "classId": 31,
+    "name": "Dark Fighter",
+    "items": [
+      {
+        "id": 20635,
+        "count": 1,
+        "equipped": false,
+        "name": "No Grade Beginner's Adventurer Support Pack"
+      },
+      {
+        "id": 20636,
+        "count": 1,
+        "equipped": false,
+        "name": "D-Grade Fighter Support Pack"
+      },
+      {
+        "id": 20638,
+        "count": 1,
+        "equipped": false,
+        "name": "Beginner's Adventurer Reinforcement Pack"
+      },
+      {
+        "id": 2369,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Sword"
+      },
+      {
+        "id": 10,
+        "count": 1,
+        "equipped": false,
+        "name": "Dagger"
+      },
+      {
+        "id": 1146,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Shirt"
+      },
+      {
+        "id": 1147,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Pants"
+      },
+      {
+        "id": 5588,
+        "count": 1,
+        "equipped": false,
+        "name": "Tutorial Guide"
+      },
+      {
+        "id": 10650,
+        "count": 5,
+        "equipped": false,
+        "name": "Adventurer's Scroll of Escape"
+      },
+      {
+        "id": 12753,
+        "count": 10,
+        "equipped": false,
+        "name": "Kamael Village Teleportation Scroll"
+      }
+    ]
+  },
+  {
+    "classId": 38,
+    "name": "Dark Mystic",
+    "items": [
+      {
+        "id": 20635,
+        "count": 1,
+        "equipped": false,
+        "name": "No Grade Beginner's Adventurer Support Pack"
+      },
+      {
+        "id": 20637,
+        "count": 1,
+        "equipped": false,
+        "name": "D-Grade Mage Support Pack"
+      },
+      {
+        "id": 20638,
+        "count": 1,
+        "equipped": false,
+        "name": "Beginner's Adventurer Reinforcement Pack"
+      },
+      {
+        "id": 6,
+        "count": 1,
+        "equipped": true,
+        "name": "Apprentice's Wand"
+      },
+      {
+        "id": 425,
+        "count": 1,
+        "equipped": true,
+        "name": "Apprentice's Tunic"
+      },
+      {
+        "id": 461,
+        "count": 1,
+        "equipped": true,
+        "name": "Apprentice's Stockings"
+      },
+      {
+        "id": 5588,
+        "count": 1,
+        "equipped": false,
+        "name": "Tutorial Guide"
+      },
+      {
+        "id": 10650,
+        "count": 5,
+        "equipped": false,
+        "name": "Adventurer's Scroll of Escape"
+      },
+      {
+        "id": 12753,
+        "count": 10,
+        "equipped": false,
+        "name": "Kamael Village Teleportation Scroll"
+      }
+    ]
+  },
+  {
+    "classId": 44,
+    "name": "Orc Fighter",
+    "items": [
+      {
+        "id": 20635,
+        "count": 1,
+        "equipped": false,
+        "name": "No Grade Beginner's Adventurer Support Pack"
+      },
+      {
+        "id": 20636,
+        "count": 1,
+        "equipped": false,
+        "name": "D-Grade Fighter Support Pack"
+      },
+      {
+        "id": 20638,
+        "count": 1,
+        "equipped": false,
+        "name": "Beginner's Adventurer Reinforcement Pack"
+      },
+      {
+        "id": 2369,
+        "count": 1,
+        "equipped": false,
+        "name": "Squire's Sword"
+      },
+      {
+        "id": 2368,
+        "count": 1,
+        "equipped": true,
+        "name": "Training Gloves"
+      },
+      {
+        "id": 1146,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Shirt"
+      },
+      {
+        "id": 1147,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Pants"
+      },
+      {
+        "id": 5588,
+        "count": 1,
+        "equipped": false,
+        "name": "Tutorial Guide"
+      },
+      {
+        "id": 10650,
+        "count": 5,
+        "equipped": false,
+        "name": "Adventurer's Scroll of Escape"
+      },
+      {
+        "id": 12753,
+        "count": 10,
+        "equipped": false,
+        "name": "Kamael Village Teleportation Scroll"
+      }
+    ]
+  },
+  {
+    "classId": 49,
+    "name": "Orc Mystic",
+    "items": [
+      {
+        "id": 20635,
+        "count": 1,
+        "equipped": false,
+        "name": "No Grade Beginner's Adventurer Support Pack"
+      },
+      {
+        "id": 20637,
+        "count": 1,
+        "equipped": false,
+        "name": "D-Grade Mage Support Pack"
+      },
+      {
+        "id": 20638,
+        "count": 1,
+        "equipped": false,
+        "name": "Beginner's Adventurer Reinforcement Pack"
+      },
+      {
+        "id": 2368,
+        "count": 1,
+        "equipped": true,
+        "name": "Training Gloves"
+      },
+      {
+        "id": 425,
+        "count": 1,
+        "equipped": true,
+        "name": "Apprentice's Tunic"
+      },
+      {
+        "id": 461,
+        "count": 1,
+        "equipped": true,
+        "name": "Apprentice's Stockings"
+      },
+      {
+        "id": 5588,
+        "count": 1,
+        "equipped": false,
+        "name": "Tutorial Guide"
+      },
+      {
+        "id": 10650,
+        "count": 5,
+        "equipped": false,
+        "name": "Adventurer's Scroll of Escape"
+      },
+      {
+        "id": 12753,
+        "count": 10,
+        "equipped": false,
+        "name": "Kamael Village Teleportation Scroll"
+      }
+    ]
+  },
+  {
+    "classId": 53,
+    "name": "Dwarf Fighter",
+    "items": [
+      {
+        "id": 20635,
+        "count": 1,
+        "equipped": false,
+        "name": "No Grade Beginner's Adventurer Support Pack"
+      },
+      {
+        "id": 20636,
+        "count": 1,
+        "equipped": false,
+        "name": "D-Grade Fighter Support Pack"
+      },
+      {
+        "id": 20638,
+        "count": 1,
+        "equipped": false,
+        "name": "Beginner's Adventurer Reinforcement Pack"
+      },
+      {
+        "id": 2370,
+        "count": 1,
+        "equipped": true,
+        "name": "Guild Member's Club"
+      },
+      {
+        "id": 10,
+        "count": 1,
+        "equipped": false,
+        "name": "Dagger"
+      },
+      {
+        "id": 1146,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Shirt"
+      },
+      {
+        "id": 1147,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Pants"
+      },
+      {
+        "id": 5588,
+        "count": 1,
+        "equipped": false,
+        "name": "Tutorial Guide"
+      },
+      {
+        "id": 10650,
+        "count": 5,
+        "equipped": false,
+        "name": "Adventurer's Scroll of Escape"
+      },
+      {
+        "id": 12753,
+        "count": 10,
+        "equipped": false,
+        "name": "Kamael Village Teleportation Scroll"
+      }
+    ]
+  },
+  {
+    "classId": 123,
+    "name": "Male Kamael Soldier",
+    "items": [
+      {
+        "id": 20635,
+        "count": 1,
+        "equipped": false,
+        "name": "No Grade Beginner's Adventurer Support Pack"
+      },
+      {
+        "id": 20636,
+        "count": 1,
+        "equipped": false,
+        "name": "D-Grade Fighter Support Pack"
+      },
+      {
+        "id": 20638,
+        "count": 1,
+        "equipped": false,
+        "name": "Beginner's Adventurer Reinforcement Pack"
+      },
+      {
+        "id": 2369,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Sword"
+      },
+      {
+        "id": 10,
+        "count": 1,
+        "equipped": false,
+        "name": "Dagger"
+      },
+      {
+        "id": 1146,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Shirt"
+      },
+      {
+        "id": 1147,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Pants"
+      },
+      {
+        "id": 5588,
+        "count": 1,
+        "equipped": false,
+        "name": "Tutorial Guide"
+      },
+      {
+        "id": 10650,
+        "count": 5,
+        "equipped": false,
+        "name": "Adventurer's Scroll of Escape"
+      },
+      {
+        "id": 12753,
+        "count": 10,
+        "equipped": false,
+        "name": "Kamael Village Teleportation Scroll"
+      }
+    ]
+  },
+  {
+    "classId": 124,
+    "name": "Female Kamael Soldier",
+    "items": [
+      {
+        "id": 20635,
+        "count": 1,
+        "equipped": false,
+        "name": "No Grade Beginner's Adventurer Support Pack"
+      },
+      {
+        "id": 20636,
+        "count": 1,
+        "equipped": false,
+        "name": "D-Grade Fighter Support Pack"
+      },
+      {
+        "id": 20638,
+        "count": 1,
+        "equipped": false,
+        "name": "Beginner's Adventurer Reinforcement Pack"
+      },
+      {
+        "id": 2369,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Sword"
+      },
+      {
+        "id": 10,
+        "count": 1,
+        "equipped": false,
+        "name": "Dagger"
+      },
+      {
+        "id": 1146,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Shirt"
+      },
+      {
+        "id": 1147,
+        "count": 1,
+        "equipped": true,
+        "name": "Squire's Pants"
+      },
+      {
+        "id": 5588,
+        "count": 1,
+        "equipped": false,
+        "name": "Tutorial Guide"
+      },
+      {
+        "id": 10650,
+        "count": 5,
+        "equipped": false,
+        "name": "Adventurer's Scroll of Escape"
+      },
+      {
+        "id": 12753,
+        "count": 10,
+        "equipped": false,
+        "name": "Kamael Village Teleportation Scroll"
+      }
+    ]
+  }
+]
