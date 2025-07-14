@@ -465,7 +465,7 @@ func (t *TradeList) PrivateStoreBuy(character interfaces.CharacterI,
 			msg2.AddLong(item.GetCount())
 			character.SendSysMsg(msg2)
 		} else {
-			msg1 := sysmsg.C1purchasedS2
+			msg1 := sysmsg.C1PurchasedS2
 			msg1.AddString(character.GetName())
 			msg1.AddItemName(newItem.GetId())
 			t.owner.SendSysMsg(msg1)
@@ -621,7 +621,7 @@ func (t *TradeList) PrivateStoreSell(character interfaces.CharacterI, items []in
 			msg1.AddItemName(newItem.GetId())
 			t.owner.SendSysMsg(msg1)
 
-			msg2 := sysmsg.C1purchasedS2
+			msg2 := sysmsg.C1PurchasedS2
 			msg2.AddString(t.owner.GetName())
 			msg2.AddItemName(newItem.GetId())
 			character.SendSysMsg(msg2)
