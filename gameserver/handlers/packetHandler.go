@@ -61,6 +61,7 @@ const (
 	OpcodeRequestPrivateStoreBuy      = 0x83
 	OpcodeRequestPrivateStoreQuitSell = 0x96
 	OpcodeSetPrivateStoreMsgSell      = 0x97
+	OpcodeRequestUserCommand          = 0xb3
 
 	// Вложенные опкоды (для 0xd0)
 	OpcodeRequestGoToLobby          = 0x36
@@ -303,6 +304,8 @@ func (h *PacketHandler) handleInGameState(client interfaces.NewClientCtxInterfac
 		clientpackets.SetPrivateStoreMsgSell(client, data)
 	case OpcodeD0:
 		return h.handleD0Packet(client, data, clientStates.InGame)
+	case OpcodeRequestUserCommand:
+		clientpackets.RequestUserCommand(client, data)
 	default:
 		logger.LogInfo("Неизвестный опкод 0x%02x в состоянии InGame", opcode)
 		return fmt.Errorf("%w: 0x%02x в состоянии InGame", ErrUnknownOpcode, opcode)
