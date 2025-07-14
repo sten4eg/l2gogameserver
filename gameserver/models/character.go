@@ -99,6 +99,8 @@ type (
 		party                 interfaces.PartyInterface
 		partyDistributionType interfaces.PartyDistributionTypeInterface
 
+		LastEnterWorld *time.Time
+
 		multiSocialAction int32
 		multiSocialTarget int32
 	}
@@ -117,6 +119,20 @@ type (
 
 func (c *Character) SaveUser(db *sql.DB) {
 	c.saveLocation(db)
+}
+
+// Обновление последнего входа персонажа в игру
+func (c *Character) UpdateLastEnterWorld(db *sql.DB) {
+	sql := `UPDATE "characters" SET "last_enter_world" = $1 WHERE "object_id" = $2`
+	_, err := db.Exec(sql, time.Now(), c.GetObjectId())
+	if err != nil {
+		logger.Error.Panicln(err)
+	}
+}
+
+// Возвращаем время входа в игру
+func (c *Character) GetLastEnterWorld() *time.Time {
+	return c.LastEnterWorld
 }
 
 func (c *Character) saveLocation(db *sql.DB) {
