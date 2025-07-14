@@ -83,7 +83,7 @@ type CharacterI interface {
 	GetClanId() int32
 	GetPDef() int32
 	GetPercentFromCurrentLevel(exp, level int32) float64
-	GetPaperdoll() []MyItemInterface
+	GetEquipmentSlot() []MyItemInterface
 	SetPaperdoll([26]MyItemInterface)
 	GetSkills() []SkillInterface
 	SetSitStandPose() int32
@@ -99,7 +99,7 @@ type CharacterI interface {
 	GetMacrosCount() uint8
 	AddMacros(MacrosInterface)
 	GetMacrosList() []MacrosInterface
-	GetPaperdollCharInfo() []MyItemInterface
+	GetEquipmentSlotCharInfo() []MyItemInterface
 	GetShortCut() map[int32]dto.ShortCutDTO
 	Load(*sql.DB, string)
 

@@ -140,10 +140,10 @@ func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *pa
 
 		paperdoll := models.RestoreVisibleInventory(client.Account.Char[index].GetObjectId(), db)
 		for _, slot := range models.GetPaperdollOrder() {
-			if paperdoll[slot].Item == nil {
+			if paperdoll[slot].GetItemInfo() == nil {
 				buffer.WriteD(0)
 			} else {
-				buffer.WriteD(int32(paperdoll[slot].Id))
+				buffer.WriteD(paperdoll[slot].GetItemInfo().GetId())
 			}
 		}
 
