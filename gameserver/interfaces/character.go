@@ -6,6 +6,7 @@ import (
 	"l2gogameserver/gameserver/models/race"
 	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/gameserver/models/trade/privateStoreType"
+	"time"
 )
 
 type CharacterI interface {
@@ -117,4 +118,6 @@ type CharacterI interface {
 	IsCastingNow() bool
 	GetCurrentSkill() SkillHolderInterface
 	SaveUser(db *sql.DB)
+	UpdateLastEnterWorld(db *sql.DB)
+	GetLastEnterWorld() *time.Time
 }

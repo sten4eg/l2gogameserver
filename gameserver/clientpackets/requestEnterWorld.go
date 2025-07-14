@@ -69,6 +69,8 @@ func RequestEnterWorld(client interfaces.NewClientCtxInterface, data []byte, db 
 	client.SetState(clientStates.InGame)
 	client.Send(buff.Bytes())
 
+	client.GetAccount().GetCurrentChar().UpdateLastEnterWorld(db)
+
 	//NPCdistance := client.CurrentChar.SpawnDistancePoint(5000)
 	//logger.Info.Printf("Загружено возле игрока %d npc", len(NPCdistance))
 	//for id, locdata := range NPCdistance {
