@@ -9,6 +9,7 @@ import (
 	"l2gogameserver/gameserver/models/initial"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
+	"regexp"
 	"time"
 )
 
@@ -93,7 +94,13 @@ func CharacterCreate(clientI interfaces.NewClientCtxInterface, data []byte, db *
 	}
 
 	if !initial.HasEquipmentForClass(classId) {
-		client.EncryptAndSend(serverpackets.CharCreateFail(REASON_CHOOSE_ANOTHER_SVR))
+		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonCreateNotAllowed))
+		return
+	}
+
+	var nicknameRegex = regexp.MustCompile("^[a-zA-Zа-яА-Я]+$")
+	if !nicknameRegex.MatchString(name) {
+		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonIncorrectName))
 		return
 	}
 
