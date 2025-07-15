@@ -21,10 +21,10 @@ type Action struct {
 	ObjectId  int32 //objectId персонажа
 	Completed bool  //true подтверждение сделки
 	Client    *models.Character
-	Items     []*models.MyItem
+	Items     []*models.PlayerItem
 }
 
-//Обмен
+// Обмен
 type Exchange struct {
 	Sender    Action //Отправитель
 	Recipient Action //Получатель
@@ -34,7 +34,7 @@ type Exchange struct {
 
 var allTrade []*Exchange
 
-//NewRequestTrade Добавляем в реестр трейдов
+// NewRequestTrade Добавляем в реестр трейдов
 func NewRequestTrade(senderI, recipientI interfaces.CharacterI) {
 	sender, ok := senderI.(*models.Character)
 	if !ok {
@@ -60,7 +60,7 @@ func NewRequestTrade(senderI, recipientI interfaces.CharacterI) {
 	allTrade = append(allTrade, u)
 }
 
-//Answer Когда пользователь отвечает "Да" или "нет" на предложение торговать
+// Answer Когда пользователь отвечает "Да" или "нет" на предложение торговать
 func Answer(client interfaces.CharacterI) (*Exchange, bool) {
 	for _, exchange := range allTrade {
 		if exchange.Recipient.ObjectId == client.GetObjectId() {
@@ -76,7 +76,7 @@ func (e *Exchange) ChangeStatusTrade(st StatusTrade) {
 	e.Status = st
 }
 
-func AddItemTrade(client interfaces.CharacterI, objectId int32, count int64) (*models.MyItem, interfaces.CharacterI, bool) {
+func AddItemTrade(client interfaces.CharacterI, objectId int32, count int64) (*models.PlayerItem, interfaces.CharacterI, bool) {
 	for _, exchange := range allTrade {
 		//Проверяем, есть ли предмет в инвентаре
 		if exchange.Sender.ObjectId == client.GetObjectId() {
@@ -106,10 +106,10 @@ func AddItemTrade(client interfaces.CharacterI, objectId int32, count int64) (*m
 			}
 		}
 	}
-	return &models.MyItem{}, nil, false
+	return &models.PlayerItem{}, nil, false
 }
 
-//ExistItemTradeObject Проверяет, есть ли в трайде уже добавленный X предмет
+// ExistItemTradeObject Проверяет, есть ли в трайде уже добавленный X предмет
 func (e *Exchange) ExistItemTradeObject(client interfaces.CharacterI, objectid int32) bool {
 	for _, exchanges := range allTrade {
 		if exchanges.Sender.ObjectId == client.GetObjectId() {
@@ -130,8 +130,8 @@ func (e *Exchange) ExistItemTradeObject(client interfaces.CharacterI, objectid i
 	return false
 }
 
-//FindTrade Пользователь отменил сделку
-//Возращает ID персонажей, которые участвовали в торговле
+// FindTrade Пользователь отменил сделку
+// Возращает ID персонажей, которые участвовали в торговле
 func FindTrade(client interfaces.CharacterI) (interfaces.CharacterI, *Exchange, bool) {
 	var playerTo interfaces.CharacterI
 	for _, exchange := range allTrade {
@@ -160,15 +160,15 @@ func UserClear(client interfaces.CharacterI) bool {
 	return false
 }
 
-//Информация о том какие предметы будем удалять из инвентарей, и какие предметы будем добавлять
+// Информация о том какие предметы будем удалять из инвентарей, и какие предметы будем добавлять
 type UpdateTradeData struct {
 	Player     interfaces.CharacterI //Над каким персонажем производятся действия
-	Item       models.MyItem         //Предмет
+	Item       models.PlayerItem     //Предмет
 	Count      int64                 //Кол-во
 	UpdateType int16
 }
 
-//TradeAddInventory Обмен предметами
+// TradeAddInventory Обмен предметами
 func TradeAddInventory(clientI, player2I interfaces.CharacterI, exchange *Exchange) []UpdateTradeData {
 	var UpdateInfo []UpdateTradeData
 
@@ -198,8 +198,8 @@ func TradeAddInventory(clientI, player2I interfaces.CharacterI, exchange *Exchan
 	return UpdateInfo
 }
 
-//Удаление и добавление в массив
-func removeAndAdd(client, player2 *models.Character, itm *models.MyItem, count int64) []UpdateTradeData {
+// Удаление и добавление в массив
+func removeAndAdd(client, player2 *models.Character, itm *models.PlayerItem, count int64) []UpdateTradeData {
 	var UpdateInfo []UpdateTradeData
 
 	item, count, updtype, ok := models.RemoveItem(client, itm, itm.Count)

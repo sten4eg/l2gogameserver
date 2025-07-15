@@ -6,6 +6,7 @@ import (
 	"l2gogameserver/gameserver/models/race"
 	"l2gogameserver/gameserver/models/sysmsg"
 	"l2gogameserver/gameserver/models/trade/privateStoreType"
+	"time"
 )
 
 type CharacterI interface {
@@ -82,7 +83,7 @@ type CharacterI interface {
 	GetClanId() int32
 	GetPDef() int32
 	GetPercentFromCurrentLevel(exp, level int32) float64
-	GetPaperdoll() []MyItemInterface
+	GetEquipmentSlot() []MyItemInterface
 	SetPaperdoll([26]MyItemInterface)
 	GetSkills() []SkillInterface
 	SetSitStandPose() int32
@@ -98,7 +99,7 @@ type CharacterI interface {
 	GetMacrosCount() uint8
 	AddMacros(MacrosInterface)
 	GetMacrosList() []MacrosInterface
-	GetPaperdollCharInfo() []MyItemInterface
+	GetEquipmentSlotCharInfo() []MyItemInterface
 	GetShortCut() map[int32]dto.ShortCutDTO
 	Load(*sql.DB, string)
 
@@ -117,4 +118,6 @@ type CharacterI interface {
 	IsCastingNow() bool
 	GetCurrentSkill() SkillHolderInterface
 	SaveUser(db *sql.DB)
+	UpdateLastEnterWorld(db *sql.DB)
+	GetLastEnterWorld() *time.Time
 }

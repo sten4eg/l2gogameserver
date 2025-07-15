@@ -4,15 +4,16 @@ import (
 	"database/sql"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
-
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
-const InfoAboutCharsByLogin = `SELECT login,object_id,level,max_hp,cur_hp,max_mp,cur_mp,face,hair_style,hair_color,sex,x,y,z,exp,sp,karma,pvp_kills,pk_kills,clan_id,race,class_id,base_class,title,online_time,nobless,vitality,char_name,first_enter_game FROM characters WHERE Login = $1 ORDER BY object_id`
+const InfoAboutCharsByLogin = `SELECT login,object_id,level,max_hp,cur_hp,max_mp,cur_mp,face,hair_style,hair_color,sex,x,y,z,exp,sp,karma,pvp_kills,pk_kills,clan_id,race,class_id,base_class,title,online_time,nobless,vitality,char_name,first_enter_game,last_enter_world FROM characters WHERE Login = $1 ORDER BY object_id`
 
 // TODO убрать модель
 func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *packets.Buffer {
+	isSelectPlayer := false
+
 	client, ok := clientI.(*models.ClientCtx)
 	if !ok {
 		return nil
@@ -60,6 +61,7 @@ func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *pa
 			&character.Vitality,
 			&character.CharName,
 			&character.FirstEnterGame,
+			&character.LastEnterWorld,
 		)
 		character.Inventory = models.NewInventory(character.ObjectId)
 		if err != nil {
@@ -69,6 +71,9 @@ func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *pa
 		character.Conn = client
 		client.Account.Char = append(client.Account.Char, character)
 	}
+
+	// Узнаем последнего активного персонажа, чтоб он в лобби был по умолчанию
+	lastActiveChar := client.GetAccount().GetLastActiveChar()
 
 	for index := range client.Account.Char {
 		//TODO чё бля сделать надо раскоментить и чтобы работало
@@ -84,9 +89,13 @@ func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *pa
 	buffer.WriteSingleByte(0) // delim
 
 	//todo блок который должен повторяться
-
 	for index := range client.Account.Char {
-
+		isSelectPlayer = false
+		if lastActiveChar != nil {
+			if lastActiveChar.GetObjectId() == client.Account.Char[index].GetObjectId() {
+				isSelectPlayer = true
+			}
+		}
 		buffer.WriteS(client.Account.Char[index].GetName()) // Pers name
 
 		buffer.WriteD(client.Account.Char[index].GetObjectId()) // objId
@@ -131,10 +140,10 @@ func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *pa
 
 		paperdoll := models.RestoreVisibleInventory(client.Account.Char[index].GetObjectId(), db)
 		for _, slot := range models.GetPaperdollOrder() {
-			if paperdoll[slot].Item == nil {
+			if paperdoll[slot].GetItemInfo() == nil {
 				buffer.WriteD(0)
 			} else {
-				buffer.WriteD(int32(paperdoll[slot].Id))
+				buffer.WriteD(paperdoll[slot].GetItemInfo().GetId())
 			}
 		}
 
@@ -148,7 +157,12 @@ func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *pa
 		buffer.WriteD(0)                                       // days left before
 		buffer.WriteD(client.Account.Char[index].GetClassId()) //classId
 
-		buffer.WriteD(0)          //auto-selected
+		if isSelectPlayer {
+			buffer.WriteD(1)
+		} else {
+			buffer.WriteD(0)
+		}
+
 		buffer.WriteSingleByte(0) // enchanted
 		buffer.WriteD(0)          //augumented
 

@@ -25,7 +25,7 @@ func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB, gs GsInterf
 	ctrlPressed := packet.ReadInt32() != 0
 	_ = ctrlPressed
 
-	var selectedItem *models.MyItem
+	var selectedItem *models.PlayerItem
 
 	find := false
 	for i := range character.Inventory.Items {
@@ -44,7 +44,7 @@ func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB, gs GsInterf
 
 	buffer := packets.Get()
 
-	if selectedItem.IsEquipable() {
+	if selectedItem.GetItemInfo().IsEquipable() {
 		// нельзя надевать Formal Wear с проклятым оружием
 		if character.IsCursedWeaponEquipped() && objId == formalWearId {
 			return
@@ -52,11 +52,11 @@ func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB, gs GsInterf
 
 		// todo тут еще 2 проверки
 
-		switch selectedItem.SlotBitType {
+		switch selectedItem.GetItemInfo().SlotBitType {
 		case items.SlotLrHand, items.SlotLHand, items.SlotRHand:
 
 			// если в руке Combat flag
-			if character.IsActiveWeapon() && models.GetActiveWeapon(character.Inventory.Items, character.Paperdoll).Item.Id == fortFlagId {
+			if character.IsActiveWeapon() && models.GetActiveWeapon(character.Inventory.Items, character.Paperdoll).GetItemInfo().GetId() == fortFlagId {
 				pkg := sysmsg.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
 				buffer.WriteSlice(character.CryptAndReturnPackageReadyToShip(pkg))
 				character.Send(buffer.Bytes())
@@ -70,18 +70,18 @@ func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB, gs GsInterf
 			}
 
 			//  запрет носить НЕ камаелям эксклюзивное оружие  камаелей
-			if selectedItem.IsEquipped() == 0 && selectedItem.IsWeapon() { // todo еще проверка && !activeChar.canOverrideCond(ITEM_CONDITIONS))
+			if selectedItem.IsEquipped() == 0 && selectedItem.GetItemInfo().IsWeapon() { // todo еще проверка && !activeChar.canOverrideCond(ITEM_CONDITIONS))
 
 				switch character.Race {
 				case race.KAMAEL:
-					if selectedItem.IsWeaponTypeNone() {
+					if selectedItem.GetItemInfo().IsWeaponTypeNone() {
 						pkg := sysmsg.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
 						buffer.WriteSlice(character.CryptAndReturnPackageReadyToShip(pkg))
 						character.Send(buffer.Bytes())
 						return
 					}
 				case race.HUMAN, race.DWARF, race.ELF, race.DARK_ELF, race.ORC:
-					if selectedItem.IsOnlyKamaelWeapon() {
+					if selectedItem.GetItemInfo().IsOnlyKamaelWeapon() {
 						pkg := sysmsg.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
 						buffer.WriteSlice(character.CryptAndReturnPackageReadyToShip(pkg))
 						character.Send(buffer.Bytes())
@@ -92,7 +92,7 @@ func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB, gs GsInterf
 		// камаель не может носить тяжелую или маг броню
 		// они могут носить только лайт, может проверять на !LIGHT ?
 		case items.SlotChest, items.SlotBack, items.SlotGloves, items.SlotFeet, items.SlotHead, items.SlotFullArmor, items.SlotLegs:
-			if character.Race == race.KAMAEL && (selectedItem.IsHeavyArmor() || selectedItem.IsMagicArmor()) {
+			if character.Race == race.KAMAEL && (selectedItem.GetItemInfo().IsHeavyArmor() || selectedItem.GetItemInfo().IsMagicArmor()) {
 				pkg := sysmsg.SystemMessage(sysmsg.CannotEquipItemDueToBadCondition)
 				buffer.WriteSlice(character.CryptAndReturnPackageReadyToShip(pkg))
 				character.Send(buffer.Bytes())

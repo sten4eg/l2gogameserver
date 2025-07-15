@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/interfaces"
+	"time"
 )
 
 type Account struct {
@@ -51,6 +52,38 @@ func (a *Account) MarkToDeleteChar(slot int32, db *sql.DB) int8 {
 	}
 
 	return answer
+}
+
+// Последний активный персонаж аккаунта
+func (a *Account) GetLastActiveChar() interfaces.CharacterI {
+	var lastChar interfaces.CharacterI
+	var lastTime *time.Time
+
+	for _, char := range a.Char {
+		if char == nil {
+			continue
+		}
+
+		enterTime := char.GetLastEnterWorld()
+
+		switch {
+		case enterTime != nil && (lastTime == nil || enterTime.After(*lastTime)):
+			lastTime = enterTime
+			lastChar = char
+
+		case enterTime != nil && lastTime != nil && enterTime.Equal(*lastTime):
+			if lastChar != nil && char.GetObjectId() < lastChar.GetObjectId() {
+				lastChar = char
+			}
+
+		case enterTime == nil && lastTime == nil:
+			if lastChar == nil || char.GetObjectId() > lastChar.GetObjectId() {
+				lastChar = char
+			}
+		}
+	}
+
+	return lastChar
 }
 
 func (a *Account) GetCurrentChar() interfaces.CharacterI {

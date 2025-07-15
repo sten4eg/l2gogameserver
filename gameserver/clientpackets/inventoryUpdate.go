@@ -7,7 +7,7 @@ import (
 	"l2gogameserver/packets"
 )
 
-func InventoryUpdate(client interfaces.NewClientCtxInterface, item models.MyItem, updateType int16) []byte {
+func InventoryUpdate(client interfaces.NewClientCtxInterface, item models.PlayerItem, updateType int16) []byte {
 	buffer := packets.Get()
 
 	//TODO ne sdelano

@@ -26,7 +26,7 @@ func CharInfo(character interfaces.CharacterI) []byte {
 	buffer.WriteD(character.GetSex())         //sex
 	buffer.WriteD(character.GetBaseClass())   //baseClass
 
-	paperdoll := character.GetPaperdollCharInfo()
+	paperdoll := character.GetEquipmentSlotCharInfo()
 
 	for _, index := range getPaperdollOrder() {
 		ts := paperdoll[index].GetId()
