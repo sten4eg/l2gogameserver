@@ -18,11 +18,11 @@ func RegisterShortCut(sc dto.ShortCutDTO, client interfaces.NewClientCtxInterfac
 	if exist {
 		deleteShortCutFromDb(s, currChar.GetObjectId(), currChar.GetClassId(), db)
 	}
-	registerShortCutInDb(sc, currChar.GetObjectId(), currChar.GetClassId(), db)
+	RegisterShortCutInDB(sc, currChar.GetObjectId(), currChar.GetClassId(), db)
 	shorts[sc.Slot+(sc.Page*MaxShortcutsPerBar)] = sc
 }
 
-func registerShortCutInDb(shortCut dto.ShortCutDTO, charId, classId int32, db *sql.DB) {
+func RegisterShortCutInDB(shortCut dto.ShortCutDTO, charId, classId int32, db *sql.DB) {
 
 	_, err := db.Exec("INSERT INTO character_shortcuts (char_id, slot, page, type,shortcut_id, level, class_index) VALUES($1,$2,$3,$4,$5,$6,$7)",
 		charId,

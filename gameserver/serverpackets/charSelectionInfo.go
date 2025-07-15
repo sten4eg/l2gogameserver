@@ -3,12 +3,12 @@ package serverpackets
 import (
 	"database/sql"
 	"l2gogameserver/data/logger"
+	"l2gogameserver/gameserver/dto"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/initial"
 	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/packets"
-	"log"
 )
 
 const InfoAboutCharsByLogin = `SELECT login,object_id,level,max_hp,cur_hp,max_mp,cur_mp,face,hair_style,hair_color,sex,x,y,z,exp,sp,karma,pvp_kills,pk_kills,clan_id,race,class_id,base_class,title,online_time,nobless,vitality,char_name,first_enter_game,last_enter_world FROM characters WHERE Login = $1 ORDER BY object_id`
@@ -82,7 +82,8 @@ func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *pa
 
 	for _, char := range client.Account.Char {
 		if char.IsFirstEnterGame() {
-			//Выдача предметов после создания персонажа
+
+			//Выдача начальных предметов
 			eq := initial.GetEquipmentByClass(char.GetBaseClass())
 			if eq != nil {
 				for _, item := range eq.Items {
@@ -95,18 +96,38 @@ func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *pa
 						}
 					}
 				}
+			}
 
-				// ======================= ВАШ ДЕБАГ-МАРКЕР №2 =======================
-				log.Printf("====== ПРОВЕРКА ИНВЕНТАРЯ ПОСЛЕ ЭКИПИРОВКИ ДЛЯ ЧАРА '%s' (ID: %d) ======", char.GetName(), char.GetObjectId())
-				for _, invItem := range char.GetInventory().GetItems() {
-					// Выводим только те предметы, которые должны быть надеты
-					if invItem.GetLocation() == "PAPERDOLL" {
-						log.Printf("ПРОВЕРКА: Предмет '%s' (ObjectID: %d) находится в слоте %d (Location: %s)", invItem.GetId(), invItem.GetObjectId(), invItem.GetLocData(), invItem.GetLocation())
+			shc, ok := initial.GetShortcutsByClassID(int(char.GetBaseClass()))
+			if !ok {
+				logger.LogError("Нет ярлыков для класса %d\n", char.GetBaseClass())
+				continue
+			}
+
+			for _, page := range shc.Pages {
+				for _, slot := range page.Slots {
+					shortcutID := int32(slot.ShortcutID)
+
+					if slot.ShortcutType == "ITEM" {
+						item := char.GetInventory().GetItemByItemId(slot.ShortcutID)
+						if item == nil {
+							logger.LogError("Предмет %d не найден\n", slot.ShortcutID)
+							continue
+						}
+						shortcutID = item.GetObjectId()
 					}
-				}
-				log.Println("=========================== КОНЕЦ ПРОВЕРКИ ===========================")
-				// ========================================================================
 
+					sc := dto.GetShortCutDTO(
+						int32(slot.SlotID),
+						int32(page.PageID),
+						shortcutID,
+						int32(slot.ShortcutLevel),
+						1,
+						slot.ShortcutType,
+					)
+					models.RegisterShortCutInDB(sc, char.GetObjectId(), char.GetBaseClass(), db)
+
+				}
 			}
 
 			char.SaveFirstInGamePlayer(db)

@@ -194,9 +194,6 @@ func (i *PlayerItem) UpdateDB(db *sql.DB) {
 			i.storedInDb = false
 		} else {
 			if !i.storedInDb {
-				// ======================= ВАШ ДЕБАГ-МАРКЕР =======================
-				log.Printf("DEBUG_DB: Попытка обновить item. ObjectID: %d, Location: '%s', LocData: %d\n", i.GetObjectId(), i.Location, i.LocData)
-				// ================================================================
 				_, err := db.Exec(UpdateInDB, i.ownerId, i.GetCount(), i.Location, i.LocData, i.Enchant, i.GetObjectId())
 				if err != nil {
 					log.Println(err)
@@ -208,10 +205,6 @@ func (i *PlayerItem) UpdateDB(db *sql.DB) {
 		if i.ownerId == 0 || i.GetCount() == 0 {
 			return
 		}
-		// ======================= ВАШ ДЕБАГ-МАРКЕР =======================
-		log.Printf("DEBUG_DB: Попытка Добавить item. ObjectID: %d, Location: '%s', LocData: %d\n", i.GetObjectId(), i.Location, i.LocData)
-		// ================================================================
-		// Изменено: Добавлены i.Enchant, i.Location, i.LocData в параметры
 		_, err := db.Exec(InsertIntoDB, i.ownerId, i.ObjectId, i.ItemInfo.Id, i.Count, i.Enchant, i.Location, i.LocData)
 		if err != nil {
 			log.Println(err)

@@ -1,0 +1,130 @@
+{
+  "shortcuts": {
+    "pages": [
+      {
+        "pageId": 0,
+        "slots": [
+          {
+            "slotId": 0,
+            "shortcutType": "ACTION",
+            "shortcutId": 2,
+            "comment": "Attack"
+          },
+          {
+            "slotId": 3,
+            "shortcutType": "ACTION",
+            "shortcutId": 5,
+            "comment": "Pick Up"
+          },
+          {
+            "slotId": 10,
+            "shortcutType": "ACTION",
+            "shortcutId": 0,
+            "comment": "Sit/Stand"
+          },
+          {
+            "slotId": 11,
+            "shortcutType": "ITEM",
+            "shortcutId": 5588,
+            "comment": "Tutorial Guide"
+          }
+        ]
+      }
+    ],
+    "classes": [
+      {
+        "classId": 10,
+        "comment": "Human Mystic",
+        "pages": [
+          {
+            "pageId": 0,
+            "slots": [
+              {
+                "slotId": 1,
+                "shortcutType": "SKILL",
+                "shortcutId": 1177,
+                "shortcutLevel": 1,
+                "comment": "Wind Strike"
+              },
+              {
+                "slotId": 10,
+                "shortcutType": "SKILL",
+                "shortcutId": 1216,
+                "shortcutLevel": 1,
+                "comment": "Self Heal"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "classId": 25,
+        "comment": "Elven Mystic",
+        "pages": [
+          {
+            "pageId": 0,
+            "slots": [
+              {
+                "slotId": 1,
+                "shortcutType": "SKILL",
+                "shortcutId": 1177,
+                "shortcutLevel": 1,
+                "comment": "Wind Strike"
+              },
+              {
+                "slotId": 10,
+                "shortcutType": "SKILL",
+                "shortcutId": 1216,
+                "shortcutLevel": 1,
+                "comment": "Self Heal"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "classId": 38,
+        "comment": "Dark Mystic",
+        "pages": [
+          {
+            "pageId": 0,
+            "slots": [
+              {
+                "slotId": 1,
+                "shortcutType": "SKILL",
+                "shortcutId": 1177,
+                "shortcutLevel": 1,
+                "comment": "Wind Strike"
+              },
+              {
+                "slotId": 10,
+                "shortcutType": "SKILL",
+                "shortcutId": 1216,
+                "shortcutLevel": 1,
+                "comment": "Self Heal"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "classId": 49,
+        "comment": "Orc Mystic",
+        "pages": [
+          {
+            "pageId": 0,
+            "slots": [
+              {
+                "slotId": 1,
+                "shortcutType": "SKILL",
+                "shortcutId": 1001,
+                "shortcutLevel": 1,
+                "comment": "Soul Cry"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
