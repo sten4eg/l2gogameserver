@@ -98,7 +98,7 @@ func CharacterCreate(clientI interfaces.NewClientCtxInterface, data []byte, db *
 		return
 	}
 
-	var nicknameRegex = regexp.MustCompile("^[a-zA-Zа-яА-Я]+$")
+	var nicknameRegex = regexp.MustCompile("^[a-zA-Zа-яА-Я0-9]+$")
 	if !nicknameRegex.MatchString(name) {
 		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonIncorrectName))
 		return

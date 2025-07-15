@@ -80,6 +80,7 @@ func main() {
 	models.LoadSkills()
 
 	initial.LoadItemsEquipment()
+	initial.LoadShortcuts()
 
 	data.Load()
 	npcs := npc.LoadNpc()
