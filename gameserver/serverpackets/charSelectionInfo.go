@@ -82,29 +82,35 @@ func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *pa
 
 	for _, char := range client.Account.Char {
 		if char.IsFirstEnterGame() {
-			log.Println("Выдача предмета")
 			//Выдача предметов после создания персонажа
 			eq := initial.GetEquipmentByClass(char.GetBaseClass())
 			if eq != nil {
 				for _, item := range eq.Items {
-					log.Println(item.Id)
 					itemData, _ := items.GetItemInfo(item.Id)
 					AddItem2 := char.GetInventory().AddItem2(int32(item.Id), item.Count, itemData.IsStackable(), db)
 					if item.Equipped {
-						log.Println("Экипирование")
 						char.GetInventory().GetItemByObjectId(AddItem2.GetObjectId()).UseEquippableItem()
-						char.GetInventory().GetItems()
 						for _, itemInterface := range char.GetInventory().GetItems() {
 							itemInterface.UpdateDB(db)
 						}
 					}
 				}
+
+				// ======================= ВАШ ДЕБАГ-МАРКЕР №2 =======================
+				log.Printf("====== ПРОВЕРКА ИНВЕНТАРЯ ПОСЛЕ ЭКИПИРОВКИ ДЛЯ ЧАРА '%s' (ID: %d) ======", char.GetName(), char.GetObjectId())
+				for _, invItem := range char.GetInventory().GetItems() {
+					// Выводим только те предметы, которые должны быть надеты
+					if invItem.GetLocation() == "PAPERDOLL" {
+						log.Printf("ПРОВЕРКА: Предмет '%s' (ObjectID: %d) находится в слоте %d (Location: %s)", invItem.GetId(), invItem.GetObjectId(), invItem.GetLocData(), invItem.GetLocation())
+					}
+				}
+				log.Println("=========================== КОНЕЦ ПРОВЕРКИ ===========================")
+				// ========================================================================
+
 			}
+
 			char.SaveFirstInGamePlayer(db)
 		}
-		//TODO чё бля сделать надо раскоментить и чтобы работало
-		//_ = index
-		//client.Account.Char[i].SetPaperdoll(models.RestoreVisibleInventory(client.Account.Char[i].GetObjectId(), db))
 	}
 
 	buffer.WriteSingleByte(0x09)
@@ -176,7 +182,11 @@ func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *pa
 		buffer.WriteD(0x00)
 		buffer.WriteD(0x00)
 
-		paperdoll := models.RestoreVisibleInventory(client.Account.Char[index].GetObjectId(), db)
+		paperdoll := models.BuildPaperdollFromInventory(client.Account.Char[index].GetInventory())
+		if !client.GetAccount().GetCurrentChar().IsFirstEnterGame() {
+			paperdoll = models.RestoreVisibleInventory(client.Account.Char[index].GetObjectId(), db)
+		}
+
 		for _, slot := range models.GetPaperdollOrder() {
 			if paperdoll[slot].GetItemInfo() == nil {
 				buffer.WriteD(0x00)

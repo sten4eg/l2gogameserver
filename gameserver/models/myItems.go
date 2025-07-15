@@ -14,10 +14,10 @@ import (
 	"sync"
 )
 
-const InsertIntoDB = `INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', 0, 0, 0, 0, '-1', 0, 0)`
+const InsertIntoDB = `INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, $5, $6, $7, 0, 0, 0, '-1', 0, 0)`
 
-// const UpdateInDB = `UPDATE items SET owner_id=$1, count=$2, loc=$3, loc_data=$4, enchant_level=$5, custom_type1=$6, custom_type2=$7, mana_left=$8, time=$9, agathion_energy=$10 WHERE object_id=$11`
-const UpdateInDB = `UPDATE items SET owner_id=$1, count=$2 WHERE object_id=$3`
+const UpdateInDB = `UPDATE items SET owner_id=$1, count=$2, loc=$3, loc_data=$4, enchant_level=$5 WHERE object_id=$6`
+
 const RemoveFromDB = `DELETE FROM items WHERE object_id = $1`
 
 type PlayerItem struct {
@@ -184,9 +184,8 @@ func (i *PlayerItem) ChangeCount(count int) {
 	i.SetUpdateType(UpdateTypeModify)
 }
 func (i *PlayerItem) UpdateDB(db *sql.DB) {
-
 	if i.existsInDb {
-		if i.ownerId == 0 || i.GetCount() == 0 { //TODO добавить проверки для удаления итема из бд
+		if i.ownerId == 0 || i.GetCount() == 0 {
 			_, err := db.Exec(RemoveFromDB, i.GetObjectId())
 			if err != nil {
 				log.Println(err)
@@ -195,7 +194,10 @@ func (i *PlayerItem) UpdateDB(db *sql.DB) {
 			i.storedInDb = false
 		} else {
 			if !i.storedInDb {
-				_, err := db.Exec(UpdateInDB, i.ownerId, i.GetCount(), i.GetObjectId())
+				// ======================= ВАШ ДЕБАГ-МАРКЕР =======================
+				log.Printf("DEBUG_DB: Попытка обновить item. ObjectID: %d, Location: '%s', LocData: %d\n", i.GetObjectId(), i.Location, i.LocData)
+				// ================================================================
+				_, err := db.Exec(UpdateInDB, i.ownerId, i.GetCount(), i.Location, i.LocData, i.Enchant, i.GetObjectId())
 				if err != nil {
 					log.Println(err)
 				}
@@ -206,13 +208,16 @@ func (i *PlayerItem) UpdateDB(db *sql.DB) {
 		if i.ownerId == 0 || i.GetCount() == 0 {
 			return
 		}
-		_, err := db.Exec(InsertIntoDB, i.ownerId, i.ObjectId, i.ItemInfo.Id, i.Count)
+		// ======================= ВАШ ДЕБАГ-МАРКЕР =======================
+		log.Printf("DEBUG_DB: Попытка Добавить item. ObjectID: %d, Location: '%s', LocData: %d\n", i.GetObjectId(), i.Location, i.LocData)
+		// ================================================================
+		// Изменено: Добавлены i.Enchant, i.Location, i.LocData в параметры
+		_, err := db.Exec(InsertIntoDB, i.ownerId, i.ObjectId, i.ItemInfo.Id, i.Count, i.Enchant, i.Location, i.LocData)
 		if err != nil {
 			log.Println(err)
 		}
 		i.existsInDb = true
 		i.storedInDb = true
-		//TODO доделать функцию
 	}
 }
 
@@ -413,7 +418,7 @@ func (i *PlayerItem) GetCharacter() interfaces.CharacterI {
 	return i.character
 }
 
-// UseEquippableItem использует предмет без явной передачи character
+// UseEquippableItem экиперовка и снятие предмета
 func (i *PlayerItem) UseEquippableItem() {
 	if i.character == nil {
 		return

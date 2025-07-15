@@ -13,7 +13,6 @@ import (
 	"l2gogameserver/gameserver/models/items/etcItemType"
 	"l2gogameserver/gameserver/models/items/weaponType"
 	"l2gogameserver/utils"
-	"log"
 	"strconv"
 	"strings"
 	"sync"
@@ -387,6 +386,22 @@ func (i *Inventory) AdjustAvailableItem(item interfaces.TradableItemInterface) {
 	item.SetCount(0)
 }
 
+func BuildPaperdollFromInventory(inventory interfaces.InventoryInterface) [26]PlayerItem {
+	var paperdoll [26]PlayerItem
+
+	inv, ok := inventory.(*Inventory)
+	if !ok {
+		return paperdoll
+	}
+
+	for _, item := range inv.Items {
+		if item.Location == PaperdollLoc && item.LocData >= 0 && item.LocData < int32(PAPERDOLL_TOTALSLOTS) {
+			paperdoll[item.LocData] = item
+		}
+	}
+	return paperdoll
+}
+
 func RestoreVisibleInventory(charId int32, db *sql.DB) [26]PlayerItem {
 
 	rows, err := db.Query("SELECT object_id, item, loc_data, enchant_level FROM items WHERE owner_id= $1 AND loc= $2", charId, PaperdollLoc)
@@ -566,8 +581,6 @@ func GetActiveWeapon(inventory []PlayerItem, paperdoll [26]PlayerItem) *PlayerIt
 
 // UseEquippableItem исользовать предмет который можно надеть на персонажа
 func UseEquippableItem(selectedItem *PlayerItem, character *Character) {
-	//todo надо как то обновлять paperdoll, или возвращать массив или же  вынести это в другой пакет
-	log.Println(selectedItem.ObjectId, " and equiped = ", selectedItem.IsEquipped())
 	if selectedItem.IsEquipped() == 1 {
 		unEquipAndRecord(selectedItem, character)
 	} else {
@@ -746,6 +759,7 @@ func setPaperdollItem(slot uint8, selectedItem *PlayerItem, character *Character
 				itemInInventory.Location = InventoryLoc
 				character.Inventory.Items[i] = *itemInInventory
 				itemInInventory.LastChange = UpdateTypeModify
+				itemInInventory.storedInDb = false // <--- ДОБАВЛЕНО
 				logger.Info.Println(itemInInventory.Location, itemInInventory.LocData)
 				character.RemoveBonusStat(itemInInventory.BonusStats)
 				break
@@ -779,18 +793,22 @@ func setPaperdollItem(slot uint8, selectedItem *PlayerItem, character *Character
 		oldItemInSelectedSlot.LocData = selectedItem.LocData
 		character.Inventory.Items[inventoryKeyOldItemInSelectedSlot] = *oldItemInSelectedSlot
 		character.Inventory.Items[inventoryKeyOldItemInSelectedSlot].LastChange = UpdateTypeModify
+		character.Inventory.Items[inventoryKeyOldItemInSelectedSlot].storedInDb = false // <--- ДОБАВЛЕНО
 		selectedItem.LocData = int32(slot)
 		selectedItem.Location = PaperdollLoc
+		selectedItem.storedInDb = false // <--- ДОБАВЛЕНО
 
 		character.RemoveBonusStat(oldItemInSelectedSlot.BonusStats)
 	} else {
 		selectedItem.LocData = int32(slot)
 		selectedItem.Location = PaperdollLoc
+		selectedItem.storedInDb = false // <--- ДОБАВЛЕНО
 	}
 	// добавить бонусы предмета персонажу
 	character.AddBonusStat(selectedItem.BonusStats)
 	character.Inventory.Items[keyCurrentItem] = *selectedItem
 	character.Inventory.Items[keyCurrentItem].LastChange = UpdateTypeModify
+	character.Inventory.Items[keyCurrentItem].storedInDb = false // <--- ДОБАВЛЕНО
 }
 
 func getFirstEmptySlot(myItems []PlayerItem) int32 {
@@ -974,7 +992,8 @@ func AddInventoryItem(character *Character, item PlayerItem, count int64) (Playe
 				item.Count = count
 				item.LocData = getFirstEmptySlot(character.Inventory.Items)
 				character.Inventory.Items = append(character.Inventory.Items, item)
-				_, err := character.Conn.db.Exec(`INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', 0, 0, 0, 0, '-1', 0, 0)`, character.ObjectId, item.ObjectId, item.GetId(), item.Count)
+				// Изменено: Использование models.InsertIntoDB и передача item.Enchant, item.Location, item.LocData
+				_, err := character.Conn.db.Exec(InsertIntoDB, character.ObjectId, item.ObjectId, item.GetId(), item.Count, item.Enchant, item.Location, item.LocData)
 				if err != nil {
 					logger.Error.Panicln(err)
 				}
@@ -986,7 +1005,8 @@ func AddInventoryItem(character *Character, item PlayerItem, count int64) (Playe
 	item.Count = count
 	item.LocData = getFirstEmptySlot(character.Inventory.Items)
 	character.Inventory.Items = append(character.Inventory.Items, item)
-	_, err := character.Conn.db.Exec(`INSERT INTO "items" ("owner_id", "object_id", "item", "count", "enchant_level", "loc", "loc_data", "time_of_use", "custom_type1", "custom_type2", "mana_left", "time", "agathion_energy") VALUES ($1, $2, $3, $4, 0, 'INVENTORY', $5, 0, 0, 0, '-1', 0, 0)`, character.ObjectId, item.ObjectId, item.GetId(), item.Count, item.LocData)
+	// Изменено: Использование models.InsertIntoDB и передача item.Enchant, item.Location, item.LocData
+	_, err := character.Conn.db.Exec(InsertIntoDB, character.ObjectId, item.ObjectId, item.GetId(), item.Count, item.Enchant, item.Location, item.LocData)
 	if err != nil {
 		logger.Error.Panicln(err)
 	}

@@ -8,6 +8,7 @@ import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
+	"time"
 )
 
 var (
@@ -100,5 +101,11 @@ func CharacterCreate(clientI interfaces.NewClientCtxInterface, data []byte, db *
 	}
 
 	client.SendBuf(serverpackets.CharCreateOk())
+
+	sql := `UPDATE "characters" SET "last_enter_world" = $1 WHERE "object_id" = $2`
+	_, err = db.Exec(sql, time.Now(), charId)
+	if err != nil {
+		logger.Error.Panicln(err)
+	}
 
 }
