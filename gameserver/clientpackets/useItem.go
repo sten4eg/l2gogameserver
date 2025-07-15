@@ -103,7 +103,7 @@ func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB, gs GsInterf
 
 		}
 
-		models.UseEquippableItem(selectedItem, character)
+		character.GetItemByObjectId(selectedItem.GetObjectId()).UseEquippableItem()
 	}
 
 	models.SaveInventoryInDB(character.Inventory.Items, db)

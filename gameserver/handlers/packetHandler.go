@@ -25,6 +25,7 @@ const (
 	OpcodeCharSelected                = 0x12
 	OpcodeRequestNewCharacter         = 0x13
 	OpcodeRequestEnterWorld           = 0x11
+	OpcodeRequestExGetOnAirShip       = 0xD0
 	OpcodeAttack                      = 0x01
 	OpcodeTradeRequest                = 0x1a
 	OpcodeAnswerTradeRequest          = 0x55

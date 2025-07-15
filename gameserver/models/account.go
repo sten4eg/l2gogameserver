@@ -21,6 +21,16 @@ const DeleteCharacterItems = `DELETE FROM items WHERE owner_id = $1`
 func (a *Account) AddCharacter(character interfaces.CharacterI) {
 	a.Char = append(a.Char, character)
 }
+
+func (a *Account) GetCharObjectID(id int32) interfaces.CharacterI {
+	for _, c := range a.Char {
+		if c.GetObjectId() == id {
+			return a.GetCurrentChar()
+		}
+	}
+	return nil
+}
+
 func (a *Account) Len() int {
 	return len(a.Char)
 }

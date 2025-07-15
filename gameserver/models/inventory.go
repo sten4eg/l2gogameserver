@@ -13,6 +13,7 @@ import (
 	"l2gogameserver/gameserver/models/items/etcItemType"
 	"l2gogameserver/gameserver/models/items/weaponType"
 	"l2gogameserver/utils"
+	"log"
 	"strconv"
 	"strings"
 	"sync"
@@ -566,7 +567,7 @@ func GetActiveWeapon(inventory []PlayerItem, paperdoll [26]PlayerItem) *PlayerIt
 // UseEquippableItem исользовать предмет который можно надеть на персонажа
 func UseEquippableItem(selectedItem *PlayerItem, character *Character) {
 	//todo надо как то обновлять paperdoll, или возвращать массив или же  вынести это в другой пакет
-	logger.Info.Println(selectedItem.ObjectId, " and equiped = ", selectedItem.IsEquipped())
+	log.Println(selectedItem.ObjectId, " and equiped = ", selectedItem.IsEquipped())
 	if selectedItem.IsEquipped() == 1 {
 		unEquipAndRecord(selectedItem, character)
 	} else {

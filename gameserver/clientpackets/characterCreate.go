@@ -8,8 +8,6 @@ import (
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
-	"log"
-	"time"
 )
 
 var (
@@ -25,7 +23,7 @@ var (
 
 const CharacterNameMaxLength = 16
 const CharacterMaxNumber = 7
-const InsertCharacter = `INSERT INTO characters (object_id, char_name, race, sex, class_id, hair_style, hair_color, face, x, y, z, login, base_class, title) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`
+const InsertCharacter = `INSERT INTO characters (object_id, char_name, race, sex, class_id, hair_style, hair_color, face, x, y, z, login, base_class, title, first_enter_game) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`
 
 const countCharAndExistName = `SELECT *
 FROM (SELECT COUNT(object_id) FROM characters WHERE login = $1) as countChar,
@@ -95,31 +93,12 @@ func CharacterCreate(clientI interfaces.NewClientCtxInterface, data []byte, db *
 	//TODO проверка что пришел норм classId
 
 	x, y, z := models.GetCreationCoordinates(classId)
-	_, err = db.Exec(InsertCharacter, idfactory.GetNext(), name, race, sex, classId, hairStyle, hairColor, face, x, y, z, client.GetAccount().GetLogin(), classId, "")
+	charId := idfactory.GetNext()
+	_, err = db.Exec(InsertCharacter, charId, name, race, sex, classId, hairStyle, hairColor, face, x, y, z, client.GetAccount().GetLogin(), classId, "", true)
 	if err != nil {
 		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonCreateNotAllowed))
 	}
 
 	client.SendBuf(serverpackets.CharCreateOk())
 
-	time.Sleep(350) //todo клиент должен отправить RequestExGetOnAirShip и после этого CharSelectionInfo, иначе клиент крашиться
-	log.Println(client.GetAccount().GetCurrentChar().GetName())
-
-	client.SendBuf(serverpackets.CharSelectionInfo(clientI, db))
-
-	//log.Println(client.GetAccount().GetCurrentChar().GetName())
-	//log.Println(clientI.GetAccount().GetCurrentChar().GetName())
-	// Выдача предметов после создания персонажа
-	//eq := initial.GetEquipmentByClass(client.GetAccount().GetCurrentChar().GetBaseClass())
-	//if eq != nil {
-	//	for _, item := range eq.Items {
-	//		log.Println(client.GetAccount().GetCurrentChar(), item.Id)
-	//		itemData, _ := items.GetItemInfo(item.Id)
-	//		AddItem2 := client.GetAccount().GetCurrentChar().GetInventory().AddItem2(int32(item.Id), item.Count, itemData.IsStackable(), db)
-	//		if item.Equipped {
-	//			client.GetAccount().GetCurrentChar().GetInventory().GetItemByObjectId(AddItem2.GetObjectId()).UseEquippableItem()
-	//			//TODO: напялить после создания перса
-	//		}
-	//	}
-	//}
 }

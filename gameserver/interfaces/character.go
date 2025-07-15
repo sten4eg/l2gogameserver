@@ -118,6 +118,8 @@ type CharacterI interface {
 	IsCastingNow() bool
 	GetCurrentSkill() SkillHolderInterface
 	SaveUser(db *sql.DB)
+	IsFirstEnterGame() bool
+	SaveFirstInGamePlayer(db *sql.DB)
 	UpdateLastEnterWorld(db *sql.DB)
 	GetLastEnterWorld() *time.Time
 }

@@ -414,19 +414,13 @@ func (i *PlayerItem) GetCharacter() interfaces.CharacterI {
 }
 
 // UseEquippableItem использует предмет без явной передачи character
-// Пример использования:
-// client.GetAccount().GetCurrentChar().GetInventory().GetItemByObjectId(384771).UseEquippableItem()
 func (i *PlayerItem) UseEquippableItem() {
 	if i.character == nil {
 		return
 	}
-
-	// Получаем Character из интерфейса
 	character, ok := i.character.(*Character)
 	if !ok {
 		return
 	}
-
-	// Вызываем существующую функцию
 	UseEquippableItem(i, character)
 }

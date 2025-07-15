@@ -469,9 +469,12 @@ func (c *Character) checkRegion() {
 
 }
 
+func (c *Character) IsFirstEnterGame() bool {
+	return c.FirstEnterGame
+}
+
 // SaveFirstInGamePlayer Сохранение отметки что юзер зашел в игру впервый раз с момента создания игрока
 func (c *Character) SaveFirstInGamePlayer(db *sql.DB) {
-
 	sql := `UPDATE "characters" SET "first_enter_game" = false WHERE "object_id" = $1`
 	_, err := db.Exec(sql, c.ObjectId)
 	if err != nil {
