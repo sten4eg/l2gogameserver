@@ -55,3 +55,13 @@ func GetEquipmentByClass(classId int32) *ItemsEquipment {
 	}
 	return nil
 }
+
+// HasEquipmentForClass проверяет, существует начальный класс ID.
+func HasEquipmentForClass(classId int32) bool {
+	for _, eq := range equipmentData {
+		if eq.ClassId == classId {
+			return true
+		}
+	}
+	return false
+}

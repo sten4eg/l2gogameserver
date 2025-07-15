@@ -6,6 +6,7 @@ import (
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/initial"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"time"
@@ -91,13 +92,17 @@ func CharacterCreate(clientI interfaces.NewClientCtxInterface, data []byte, db *
 		return
 	}
 
-	//TODO проверка что пришел норм classId
+	if !initial.HasEquipmentForClass(classId) {
+		client.EncryptAndSend(serverpackets.CharCreateFail(REASON_CHOOSE_ANOTHER_SVR))
+		return
+	}
 
 	x, y, z := models.GetCreationCoordinates(classId)
 	charId := idfactory.GetNext()
 	_, err = db.Exec(InsertCharacter, charId, name, race, sex, classId, hairStyle, hairColor, face, x, y, z, client.GetAccount().GetLogin(), classId, "", true)
 	if err != nil {
 		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonCreateNotAllowed))
+		return
 	}
 
 	client.SendBuf(serverpackets.CharCreateOk())
