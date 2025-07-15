@@ -2,9 +2,7 @@ package initial
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"l2gogameserver/data/logger"
-	"log"
 	"os"
 )
 
@@ -40,43 +38,29 @@ type shortcutsFileFormat struct {
 	} `json:"shortcuts"`
 }
 
-// === ЗАГРУЗКА ===
-
 func LoadShortcuts() {
-	logger.Info.Println("Загрузка shortcuts из нового JSON формата")
-
-	file, err := os.Open("./datapack/data/stats/char/initial/shortcuts.json")
+	logger.Info.Println("Загрузка shortcuts")
+	byteValue, err := os.ReadFile("./datapack/data/stats/char/initial/shortcuts.json")
 	if err != nil {
-		logger.Error.Panicln("Не удалось открыть shortcuts.json:", err)
+		if os.IsNotExist(err) {
+			logger.Error.Panicln("Файл shortcuts.json не найден:", err)
+		} else {
+			logger.Error.Panicln("Не удалось прочитать shortcuts.json:", err)
+		}
 	}
-	defer file.Close()
-
-	byteValue, err := ioutil.ReadAll(file)
-	if err != nil {
-		logger.Error.Panicln("Ошибка чтения файла shortcuts.json:", err)
-	}
-
 	var data shortcutsFileFormat
 	if err := json.Unmarshal(byteValue, &data); err != nil {
 		logger.Error.Panicln("Ошибка при разборе JSON:", err)
 	}
-
-	// Инициализация хранилищ
 	allShortcutsByClassID = make(map[int][]PageEntry)
 	globalShortcuts = data.Shortcuts.Pages
-
 	for _, classShortcut := range data.Shortcuts.Classes {
 		allShortcutsByClassID[classShortcut.ClassID] = classShortcut.Pages
 	}
-
-	log.Println("✅ Shortcuts успешно загружены")
 }
-
-// === ДОСТУП ===
 
 func GetShortcutsByClassID(classID int) (PageOrClassData, bool) {
 	if classID == 0 {
-		// Глобальные ярлыки
 		return PageOrClassData{ClassID: 0, Pages: globalShortcuts}, true
 	}
 	pages, ok := allShortcutsByClassID[classID]
@@ -85,8 +69,6 @@ func GetShortcutsByClassID(classID int) (PageOrClassData, bool) {
 	}
 	return PageOrClassData{ClassID: classID, Pages: pages}, true
 }
-
-// === ОБЁРТКА ДЛЯ УНИФИКАЦИИ ===
 
 type PageOrClassData struct {
 	ClassID int

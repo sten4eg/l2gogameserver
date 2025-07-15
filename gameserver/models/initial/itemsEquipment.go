@@ -26,24 +26,21 @@ func LoadItemsEquipment() {
 		return
 	}
 	logger.Info.Println("Загрузка предметов")
-	file, err := os.Open("./datapack/data/stats/char/initial/equipment.json")
+	byteValue, err := os.ReadFile("./datapack/data/stats/char/initial/equipment.json")
 	if err != nil {
-		logger.Error.Panicln("Failed to load equipment.json file:", err)
+		if os.IsNotExist(err) {
+			logger.Error.Panicln("Файл equipment.json не найден:", err)
+		} else {
+			logger.Error.Panicln("Не удалось прочитать equipment.json:", err)
+		}
 	}
-	defer file.Close()
-
-	err = json.NewDecoder(file).Decode(&equipmentData)
-	if err != nil {
-		logger.Error.Panicln("Failed to decode equipment.json:", err)
+	if err := json.Unmarshal(byteValue, &equipmentData); err != nil {
+		logger.Error.Panicln("Ошибка при разборе JSON equipment.json:", err)
 	}
-
 	eq := GetEquipmentByClass(0)
-	if eq != nil {
-		log.Printf("Класс: %s, Кол-во предметов: %d", eq.Name, len(eq.Items))
-	} else {
+	if eq == nil {
 		log.Println("Предметы для класса не найдены")
 	}
-
 }
 
 // GetEquipmentByClass возвращает полную структуру itemsEquipment для указанного classId
