@@ -6,10 +6,9 @@ import (
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
-	"l2gogameserver/gameserver/models/initial"
-	"l2gogameserver/gameserver/models/items"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
+	"log"
 	"time"
 )
 
@@ -103,18 +102,24 @@ func CharacterCreate(clientI interfaces.NewClientCtxInterface, data []byte, db *
 
 	client.SendBuf(serverpackets.CharCreateOk())
 
-	time.Sleep(250) //todo клиент должен отправить RequestExGetOnAirShip и после этого CharSelectionInfo, иначе клиент крашиться
+	time.Sleep(350) //todo клиент должен отправить RequestExGetOnAirShip и после этого CharSelectionInfo, иначе клиент крашиться
+	log.Println(client.GetAccount().GetCurrentChar().GetName())
+
 	client.SendBuf(serverpackets.CharSelectionInfo(clientI, db))
 
+	//log.Println(client.GetAccount().GetCurrentChar().GetName())
+	//log.Println(clientI.GetAccount().GetCurrentChar().GetName())
 	// Выдача предметов после создания персонажа
-	eq := initial.GetEquipmentByClass(clientI.GetAccount().GetCurrentChar().GetBaseClass())
-	if eq != nil {
-		for _, item := range eq.Items {
-			itemData, _ := items.GetItemInfo(item.Id)
-			clientI.GetAccount().GetCurrentChar().GetInventory().AddItem2(int32(item.Id), item.Count, itemData.IsStackable(), db)
-			if item.Equipped {
-				//TODO: напялить после создания перса
-			}
-		}
-	}
+	//eq := initial.GetEquipmentByClass(client.GetAccount().GetCurrentChar().GetBaseClass())
+	//if eq != nil {
+	//	for _, item := range eq.Items {
+	//		log.Println(client.GetAccount().GetCurrentChar(), item.Id)
+	//		itemData, _ := items.GetItemInfo(item.Id)
+	//		AddItem2 := client.GetAccount().GetCurrentChar().GetInventory().AddItem2(int32(item.Id), item.Count, itemData.IsStackable(), db)
+	//		if item.Equipped {
+	//			client.GetAccount().GetCurrentChar().GetInventory().GetItemByObjectId(AddItem2.GetObjectId()).UseEquippableItem()
+	//			//TODO: напялить после создания перса
+	//		}
+	//	}
+	//}
 }

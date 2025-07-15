@@ -71,6 +71,9 @@ type Inventory struct {
 	BlockMode   int32
 	TotalWeight int32 //todo где заполнять
 	mu          sync.Mutex
+
+	// Ссылка на персонажа для создания предметов
+	character interfaces.CharacterI
 }
 
 func NewInventory(ownerId int32) Inventory {
@@ -78,6 +81,16 @@ func NewInventory(ownerId int32) Inventory {
 		BlockMode: -1,
 		ownerId:   ownerId,
 	}
+}
+
+// SetCharacter устанавливает ссылку на персонажа
+func (i *Inventory) SetCharacter(character interfaces.CharacterI) {
+	i.character = character
+}
+
+// GetCharacter возвращает ссылку на персонажа
+func (i *Inventory) GetCharacter() interfaces.CharacterI {
+	return i.character
 }
 func (i *Inventory) GetItemByObjectId(id int32) interfaces.MyItemInterface {
 	for index := range i.Items {
@@ -245,6 +258,11 @@ func (i *Inventory) AddItem2(itemId int32, count int, stackable bool, db *sql.DB
 				item = CreateItem(int(itemId), 1)
 			}
 
+			// Устанавливаем ссылку на персонажа если она есть
+			if i.character != nil {
+				item.SetCharacter(i.character)
+			}
+
 			item.SetOwnerId(i.ownerId)
 			item.SetUpdateType(UpdateTypeAdd)
 
@@ -402,6 +420,20 @@ func RestoreVisibleInventory(charId int32, db *sql.DB) [26]PlayerItem {
 	}
 	return mts
 }
+
+// RestoreVisibleInventoryWithCharacter загружает paperdoll и устанавливает ссылку на персонажа
+func RestoreVisibleInventoryWithCharacter(character *Character, db *sql.DB) [26]PlayerItem {
+	paperdoll := RestoreVisibleInventory(character.ObjectId, db)
+
+	// Устанавливаем ссылку на персонажа для всех предметов в paperdoll
+	for i := range paperdoll {
+		if paperdoll[i].ObjectId != 0 {
+			paperdoll[i].SetCharacter(character)
+		}
+	}
+
+	return paperdoll
+}
 func convertToIfaceArray(src [26]PlayerItem) [26]interfaces.MyItemInterface {
 	var dst [26]interfaces.MyItemInterface
 	for i := range src {
@@ -443,6 +475,18 @@ func GetMyItems(charId int32, db *sql.DB) []PlayerItem {
 	}
 
 	return itemsInInventory
+}
+
+// GetMyItemsWithCharacter загружает предметы и устанавливает ссылку на персонажа
+func GetMyItemsWithCharacter(character *Character, db *sql.DB) []PlayerItem {
+	items := GetMyItems(character.ObjectId, db)
+
+	// Устанавливаем ссылку на персонажа для всех предметов
+	for i := range items {
+		items[i].SetCharacter(character)
+	}
+
+	return items
 }
 
 func getAttributeForWeapon(objId int32, db *sql.DB) (attribute.Attribute, int16) {

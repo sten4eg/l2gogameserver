@@ -64,6 +64,8 @@ func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *pa
 			&character.LastEnterWorld,
 		)
 		character.Inventory = models.NewInventory(character.ObjectId)
+		// Устанавливаем ссылку на персонажа в инвентаре
+		character.Inventory.SetCharacter(character)
 		if err != nil {
 			logger.Error.Panicln(err)
 		}
@@ -85,8 +87,14 @@ func CharSelectionInfo(clientI interfaces.NewClientCtxInterface, db *sql.DB) *pa
 	buffer.WriteD(int32(len(client.Account.Char))) //size char in account
 
 	// Can prevent players from creating new characters (if 0); (if 1, the client will ask if chars may be created (0x13) Response: (0x0D) )
-	buffer.WriteD(7)          //char max number
-	buffer.WriteSingleByte(0) // delim
+	buffer.WriteD(7) //char max number
+
+	// Если достигнут лимит — клиенту нельзя создавать новых персонажей (0), иначе (1) клиент будет спрашивать (0x13), сервер ответит (0x0D)
+	canCreate := byte(0x00)
+	if len(client.Account.Char) < 7 {
+		canCreate = 0x01
+	}
+	buffer.WriteSingleByte(canCreate)
 
 	//todo блок который должен повторяться
 	for index := range client.Account.Char {

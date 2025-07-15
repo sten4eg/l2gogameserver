@@ -246,8 +246,8 @@ func (c *Character) Load(db *sql.DB, login string) {
 	c.ShortCut = RestoreMe(c.ObjectId, c.ClassId, db)
 	c.LoadSkills()
 	//c.SkillQueue = make(chan SkillHolder)
-	c.Inventory.Items = GetMyItems(c.ObjectId, db)
-	c.Paperdoll = RestoreVisibleInventory(c.ObjectId, db)
+	c.Inventory.Items = GetMyItemsWithCharacter(c, db)
+	c.Paperdoll = RestoreVisibleInventoryWithCharacter(c, db)
 	c.LoadCharactersMacros()
 	c.MacroRevision = 1
 	for _, v := range &c.Paperdoll {
@@ -873,7 +873,7 @@ func (c *Character) GetEquipmentSlotCharInfo() []interfaces.MyItemInterface {
 	}
 	return paperdoll
 }
- 
+
 func (c *Character) SetPaperdoll(a [26]interfaces.MyItemInterface) {
 	for i, v := range a {
 		if v == nil {

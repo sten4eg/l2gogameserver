@@ -114,7 +114,7 @@ func UseItem(clientI interfaces.CharacterI, data []byte, db *sql.DB, gs GsInterf
 
 	// После каждого use_item будет запрос в бд на восстановление paperdoll,
 	//todo надо бы это сделать в UseEquippableItem
-	character.Paperdoll = models.RestoreVisibleInventory(character.ObjectId, db)
+	character.Paperdoll = models.RestoreVisibleInventoryWithCharacter(character, db)
 
 	pkg2 := serverpackets.UserInfo(character.GetCurrentChar())
 	buffer.WriteSlice(character.CryptAndReturnPackageReadyToShip(pkg2))
