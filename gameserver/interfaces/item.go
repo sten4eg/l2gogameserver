@@ -35,6 +35,9 @@ type MyItemInterface interface {
 	GetCoordinate() (x, y, z int32)
 	GetDefaultPrice() int
 	GetTime() int
+	SetCharacter(CharacterI)
+	GetCharacter() CharacterI
+	UseEquippableItem()
 }
 
 type ItemRequestInterface interface {

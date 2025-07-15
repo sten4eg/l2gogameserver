@@ -53,7 +53,7 @@ func UserInfo(character interfaces.CharacterI) []byte {
 	} else {
 		buffer.WriteD(40) //equiped weapon
 	}
-	characterPaperdoll := character.GetPaperdoll()
+	characterPaperdoll := character.GetEquipmentSlot()
 	for _, item := range characterPaperdoll {
 		buffer.WriteD(item.GetObjectId())
 	}

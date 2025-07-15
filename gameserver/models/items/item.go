@@ -86,15 +86,15 @@ type Item struct {
 //var _ Item = interfaces.BaseItemInterface{}
 
 // AllItems - ONLY READ MAP, set in init datapack
-var AllItems map[int]Item
+var allItems map[int]Item
 
 func LoadItems() {
-	AllItems = make(map[int]Item)
+	allItems = make(map[int]Item)
 	loadItems()
 }
 
 func GetItemInfo(id int) (*Item, bool) {
-	item, ok := AllItems[id]
+	item, ok := allItems[id]
 	if ok {
 		return &item, true
 	}
@@ -121,10 +121,11 @@ func loadItems() {
 
 	for _, v := range items {
 		v.removeEmptyStats()
-		AllItems[v.Id] = v
+		allItems[v.Id] = v
 	}
 
 }
+
 func (i *Item) removeEmptyStats() {
 	var bStat []ItemBonusStat
 	for _, v := range i.BonusStats {
@@ -193,7 +194,7 @@ func (i *Item) GetBodyPart() int32 {
 	return int32(i.SlotBitType)
 }
 func GetItemFromStorage(itemId int) (item Item, ok bool) {
-	item, ok = AllItems[itemId]
+	item, ok = allItems[itemId]
 	return
 }
 func (i *Item) GetWeight() int {

@@ -26,4 +26,6 @@ type InventoryInterface interface {
 	GetItemsByItemId(int32) []MyItemInterface
 	AdjustAvailableItem(TradableItemInterface)
 	GetItems() []MyItemInterface
+	SetCharacter(CharacterI)
+	GetCharacter() CharacterI
 }

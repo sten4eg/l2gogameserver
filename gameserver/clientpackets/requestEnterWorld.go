@@ -3,7 +3,6 @@ package clientpackets
 import (
 	"database/sql"
 	"l2gogameserver/gameserver/interfaces"
-
 	"l2gogameserver/gameserver/models/clientStates"
 
 	"l2gogameserver/gameserver/serverpackets"

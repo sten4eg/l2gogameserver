@@ -54,7 +54,7 @@ type (
 		SockConn      *net.TCPConn
 		AttackEndTime int64
 		// Paperdoll - массив всех слотов которые можно одеть
-		Paperdoll       [26]MyItem
+		Paperdoll       [26]PlayerItem
 		Stats           StaticData
 		pvpFlag         bool
 		ShortCut        map[int32]dto.ShortCutDTO
@@ -246,13 +246,13 @@ func (c *Character) Load(db *sql.DB, login string) {
 	c.ShortCut = RestoreMe(c.ObjectId, c.ClassId, db)
 	c.LoadSkills()
 	//c.SkillQueue = make(chan SkillHolder)
-	c.Inventory.Items = GetMyItems(c.ObjectId, db)
-	c.Paperdoll = RestoreVisibleInventory(c.ObjectId, db)
+	c.Inventory.Items = GetMyItemsWithCharacter(c, db)
+	c.Paperdoll = RestoreVisibleInventoryWithCharacter(c, db)
 	c.LoadCharactersMacros()
 	c.MacroRevision = 1
 	for _, v := range &c.Paperdoll {
 		if v.ObjectId != 0 {
-			c.AddBonusStat(v.BonusStats)
+			c.AddBonusStat(v.ItemInfo.BonusStats)
 		}
 	}
 	c.Stats = AllStats[int(c.ClassId)].StaticData //todo а для чего BaseClass ??
@@ -276,7 +276,7 @@ func (c *Character) Shadow() {
 	for { //todo какашка
 		for i := range c.Inventory.Items {
 			v := &c.Inventory.Items[i]
-			if v.Item.Durability > 0 && v.Location == PaperdollLoc {
+			if v.GetItemInfo().Durability > 0 && v.Location == PaperdollLoc {
 				var iup dto.IUP
 				iup.ObjId = v.ObjectId
 				switch c.Inventory.Items[i].Mana {
@@ -469,9 +469,12 @@ func (c *Character) checkRegion() {
 
 }
 
+func (c *Character) IsFirstEnterGame() bool {
+	return c.FirstEnterGame
+}
+
 // SaveFirstInGamePlayer Сохранение отметки что юзер зашел в игру впервый раз с момента создания игрока
 func (c *Character) SaveFirstInGamePlayer(db *sql.DB) {
-
 	sql := `UPDATE "characters" SET "first_enter_game" = false WHERE "object_id" = $1`
 	_, err := db.Exec(sql, c.ObjectId)
 	if err != nil {
@@ -858,33 +861,33 @@ func (c *Character) GetClanId() int32 {
 	return c.ClanId
 }
 
-func (c *Character) GetPaperdoll() []interfaces.MyItemInterface {
-	//TODO гойленг не дает вернуть ссылку на массив
+func (c *Character) GetEquipmentSlot() []interfaces.MyItemInterface {
 	paperdoll := make([]interfaces.MyItemInterface, len(c.Paperdoll))
 	for index, v := range GetPaperdollOrder() {
 		paperdoll[index] = &c.Paperdoll[v]
 	}
 	return paperdoll
 }
-func (c *Character) GetPaperdollCharInfo() []interfaces.MyItemInterface {
-	//TODO гойленг не дает вернуть ссылку на массив
+
+func (c *Character) GetEquipmentSlotCharInfo() []interfaces.MyItemInterface {
 	paperdoll := make([]interfaces.MyItemInterface, len(c.Paperdoll))
 	for _, v := range GetPaperdollOrder() {
 		paperdoll[v] = &c.Paperdoll[v]
 	}
 	return paperdoll
 }
+
 func (c *Character) SetPaperdoll(a [26]interfaces.MyItemInterface) {
 	for i, v := range a {
 		if v == nil {
-			c.Paperdoll[i] = MyItem{}
+			c.Paperdoll[i] = PlayerItem{}
 			continue
 		}
-		item, ok := v.(*MyItem)
+		item, ok := v.(*PlayerItem)
 		if ok {
 			c.Paperdoll[i] = *item
 		} else {
-			c.Paperdoll[i] = MyItem{}
+			c.Paperdoll[i] = PlayerItem{}
 		}
 	}
 }

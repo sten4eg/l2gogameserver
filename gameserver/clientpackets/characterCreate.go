@@ -6,6 +6,7 @@ import (
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models"
+	"l2gogameserver/gameserver/models/initial"
 	"l2gogameserver/gameserver/serverpackets"
 	"l2gogameserver/packets"
 	"time"
@@ -24,7 +25,7 @@ var (
 
 const CharacterNameMaxLength = 16
 const CharacterMaxNumber = 7
-const InsertCharacter = `INSERT INTO characters (object_id, char_name, race, sex, class_id, hair_style, hair_color, face, x, y, z, login, base_class, title) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`
+const InsertCharacter = `INSERT INTO characters (object_id, char_name, race, sex, class_id, hair_style, hair_color, face, x, y, z, login, base_class, title, first_enter_game) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`
 
 const countCharAndExistName = `SELECT *
 FROM (SELECT COUNT(object_id) FROM characters WHERE login = $1) as countChar,
@@ -91,16 +92,25 @@ func CharacterCreate(clientI interfaces.NewClientCtxInterface, data []byte, db *
 		return
 	}
 
-	//TODO проверка что пришел норм classId
+	if !initial.HasEquipmentForClass(classId) {
+		client.EncryptAndSend(serverpackets.CharCreateFail(REASON_CHOOSE_ANOTHER_SVR))
+		return
+	}
 
 	x, y, z := models.GetCreationCoordinates(classId)
-	_, err = db.Exec(InsertCharacter, idfactory.GetNext(), name, race, sex, classId, hairStyle, hairColor, face, x, y, z, client.GetAccount().GetLogin(), classId, "")
+	charId := idfactory.GetNext()
+	_, err = db.Exec(InsertCharacter, charId, name, race, sex, classId, hairStyle, hairColor, face, x, y, z, client.GetAccount().GetLogin(), classId, "", true)
 	if err != nil {
 		client.EncryptAndSend(serverpackets.CharCreateFail(ReasonCreateNotAllowed))
+		return
 	}
 
 	client.SendBuf(serverpackets.CharCreateOk())
-	time.Sleep(250) //todo клиент должен отправить RequestExGetOnAirShip и после этого CharSelectionInfo, иначе клиент крашиться
-	client.SendBuf(serverpackets.CharSelectionInfo(clientI, db))
+
+	sql := `UPDATE "characters" SET "last_enter_world" = $1 WHERE "object_id" = $2`
+	_, err = db.Exec(sql, time.Now(), charId)
+	if err != nil {
+		logger.Error.Panicln(err)
+	}
 
 }
