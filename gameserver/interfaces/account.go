@@ -11,6 +11,5 @@ type AccountInterface interface {
 	MarkToDeleteChar(slot int32, db *sql.DB) int8
 	GetCurrentChar() CharacterI
 	SetSelectedChar(slot int)
-	GetCharObjectID(id int32) CharacterI
 	GetLastActiveChar() CharacterI
 }
