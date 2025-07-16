@@ -83,7 +83,7 @@ func UserInfo(character interfaces.CharacterI) []byte {
 	buffer.WriteD(character.GetPVP())   //pvp
 	buffer.WriteD(character.GetKarma()) //karma
 
-	buffer.WriteD(999) //runSpeed
+	buffer.WriteD(170) //runSpeed
 	buffer.WriteD(80)  //walkspeed
 	buffer.WriteD(50)  //swimRunSpeed
 	buffer.WriteD(50)  //swimWalkSpeed

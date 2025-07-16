@@ -12,6 +12,9 @@ type AIManager struct {
 	regionProvider interfaces.RegionProvider
 }
 
+// Глобальный экземпляр AIManager для доступа из других пакетов
+var AIManagerInstance *AIManager
+
 // NewAIManager создает новый менеджер AI
 func NewAIManager(regionProvider interfaces.RegionProvider) *AIManager {
 	return &AIManager{
@@ -52,7 +55,7 @@ func (am *AIManager) InitializeAI(npcs map[int32]map[int32]Npc) {
 
 // createAIForNPC создает подходящий AI для NPC
 func (am *AIManager) createAIForNPC(npc *Npc) interfaces.NpcAI {
-	// Определяем тип NPC
+	// Определяем тип NPC (0 - диалоговый, 1 - монстр)
 	npcType := GetDialogNPC(npc.Type)
 
 	switch npcType {
@@ -61,7 +64,8 @@ func (am *AIManager) createAIForNPC(npc *Npc) interfaces.NpcAI {
 	case 1: // Монстры (агрессивные)
 		agroRange := int32(npc.AgroRange)
 		if agroRange == 0 {
-			agroRange = 200 // Значение по умолчанию
+			// Если agroRange == 0, NPC полностью пассивный, не реагирует на игроков
+			return NewPassiveAI(am.regionProvider)
 		}
 		chaseRange := agroRange * 2
 		returnRange := agroRange * 3

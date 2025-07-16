@@ -104,6 +104,11 @@ type Npc struct {
 	coordinates  struct {
 		X, Y, Z int32
 	}
+	// Кэш ObjectId игроков, которых NPC уже видел в радиусе агрессии
+	seenPlayers                           map[int32]struct{}
+	moveTargetX, moveTargetY, moveTargetZ int32 // координаты цели движения
+	moveStartTime, moveArrivalTime        int64 // время старта и время прибытия (UnixNano)
+	lastMovePacketTime                    int64 // время последней отправки MoveToLocation (UnixNano)
 }
 
 type Npcer interface {
@@ -160,6 +165,15 @@ var NpcObject map[int32]Locations
 
 // Временное функция подгрузки листа с спаунами NPC
 // Парсит из json npc. Итерируется по каждому npc и полю Locations(массив спавн точек npc), за каждую локацию создает npc с spawn текущей локации, добавляет npc в глобальную мапу
+func isStaticNpcType(npcType string) bool {
+	for _, t := range StaticNpcTypes {
+		if npcType == t {
+			return true
+		}
+	}
+	return false
+}
+
 func LoadNpc() map[int32]map[int32]Npc {
 	if !config.IsEnableNPC() {
 		return nil
@@ -181,6 +195,10 @@ func LoadNpc() map[int32]map[int32]Npc {
 	for _, p := range NpcData {
 		if len(p.Locations) == 0 {
 			continue
+		}
+		// Если тип NPC статичный, запрещаем движение
+		if isStaticNpcType(p.Type) {
+			p.CanMove = 0
 		}
 		tmp := make(map[int32]Npc)
 		for _, vv := range p.Locations {
@@ -327,7 +345,7 @@ func (n *Npc) GetMaxHp() int32 {
 	return int32(n.OrgHp)
 }
 
-// Медоты Локации
+// Методы Локации
 func (l *Locations) GetCoordinate() (x, y, z int32) {
 	x = l.Locx
 	y = l.Locy
@@ -415,3 +433,116 @@ func (n *Npc) CalculateDistanceTo(ox, oy, oz int32, includeZAxis, squared bool) 
 }
 
 // Обновляем существующий метод GetCoordinates для использования новых координат
+
+// StaticNpcTypes содержит типы NPC, которые всегда статичны и не должны двигаться
+var StaticNpcTypes = []string{
+	"citizen",
+	"guild_coach",
+	"guild_master",
+	"teleporter",
+	"merchant",
+	"guard",
+	// Добавляйте новые типы статичных NPC сюда
+}
+
+// AddSeenPlayer добавляет игрока в кэш замеченных
+func (n *Npc) AddSeenPlayer(objectId int32) {
+	if n.seenPlayers == nil {
+		n.seenPlayers = make(map[int32]struct{})
+	}
+	n.seenPlayers[objectId] = struct{}{}
+}
+
+// RemoveSeenPlayer удаляет игрока из кэша замеченных
+func (n *Npc) RemoveSeenPlayer(objectId int32) {
+	if n.seenPlayers != nil {
+		delete(n.seenPlayers, objectId)
+	}
+}
+
+// HasSeenPlayer проверяет, видел ли NPC этого игрока
+func (n *Npc) HasSeenPlayer(objectId int32) bool {
+	if n.seenPlayers == nil {
+		return false
+	}
+	_, ok := n.seenPlayers[objectId]
+	return ok
+}
+
+// Методы для получения параметров NPC для NpcInfo и интерфейса Npcer
+func (n *Npc) GetRunSpd() int {
+	// GroundHigh — скорость бега NPC
+	if n.GroundHigh > 0 {
+		return n.GroundHigh
+	}
+	return 120 // дефолт, если не задано
+}
+func (n *Npc) GetWalkSpd() int {
+	// GroundLow — скорость ходьбы NPC
+	if n.GroundLow > 0 {
+		return n.GroundLow
+	}
+	return 60 // дефолт, если не задано
+}
+func (n *Npc) GetBaseAttackSpeed() int {
+	return n.BaseAttackSpeed
+}
+func (n *Npc) GetBaseMagicAttack() float64 {
+	return n.BaseMagicAttack
+}
+func (n *Npc) GetBaseDefend() float64 {
+	return n.BaseDefend
+}
+func (n *Npc) GetBaseMagicDefend() float64 {
+	return n.BaseMagicDefend
+}
+func (n *Npc) GetBaseAttackRange() int {
+	return n.BaseAttackRange
+}
+func (n *Npc) GetBaseCritical() int {
+	return n.BaseCritical
+}
+func (n *Npc) GetBasePhysicalAttack() float64 {
+	return n.BasePhysicalAttack
+}
+func (n *Npc) GetOrgHp() float64 {
+	return n.OrgHp
+}
+func (n *Npc) GetOrgMp() float64 {
+	return n.OrgMp
+}
+func (n *Npc) GetOrgHpRegen() float64 {
+	return n.OrgHpRegen
+}
+func (n *Npc) GetOrgMpRegen() float64 {
+	return n.OrgMpRegen
+}
+
+// SetMoveTarget устанавливает цель движения и время
+func (n *Npc) SetMoveTarget(x, y, z int32, startTime, arrivalTime int64) {
+	n.moveTargetX = x
+	n.moveTargetY = y
+	n.moveTargetZ = z
+	n.moveStartTime = startTime
+	n.moveArrivalTime = arrivalTime
+}
+
+// GetMoveTarget возвращает координаты цели движения
+func (n *Npc) GetMoveTarget() (int32, int32, int32) {
+	return n.moveTargetX, n.moveTargetY, n.moveTargetZ
+}
+
+// GetMoveArrivalTime возвращает время прибытия
+func (n *Npc) GetMoveArrivalTime() int64 {
+	return n.moveArrivalTime
+}
+
+// SetLastMovePacketTime устанавливает время последней отправки MoveToLocation
+func (n *Npc) SetLastMovePacketTime(t int64) {
+	n.lastMovePacketTime = t
+}
+
+// GetLastMovePacketTime возвращает время последней отправки MoveToLocation
+func (n *Npc) GetLastMovePacketTime() int64 {
+	return n.lastMovePacketTime
+}

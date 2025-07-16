@@ -61,6 +61,7 @@ func startListener(client interfaces.NewClientCtxInterface, g GsInterf) {
 		case npcsList := <-currChar.GetChannelNpcInfo():
 			buff := packets.Get()
 			for npcInfo := range npcsList {
+				// ВАЖНО: serverpackets.NpcInfo всегда использует актуальные координаты NPC
 				pkg := serverpackets.NpcInfo(npcsList[npcInfo])
 				buff.WriteSlice(client.CryptAndReturnPackageReadyToShip(pkg))
 			}

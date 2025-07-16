@@ -81,14 +81,44 @@ func (ai *BaseAI) Update(npc interfaces.Npcer, world interfaces.WorldRegioner) {
 	}
 }
 
+// OnPlayerNearby вызывается, когда игрок входит или находится в радиусе агрессии NPC
 func (ai *BaseAI) OnPlayerNearby(npc interfaces.Npcer, player interfaces.CharacterI, distance float64) {
-	if distance <= float64(ai.agroRange) && npc.GetCurrentState() == interfaces.NpcStateIdle {
-		// NPC замечает игрока и начинает преследование
-		npc.SetCurrentState(interfaces.NpcStateChasing)
-		npc.SetTarget(player.GetObjectId())
-		// Сообщаем игрокам, что NPC заметил игрока
-		ai.broadcastNpcSay(npc, NPC_SAY_SEE_PLAYER)
+	if npc.GetAgroRange() == 0 {
+		return
 	}
+	if !npc.GetCanMove() {
+		// Для статичных NPC можно реализовать аналогичную логику, если потребуется
+		return
+	}
+	// Проверяем, видел ли NPC этого игрока
+	n, ok := npc.(*Npc)
+	if !ok {
+		return
+	}
+	if distance <= float64(ai.agroRange) {
+		if !n.HasSeenPlayer(player.GetObjectId()) {
+			// Первый раз видит игрока — пишет в чат и запоминает
+			ai.broadcastNpcSay(npc, NPC_SAY_SEE_PLAYER)
+			n.AddSeenPlayer(player.GetObjectId())
+			npc.SetCurrentState(interfaces.NpcStateChasing)
+			npc.SetTarget(player.GetObjectId())
+		}
+	} else {
+		// Если игрок вышел из радиуса — сбрасываем состояние
+		if n.HasSeenPlayer(player.GetObjectId()) {
+			ai.OnPlayerOutOfRange(npc, player)
+		}
+	}
+}
+
+// OnPlayerOutOfRange вызывается, когда игрок выходит из радиуса агрессии NPC
+func (ai *BaseAI) OnPlayerOutOfRange(npc interfaces.Npcer, player interfaces.CharacterI) {
+	n, ok := npc.(*Npc)
+	if !ok {
+		return
+	}
+	n.RemoveSeenPlayer(player.GetObjectId())
+	// Можно добавить дополнительную логику (например, NPC возвращается к патрулированию)
 }
 
 func (ai *BaseAI) OnAttacked(npc interfaces.Npcer, attacker interfaces.CharacterI) {
@@ -145,30 +175,60 @@ func (ai *BaseAI) handleMovingState(npc interfaces.Npcer, world interfaces.World
 func (ai *BaseAI) handleChasingState(npc interfaces.Npcer, world interfaces.WorldRegioner) {
 	targetId := npc.GetTarget()
 	if targetId == 0 {
-		// Цель потеряна, возвращаемся к спавну
 		npc.SetCurrentState(interfaces.NpcStateReturning)
 		return
 	}
 
-	// Ищем цель в соседних регионах
+	// Найти цель (игрока) по ID
 	target := ai.findTarget(npc, world, targetId)
 	if target == nil {
-		// Цель не найдена, возвращаемся к спавну
 		npc.SetCurrentState(interfaces.NpcStateReturning)
+		npc.SetTarget(0)
 		return
 	}
 
-	// Проверяем расстояние до цели
-	distance := npc.CalculateDistanceTo(target.GetX(), target.GetY(), target.GetZ(), false, false)
+	// Получить актуальные координаты цели
+	targetX, targetY, targetZ := target.GetXYZ()
+	distance := npc.CalculateDistanceTo(targetX, targetY, targetZ, false, false)
 
 	if distance > float64(ai.chaseRange) {
-		// Цель слишком далеко, возвращаемся к спавну
 		npc.SetCurrentState(interfaces.NpcStateReturning)
+		npc.SetTarget(0)
 		return
 	}
 
-	// Двигаемся к цели
-	ai.moveToTarget(npc, target)
+	if n, ok := npc.(*Npc); ok {
+		if n.IsMoving() {
+			// Частота отправки пакета зависит от расстояния до цели
+			now := time.Now().UnixNano()
+			interval := int64(500 * time.Millisecond)
+			if distance < 150 {
+				interval = int64(1000 * time.Millisecond)
+			}
+			if now-n.GetLastMovePacketTime() >= interval {
+				curX, curY, curZ := n.GetCoordinates()
+				tX, tY, tZ := n.GetMoveTarget()
+				ai.broadcastMovement(n, &types.BackwardToLocation{
+					TargetX: tX,
+					TargetY: tY,
+					TargetZ: tZ,
+					OriginX: curX,
+					OriginY: curY,
+					OriginZ: curZ,
+				})
+				n.SetLastMovePacketTime(now)
+			}
+			if now >= n.GetMoveArrivalTime() {
+				// Движение завершено, обновляем координаты
+				n.SetXYZ(n.moveTargetX, n.moveTargetY, n.moveTargetZ)
+				n.SetMoving(false)
+			}
+			return // ждём завершения движения
+		}
+	}
+
+	// Если не двигается — начать новое движение к актуальным координатам цели
+	ai.moveToLocation(npc, targetX, targetY, targetZ)
 }
 
 // handleReturningState обработка состояния возвращения к спавну
@@ -189,8 +249,11 @@ func (ai *BaseAI) handleReturningState(npc interfaces.Npcer, world interfaces.Wo
 	ai.moveToLocation(npc, spawnX, spawnY, spawnZ)
 }
 
-// startRandomMovement начинает случайное движение NPC в пределах PATROL_RADIUS от точки респауна
+// Случайное патрулирование — только если NPC может двигаться
 func (ai *BaseAI) startRandomMovement(npc interfaces.Npcer) {
+	if !npc.GetCanMove() {
+		return
+	}
 	spawnX, spawnY, spawnZ := npc.GetSpawnLocation()
 
 	// Генерируем случайную точку в радиусе PATROL_RADIUS
@@ -208,30 +271,56 @@ func (ai *BaseAI) startRandomMovement(npc interfaces.Npcer) {
 	ai.lastMovement = time.Now()
 }
 
-// moveToLocation двигает NPC к указанной точке
+// moveToLocation двигает NPC к указанной точке с учётом скорости
 func (ai *BaseAI) moveToLocation(npc interfaces.Npcer, targetX, targetY, targetZ int32) {
+	if !npc.GetCanMove() {
+		return
+	}
 	currentX, currentY, currentZ := npc.GetCoordinates()
 
-	// Создаем пакет движения
-	location := &types.BackwardToLocation{
+	distance := math.Sqrt(float64((targetX-currentX)*(targetX-currentX) + (targetY-currentY)*(targetY-currentY)))
+	walkSpd := float64(npc.GetWalkSpd())
+	runSpd := float64(npc.GetRunSpd())
+
+	// Сколько прошли на старте (walk)
+	howMuchWalked := walkSpd / 2.4
+	// Время ходьбы (мс)
+	walkTimeMs := (howMuchWalked / walkSpd) * 1000
+	// Оставшееся расстояние для бега
+	runDistance := distance - howMuchWalked
+	if runDistance < 0 {
+		runDistance = 0
+	}
+	// Время бега (мс)
+	runTimeMs := (runDistance / runSpd) * 1000
+	// Общее время движения
+	totalTimeMs := int64(runTimeMs + walkTimeMs)
+
+	startTime := time.Now().UnixNano()
+	arrivalTime := startTime + totalTimeMs*int64(time.Millisecond)
+
+	// Сохраняем цель и время движения
+	if n, ok := npc.(*Npc); ok {
+		n.SetMoveTarget(targetX, targetY, targetZ, startTime, arrivalTime)
+		n.SetMoving(true)
+	}
+
+	// Отправляем пакет MoveToLocation только при начале движения
+	ai.broadcastMovement(npc, &types.BackwardToLocation{
 		TargetX: targetX,
 		TargetY: targetY,
 		TargetZ: targetZ,
 		OriginX: currentX,
 		OriginY: currentY,
 		OriginZ: currentZ,
-	}
-
-	// Отправляем пакет движения всем игрокам в регионе
-	ai.broadcastMovement(npc, location)
-
-	// Обновляем координаты NPC
-	npc.SetXYZ(targetX, targetY, targetZ)
-	npc.SetMoving(true)
+	})
 }
 
-// moveToTarget двигает NPC к цели
+// Движение к цели (игроку) — только если NPC может двигаться
 func (ai *BaseAI) moveToTarget(npc interfaces.Npcer, target interfaces.CharacterI) {
+	if !npc.GetCanMove() {
+		return
+	}
 	targetX, targetY, targetZ := target.GetXYZ()
 	currentX, currentY, _ := npc.GetCoordinates()
 
@@ -240,8 +329,10 @@ func (ai *BaseAI) moveToTarget(npc interfaces.Npcer, target interfaces.Character
 	dy := float64(targetY - currentY)
 	distance := math.Sqrt(dx*dx + dy*dy)
 
-	if distance < 50 {
-		// Достаточно близко для атаки
+	// Рандомная дистанция остановки 20-40 юнитов
+	stopDistance := 20 + rand.Float64()*20 // 20-40
+	if distance < stopDistance {
+		// Останавливаемся, не подходим вплотную
 		npc.SetCurrentState(interfaces.NpcStateAttacking)
 		return
 	}
@@ -256,7 +347,7 @@ func (ai *BaseAI) moveToTarget(npc interfaces.Npcer, target interfaces.Character
 	moveDistance := float64(50)
 	newX := currentX + int32(dx*moveDistance)
 	newY := currentY + int32(dy*moveDistance)
-	newZ := targetZ // Пока оставляем ту же высоту что у цели
+	newZ := targetZ // Оставляем высоту цели
 
 	ai.moveToLocation(npc, newX, newY, newZ)
 }
@@ -367,10 +458,14 @@ func (ai *BaseAI) broadcastNpcSay(npc interfaces.Npcer, text string) {
 			}
 		}
 	}
+	if len(players) == 0 {
+		return
+	}
+
 	// Формируем пакет NpcSay
-	packet := makeNpcSayPacket(npc, text)
 	// packet := serverpackets.NpcSay(npc.GetObjectId(), 0, npc.GetId(), text)
 	for _, player := range players {
+		packet := makeNpcSayPacket(npc, text)
 		player.EncryptAndSend(packet)
 	}
 }
@@ -378,11 +473,10 @@ func (ai *BaseAI) broadcastNpcSay(npc interfaces.Npcer, text string) {
 // makeNpcSayPacket создает пакет NpcSay (0x2C)
 func makeNpcSayPacket(npc interfaces.Npcer, npcString string) []byte {
 	buffer := packets.Get()
-
 	buffer.WriteSingleByte(0x30)
 	buffer.WriteD(npc.GetObjectId())
 	buffer.WriteD(1)
-	buffer.WriteD(npc.GetId())
+	buffer.WriteD(1000000 + npc.GetId())
 	buffer.WriteD(-1) // -1 тогда свой текст
 	buffer.WriteS(npcString)
 	return buffer.Bytes()

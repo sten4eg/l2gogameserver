@@ -88,9 +88,9 @@ func main() {
 	worldS.AddNpc(npcs)
 
 	// Инициализируем AI систему для NPC, передаем worldS как RegionProvider
-	aiManager := npc.NewAIManager(worldS)
-	aiManager.InitializeAI(npcs)
-	aiManager.StartAIUpdate()
+	npc.AIManagerInstance = npc.NewAIManager(worldS)
+	npc.AIManagerInstance.InitializeAI(npcs)
+	npc.AIManagerInstance.StartAIUpdate()
 
 	party.LoadPartyDistributionTypes()
 

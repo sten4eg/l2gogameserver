@@ -18,6 +18,8 @@ import (
 
 	"sync"
 	"time"
+
+	"l2gogameserver/gameserver/npc"
 )
 
 type (
@@ -445,6 +447,7 @@ func (c *Character) setWorldRegion(newRegion interfaces.WorldRegioner) {
 	c.CurrentRegion = newRegion.(*world.WorldRegion)
 
 	if len(npcPkgTo) > 0 {
+		// ВАЖНО: NpcInfo для всех NPC в радиусе отправляется с актуальными координатами
 		c.NpcInfo <- npcPkgTo
 	}
 
@@ -510,6 +513,10 @@ func (c *Character) SetXYZ(x, y, z int32) {
 	c.Coordinates.X = x
 	c.Coordinates.Y = y
 	c.Coordinates.Z = z
+	// Мгновенная реакция NPC на перемещение игрока
+	if npc.AIManagerInstance != nil {
+		npc.AIManagerInstance.OnPlayerNearby(c)
+	}
 }
 func (c *Character) SetHeading(h int32) {
 	c.Heading = h
