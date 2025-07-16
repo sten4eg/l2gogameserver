@@ -7,14 +7,8 @@ import (
 	"math"
 )
 
-type BackwardToLocation struct {
-	TargetX int32
-	TargetY int32
-	TargetZ int32
-	OriginX int32
-	OriginY int32
-	OriginZ int32
-}
+// Удаляю определение BackwardToLocation, теперь используем types.BackwardToLocation
+// type BackwardToLocation struct { ... } // удалить
 
 var GraciaMaxX = -166168
 var GraciaMaxZ = 6105
@@ -88,6 +82,11 @@ func GetRegion(x, y, z int32) *WorldRegion {
 	return getRegion(validX(regionX(x)), validY(regionY(y)), validZ(regionZ(z)))
 }
 
+// Реализация интерфейса RegionProvider
+func (w WWorld) GetRegion(x, y, z int32) interfaces.WorldRegioner {
+	return getRegion(validX(regionX(x)), validY(regionY(y)), validZ(regionZ(z)))
+}
+
 // getRegion x,y,z - координаты региона
 func getRegion(x, y, z int32) *WorldRegion {
 	if worldData[x][y][z] == nil {
@@ -118,6 +117,8 @@ func isNeighbour(x1, y1, z1, x2, y2, z2 int32) bool {
 func (w *WWorld) AddNpc(Npcs map[int32]map[int32]npc.Npc) {
 	for _, v := range Npcs {
 		for _, vv := range v {
+			// Инициализируем координаты NPC перед добавлением в регион
+			vv.SetXYZ(vv.Spawn.Locx, vv.Spawn.Locy, vv.Spawn.Locz)
 			reg := GetRegion(vv.Spawn.Locx, vv.Spawn.Locy, vv.Spawn.Locz)
 			reg.AddVisibleNpc(vv)
 		}

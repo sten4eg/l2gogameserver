@@ -7,16 +7,16 @@ import (
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/trade/privateStoreType"
 	"l2gogameserver/gameserver/serverpackets"
-	"l2gogameserver/gameserver/world"
+	"l2gogameserver/gameserver/types"
 	"l2gogameserver/packets"
 	"strconv"
 )
 
 func Action(data []byte, client interfaces.NewClientCtxInterface,
 	f func(client interfaces.NewClientCtxInterface,
-		l world.BackwardToLocation),
+		l types.BackwardToLocation),
 	db *sql.DB,
-) *world.BackwardToLocation {
+) *types.BackwardToLocation {
 
 	reAppeal := false // повторное обращение к объекту
 	var packet = packets.NewReader(data)

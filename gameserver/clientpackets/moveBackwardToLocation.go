@@ -2,13 +2,13 @@ package clientpackets
 
 import (
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/world"
+	"l2gogameserver/gameserver/types"
 	"l2gogameserver/packets"
 )
 
-func MoveBackwardToLocation(client interfaces.NewClientCtxInterface, data []byte) world.BackwardToLocation {
+func MoveBackwardToLocation(client interfaces.NewClientCtxInterface, data []byte) types.BackwardToLocation {
 
-	var location world.BackwardToLocation
+	var location types.BackwardToLocation
 	var packet = packets.NewReader(data)
 
 	location.TargetX = packet.ReadInt32()
@@ -22,10 +22,10 @@ func MoveBackwardToLocation(client interfaces.NewClientCtxInterface, data []byte
 
 }
 
-func MoveToLocation(client interfaces.NewClientCtxInterface, targetX, targetY, targetZ int32) *world.BackwardToLocation {
+func MoveToLocation(client interfaces.NewClientCtxInterface, targetX, targetY, targetZ int32) *types.BackwardToLocation {
 
 	x, y, z := client.GetAccount().GetCurrentChar().GetXYZ()
-	location := world.BackwardToLocation{
+	location := types.BackwardToLocation{
 		TargetX: targetX,
 		TargetY: targetY,
 		TargetZ: targetZ,

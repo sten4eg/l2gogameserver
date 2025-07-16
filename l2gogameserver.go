@@ -87,6 +87,11 @@ func main() {
 	worldS := world.NewWorld()
 	worldS.AddNpc(npcs)
 
+	// Инициализируем AI систему для NPC, передаем worldS как RegionProvider
+	aiManager := npc.NewAIManager(worldS)
+	aiManager.InitializeAI(npcs)
+	aiManager.StartAIUpdate()
+
 	party.LoadPartyDistributionTypes()
 
 	err = loginserver.HandlerInit(dbConn)

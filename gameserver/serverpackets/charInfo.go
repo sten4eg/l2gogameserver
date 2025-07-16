@@ -1,8 +1,8 @@
 package serverpackets
 
 import (
+	"l2gogameserver/gameserver/constants"
 	"l2gogameserver/gameserver/interfaces"
-	"l2gogameserver/gameserver/models"
 	"l2gogameserver/packets"
 )
 
@@ -136,26 +136,26 @@ func CharInfo(character interfaces.CharacterI) []byte {
 // TODO удалить модель
 func getPaperdollOrder() []uint8 {
 	return []uint8{
-		models.PAPERDOLL_UNDER,
-		models.PAPERDOLL_HEAD,
-		models.PAPERDOLL_RHAND,
-		models.PAPERDOLL_LHAND,
-		models.PAPERDOLL_GLOVES,
-		models.PAPERDOLL_CHEST,
-		models.PAPERDOLL_LEGS,
-		models.PAPERDOLL_FEET,
-		models.PAPERDOLL_CLOAK,
-		models.PAPERDOLL_RHAND,
-		models.PAPERDOLL_HAIR,
-		models.PAPERDOLL_HAIR2,
-		models.PAPERDOLL_RBRACELET,
-		models.PAPERDOLL_LBRACELET,
-		models.PAPERDOLL_DECO1,
-		models.PAPERDOLL_DECO2,
-		models.PAPERDOLL_DECO3,
-		models.PAPERDOLL_DECO4,
-		models.PAPERDOLL_DECO5,
-		models.PAPERDOLL_DECO6,
-		models.PAPERDOLL_BELT,
+		constants.PAPERDOLL_UNDER,
+		constants.PAPERDOLL_HEAD,
+		constants.PAPERDOLL_RHAND,
+		constants.PAPERDOLL_LHAND,
+		constants.PAPERDOLL_GLOVES,
+		constants.PAPERDOLL_CHEST,
+		constants.PAPERDOLL_LEGS,
+		constants.PAPERDOLL_FEET,
+		constants.PAPERDOLL_CLOAK,
+		constants.PAPERDOLL_RHAND,
+		constants.PAPERDOLL_HAIR,
+		constants.PAPERDOLL_HAIR2,
+		constants.PAPERDOLL_RBRACELET,
+		constants.PAPERDOLL_LBRACELET,
+		constants.PAPERDOLL_DECO1,
+		constants.PAPERDOLL_DECO2,
+		constants.PAPERDOLL_DECO3,
+		constants.PAPERDOLL_DECO4,
+		constants.PAPERDOLL_DECO5,
+		constants.PAPERDOLL_DECO6,
+		constants.PAPERDOLL_BELT,
 	}
 }

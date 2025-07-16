@@ -6,7 +6,9 @@ import (
 	"l2gogameserver/config"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/gameserver/idfactory"
+	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/utils"
+	"math"
 	"os"
 )
 
@@ -94,6 +96,14 @@ type Npc struct {
 	Locations               []Locations               `json:"locations"`
 	ObjId                   int32
 	Spawn                   Locations
+	// Новые поля для AI
+	ai           interfaces.NpcAI
+	currentState interfaces.NpcState
+	isMoving     bool
+	target       int32
+	coordinates  struct {
+		X, Y, Z int32
+	}
 }
 
 type Npcer interface {
@@ -268,7 +278,7 @@ func GetNpc(getNpcID, objectId int32) (Npc, error) {
 
 // Медоты нпц
 func (n *Npc) GetCoordinates() (x, y, z int32) {
-	return n.Spawn.GetCoordinate()
+	return n.coordinates.X, n.coordinates.Y, n.coordinates.Z
 }
 
 func (n *Npc) GetObjectId() int32 {
@@ -324,3 +334,84 @@ func (l *Locations) GetCoordinate() (x, y, z int32) {
 	z = l.Locz
 	return
 }
+
+// Методы для AI
+func (n *Npc) GetAI() interfaces.NpcAI {
+	return n.ai
+}
+
+func (n *Npc) SetAI(ai interfaces.NpcAI) {
+	n.ai = ai
+}
+
+func (n *Npc) GetSpawnLocation() (x, y, z int32) {
+	return n.Spawn.Locx, n.Spawn.Locy, n.Spawn.Locz
+}
+
+func (n *Npc) GetCurrentState() interfaces.NpcState {
+	return n.currentState
+}
+
+func (n *Npc) SetCurrentState(state interfaces.NpcState) {
+	n.currentState = state
+}
+
+func (n *Npc) IsMoving() bool {
+	return n.isMoving
+}
+
+func (n *Npc) SetMoving(moving bool) {
+	n.isMoving = moving
+}
+
+func (n *Npc) GetTarget() int32 {
+	return n.target
+}
+
+func (n *Npc) SetTarget(target int32) {
+	n.target = target
+}
+
+func (n *Npc) GetAgroRange() int32 {
+	return int32(n.AgroRange)
+}
+
+func (n *Npc) GetCanMove() bool {
+	return n.CanMove == 1
+}
+
+func (n *Npc) GetLevel() int32 {
+	return int32(n.Level)
+}
+
+func (n *Npc) GetName() string {
+	return n.Name
+}
+
+// SetXYZ устанавливает координаты NPC (используется для корректного отображения на клиенте)
+func (n *Npc) SetXYZ(x, y, z int32) {
+	n.coordinates.X = x
+	n.coordinates.Y = y
+	n.coordinates.Z = z
+}
+
+func (n *Npc) CalculateDistanceTo(ox, oy, oz int32, includeZAxis, squared bool) float64 {
+	dx := float64(n.coordinates.X - ox)
+	dy := float64(n.coordinates.Y - oy)
+	dz := float64(n.coordinates.Z - oz)
+
+	var distance float64
+	if includeZAxis {
+		distance = dx*dx + dy*dy + dz*dz
+	} else {
+		distance = dx*dx + dy*dy
+	}
+
+	if squared {
+		return distance
+	}
+
+	return math.Sqrt(distance)
+}
+
+// Обновляем существующий метод GetCoordinates для использования новых координат

@@ -4,6 +4,7 @@ import (
 	"l2gogameserver/gameserver/interfaces"
 	"l2gogameserver/gameserver/models/chat"
 	"l2gogameserver/gameserver/serverpackets"
+	"l2gogameserver/gameserver/types"
 	"l2gogameserver/gameserver/world"
 	"l2gogameserver/packets"
 	"l2gogameserver/utils"
@@ -191,7 +192,7 @@ func SendCharInfoAboutCharactersAround(me interfaces.NewClientCtxInterface) {
 	}
 }
 
-func Checkaem(client interfaces.NewClientCtxInterface, l world.BackwardToLocation) {
+func Checkaem(client interfaces.NewClientCtxInterface, l types.BackwardToLocation) {
 	ut := utils.GetPacketByte()
 	ut.SetData(serverpackets.MoveToLocation(&l, client.GetAccount().GetCurrentChar()))
 
