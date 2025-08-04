@@ -126,14 +126,12 @@ func (w *WWorld) AddNpc(Npcs map[int32]map[int32]npc.Npc) {
 
 func GetRegionFromXY(x, y int) (int, int) {
 
-	regionXNew := (((x - MapMinX) >> 4) >> 11) + 11
-	regionXOld := regionX(int32(x))
-	regionYNew := (((y - MapMinY) >> 4) >> 11) + 10
-	regionYOld := regionY(int32(y))
+	regionXNew := ((x - MapMinX) >> 15) + 11
+	regionYNew := ((y - MapMinY) >> 15) + 10
 
 	BLOCK_X := (((x - MapMinX) >> 4) >> 3) % 256
 	BLOCK_Y := (((y - MapMinY) >> 4) >> 3) % 256
-	_, _, _, _ = regionXNew, regionYNew, regionXOld, regionYOld
+	_, _ = regionXNew, regionYNew
 	_, _ = BLOCK_Y, BLOCK_X
 	return 2 + 11, 1 + 10
 

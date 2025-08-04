@@ -6,6 +6,7 @@ import (
 	"l2gogameserver/data"
 	"l2gogameserver/data/logger"
 	"l2gogameserver/db"
+	"l2gogameserver/gameserver"
 	"l2gogameserver/gameserver/idfactory"
 	"l2gogameserver/gameserver/models"
 	"l2gogameserver/gameserver/models/initial"
@@ -37,7 +38,8 @@ func stp(file *os.File) {
 func main() {
 	// log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	world.GetRegionFromXY(12446, 16683)
+	gameserver.ParsePathFin()
+	world.GetRegionFromXY(-71952, 257617)
 
 	f, err := os.OpenFile("test", os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
@@ -60,7 +62,6 @@ func main() {
 	if cfg.GameServer.Debug.IsShowPackets() {
 		logger.Info.Println("Показ пакетов включен")
 	}
-
 	dbConn, err := db.ConfigureDB(cfg.GameServer.Database)
 	if err != nil {
 		log.Fatal(err)
