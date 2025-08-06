@@ -10,7 +10,7 @@ import (
 // GeoHeightMask_1 = -16 (в бинарном виде: 1111111111110000)
 // После сдвига вправо на 1: 0b11111111111110000 >> 1 = 0b1111111111111000 = 0xFFF8
 // Используется для извлечения высоты из m_data
-var GeoHeightMask1 int16 = -16
+const GeoHeightMask1 int16 = -16
 
 // GeoFieldMask_2 — маски для типов зон (битовые флаги)
 var GeoFieldMask2 = [16]int16{

@@ -1,6 +1,7 @@
 package qw
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"unsafe"
@@ -376,4 +377,394 @@ func (g *CGeoData) GetZone(idx, idy int) *CGeoZone {
 		}
 	}
 	return nil
+}
+
+func (g *CGeoData) GetClosestUpperCellFromSector(
+	sector *CGeoSector,
+	x uint,
+	y int,
+	z int,
+	strictCheck bool,
+) *CGeoCell {
+	// Если сектор "пустой", вернуть дефолтную ячейку
+	if sector.BooleanFlag&1 != 0 {
+		return &sector.DefaultCell
+	}
+
+	// Получить массив ячеек по координатам
+	cellArray := g.Cells[(int(x)+327680)>>15][(y+0x40000)>>15]
+	if cellArray == nil {
+		log.Println(
+			fmt.Sprintf("failed to get cell_array (%d, %d) at file[%s], line[%d]", x, y, "..\\Shared\\GeoData.cpp", 701))
+		return nil
+	}
+
+	// Получение индексов ячеек
+	var b1, b2 int
+	ok := g.GetCellIndexes(int(x), y, &b1, &b2)
+	if !ok {
+		// В оригинале не логируется ошибка здесь
+		return nil
+	}
+
+	// Вызов поиска ближайшей верхней ячейки
+	cell := g.GetClosestUpperCell(z, cellArray, b1, b2, strictCheck)
+
+	// Если строгая проверка отключена и ячейка не найдена — логгируем ошибку
+	if !strictCheck && cell == nil {
+		log.Println(
+			fmt.Sprintf("failed to get closestUpperCell (%d, %d, %d) at file[%s], line[%d]",
+				x, y, z, "..\\Shared\\GeoData.cpp", 714))
+	}
+
+	return cell
+}
+
+func (g *CGeoData) GetClosestUpperCellByPos(pos *FVector) *CGeoCell {
+	x := int(pos.X)
+	y := int(pos.Y)
+	sector := g.GetSectorByCoord(x, y)
+	if sector == nil {
+		return nil
+	}
+	return g.GetClosestUpperCellFromSector(sector, uint(x), y, int(pos.Z), false)
+}
+
+func (g *CGeoData) GetClosestUpperCell(
+	z int,
+	cellArray []*CGeoCell,
+	b1 int,
+	b2 int,
+	strictCheck bool,
+) *CGeoCell {
+	v7 := b1 + 1
+	v8 := cellArray[b1]
+
+	// Обход массива cellArray
+	if v7 < b2 {
+		v9 := cellArray[v7]
+		for v7 < b2 {
+			// Сравнение высоты z с текущей ячейкой v8
+			if z >= int((GeoHeightMask1>>1)&(v8.Data>>1)) {
+				break
+			}
+			// Сравнение z с ячейкой v9
+			if int((GeoHeightMask1>>1)&(v9.Data>>1)) <= z {
+				break
+			}
+			v8 = cellArray[v7]
+			v7++
+			if v7 < b2 {
+				v9 = cellArray[v7]
+			}
+		}
+	}
+
+	// Строгая проверка
+	if strictCheck && int((GeoHeightMask1>>1)&(v8.Data>>1)) < z {
+		return nil
+	}
+	return v8
+}
+
+func (g *CGeoData) MoveStraightTest(
+	vFrom *FVector,
+	vTo *FVector,
+	distToGo float64,
+	isFloating bool,
+	surfaceHeight int,
+) byte {
+	var distPassed float64 = 0
+	var vArrival FVector
+
+	if isFloating {
+		return g.MoveStraightFloating(vFrom, vTo, distToGo, &vArrival, &isFloating, surfaceHeight)
+	} else {
+		return g.MoveStraight(vFrom, vTo, distToGo, &vArrival, &isFloating, &distPassed)
+	}
+}
+
+func (g *CGeoData) MoveStraightFloating(
+	vFrom, vTo *FVector,
+	distTogo float64,
+	vArrival *FVector,
+	moreTogo *bool,
+	nSurfaceHeight int) bool {
+
+	*moreTogo = false // будет возвращён через выходной параметр
+
+	// 1. Вычисляем направление
+	dirX := vTo.X - vFrom.X
+	dirY := vTo.Y - vFrom.Y
+	dirZ := vTo.Z - vFrom.Z
+
+	if dirX*dirX+dirY*dirY < 1e-6 { // почти нулевой путь
+		*vArrival = *vFrom
+		fromCell := g.GetBaseCell(int(vFrom.X), int(vFrom.Y), int(vFrom.Z))
+		toCell := g.GetBaseCell(int(vTo.X), int(vTo.Y), int(vTo.Z))
+		return fromCell == toCell
+	}
+
+	// 2. Нормализуем вектор (NormalizeCube → просто Normalize)
+	lenSq := dirX*dirX + dirY*dirY + dirZ*dirZ
+	if lenSq <= 0 {
+		return false // защита от деления на ноль, но это не должно происходить
+	}
+	invLen := 1 / math.Sqrt(lenSq)
+	dirX *= invLen
+	dirY *= invLen
+	dirZ *= invLen
+
+	// Маска направления: 0 – «<» (≤0), 1 – «>» (>0)
+	var dirType [2]GeoDirEnum
+	if dirX <= 0 {
+		dirType[0] = GEO_DIR_N // просто пример, в реале нужен массив GeoDirMask
+	}
+	if dirY <= 0 {
+		dirType[1] = GEO_DIR_NE
+	} else {
+		dirType[1] = GEO_DIR_E
+	}
+
+	// 3. Инициализация переменных цикла
+	pos := *vFrom // текущая позиция
+	cell := g.GetBaseCell(int(vFrom.X), int(vFrom.Y), int(vFrom.Z))
+	if cell == nil {
+		return false
+	}
+	distPassed := 0.0
+	stepSize := math.Pow(2, -3) // 1/8 – как в оригинале (0.125)
+	skipCheck := false          // v24 / v57 в исходнике
+
+	for distTogo > distPassed {
+
+		// --- расчёт следующего шага -----------------------------
+		var stepX, stepY, stepZ float64
+		if skipCheck || math.Abs(dirX*dirX+dirY*dirY) <= distTogo-distPassed {
+			stepX = dirX
+			stepY = dirY
+			stepZ = 0 // пока не используется в расчётах пути
+		} else {
+			// уменьшаем шаг, если надо пройти меньше, чем до цели
+			tmpX := dirX * stepSize
+			tmpY := dirY * stepSize
+			tmpZ := dirZ * stepSize
+			if tmpX*tmpX+tmpY*tmpY < 0.5 {
+				stepX = dirX
+				stepY = dirY
+				stepZ = dirZ
+			} else {
+				stepX, stepY, stepZ = tmpX, tmpY, tmpZ
+			}
+			skipCheck = true
+		}
+
+		// Если следующий шаг «превышает» расстояние до цели – ограничиваем его
+		distToTargetSq := (pos.X-vTo.X)*(pos.X-vTo.X) + (pos.Y-vTo.Y)*(pos.Y-vTo.Y)
+		if stepX*stepX+stepY*stepY > distToTargetSq {
+			stepX = vTo.X - pos.X
+			stepY = vTo.Y - pos.Y
+			stepZ = vTo.Z - pos.Z
+		}
+
+		nextPos := FVector{
+			X: pos.X + stepX,
+			Y: pos.Y + stepY,
+			Z: pos.Z + stepZ, // в оригинале Z обновляется через высоту ячейки
+		}
+
+		// --- поиск следующей ячейки -----------------------------
+		newCell := g.GetBaseCell(int(nextPos.X), int(nextPos.Y), int(nextPos.Z))
+		if newCell == nil {
+			// ошибка: не нашли ячейку – считаем, что движение невозможно дальше
+			logError("error in movestraight3! [2023]")
+			break
+		}
+
+		// 4. Обновляем высоту ячейки (по маске GeoHeightMask1)
+		heightInCell := int((newCell.m_data >> 1) & uint16(GeoHeightMask1>>1))
+		if nextPos.Z > float64(heightInCell) {
+			nextPos.Z = float64(heightInCell)
+		}
+
+		// 5. Обновляем переменные цикла
+		distPassed += math.Sqrt(stepX*stepX + stepY*stepY + stepZ*stepZ)
+		pos = nextPos
+		cell = newCell
+
+		// 6. Ограничиваем высоту по nSurfaceHeight (см. оригинал)
+		if heightInCell > nSurfaceHeight {
+			if int(nextPos.Z) < nSurfaceHeight {
+				break // достигнут предел «покрытия» поверхности
+			}
+			nextPos.Z = float64(nSurfaceHeight - 1)
+		} else if nextPos.Z > float64(heightInCell) {
+			nextPos.Z = float64(heightInCell)
+		}
+
+		if distTogo <= distPassed {
+			break // достигли требуемого расстояния
+		}
+	}
+
+	// 7. Финальный результат
+	if !skipCheck { // v56 в оригинале – «первый проход» (нет перехода через границу)
+		*moreTogo = true
+	}
+	*vArrival = pos
+
+	return true
+}
+
+func (g *CGeoData) CanSee(pFrom, pTo *CWorldObject, checkCollision bool) bool {
+	if pFrom == nil || pTo == nil {
+		return false
+	}
+
+	zoneID := pFrom.GetInZoneID()
+	toPos := pTo.GetPos()
+	fromPos := pFrom.GetPos()
+
+	return g.CanSee2(&fromPos, &toPos, zoneID, checkCollision)
+}
+
+func (g *CGeoData) CanSee2(
+	vFrom, vTo *FVector,
+	nInstantZoneID int,
+	bCheckCollision bool,
+) bool {
+	out := &FVector{}
+	v8 := g.SingleLineCheckForProjectile(vFrom, vTo)
+
+	if v8 && bCheckCollision {
+		// Обнуляем out, хотя в Go это избыточно
+		*out = FVector{}
+
+		if gWorldPlaneCollision.CheckCollision(vFrom, vTo, 0.0, out, nInstantZoneID, 0) &&
+			gWorldPlaneCollision.CheckCollision(vTo, vFrom, 0.0, out, nInstantZoneID, 0) {
+			return false
+		}
+	}
+	return v8
+}
+
+func (c *CWorldPlaneCollision) ConvertWorldToPlaneSection(
+	x0, x1, y0, y1 int,
+	idxMin, idxMax [2]int,
+	idyMin, idyMax *int) {
+	/* … реализовать логически аналогично C++‑функции */
+}
+
+func (b *CAxisAlgnBB) Intersect(start, end *FVector) bool { /* … */ return false }
+
+func (c *CPlaneCollision) CheckCollision(
+	start, end *FVector,
+	radius float64,
+	summonCheck bool) float64 {
+	/* … реальная логика проверки пересечения */
+	return 1.0
+}
+
+// ---------------------------------------------------------------------------
+// 4. Перевод функции CheckCollision
+// ---------------------------------------------------------------------------
+
+func (c *CWorldPlaneCollision) CheckCollision(
+	start, end *FVector,
+	radius float64,
+	out *FVector,
+	inInstantZoneID uint32,
+	summonCheck bool) bool {
+
+	// 1. Увеличиваем счётчик для текущего потока
+	threadIdx := getThreadIndex() // аналог *(int *)(v42 + 104228)
+	key := c.m_CheckKey[threadIdx]
+	c.m_CheckKey[threadIdx] = key + 1
+
+	// 2. Перевод мировых координат в индексы ячеек (плоскости)
+	var idxMin, idxMax [2]int
+	var idyMin, idyMax int
+	c.ConvertWorldToPlaneSection(
+		int(start.X), int(end.X),
+		int(start.Y), int(end.Y),
+		idxMin, idxMax,
+		&id yMin, &id yMax)
+
+	if idxMin[0] > idxMax[0] || idyMin > idyMax {
+		return false // путь не попадает в область карты
+	}
+
+	// 3. Перебор ячеек плоскости (первый проход – поиск коллизий)
+	for x := idxMin[0]; x <= idxMax[0]; x++ {
+		for y := idyMin; y <= idyMax; y++ {
+
+			link := c.getCollisionLink(x, y) // аналог v16
+			for link != nil {
+				if link.Plane != nil &&
+					CAxisAlgnBB(link.Next).Intersect(start, end) {
+					// нашли пересечение – сохраняем и выходим
+					*out = *start
+					return true
+				}
+				link = link.Next
+			}
+		}
+	}
+
+	// 4. Если в зоне с instant‑ID надо проверить ещё коллизии
+	if inInstantZoneID != 0 {
+		inz := getInstantZone(inInstantZoneID) // аналог Shuttle + CSmartID::GetShuttle
+		if inz == nil || !inz.IsActive() {
+			return false
+		}
+	}
+
+	// 5. Второй проход – перебор всех ячеек, в которых может быть столкновение
+	var bestDist float64 = math.Inf(1)
+	for x := idxMin[0]; x <= idxMax[0]; x++ {
+		for y := idyMin; y <= idyMax; y++ {
+
+			link := c.getCollisionLink(x, y) // аналог v23
+			for link != nil && link.Plane != nil {
+
+				// 5.1 Проверяем включённость коллизии (InstantZone/normal)
+				if inz != nil {
+					if !inz.GetCollisionCheck(link.Plane) {
+						link = link.Next
+						continue
+					}
+				} else if link.Plane.m_InstantZoneKey.typeId != 0 ||
+					!link.Plane.m_bEnabled {
+					link = link.Next
+					continue
+				}
+
+				// 5.2 Проверяем, не проверяли ли уже эту коллизию в текущем потоке
+				if c.m_CheckField[threadIdx][link.Plane.m_nIndex] == key {
+					link = link.Next
+					continue
+				}
+				c.m_CheckField[threadIdx][link.Plane.m_nIndex] = key
+
+				// 5.3 Фактическая проверка пересечения
+				dist := link.Plane.CheckCollision(start, end, radius, summonCheck)
+				if dist < bestDist {
+					bestDist = dist
+				}
+				link = link.Next
+			}
+		}
+	}
+
+	// 6. Если не нашли – возвращаем false
+	if math.IsInf(bestDist, 1) {
+		return false
+	}
+
+	// 7. Вычисляем точку пересечения (полученную из dist)
+	out.X = start.X + (end.X-start.X)*bestDist
+	out.Y = start.Y + (end.Y-start.Y)*bestDist
+	out.Z = start.Z + (end.Z-start.Z)*bestDist
+
+	return true
 }
