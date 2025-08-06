@@ -55,7 +55,6 @@ func fillFlatBlock(r *packets.Reader) FlatBlock {
 	return k
 }
 
-//
 func fillMultilayerBlock(r *packets.Reader) []int8 {
 	start := r.CurrentIndex()
 	for i := 0; i < 64; i++ {
@@ -271,7 +270,7 @@ func (b *ComplexBlock) getCellData(geoX, geoY int32) int32 {
 
 }
 
-//getRegion получение региона из глобальной мапы со всеми регионами карты
+// getRegion получение региона из глобальной мапы со всеми регионами карты
 func getRegion(geoX, geoY int32) int32 {
 	return ((geoX / REGION_CELLS_X) * GEO_REGIONS_Y) + (geoY / REGION_CELLS_Y)
 }

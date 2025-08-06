@@ -1,6 +1,7 @@
 package qw
 
 import (
+	"math"
 	"unsafe"
 )
 
@@ -9,13 +10,16 @@ import (
 // GeoHeightMask_1 = -16 (в бинарном виде: 1111111111110000)
 // После сдвига вправо на 1: 0b11111111111110000 >> 1 = 0b1111111111111000 = 0xFFF8
 // Используется для извлечения высоты из m_data
-const GeoHeightMask_1 = 0xFFF8 // int16(-16)
+var GeoHeightMask1 int16 = -16
 
 // GeoFieldMask_2 — маски для типов зон (битовые флаги)
-var GeoFieldMask_2 = [16]uint16{
-	32768, 16384, 8192, 4096, 2048, 1024, 512, 256,
-	128, 64, 32, 16, 8, 4, 2, 1,
+var GeoFieldMask2 = [16]int16{
+	-32768, 16384, 8192, 4096,
+	2048, 1024, 512, 256,
+	128, 64, 32, 16,
+	8, 4, 2, 1,
 }
+var GeoDirMask = [4]int16{1, 2, 4, 8}
 
 // === Enum'ы ===
 
@@ -65,6 +69,28 @@ const (
 // В C++: long double (128 бит), но в Go используем float64 как приближение
 type FVector struct {
 	X, Y, Z float64
+}
+
+func (a *FVector) LenSquared2D() float64 {
+	return a.X*a.X + a.Y*a.Y
+}
+
+func (a *FVector) Normalize2D() {
+	length := math.Sqrt(a.LenSquared2D())
+	if length > 1e-6 {
+		a.X /= length
+		a.Y /= length
+	}
+}
+func (v *FVector) SetFrom(other *FVector) {
+	v.X = other.X
+	v.Y = other.Y
+	v.Z = other.Z
+}
+func (v *FVector) Len2DTo(other *FVector) float64 {
+	dx := v.X - other.X
+	dy := v.Y - other.Y
+	return dx*dx + dy*dy
 }
 
 // CGeoCell — минимальная ячейка ландшафта (16x16 юнитов)
