@@ -213,7 +213,7 @@ func (geo *CGeoData) GetNextCell(
 	currentHeight int,
 	jump JumpType,
 ) *CGeoCell {
-	sector := geo.GetSectorByCoord(destX, destY)
+	sector := geo.GetSectorByCoord(uint32(destX), uint32(destY))
 	if sector == nil {
 		return nil
 	}
