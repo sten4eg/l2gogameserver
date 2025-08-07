@@ -44,8 +44,8 @@ func (geo *CGeoData) MoveStraight(
 	}
 	if dirX*dirX+dirY*dirY < 0.000001 {
 		arrival.SetFrom(from)
-		fromCell := geo.GetBaseCell(int(from.X), int(from.Y), int(from.Z))
-		toCell := geo.GetBaseCell(int(to.X), int(to.Y), int(to.Z))
+		fromCell := geo.GetBaseCell(uint32(from.X), uint32(from.Y), int(from.Z))
+		toCell := geo.GetBaseCell(uint32(to.X), uint32(to.Y), int(to.Z))
 		return fromCell == toCell
 	}
 
@@ -53,7 +53,7 @@ func (geo *CGeoData) MoveStraight(
 	dir.Normalize2D()
 
 	curr := *from
-	currCell := geo.GetBaseCell(int(curr.X), int(curr.Y), int(curr.Z))
+	currCell := geo.GetBaseCell(uint32(curr.X), uint32(curr.Y), int(curr.Z))
 	if currCell == nil {
 		arrival.SetFrom(from)
 		return false
@@ -122,8 +122,8 @@ func (geo *CGeoData) MoveStraight(
 					}
 					destX := 16*nextX - 327672
 					destY := 16*currY - 262136
-					height := (int(currCell.Data>>1) & (GeoHeightMask1 >> 1))
-					nextCell := geo.GetNextCell(currCell, lowDir, destX, destY, height)
+					height := int(currCell.Data>>1) & int(GeoHeightMask1 >> 1)
+					nextCell := geo.GetNextCell(currCell, GeoDirEnum(lowDir), destX, destY, height,NoJump)
 					if nextCell == nil {
 						break
 					}
@@ -142,25 +142,25 @@ func (geo *CGeoData) MoveStraight(
 				}
 				destX := 16*nextX - 327672
 				destY := 16*currY - 262136
-				height := (int(currCell.Data>>1) & (GeoHeightMask1 >> 1))
-				cellA := geo.GetNextCell(currCell, lowDir, destX, destY, height)
+				height := (int(currCell.Data>>1) & int(GeoHeightMask1 >> 1))
+				cellA := geo.GetNextCell(currCell, GeoDirEnum(lowDir), destX, destY, height,NoJump)
 				if cellA == nil {
 					break
 				}
-				heightB := (int(cellA.Data>>1) & (GeoHeightMask1 >> 1))
-				cellB := geo.GetNextCell(cellA, highDir, destX, 16*nextY-262136, heightB)
+				heightB := (int(cellA.Data>>1) & int(GeoHeightMask1 >> 1))
+				cellB := geo.GetNextCell(cellA, GeoDirEnum(highDir), destX, 16*nextY-262136, heightB,NoJump)
 				if cellB == nil {
 					break
 				}
 				if GeoDirMask[highDir]&currCell.Data != GeoDirMask[highDir] {
 					break
 				}
-				cellC := geo.GetNextCell(currCell, highDir, 16*currX-327672, 16*nextY-262136, height)
+				cellC := geo.GetNextCell(currCell, GeoDirEnum(highDir), 16*currX-327672, 16*nextY-262136, height,NoJump)
 				if cellC == nil {
 					break
 				}
-				heightC := (int(cellC.Data>>1) & (GeoHeightMask1 >> 1))
-				finalCell := geo.GetNextCell(cellC, lowDir, destX, 16*nextY-262136, heightC)
+				heightC := (int(cellC.Data>>1) & int(GeoHeightMask1 >> 1))
+				finalCell := geo.GetNextCell(cellC, GeoDirEnum(lowDir), destX, 16*nextY-262136, heightC,NoJump)
 				if finalCell == nil {
 					break
 				}
@@ -173,8 +173,8 @@ func (geo *CGeoData) MoveStraight(
 				}
 				destX := 16*currX - 327672
 				destY := 16*nextY - 262136
-				height := (int(currCell.Data>>1) & (GeoHeightMask1 >> 1))
-				nextCell := geo.GetNextCell(currCell, highDir, destX, destY, height)
+				height := (int(currCell.Data>>1) & int(GeoHeightMask1 >> 1))
+				nextCell := geo.GetNextCell(currCell, GeoDirEnum(highDir), destX, destY, height,NoJump)
 				if nextCell == nil {
 					break
 				}
@@ -293,23 +293,23 @@ func (geo *CGeoData) GetBaseCellFromSector(
 	cellX := int((x + 327680) >> 15)
 	cellY := int((y + 262144) >> 15)
 
-	if cellX >= len(geo.mCells) || cellY >= len(geo.mCells[cellX]) {
+	if cellX >= len(geo.Cells) || cellY >= len(geo.Cells[cellX]) {
 		log.Printf("failed to get cell_array (%d, %d)", x, y)
 		return nil
 	}
 
-	cellArray := geo.mCells[cellX][cellY]
+	cellArray := geo.Cells[cellX][cellY]
 	if cellArray == nil {
 		log.Printf("failed to get cell_array (%d, %d)", x, y)
 		return nil
 	}
 
 	var b1 [4]int
-	var b2 int
+	var v14 int
 
-	geo.GetCellIndexes(x, y, b1[:], &b2)
+	geo.GetCellIndexes(x, y, b1[:], &v14)
 
-	baseCell := geo.GetBaseCell2(z+26, cellArray, b1[0], b2)
+	baseCell := geo.GetBaseCell2(z+26, cellArray, b1[0], v14)
 	if baseCell == nil {
 		log.Printf("failed to get basecell (%d, %d, %d)", x, y, z)
 	}
@@ -767,4 +767,19 @@ func (c *CWorldPlaneCollision) CheckCollision(
 	out.Z = start.Z + (end.Z-start.Z)*bestDist
 
 	return true
+}
+
+
+
+////////////////////////////////////////////////////////////
+func LODWORD(x float64) uint32 {
+	return uint32(math.Float64bits(x) & 0xFFFFFFFF)
+}
+
+func HIDWORD(x float64) uint32 {
+	return uint32(math.Float64bits(x) >> 32)
+}
+
+func SLODWORD(x float64) int32 {
+	return int32(math.Float64bits(x) & 0xFFFFFFFF)
 }
