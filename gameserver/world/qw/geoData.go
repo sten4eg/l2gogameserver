@@ -217,10 +217,10 @@ func (geo *CGeoData) GetNextCell(
 	if sector == nil {
 		return nil
 	}
-	return geo.getNextCellWithSector(currentCell, sector, dir, destX, destY, currentHeight, jump)
+	return geo.getNextCell2(currentCell, (*CGeoSector)(unsafe.Pointer(&sector)), dir, destX, destY, currentHeight, jump)
 }
 
-func (geo *CGeoData) getNextCellWithSector(
+func (geo *CGeoData) getNextCell2(
 	currentCell *CGeoCell,
 	nextSector *CGeoSector,
 	dir GeoDirEnum,
@@ -229,11 +229,11 @@ func (geo *CGeoData) getNextCellWithSector(
 	jump JumpType,
 ) *CGeoCell {
 	if currentCell.Data&GeoDirMask[dir] == GeoDirMask[dir] {
-		return geo.GetBaseCellFromSector(nextSector, destX, destY, currentHeight)
+		return geo.GetBaseCellFromSector(nextSector, uint32(destX), uint32(destY), currentHeight)
 	}
 
 	if jump == Jumpable {
-		upper := geo.GetClosestUpperCellFromSector(nextSector, destX, destY, currentHeight, true)
+		upper := geo.GetClosestUpperCellFromSector(nextSector, uint(destX), destY, currentHeight, true)
 		if upper != nil {
 			upperHeight := int((upper.Data >> 1) & (GeoHeightMask1 >> 1))
 			if upperHeight <= currentHeight+32 {
@@ -248,23 +248,23 @@ func (geo *CGeoData) getNextCellWithSector(
 func (geo *CGeoData) GetBaseCell(x, y uint32, z int) *CGeoCell {
 	sector := geo.GetSectorByCoord(x, y)
 	if sector != nil {
-		return geo.GetBaseCellFromSector(sector, x, y, z)
+		return geo.GetBaseCellFromSector((*CGeoSector)(unsafe.Pointer(&sector)), x, y, z)
 	}
 	return nil
 }
-func (geo *CGeoData) GetBaseCell2(z int32, cellArray []CGeoCell, b1, b2 int) *CGeoCell {
+func (geo *CGeoData) GetBaseCell2(z int32, cellArray []*CGeoCell, b1, b2 int) *CGeoCell {
 	const GeoHeightMask1 int16 = -16 // 0xFFF0
 	for i := b1; i < b2; i++ {
-		cell := &cellArray[i]
+		cell := cellArray[i]
 		// (GeoHeightMask1 >> 1) = 0x7FF8
-		height := int32((GeoHeightMask1 >> 1) & (cell.data >> 1))
+		height := int32((GeoHeightMask1 >> 1) & (cell.Data >> 1))
 		if z >= height {
 			return cell
 		}
 	}
 	// если ничего не найдено — возвращаем последний проверенный (или nil, по логике C)
 	if b2 > b1 {
-		return &cellArray[b2-1]
+		return  cellArray[b2-1]
 	}
 	return nil
 }
@@ -307,33 +307,49 @@ func (geo *CGeoData) GetBaseCellFromSector(
 	var b1 [4]int
 	var v14 int
 
-	geo.GetCellIndexes(x, y, b1[:], &v14)
+	geo.GetCellIndexes(x, y, (*int)(unsafe.Pointer(&b1)), &v14)
 
-	baseCell := geo.GetBaseCell2(z+26, cellArray, b1[0], v14)
+	baseCell := geo.GetBaseCell2(int32(z+26), cellArray, b1[0], v14)
 	if baseCell == nil {
 		log.Printf("failed to get basecell (%d, %d, %d)", x, y, z)
 	}
 	return baseCell
 }
 
-func (geo *CGeoData) GetSectorByCoord(x, y uint32) *CGeoZone {
+func (geo *CGeoData) GetSectorByCoord(x, y uint32) *CGeoZone  {
+	const (
+		SectorSizeBytes  = 24                      // sizeof(CGeoSector)
+		SectorColumnSize = SectorSizeBytes * 256   // 24 * 256 = 6144
+	)
+
 	zoneX := int((x+327680)>>15) + 10
 	zoneY := int((y+262144)>>15) + 10 // 0x40000 = 262144
 
 	zone := geo.GetZone(zoneX, zoneY)
-	if zone == nil {
+	if zone == nil || zone.Data == nil{
 		return nil
 	}
 
-	offset := 6144*int((x>>7)&0xFF) + 24*int((y>>7)&0xFF)
-	if offset+24 > len(zone.Data) {
-		return nil // безопасная проверка
-	}
+	XIndex := (x >> 7) & 0xFF
+	YIndex := (y >> 7) & 0xFF
 
-	// Нужно кастовать данные из zone.Data[offset] в *CGeoZone или *CGeoSector
-	// Здесь предполагается, что данные лежат в []CGeoSector (если ты это знаешь точно — можно сделать безопаснее)
-	sectorPtr := (*CGeoZone)(unsafe.Pointer(&zone.Data[offset]))
-	return sectorPtr
+	basePtr := uintptr(unsafe.Pointer(zone.Data))
+	offset := SectorColumnSize*uintptr(XIndex) + SectorSizeBytes* uintptr(YIndex)
+	sectorPtr := unsafe.Pointer(basePtr + offset)
+
+	sector := (*CGeoZone)(sectorPtr)
+	return sector
+
+
+	//offset := 6144*int((x>>7)&0xFF) + 24*int((y>>7)&0xFF)
+	//if offset+24 > len(zone.Data) {
+	//	return nil // безопасная проверка
+	//}
+	//
+	//// Нужно кастовать данные из zone.Data[offset] в *CGeoZone или *CGeoSector
+	//// Здесь предполагается, что данные лежат в []CGeoSector (если ты это знаешь точно — можно сделать безопаснее)
+	//sectorPtr := (*CGeoZone)(unsafe.Pointer(&zone.Data[offset]))
+	//return sectorPtr
 }
 
 func (geo *CGeoData) GetCellIndexes(x, y uint32, b1 *int, b2 *int) bool {
@@ -361,7 +377,7 @@ func (geo *CGeoData) GetCellIndexes(x, y uint32, b1 *int, b2 *int) bool {
 	tileY := (int(y) >> 4) & 7
 	tileX := (int(x) >> 4) & 7
 
-	offsets := geo.mCellOffset[v7>>15][v5>>15]
+	offsets := geo.CellOffset[v7>>15][v5>>15]
 
 	*b1 = sector.GetFirstCellIndex(tileX, tileY, offsets)
 	*b2 = sector.GetLastCellIndex(tileX, tileY, offsets)
@@ -372,8 +388,8 @@ func (geo *CGeoData) GetCellIndexes(x, y uint32, b1 *int, b2 *int) bool {
 func (g *CGeoData) GetZone(idx, idy int) *CGeoZone {
 	if idx-10 >= 0 && idx-10 <= 0x13 && idy-10 >= 0 && idy-10 <= 0x10 {
 		v := (idy - 10) + 17*(idx-10)
-		if g.m_Zone[0][v].m_data != nil {
-			return &g.m_Zone[0][v]
+		if g.Zones[0][v].Data != nil {
+			return &g.Zones[0][v]
 		}
 	}
 	return nil
@@ -401,14 +417,14 @@ func (g *CGeoData) GetClosestUpperCellFromSector(
 
 	// Получение индексов ячеек
 	var b1, b2 int
-	ok := g.GetCellIndexes(int(x), y, &b1, &b2)
+	ok := g.GetCellIndexes(uint32(x), uint32(y), &b1, &b2)
 	if !ok {
 		// В оригинале не логируется ошибка здесь
 		return nil
 	}
 
 	// Вызов поиска ближайшей верхней ячейки
-	cell := g.GetClosestUpperCell(z, cellArray, b1, b2, strictCheck)
+	cell := g.GetClosestUpperCell2(z, cellArray, b1, b2, strictCheck)
 
 	// Если строгая проверка отключена и ячейка не найдена — логгируем ошибку
 	if !strictCheck && cell == nil {
@@ -420,17 +436,18 @@ func (g *CGeoData) GetClosestUpperCellFromSector(
 	return cell
 }
 
-func (g *CGeoData) GetClosestUpperCellByPos(pos *FVector) *CGeoCell {
+func (g *CGeoData) GetClosestUpperCellByPos(pos *FVector) *CGeoSector {
 	x := int(pos.X)
 	y := int(pos.Y)
-	sector := g.GetSectorByCoord(x, y)
-	if sector == nil {
+	result := g.GetSectorByCoord(uint32(x), uint32(y))
+	if result == nil {
 		return nil
 	}
-	return g.GetClosestUpperCellFromSector(sector, uint(x), y, int(pos.Z), false)
+	sec := g.GetClosestUpperCellFromSector((*CGeoSector)(unsafe.Pointer(&result)), uint(x), y, int(pos.Z), false)
+	return (*CGeoSector)(unsafe.Pointer(&sec))
 }
 
-func (g *CGeoData) GetClosestUpperCell(
+func (g *CGeoData) GetClosestUpperCell2(
 	z int,
 	cellArray []*CGeoCell,
 	b1 int,
@@ -615,6 +632,7 @@ func (g *CGeoData) MoveStraightFloating(
 
 	return true
 }
+
 
 func (g *CGeoData) CanSee(pFrom, pTo *CWorldObject, checkCollision bool) bool {
 	if pFrom == nil || pTo == nil {

@@ -221,7 +221,7 @@ type CGeoData struct {
 	SharedZone    [20][17]*CSharedGeoZone // m_SharedZone
 	Zones         [20][17]CGeoZone        // m_Zone
 	HfmCells      [20][17]unsafe.Pointer  // m_hfm_cells
-	Cells         [20][17][]CGeoCell      // m_cells
+	Cells         [20][17][]*CGeoCell     // m_cells
 	HfmCellOffset [20][17]unsafe.Pointer  // m_hfm_cell_offset
 	CellOffset    [20][17][]int16         // m_cell_offset
 	BadMap        [27][27]int8            // m_bBadMap
