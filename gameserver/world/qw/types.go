@@ -249,3 +249,7 @@ type CPathNodeWorld struct {
 	PathNodeWorldInfoHandle unsafe.Pointer     // m_PathNodeWorldInfoHandle
 	WorldInfo               *PathNodeWorldInfo // m_WorldInfo
 }
+
+type CWorldObject struct {
+	M_RelPos FVector
+}

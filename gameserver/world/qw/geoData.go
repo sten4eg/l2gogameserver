@@ -360,7 +360,7 @@ func (geo *CGeoData) GetCellIndexes(x, y uint32, b1 *int, b2 *int) bool {
 	zoneY := (v5 >> 15) + 10
 
 	zone := geo.GetZone(zoneX, zoneY)
-	if zone == nil {
+	if zone == nil || zone.Data == nil {
 		return false
 	}
 
@@ -639,9 +639,10 @@ func (g *CGeoData) CanSee(pFrom, pTo *CWorldObject, checkCollision bool) bool {
 		return false
 	}
 
+	reflect.
 	zoneID := pFrom.GetInZoneID()
-	toPos := pTo.GetPos()
-	fromPos := pFrom.GetPos()
+	toPos := pTo.M_RelPos // pTo.GetPos()
+	fromPos := pFrom.M_RelPos //pFrom.GetPos()
 
 	return g.CanSee2(&fromPos, &toPos, zoneID, checkCollision)
 }
