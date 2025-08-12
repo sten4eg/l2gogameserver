@@ -639,8 +639,8 @@ func (g *CGeoData) CanSee(pFrom, pTo *CWorldObject, checkCollision bool) bool {
 		return false
 	}
 
-	reflect.
-	zoneID := pFrom.GetInZoneID()
+
+	zoneID := int(uintptr(unsafe.Pointer(&pFrom))) //pFrom.GetInZoneID() // nefr говорит это reflectId  у него
 	toPos := pTo.M_RelPos // pTo.GetPos()
 	fromPos := pFrom.M_RelPos //pFrom.GetPos()
 
@@ -666,6 +666,303 @@ func (g *CGeoData) CanSee2(
 	}
 	return v8
 }
+
+
+func (g *CGeoData) SingleLineCheckWithFlyTopDown(vFrom, vTo *FVector) bool {
+	// Разница координат
+	dx := vTo.X - vFrom.X
+	dy := vTo.Y - vFrom.Y
+	dz := vTo.Z - vFrom.Z
+	initialZ := vFrom.Z
+
+	// Проверка направления по Z
+	dirZFlag := 0
+	if vTo.Z < vFrom.Z {
+		dirZFlag = 1
+	}
+	dirZFlag += 4
+
+	// Если точки почти совпадают — проход свободен
+	if dx*dx+dy*dy+dz*dz < 0.5 {
+		return true
+	}
+
+	// Преобразование в координаты сетки
+	startXCell := (int(vFrom.X) + 327680) >> 4
+	startYCell := (int(vFrom.Y) + 262144) >> 4
+	endXCell := (int(vTo.X) + 327680) >> 4
+	endYCell := (int(vTo.Y) + 262144) >> 4
+
+	// Определение направления движения по X и Y
+	stepX := 1
+	if endXCell <= startXCell {
+		stepX = -1
+		endXCell = startXCell
+	}
+
+	stepY := 1
+	if endYCell <= startYCell {
+		stepY = -1
+		endYCell = startYCell
+	}
+
+	// Разница по осям
+	deltaX := Abs(endXCell - startXCell)
+	deltaY := Abs(endYCell - startYCell)
+
+	// Направления движения
+	dirX := stepX <= 0
+	dirY := GeoDirEnum(btoi(stepY > 0))
+
+	// Переменные для Bresenham
+	errX := 0
+	errY := 0
+	stepErrX := 0
+	stepErrY := 0
+
+	if deltaX < deltaY {
+		endXCell = endYCell
+		stepErrY = 2 * deltaX
+		errX = 2*deltaX - deltaY
+		stepErrX = deltaX - deltaY
+		startXCell = startYCell
+	} else {
+		stepErrX = 2 * deltaY
+		errX = 2*deltaY - deltaX
+		stepErrY = deltaY - deltaX
+	}
+
+	errAdjust := 2 * stepErrY
+
+	// Высота изменения Z на каждый шаг
+	if startXCell < endXCell {
+		dz = dz / float64(endXCell-startXCell)
+	}
+	absDz := math.Abs(dz)
+
+	// Получаем стартовую ячейку
+	currentCell := g.GetBaseCell(uint32(vFrom.X), uint32(vFrom.Y), int(vFrom.Z))
+	currentZ := initialZ
+
+	// Основной цикл по X/Y
+	if startXCell != endXCell {
+		if startXCell < endXCell {
+			// Параметры для движения
+			gridX := 16*startXCell - 327672
+			gridY := 16*startYCell - 262136
+			nextGridX := gridX + 16*stepX
+			nextGridY := gridY + 16*stepY
+			xStepWorld := 16 * stepX
+			yStepWorld := 16 * stepY
+			xCell := startXCell
+			yCell := startYCell
+			errorTerm := errX
+			errorDelta := stepErrX
+			errorAdjust := errAdjust
+			errorStep := stepErrY
+
+			for {
+				// Проверка пролета над землёй
+				if absDz > 0 {
+					if uint64(dirZFlag-4) > 1 {
+						return false
+					}
+					groundZ := g.FindGround(uint(gridX), uint(gridY), uint(int(currentZ)+int(absDz)))
+
+					if int(groundZ) > int(currentZ)+int(absDz) || int(currentZ) < int(groundZ) {
+						return false
+					}
+				}
+
+				if errorTerm > 0 {
+					// Движение по диагонали
+					nextCell := g.GetNextHorizontalCellOnSight(currentCell, GeoDirEnum(btoi(dirX)), nextGridX, gridY, int(currentZ))
+					if nextCell == nil {
+						return false
+					}
+					nextCell2 := g.GetNextHorizontalCellOnSight(nextCell, dirY, nextGridX, nextGridY, int(currentZ))
+					if nextCell2 == nil {
+						// Попробуем в обратном порядке
+						altCell := g.GetNextHorizontalCellOnSight(currentCell, dirY, gridX, nextGridY, int(currentZ))
+						if altCell == nil {
+							return false
+						}
+						nextCell2 = g.GetNextHorizontalCellOnSight(altCell, GeoDirEnum(btoi(dirX)), nextGridX, nextGridY, int(currentZ))
+						if nextCell2 == nil {
+							return false
+						}
+					}
+					currentCell = nextCell2
+					gridX += xStepWorld
+					gridY += yStepWorld
+					xCell += stepX
+					yCell += stepY
+					errorTerm += errorAdjust
+				} else {
+					// Движение по одной оси
+					if deltaX <= deltaY {
+						// Двигаемся по Y
+						nextCell := g.GetNextHorizontalCellOnSight(currentCell, dirY, gridX, nextGridY, int(currentZ))
+						if nextCell == nil {
+							return false
+						}
+						currentCell = nextCell
+						gridY += yStepWorld
+						yCell += stepY
+						errorTerm += stepErrY
+					} else {
+						// Двигаемся по X
+						nextCell := g.GetNextHorizontalCellOnSight(currentCell, GeoDirEnum(btoi(dirX)), nextGridX, gridY, int(currentZ))
+						if nextCell == nil {
+							return false
+						}
+						currentCell = nextCell
+						gridX += xStepWorld
+						xCell += stepX
+						errorTerm += stepErrX
+					}
+				}
+
+				startXCell++
+				currentZ += dz
+				if startXCell >= endXCell {
+					return true
+				}
+			}
+		}
+		return true
+	}
+
+	// Вертикальная проверка
+	if absDz > 0 {
+		newZ := int(currentZ) + int(absDz)
+		if dirZFlag-4 <= 1 {
+			groundZ := g.FindGround(uint(16*startXCell-327672), uint(16*startYCell-262136), uint(newZ))
+			if int(groundZ) > newZ || int(currentZ) < int(groundZ) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+//todo проверить
+func (g *CGeoData) GetNextHorizontalCellOnSight(
+	pCurrentCell *CGeoCell,
+	dirType GeoDirEnum,
+	destX uint,   // x координата цели
+	destY int,    // y координата цели
+	nCurrentHeight int, // высота текущей ячейки (высота по Y)
+) *CGeoCell {
+
+	/* 1. Получаем сектор целевой точки */
+	sector := g.GetSectorByCoord(destX, destY)
+	if sector == nil {
+		return nil
+	}
+
+	/* 2. Пытаемся «напрямую» найти следующую ячейку по направлению */
+	result := g.GetNextCell(pCurrentCell, sector, dirType,
+		destX, destY, nCurrentHeight, Jumpable)
+	if result != nil {
+		return result
+	}
+
+	/* 3. Если прямой путь недоступен – берём базовую ячейку сектора */
+	baseCell := g.GetBaseCellFromSector(sector, destX, destY, nCurrentHeight)
+	if baseCell == nil {
+		return nil
+	}
+
+	// высота базовой ячейки (см. C++: (m_data >> 1) & GeoHeightMask_1 >> 1)
+	cellHeight := int((baseCell.m_data>>1)&uint64(GeoHeightMask_1>>1))
+	if nCurrentHeight < cellHeight {
+		return nil
+	}
+
+	/* 4. Находим координаты «противоположного» направления */
+	var (
+		oppDir GeoDirEnum
+		v15    uint // X‑координата для GetNextCell (destX +/- 16)
+		v16    int  // Y‑координата для GetNextCell
+	)
+
+	switch dirType {
+	case GEO_DIR_EAST: /* ищем в восточном направлении → смотрим на запад */
+		oppDir = GEO_DIR_WEST
+		v15 = destX - 16
+	case GEO_DIR_WEST:
+		oppDir = GEO_DIR_EAST
+		v15 = destX + 16
+	case GEO_DIR_NORTH:
+		oppDir = GEO_DIR_SOUTH
+		v16 = destY + 16
+	case GEO_DIR_SOUTH:
+		oppDir = GEO_DIR_NORTH
+		v16 = destY - 16
+	}
+
+	/* если не было явно задано, оставляем Y‑координату как destY */
+	if v16 == 0 {
+		v16 = destY
+	}
+	/* если X‑координата не была установлена (например, для север/юг), ставим destX */
+	if v15 == 0 && dirType != GEO_DIR_EAST && dirType != GEO_DIR_WEST {
+		v15 = destX
+	}
+
+	/* 5. Проверяем «противоположный» путь от базовой ячейки */
+	next := g.GetNextCell(
+		baseCell,
+		oppDir,
+		uint(v15), // X‑координата
+		v16,       // Y‑координата
+		cellHeight, // высота из базовой ячейки
+		Jumpable)
+
+	if next != pCurrentCell {
+		return nil
+	}
+
+	/* 6. Всё ок – возвращаем базовую ячейку */
+	return baseCell
+}
+
+func (this *CGeoData) FindGround(x, y, z uint) int64 {
+	// Вычисление координат зоны
+	zoneX := int(int32(x+327680)>>15) + 10
+	zoneY := int(int32(y+0x40000)>>15) + 10
+
+	zone := this.GetZone(zoneX, zoneY)
+	if zone == nil {
+		return 0
+	}
+
+	// Получение сектора по координатам
+	sector := &zone.Data.Sectors[uint8(x>>7)][uint8(y>>7)] // &0x1F = %32, если массив 32x32
+
+	if sector == nil {
+		return 0
+	}
+
+	var m_data int32
+
+	// Проверка флага
+	if (sector.BooleanFlag & 1) != 0 {
+		m_data = int32(sector.DefaultCell.Data)
+	} else {
+		baseCell := this.GetBaseCellFromSector(sector, uint32(x), uint32(y), int(z))
+		if baseCell == nil {
+			return 0
+		}
+		m_data = int32(baseCell.Data)
+	}
+
+	// Возврат значения
+	return int64(int64((GeoHeightMask1 >> 1)) & int64(uint(m_data)>>1))
+}
+
+
 
 func (c *CWorldPlaneCollision) ConvertWorldToPlaneSection(
 	x0, x1, y0, y1 int,
@@ -801,4 +1098,18 @@ func HIDWORD(x float64) uint32 {
 
 func SLODWORD(x float64) int32 {
 	return int32(math.Float64bits(x) & 0xFFFFFFFF)
+}
+
+type number interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~float32 | ~float64
+}
+
+func Abs[T number](x T) T {
+ return T(math.Float64frombits(math.Float64bits(float64(x)) &^ (1 << 63)))
+}
+func btoi(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
 }
