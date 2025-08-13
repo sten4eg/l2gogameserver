@@ -217,10 +217,10 @@ func (geo *CGeoData) GetNextCell(
 	if sector == nil {
 		return nil
 	}
-	return geo.getNextCell2(currentCell, (*CGeoSector)(unsafe.Pointer(&sector)), dir, destX, destY, currentHeight, jump)
+	return geo.GetNextCell2(currentCell, (*CGeoSector)(unsafe.Pointer(&sector)), dir, destX, destY, currentHeight, jump)
 }
 
-func (geo *CGeoData) getNextCell2(
+func (geo *CGeoData) GetNextCell2(
 	currentCell *CGeoCell,
 	nextSector *CGeoSector,
 	dir GeoDirEnum,
@@ -846,7 +846,7 @@ func (g *CGeoData) SingleLineCheckWithFlyTopDown(vFrom, vTo *FVector) bool {
 	return true
 }
 
-//todo проверить
+
 func (g *CGeoData) GetNextHorizontalCellOnSight(
 	pCurrentCell *CGeoCell,
 	dirType GeoDirEnum,
@@ -856,26 +856,26 @@ func (g *CGeoData) GetNextHorizontalCellOnSight(
 ) *CGeoCell {
 
 	/* 1. Получаем сектор целевой точки */
-	sector := g.GetSectorByCoord(destX, destY)
+	sector := g.GetSectorByCoord(uint32(destX), uint32(destY))
 	if sector == nil {
 		return nil
 	}
 
 	/* 2. Пытаемся «напрямую» найти следующую ячейку по направлению */
-	result := g.GetNextCell(pCurrentCell, sector, dirType,
-		destX, destY, nCurrentHeight, Jumpable)
+	result := g.GetNextCell2(pCurrentCell, (*CGeoSector)(unsafe.Pointer(&sector)), dirType,
+		int(destX), destY, nCurrentHeight, Jumpable)
 	if result != nil {
 		return result
 	}
 
 	/* 3. Если прямой путь недоступен – берём базовую ячейку сектора */
-	baseCell := g.GetBaseCellFromSector(sector, destX, destY, nCurrentHeight)
+	baseCell := g.GetBaseCellFromSector((*CGeoSector)(unsafe.Pointer(&sector)), uint32(destX), uint32(destY), nCurrentHeight)
 	if baseCell == nil {
 		return nil
 	}
 
 	// высота базовой ячейки (см. C++: (m_data >> 1) & GeoHeightMask_1 >> 1)
-	cellHeight := int((baseCell.m_data>>1)&uint64(GeoHeightMask_1>>1))
+	cellHeight := int((baseCell.Data>>1)&(GeoHeightMask1>>1))
 	if nCurrentHeight < cellHeight {
 		return nil
 	}
@@ -915,8 +915,8 @@ func (g *CGeoData) GetNextHorizontalCellOnSight(
 	next := g.GetNextCell(
 		baseCell,
 		oppDir,
-		uint(v15), // X‑координата
-		v16,       // Y‑координата
+		int(v15),   // X‑координата
+		v16,        // Y‑координата
 		cellHeight, // высота из базовой ячейки
 		Jumpable)
 
