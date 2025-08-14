@@ -71,12 +71,8 @@ type FVector struct {
 	X, Y, Z float64
 }
 
-func (a *FVector) LenSquared2D() float64 {
-	return a.X*a.X + a.Y*a.Y
-}
-
 func (a *FVector) Normalize2D() {
-	length := math.Sqrt(a.LenSquared2D())
+	length := math.Hypot(a.X, a.Y)
 	if length > 1e-6 {
 		a.X /= length
 		a.Y /= length
@@ -92,6 +88,7 @@ func (v *FVector) Len2DTo(other *FVector) float64 {
 	dy := v.Y - other.Y
 	return dx*dx + dy*dy
 }
+func (v FVector) Sub(o FVector) FVector { return FVector{v.X - o.X, v.Y - o.Y, v.Z - o.Z} }
 
 // CGeoCell — минимальная ячейка ландшафта (16x16 юнитов)
 // Хранит высоту и флаги направлений в m_data

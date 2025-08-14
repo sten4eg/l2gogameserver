@@ -667,6 +667,58 @@ func (g *CGeoData) CanSee2(
 	return v8
 }
 
+func (g *CGeoData) SingleLineCheckForProjectile(from, to *FVector) bool {
+	var pos, vTo FVector
+
+	// Берём "нижнюю" точку как pos, "верхнюю" как vTo (по оси Z).
+	if to.Z < from.Z {
+		pos = *from
+		vTo = *to
+	} else {
+		pos = *to
+		vTo = *from
+	}
+
+	// Горизонтальная дельта и расстояния
+	delta := vTo.Sub(pos)
+	horizSqr := delta.X*delta.X + delta.Y*delta.Y
+
+	// Ранняя победа: если 3D-дистанция меньше sqrt(0.5)
+	if (vTo.Z-pos.Z)*(vTo.Z-pos.Z)+horizSqr < 0.5 {
+		return true
+	}
+
+	// Проецируем на XY
+	delta.Z = 0
+
+	// Шаг вдоль горизонтали: либо 64, либо реальная XY-дистанция, если она < 64
+	step := 64.0
+	horiz := math.Sqrt(horizSqr)
+	if horiz < 64.0 {
+		step = horiz
+	}
+
+	// Притягиваем Z к "легальной" высоте
+	pos.Z = g.GetVerticalLimit(&pos)
+	vTo.Z = g.GetVerticalLimit(&vTo)
+
+	// Направление движения по XY, умноженное на step; Z будет задан отдельно
+	delta.Normalize2D()
+	dir := FVector{X: delta.X * step, Y: delta.Y * step, Z: 0}
+
+	// Точка "над" pos: сдвиг на dir и подъём на 16 по Z
+	anchor := FVector{
+		X: pos.X + dir.X,
+		Y: pos.Y + dir.Y,
+		Z: pos.Z + 16.0,
+	}
+
+	// Четыре проверочных луча/сегмента
+	return g.SingleLineCheckWithFlyTopDown(&anchor, &pos) &&
+		g.SingleLineCheckWithFlyTopDown(&pos, &anchor) &&
+		g.SingleLineCheckWithFlyTopDown(&anchor, &vTo) &&
+		g.SingleLineCheckWithFlyTopDown(&vTo, &anchor)
+}
 
 func (g *CGeoData) SingleLineCheckWithFlyTopDown(vFrom, vTo *FVector) bool {
 	// Разница координат
